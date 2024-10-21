@@ -1,0 +1,17 @@
+#include "Camera.h"
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
+
+engine::graphics::Camera::Camera(float FOV)
+{
+}
+
+void engine::graphics::Camera::Update()
+{
+	Projection = glm::perspective(1.25f, 16.0f / 9.0f, 0.1f, 1000.0f);
+
+	Vector3 Forward = Vector3::Forward(Rotation * Vector3(1, 1, 0));
+	Vector3 Up = Vector3::Up(Rotation);
+	View = glm::lookAt(glm::vec3(0), -glm::vec3(Forward.X, Forward.Y, Forward.Z), glm::vec3(Up.X, Up.Y, Up.Z));
+	View = glm::translate(View, glm::vec3(Position.X, Position.Y, Position.Z));
+}

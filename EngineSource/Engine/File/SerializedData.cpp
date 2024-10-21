@@ -1,0 +1,241 @@
+#include "SerializedData.h"
+#include <iostream>
+
+void engine::SerializedData::DataValue::CopyFrom(const DataValue& From)
+{
+	Free();
+	Type = From.Type;
+
+	switch (Type)
+	{
+	case engine::SerializedData::DataType::Int32:
+		Int = From.Int;
+		break;
+	case engine::SerializedData::DataType::Byte:
+	case engine::SerializedData::DataType::Boolean:
+		Byte = From.Byte;
+		break;
+	case engine::SerializedData::DataType::Float:
+		Float = From.Float;
+		break;
+	case engine::SerializedData::DataType::Vector3:
+		Vec = From.Vec;
+		break;
+	case engine::SerializedData::DataType::String:
+		String = new string(*From.String);
+		break;
+	case engine::SerializedData::DataType::Array:
+		Array = new std::vector<DataValue>(*From.Array);
+		break;
+	case engine::SerializedData::DataType::Object:
+		Object = new std::vector<SerializedData>(*From.Object);
+		break;
+	case engine::SerializedData::DataType::None:
+	default:
+		Int = 0;
+		break;
+	}
+}
+
+void engine::SerializedData::DataValue::Free()
+{
+	if (Type == DataType::Array)
+	{
+		delete Array;
+	}
+	if (Type == DataType::Object)
+	{
+		delete Object;
+	}
+	if (Type == DataType::String)
+	{
+		delete String;
+	}
+}
+
+engine::SerializedData::DataType engine::SerializedData::DataValue::GetType() const
+{
+	return Type;
+}
+
+engine::SerializedData::DataValue::DataValue(const DataValue& Other)
+{
+	CopyFrom(Other);
+}
+
+engine::SerializedData::DataValue& engine::SerializedData::DataValue::operator=(const DataValue& Other)
+{
+	CopyFrom(Other);
+	return *this;
+}
+
+int32 engine::SerializedData::DataValue::GetInt() const
+{
+	if (Type == DataType::Int32)
+		return Int;
+	return 0;
+}
+
+uByte engine::SerializedData::DataValue::GetByte() const
+{
+	if (Type == DataType::Byte)
+		return Byte;
+	return 0;
+}
+
+bool engine::SerializedData::DataValue::GetBool() const
+{
+	if (Type == DataType::Boolean)
+		return Byte;
+	return false;
+}
+
+float engine::SerializedData::DataValue::GetFloat() const
+{
+	if (Type == DataType::Float)
+		return Float;
+	return 0.0f;
+}
+
+engine::Vector3 engine::SerializedData::DataValue::GetVector3() const
+{
+	if (Type == DataType::Vector3)
+		return Vec;
+	return Vector3();
+}
+
+engine::string engine::SerializedData::DataValue::GetString() const
+{
+	if (Type == DataType::String)
+		return *String;
+	return "";
+}
+
+std::vector<engine::SerializedData::DataValue>& engine::SerializedData::DataValue::GetArray()
+{
+	return *Array;
+}
+
+const std::vector<engine::SerializedData::DataValue>& engine::SerializedData::DataValue::GetArray() const
+{
+	return *Array;
+}
+
+std::vector<engine::SerializedData>& engine::SerializedData::DataValue::GetObject()
+{
+	return *Object;
+}
+
+const std::vector<engine::SerializedData>& engine::SerializedData::DataValue::GetObject() const
+{
+	return *Object;
+}
+
+engine::string engine::SerializedData::DataValue::ToString(size_t Depth) const
+{
+	switch (GetType())
+	{
+	case DataType::None:
+		break;
+	case DataType::Int32:
+		return std::to_string(GetInt());
+	case DataType::Boolean:
+		return GetBool() ? "true" : "false";
+	case DataType::Byte:
+		return std::to_string(GetByte());
+	case DataType::String:
+		return GetString();
+	case DataType::Float:
+		return std::to_string(GetFloat());
+	case DataType::Vector3:
+		return GetVector3().ToString();
+	case DataType::Array:
+	{
+		string Out = "[ ";
+		for (auto& i : GetArray())
+		{
+			Out.append(i.ToString(Depth + 1) + " ");
+		}
+		Out.push_back(']');
+		return Out;
+	}
+	case DataType::Object:
+	{
+		string Out = "{\n";
+		for (auto& i : GetObject())
+		{
+			Out.append(i.ToString(Depth + 1) + " ");
+		}
+		for (size_t i = 0; i < Depth; i++)
+		{
+			Out.push_back('\t');
+		}
+		Out.pop_back();
+		Out.push_back('}');
+		return Out;
+	}
+	default:
+		break;
+	}
+	return "";
+}
+
+engine::SerializedData::DataValue& engine::SerializedData::At(string Name)
+{
+	auto& Object = Value.GetObject();
+
+	for (SerializedData& Element : Object)
+	{
+		if (Element.Name == Name)
+		{
+			return Element.Value;
+		}
+	}
+	throw 0;
+}
+
+engine::SerializedData::DataValue& engine::SerializedData::At(size_t Index)
+{
+	if (Value.GetType() == DataType::Object)
+	{
+		auto& Object = Value.GetObject();
+
+		return Object.at(Index).Value;
+	}
+	else if (Value.GetType() == DataType::Array)
+	{
+		auto& Array = Value.GetArray();
+
+		return Array.at(Index);
+	}
+	throw 0;
+}
+
+void engine::SerializedData::Append(const SerializedData& New)
+{
+	auto& Object = Value.GetObject();
+	Object.push_back(New);
+}
+
+void engine::SerializedData::Append(const DataValue& New)
+{
+	auto& Array = Value.GetArray();
+	Array.push_back(New);
+}
+
+size_t engine::SerializedData::Size() const
+{
+	return Value.GetArray().size();
+}
+
+engine::string engine::SerializedData::ToString(size_t Depth) const
+{
+	string Out;
+	for (size_t i = 0; i < Depth; i++)
+	{
+		Out.push_back('\t');
+	}
+
+	Out += Name + ": " + std::to_string(int32(Value.GetType())) + " = " + Value.ToString(Depth) + "\n";
+	return Out;
+}
