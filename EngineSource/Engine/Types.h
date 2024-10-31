@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include "StringUtil.h"
 
 using sByte = signed char;
 using uByte = unsigned char;
@@ -25,8 +26,3 @@ using int64 = signed long;
 using uint64 = unsigned long;
 
 #endif
-
-namespace engine
-{
-	using string = std::string;
-}

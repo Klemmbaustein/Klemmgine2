@@ -1,7 +1,7 @@
 #include "SceneSubsystem.h"
 
 engine::subsystem::SceneSubsystem::SceneSubsystem()
-	: Subsystem("Scene")
+	: ISubsystem("Scene")
 {
 	LoadedScenes.push_back(new Scene());
 	Main = LoadedScenes[0];

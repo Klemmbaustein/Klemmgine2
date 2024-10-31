@@ -1,0 +1,8 @@
+global Color_Text = 1;
+global Color_Background = 0.12;
+global Color_DarkBackground = 0.05;
+global Color_LightBackground = 0.2;
+global Color_Highlight1 = (0.5, 0.5, 1);
+global Color_HighlightDark = (0.15, 0.15, 0.35);
+global Color_Highlight2 = 1;
+global Color_HighlightText = 0;

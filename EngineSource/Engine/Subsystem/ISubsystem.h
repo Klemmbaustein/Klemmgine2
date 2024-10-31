@@ -4,13 +4,13 @@
 
 namespace engine::subsystem
 {
-	class Subsystem
+	class ISubsystem
 	{
 		const char* Name = "";
 
 	public:
-		Subsystem(const char* Name);
-		virtual ~Subsystem();
+		ISubsystem(const char* Name);
+		virtual ~ISubsystem();
 
 		virtual void Update();
 		virtual void RenderUpdate();
@@ -26,7 +26,7 @@ namespace engine::subsystem
 
 		void Print(string Message, LogType Severity = LogType::Info);
 
-		void SubsystemDependsOn(const type_info& Type, string Name);
+		void SubsystemDependsOn(const std::type_info& Type, string Name);
 	};
 }
 

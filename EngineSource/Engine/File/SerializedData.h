@@ -41,7 +41,7 @@ namespace engine
 			DataType Type = DataType::None;
 
 			void CopyFrom(const DataValue& From);
-			void Free();
+			void Free() const;
 
 		public:
 
@@ -62,6 +62,11 @@ namespace engine
 				Byte = Value;
 				Type = DataType::Byte;
 			}
+			explicit DataValue(bool Value)
+			{
+				Byte = Value;
+				Type = DataType::Boolean;
+			}
 			DataValue(float Value)
 			{
 				Float = Value;
@@ -73,6 +78,11 @@ namespace engine
 				Type = DataType::Vector3;
 			}
 			DataValue(string Value)
+			{
+				String = new std::string(Value);
+				Type = DataType::String;
+			}
+			DataValue(const char* Value)
 			{
 				String = new std::string(Value);
 				Type = DataType::String;
@@ -110,6 +120,10 @@ namespace engine
 			const std::vector<SerializedData>& GetObject() const;
 
 			string ToString(size_t Depth) const;
+			DataValue& At(string Name);
+			DataValue& At(size_t Index);
+			void Append(const SerializedData& New);
+			void Append(const DataValue& New);
 		};
 
 		SerializedData()
@@ -140,8 +154,8 @@ namespace engine
 	class ISerializable
 	{
 	public:
-		virtual SerializedData Serialize() = 0;
-		virtual void DeSerialize(SerializedData* From) = 0;
+		virtual SerializedValue Serialize() = 0;
+		virtual void DeSerialize(SerializedValue* From) = 0;
 	};
 
 }

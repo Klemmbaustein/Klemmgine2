@@ -1,5 +1,6 @@
 #include "Vector.h"
 #include <cmath>
+#include <iostream>
 using namespace engine;
 
 Vector3::Vector3()
@@ -105,7 +106,7 @@ Vector3 Vector3::GetScaledAxis(Vector3 Rot, uint32 Dir)
 		{      0,     0,1}
 	};
 	Axes axes = {
-		 {1,0,0},
+		{1,0,0},
 		{0,1,0},
 		{0,0,1}
 	};
@@ -156,6 +157,27 @@ Vector3 engine::Vector3::operator*(const Vector3& Other)
 Vector3 engine::Vector3::operator/(const Vector3& Other)
 {
 	return Vector3(X / Other.X, Y / Other.Y, Z / Other.Z);
+}
+
+Vector3 engine::Vector3::FromString(string VectorString)
+{
+	std::vector Elements = str::Split(VectorString, " \t\n");
+
+	if (Elements.size() != 3)
+		return 0;
+
+	try
+	{
+		return Vector3(std::stof(Elements.at(0)), std::stof(Elements.at(1)), std::stof(Elements.at(2)));
+	}
+	catch (std::invalid_argument)
+	{
+		return 0;
+	}
+	catch (std::out_of_range)
+	{
+		return 0;
+	}
 }
 
 float& engine::Vector3::operator[](size_t Index)

@@ -1,0 +1,84 @@
+element EditorPanelTab
+{
+	var Title;
+	var Selected = false;
+	var Color;
+	var BorderSize = 1;
+	var PaddingSize = -1;
+
+	child UIButton mainButton
+	{
+		color = Color;
+		borderColor = Color_Highlight1;
+
+		border = BorderSize;
+		borderSizeMode = px;
+		bottomBorder = false;
+		rightBorder = Selected;
+		leftBorder = Selected;
+		topBorder = Selected;
+		
+		corners = 5px;
+		bottomLeftCorner = false;
+		bottomRightCorner = false;
+
+		rightPadding = 2px;
+		downPadding = PaddingSize;
+
+		child UIText
+		{
+			padding = 5px;
+			size = 12px;
+			color = Color_Text;
+			text = Title;
+		}
+	}
+}
+
+element EditorPanelElement
+{
+	var Size;
+
+	orientation = vertical;
+	verticalAlign = default;
+	
+	child UIBackground
+	{
+		color = Color_Background;
+		borderColor = Color_Highlight1;
+
+		border = 1px;
+		corners = 5px;
+		topLeftCorner = false;
+		topRightCorner = false;
+		
+		minSize = Size;
+	}
+
+	child UIBackground tabBox
+	{
+		verticalAlign = default;
+		corners = 5px;
+		bottomLeftCorner = false;
+		bottomRightCorner = false;
+		minSize = (0, 25)px;
+		maxSize = (99999999, 25)px;
+
+		tryFill = true;
+		color = Color_DarkBackground;
+		child EditorPanelTab
+		{
+			Title = "Assets";
+			Selected = true;
+			Color = Color_HighlightDark;
+		}
+		child EditorPanelTab
+		{
+			Title = "Classes";
+			Selected = false;
+			Color = Color_DarkBackground;
+			PaddingSize = 0;
+			BorderSize = 0;
+		}
+	}
+}

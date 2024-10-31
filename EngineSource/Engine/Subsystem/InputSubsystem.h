@@ -1,11 +1,11 @@
 #pragma once
-#include "Subsystem.h"
+#include "ISubsystem.h"
 #include <Engine/Input.h>
 #include <map>
 
 namespace engine::subsystem
 {
-	class InputSubsystem : public Subsystem
+	class InputSubsystem : public ISubsystem
 	{
 		std::map<input::Key, bool> PressedKeys;
 		bool CursorVisible = true;

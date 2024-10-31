@@ -1,12 +1,12 @@
 #include "Scene.h"
 #include <GL/glew.h>
 #include "Engine/Subsystem/VideoSubsystem.h"
+#include <Engine/Subsystem/SceneSubsystem.h>
 #include "Engine/Engine.h"
 #include "Engine/Input.h"
-#include <glm/glm.hpp>
 #include "Stats.h"
-#include "Graphics/Drawable/Model.h"
-#include <iostream>
+#include <Engine/File/TextSerializer.h>
+#include <Engine/File/BinarySerializer.h>
 
 engine::Scene::Scene()
 {
@@ -15,8 +15,7 @@ engine::Scene::Scene()
 
 	Cam = new Camera(1);
 	Cam->Position.Z = 2;
-
-	Drawables.push_back(new graphics::Model());
+	Cam->Rotation.Y = 3.14f / -2.0f;
 
 	Engine::GetSubsystem<subsystem::VideoSubsystem>()->OnResizedCallbacks.push_back(
 		[this](kui::Vec2ui NewSize)
@@ -33,7 +32,7 @@ void engine::Scene::Draw()
 
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	for (auto& i : Drawables)
+	for (graphics::IDrawable* i : Drawables)
 	{
 		i->Draw(Cam);
 	}
@@ -59,4 +58,39 @@ void engine::Scene::Update()
 	}
 
 	Cam->Rotation = Cam->Rotation + Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
+}
+
+engine::Scene* engine::Scene::GetMain()
+{
+	using namespace subsystem;
+
+	SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
+
+	if (!SceneSystem)
+		return nullptr;
+
+	return SceneSystem->Main;
+}
+
+void engine::Scene::Save(string FileName)
+{
+	std::vector<SerializedValue> SerializedObjects;
+
+	for (SceneObject* Object : this->Objects)
+	{
+		SerializedObjects.push_back(Object->Serialize());
+	}
+
+	SerializedValue Serialized = SerializedValue(
+		{
+			SerializedData("scene", GetSceneInfo()),
+			SerializedData("objects", SerializedObjects),
+		});
+
+	TextSerializer::ToFile(Serialized.GetObject(), FileName);
+}
+
+engine::SerializedValue engine::Scene::GetSceneInfo()
+{
+	return SerializedValue();
 }

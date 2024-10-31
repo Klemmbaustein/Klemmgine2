@@ -89,8 +89,10 @@ kui::Vec2i kui::systemWM::GetCursorPosition(SysWindow* Target)
 {
 	float x, y;
 	SDL_GetGlobalMouseState(&x, &y);
+	int winX, winY;
+	SDL_GetWindowPosition(Target->SDLWindow, &winX, &winY);
 
-	return { int(x), int(y) };
+	return { int(x) - winX, int(y) - winY };
 }
 
 kui::Vec2ui kui::systemWM::GetScreenSize()
@@ -267,7 +269,7 @@ void kui::systemWM::SysWindow::UpdateEvents()
 			InputSys->SetKeyDown(input::Key(ev.key.key), false);
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
-			if (WindowHasFocus(this))
+			if (WindowHasFocus(this) && !input::ShowMouseCursor)
 				input::MouseMovement = input::MouseMovement + Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.001f, 0.001f);
 			break;
 		default:

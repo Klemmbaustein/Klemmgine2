@@ -37,7 +37,7 @@ void engine::SerializedData::DataValue::CopyFrom(const DataValue& From)
 	}
 }
 
-void engine::SerializedData::DataValue::Free()
+void engine::SerializedData::DataValue::Free() const
 {
 	if (Type == DataType::Array)
 	{
@@ -135,20 +135,24 @@ engine::string engine::SerializedData::DataValue::ToString(size_t Depth) const
 {
 	switch (GetType())
 	{
-	case DataType::None:
-		break;
 	case DataType::Int32:
 		return std::to_string(GetInt());
+
 	case DataType::Boolean:
 		return GetBool() ? "true" : "false";
+
 	case DataType::Byte:
 		return std::to_string(GetByte());
+
 	case DataType::String:
 		return GetString();
+
 	case DataType::Float:
 		return std::to_string(GetFloat());
+
 	case DataType::Vector3:
 		return GetVector3().ToString();
+
 	case DataType::Array:
 	{
 		string Out = "[ ";
@@ -174,15 +178,16 @@ engine::string engine::SerializedData::DataValue::ToString(size_t Depth) const
 		Out.push_back('}');
 		return Out;
 	}
+	case DataType::None:
 	default:
 		break;
 	}
 	return "";
 }
 
-engine::SerializedData::DataValue& engine::SerializedData::At(string Name)
+engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(string Name)
 {
-	auto& Object = Value.GetObject();
+	auto& Object = GetObject();
 
 	for (SerializedData& Element : Object)
 	{
@@ -194,33 +199,53 @@ engine::SerializedData::DataValue& engine::SerializedData::At(string Name)
 	throw 0;
 }
 
-engine::SerializedData::DataValue& engine::SerializedData::At(size_t Index)
+engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(size_t Index)
 {
-	if (Value.GetType() == DataType::Object)
+	if (GetType() == DataType::Object)
 	{
-		auto& Object = Value.GetObject();
+		auto& Object = GetObject();
 
 		return Object.at(Index).Value;
 	}
-	else if (Value.GetType() == DataType::Array)
+	else if (GetType() == DataType::Array)
 	{
-		auto& Array = Value.GetArray();
+		auto& Array = GetArray();
 
 		return Array.at(Index);
 	}
 	throw 0;
 }
 
+void engine::SerializedData::DataValue::Append(const SerializedData& New)
+{
+	auto& Object = GetObject();
+	Object.push_back(New);
+}
+
+void engine::SerializedData::DataValue::Append(const DataValue& New)
+{
+	auto& Array = GetArray();
+	Array.push_back(New);
+}
+
+engine::SerializedData::DataValue& engine::SerializedData::At(string Name)
+{
+	return Value.At(Name);
+}
+
+engine::SerializedData::DataValue& engine::SerializedData::At(size_t Index)
+{
+	return Value.At(Index);
+}
+
 void engine::SerializedData::Append(const SerializedData& New)
 {
-	auto& Object = Value.GetObject();
-	Object.push_back(New);
+	Value.Append(New);
 }
 
 void engine::SerializedData::Append(const DataValue& New)
 {
-	auto& Array = Value.GetArray();
-	Array.push_back(New);
+	Value.Append(New);
 }
 
 size_t engine::SerializedData::Size() const

@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
-#include "Subsystem.h"
+#include "ISubsystem.h"
 #include <Engine/Scene.h>
 
 namespace engine::subsystem
 {
-	class SceneSubsystem : public Subsystem
+	class SceneSubsystem : public ISubsystem
 	{
 	public:
 		SceneSubsystem();

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "SerializedData.h"
+#include <cstring>
 
 namespace engine
 {
@@ -14,15 +15,29 @@ namespace engine
 
 		static void ToFile(const std::vector<SerializedData>& Target, string FileName, string FormatIdentifier = "k2b");
 
-		static SerializedData FromFile(string File, string FormatIdentifier);
+		static std::vector<SerializedData> FromFile(string File, string FormatIdentifier);
 	private:
 		struct BinaryStream
 		{
 			std::vector<uByte> Bytes;
 			size_t StreamPos = 0;
 			uByte GetByte();
-			bool Empty();
+			template<typename T> T Get()
+			{
+				if (Bytes.size() < StreamPos + sizeof(T))
+				{
+					return T();
+				}
+				T Out = T();
+				memcpy(&Out, &Bytes[StreamPos], sizeof(T));
+				StreamPos += sizeof(T);
+				return Out;
+			}
+			bool Empty() const;
 		};
+
+		static SerializedData ReadSerializedData(BinaryStream& From);
+		static SerializedValue ReadValue(BinaryStream& From);
 
 		static void WriteString(string Str, std::vector<uByte>& Out);
 		static void CopyTo(void* Data, size_t Size, std::vector<uByte>& Out);

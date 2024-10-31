@@ -6,10 +6,14 @@
 #include <Engine/Internal/SystemWM_SDL3.h>
 
 engine::subsystem::InputSubsystem::InputSubsystem()
-	: Subsystem("Input")
+	: ISubsystem("Input")
 {
 	THIS_SUBSYSTEM_DEPENDS_ON(VideoSubsystem);
+#if !EDITOR
 	input::ShowMouseCursor = false;
+#else
+	input::ShowMouseCursor = true;
+#endif
 }
 
 void engine::subsystem::InputSubsystem::Update()
@@ -38,7 +42,7 @@ void engine::subsystem::InputSubsystem::SetKeyDown(input::Key Key, bool Value)
 {
 	if (PressedKeys.contains(Key))
 		PressedKeys[Key] = Value;
-	PressedKeys.insert({Key, Value});
+	PressedKeys.insert({ Key, Value });
 }
 
 bool engine::subsystem::InputSubsystem::KeyPressed(input::Key Key)

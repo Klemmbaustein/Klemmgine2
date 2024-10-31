@@ -2,7 +2,7 @@
 #include "Graphics/Drawable/IDrawable.h"
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
-#include <kui/Rendering/Shader.h>
+#include "Objects/SceneObject.h"
 
 namespace engine
 {
@@ -17,5 +17,20 @@ namespace engine
 		graphics::Framebuffer* Buffer = nullptr;
 		std::vector<graphics::IDrawable*> Drawables;
 		graphics::Camera* Cam = nullptr;
+		std::vector<SceneObject*> Objects;
+
+		static Scene* GetMain();
+
+		template<typename T>
+		T* CreateObject()
+		{
+			T* New = SceneObject::New<T>(this);
+			this->Objects.push_back(New);
+			return New;
+		}
+
+		void Save(string FileName);
+	private:
+		SerializedValue GetSceneInfo();
 	};
 }

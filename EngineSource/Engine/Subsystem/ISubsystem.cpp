@@ -1,30 +1,30 @@
-#include "Subsystem.h"
+#include "ISubsystem.h"
 #include <iostream>
 #include <array>
 #include <Engine/Engine.h>
 using namespace engine::subsystem;
 
-Subsystem::Subsystem(const char* Name)
+ISubsystem::ISubsystem(const char* Name)
 {
 	Engine::Instance->LoadedSystems.push_back(this);
 	this->Name = Name;
 	Print("Creating subsystem: " + string(Name), LogType::Note);
 }
 
-Subsystem::~Subsystem()
+ISubsystem::~ISubsystem()
 {
 	Print("Destroying subsystem: " + string(Name), LogType::Note);
 }
 
-void Subsystem::Update()
+void ISubsystem::Update()
 {
 }
 
-void Subsystem::RenderUpdate()
+void ISubsystem::RenderUpdate()
 {
 }
 
-void Subsystem::Print(string Message, LogType Severity)
+void ISubsystem::Print(string Message, LogType Severity)
 {
 	static std::array<const char*, 5> SeverityStrings =
 	{
@@ -41,9 +41,9 @@ void Subsystem::Print(string Message, LogType Severity)
 	std::cout << "[" << SeverityStrings[size_t(Severity)] << "]: [" << DisplayedName << "]: "  << Message << std::endl;
 }
 
-void engine::subsystem::Subsystem::SubsystemDependsOn(const type_info& Type, string Name)
+void ISubsystem::SubsystemDependsOn(const std::type_info& Type, string Name)
 {
-	for (Subsystem* i : Engine::Instance->LoadedSystems)
+	for (ISubsystem* i : Engine::Instance->LoadedSystems)
 	{
 		if (Type == typeid(*i))
 		{

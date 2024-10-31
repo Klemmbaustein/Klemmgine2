@@ -1,6 +1,7 @@
 #include "BinarySerializer.h"
 #include <fstream>
 #include <iostream>
+#include <cstring>
 using namespace engine;
 
 const string engine::BinarySerializer::FormatVersion = "0";
@@ -55,7 +56,7 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 		break;
 	case engine::SerializedData::DataType::Array:
 	{
-		uint32 Size = uint32(Out.size());
+		uint32 Size = uint32(Target.GetArray().size());
 		CopyTo(&Size, sizeof(Size), Out);
 		for (const SerializedValue& i : Target.GetArray())
 		{
@@ -83,7 +84,7 @@ void BinarySerializer::ToFile(const std::vector<SerializedData>& Target, string 
 	Out.close();
 }
 
-SerializedData engine::BinarySerializer::FromFile(string File, string FormatIdentifier)
+std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, string FormatIdentifier)
 {
 	std::streampos FileSize = 0;
 	std::ifstream In = std::ifstream(File, std::ios::binary);
@@ -97,16 +98,86 @@ SerializedData engine::BinarySerializer::FromFile(string File, string FormatIden
 	In.seekg(0, std::ios::beg);
 	In.read((char*)Stream.Bytes.data(), FileSize);
 	In.close();
-	
+
 	string FormatName = ReadString(Stream);
 	string ExpectedFormat = FormatIdentifier + "/" + FormatVersion;
 	if (FormatName != ExpectedFormat)
 	{
 		std::cerr << "File read error: Attempted to read '" << File << "' with format '" << ExpectedFormat << "' but the file has format '" << FormatName << "'" << std::endl;
-		return SerializedData();
+		return {};
 	}
 
-	return SerializedData();
+	int32 Length = Stream.Get<int32>();
+
+	std::vector<SerializedData> Out;
+
+	for (int32 i = 0; i < Length; i++)
+	{
+		Out.push_back(ReadSerializedData(Stream));
+	}
+
+	return Out;
+}
+
+SerializedData engine::BinarySerializer::ReadSerializedData(BinaryStream& From)
+{
+	string Name = ReadString(From);
+
+	return SerializedData(Name, ReadValue(From));
+}
+
+SerializedValue engine::BinarySerializer::ReadValue(BinaryStream& From)
+{
+	auto Type = From.Get<SerializedData::DataType>();
+
+	switch (Type)
+	{
+	case SerializedData::DataType::Int32:
+		return From.Get<int32>();
+
+	case SerializedData::DataType::Byte:
+		return From.Get<uByte>();
+
+	case SerializedData::DataType::Boolean:
+		return SerializedValue(bool(From.Get<uByte>()));
+
+	case SerializedData::DataType::Float:
+		return From.Get<float>();
+
+	case SerializedData::DataType::Vector3:
+		return From.Get<Vector3>();
+
+	case SerializedData::DataType::String:
+		return ReadString(From);
+
+	case SerializedData::DataType::Array:
+	{
+		std::vector<SerializedValue> Out;
+		int32 Length = From.Get<int32>();
+		for (int32 i = 0; i < Length; i++)
+		{
+			Out.push_back(ReadValue(From));
+		}
+
+		return Out;
+	}
+
+	case SerializedData::DataType::Object:
+	{
+		std::vector<SerializedData> Out;
+		int32 Length = From.Get<int32>();
+		for (int32 i = 0; i < Length; i++)
+		{
+			Out.push_back(ReadSerializedData(From));
+		}
+
+		return Out;
+	}
+
+	case SerializedData::DataType::None:
+	default:
+		return SerializedValue();
+	}
 }
 
 void BinarySerializer::WriteString(string Str, std::vector<uByte>& Out)
@@ -134,7 +205,7 @@ uByte engine::BinarySerializer::BinaryStream::GetByte()
 	return Bytes[StreamPos++];
 }
 
-bool engine::BinarySerializer::BinaryStream::Empty()
+bool engine::BinarySerializer::BinaryStream::Empty() const
 {
 	return Bytes.size() <= StreamPos;
 }

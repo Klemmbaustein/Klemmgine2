@@ -1,10 +1,10 @@
 #pragma once
-#include "Subsystem.h"
+#include "ISubsystem.h"
 #include <kui/Window.h>
 
 namespace engine::subsystem
 {
-	class VideoSubsystem : public Subsystem
+	class VideoSubsystem : public ISubsystem
 	{
 	public:
 		VideoSubsystem();
