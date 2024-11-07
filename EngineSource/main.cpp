@@ -12,7 +12,6 @@ int32 EngineMain(int argc, char** argv)
 
 	auto Object = Scene::GetMain()->CreateObject<MeshObject>();
 	Object->Name = "Test Object";
-	Scene::GetMain()->Save("test.kscn");
 
 	Instance->Run();
 	

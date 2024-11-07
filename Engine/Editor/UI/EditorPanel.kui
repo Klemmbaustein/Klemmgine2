@@ -3,13 +3,15 @@ element EditorPanelTab
 	var Title;
 	var Selected = false;
 	var Color;
+	var BorderColor = 1;
 	var BorderSize = 1;
 	var PaddingSize = -1;
 
 	child UIButton mainButton
 	{
 		color = Color;
-		borderColor = Color_Highlight1;
+		borderColor = BorderColor;
+		verticalAlign = centered;
 
 		border = BorderSize;
 		borderSizeMode = px;
@@ -22,7 +24,7 @@ element EditorPanelTab
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
 
-		rightPadding = 2px;
+		rightPadding = 4px;
 		downPadding = PaddingSize;
 
 		child UIText
@@ -31,6 +33,14 @@ element EditorPanelTab
 			size = 12px;
 			color = Color_Text;
 			text = Title;
+		}
+
+		child UIButton closeButton
+		{
+			color = Color_Text;
+			size = 12px;
+			rightPadding = 4px;
+			image = "file:Engine/Editor/Assets/X.png";
 		}
 	}
 }
@@ -42,8 +52,9 @@ element EditorPanelElement
 	orientation = vertical;
 	verticalAlign = default;
 	
-	child UIBackground
+	child UIBackground panelBackground
 	{
+		orientation = vertical;
 		color = Color_Background;
 		borderColor = Color_Highlight1;
 
@@ -52,7 +63,7 @@ element EditorPanelElement
 		topLeftCorner = false;
 		topRightCorner = false;
 		
-		minSize = Size;
+		size = Size;
 	}
 
 	child UIBackground tabBox
@@ -61,24 +72,10 @@ element EditorPanelElement
 		corners = 5px;
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
-		minSize = (0, 25)px;
-		maxSize = (99999999, 25)px;
+		minSize = (0, 26)px;
+		maxSize = (99999999, 26)px;
 
 		tryFill = true;
 		color = Color_DarkBackground;
-		child EditorPanelTab
-		{
-			Title = "Assets";
-			Selected = true;
-			Color = Color_HighlightDark;
-		}
-		child EditorPanelTab
-		{
-			Title = "Classes";
-			Selected = false;
-			Color = Color_DarkBackground;
-			PaddingSize = 0;
-			BorderSize = 0;
-		}
 	}
 }

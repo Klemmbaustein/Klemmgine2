@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Engine.h>
+#include <Engine/Input.h>
 #include <Engine/Stats.h>
 using namespace kui;
 
@@ -54,8 +55,6 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 			OnResized();
 		};
 
-	MainWindow->Markup.SetDefaultFont(new Font("res:DefaultFont.ttf"));
-
 	MainWindow->UI.DrawToWindow = false;
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, this);
@@ -72,6 +71,11 @@ void engine::subsystem::VideoSubsystem::Update()
 	{
 		Engine::Instance->ShouldQuit = true;
 	}
+	input::IsLMBDown = MainWindow->Input.IsLMBDown;
+	input::IsLMBClicked = MainWindow->Input.IsLMBClicked;
+	input::IsRMBDown = MainWindow->Input.IsRMBDown;
+	input::IsRMBClicked = MainWindow->Input.IsRMBClicked;
+
 	stats::DeltaTime = MainWindow->GetDeltaTime();
 	stats::Time += stats::DeltaTime;
 }

@@ -1,0 +1,25 @@
+element StatusBarElement
+{
+	var Icon = "Engine/Editor/Assets/Warn.png";
+	var Text = "No default scene - Loading empty...";
+
+	tryFill = true;
+	size = 24px;
+
+	verticalAlign = centered;
+
+	child UIBackground
+	{
+		size = 16px;
+		image = Icon;
+		leftPadding = 8px;
+		rightPadding = 8px;
+		color = Color_Text;
+	}
+	child UIText
+	{
+		size = 12px;
+		text = Text;
+		color = Color_Text;
+	}
+}

@@ -1,0 +1,23 @@
+element MenuBarButton
+{
+	var Name;
+
+	child UIButton button
+	{
+		minSize = (24, 20)px;
+		leftPadding = 4px;
+		color = Color_LightBackground;
+		verticalAlign = centered;
+
+		corners = 5px;
+
+		child UIText
+		{
+			size = 12px;
+			color = Color_Text;
+			padding = 4px;
+
+			text = Name;
+		}
+	}
+}

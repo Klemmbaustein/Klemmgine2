@@ -56,6 +56,15 @@ Vector3 engine::Vector3::Up(Vector3 EulerRotation)
 	return GetScaledAxis(EulerRotation, 1);
 }
 
+Vector3 engine::Vector3::Cross(Vector3 a, Vector3 b)
+{
+	return Vector3(
+		a.Y * b.Z - b.Y * a.Z,
+		a.Z * b.X - b.Z * a.X,
+		a.X * b.Y - b.X * a.Y
+	);
+}
+
 typedef Vector3 Axes[3];
 static void copy(const Axes& from, Axes& to)
 {

@@ -1,0 +1,90 @@
+element ItemBrowserHeading
+{
+	var PathText;
+	var PathWrapping;
+
+	tryFill = true;
+	orientation = vertical;
+	child UIBox
+	{
+		tryFill = true;
+		orientation = horizontal;
+		verticalAlign = centered;
+		child UIButton backButton
+		{
+			size = 24px;
+			padding = 6px;
+			color = Color_Text;
+			image = "Engine/Editor/Assets/ExitFolder.png"
+		}
+		child UIText
+		{
+			size = 12px;
+			color = Color_Text;
+			padding = 6px;
+			text = PathText;
+			wrap = PathWrapping;
+		}
+	}
+	child UITextField searchBox
+	{
+		tryFill = true;
+		color = Color_DarkBackground;
+		textColor = Color_Text;
+		hintText = "Search";
+		textSize = 12px;
+		padding = 4px;
+		corners = 5px;
+	}
+
+	child UIBackground
+	{
+		tryFill = true;
+		size = 1px;
+		padding = 1px;
+		color = Color_LightBackground;
+	}
+}
+
+element ItemBrowserButton
+{
+	var Name;
+	var Color = (1, 0, 0);
+	var Image;
+
+	child UIButton button
+	{
+		leftPadding = 10px;
+		upPadding = 10px;
+		color = Color_DarkBackground;
+		size = (80, 120)px;
+		orientation = vertical;
+
+		corners = 5px;
+
+		child UIBackground
+		{
+			corners = 5px;
+			color = Color;
+			size = 72px;
+			padding = 4px;
+			downPadding = 2;
+			allAlign = centered;
+
+			child UIBackground
+			{
+				size = 66px;
+				image = Image;
+				color = 1;
+			}
+		}
+		child UIText
+		{
+			text = Name;
+			wrap = 76px;
+			padding = 2px;
+			upPadding = 0;
+			size = 10px;
+		}
+	}
+}

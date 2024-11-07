@@ -545,5 +545,10 @@ namespace engine::input
 	extern bool ShowMouseCursor;
 	extern Vector2 MouseMovement;
 
+	extern bool IsLMBDown;
+	extern bool IsLMBClicked;
+	extern bool IsRMBDown;
+	extern bool IsRMBClicked;
+
 	bool IsKeyDown(Key k);
 }

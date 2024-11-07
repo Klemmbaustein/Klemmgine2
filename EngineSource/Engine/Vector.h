@@ -22,6 +22,8 @@ namespace engine
 		static Vector3 Right(Vector3 EulerRotation);
 		static Vector3 Up(Vector3 EulerRotation);
 
+		static Vector3 Cross(Vector3 a, Vector3 b);
+
 		static Vector3 GetScaledAxis(Vector3 Rotation, uint32 Direction);
 
 		Vector3 operator+(const Vector3& Other);
