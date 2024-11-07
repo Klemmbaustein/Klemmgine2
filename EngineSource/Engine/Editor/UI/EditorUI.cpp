@@ -64,7 +64,7 @@ engine::editor::EditorUI::EditorUI()
 					DropdownMenu::Option{
 					.OnClicked = []() {abort(); },
 					.Name = "Testing 2",
-					} }, btn->button->GetPosition());
+					} }, btn->GetPosition());
 			};
 		MenuBar->AddChild(btn);
 	}

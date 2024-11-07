@@ -22,7 +22,8 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 
 void engine::editor::ItemBrowser::Update()
 {
-	ItemsScrollBox->SetMinSize(Background->GetUsedSize() - Vec2f(0, Heading->GetUsedSize().Y));
+	ItemsScrollBox->SetMinSize(Background->GetUsedSize() - Vec2f(0, Heading->GetUsedSize().Y)
+		- Vec2f(0, UIBox::PixelSizeToScreenSize(25, ItemsScrollBox->GetParentWindow()).Y));
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
 	Heading->SetPathWrapping(Background->GetUsedSize().X - UIBox::PixelSizeToScreenSize(60, Background->GetParentWindow()).X);
 

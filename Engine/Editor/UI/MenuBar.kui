@@ -1,11 +1,11 @@
 element MenuBarButton
 {
 	var Name;
+	leftPadding = 4px;
 
 	child UIButton button
 	{
 		minSize = (24, 20)px;
-		leftPadding = 4px;
 		color = Color_LightBackground;
 		verticalAlign = centered;
 
