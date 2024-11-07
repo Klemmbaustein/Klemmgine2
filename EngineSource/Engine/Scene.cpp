@@ -11,16 +11,24 @@
 engine::Scene::Scene()
 {
 	using namespace graphics;
-	Buffer = new Framebuffer();
+	using namespace subsystem;
+
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+
+	kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
+	Buffer = new Framebuffer(uint64(BufferSize.X), uint64(BufferSize.Y));
 
 	Cam = new Camera(1);
 	Cam->Position.Z = 2;
 	Cam->Rotation.Y = 3.14f / -2.0f;
 
-	Engine::GetSubsystem<subsystem::VideoSubsystem>()->OnResizedCallbacks.push_back(
+	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
+
+	VideoSystem->OnResizedCallbacks.push_back(
 		[this](kui::Vec2ui NewSize)
 		{
 			Buffer->Resize(NewSize.X, NewSize.Y);
+			Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
 		});
 }
 

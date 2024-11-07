@@ -3,10 +3,11 @@
 #include "Engine/Engine.h"
 #include <gl/glew.h>
 
-engine::graphics::Framebuffer::Framebuffer()
+engine::graphics::Framebuffer::Framebuffer(int64 Width, int64 Height)
 {
-	kui::Vec2ui Size = Engine::GetSubsystem<subsystem::VideoSubsystem>()->MainWindow->GetSize();
-	Resize(Size.X, Size.Y);
+	this->Width = Width;
+	this->Height = Height;
+	Resize(Width, Height);
 }
 engine::graphics::Framebuffer::~Framebuffer()
 {
@@ -16,6 +17,8 @@ engine::graphics::Framebuffer::~Framebuffer()
 
 void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 {
+	this->Width = NewWidth;
+	this->Height = NewHeight;
 	if (Buffer)
 	{
 		glDeleteFramebuffers(1, &Buffer);

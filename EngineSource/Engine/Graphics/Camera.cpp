@@ -8,7 +8,7 @@ engine::graphics::Camera::Camera(float FOV)
 
 void engine::graphics::Camera::Update()
 {
-	Projection = glm::perspective(1.25f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	Projection = glm::perspective(1.25f, Aspect, 0.1f, 1000.0f);
 
 	Vector3 Forward = Vector3::Forward(Rotation * Vector3(1, 1, 0));
 	Vector3 Up = Vector3::Up(Rotation);
