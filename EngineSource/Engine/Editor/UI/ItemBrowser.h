@@ -30,6 +30,7 @@ namespace engine::editor
 		void OnResized() override;
 
 		void UpdateItems();
+		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
 		virtual std::vector<Item> GetItems() = 0;
 		virtual void Back() = 0;
 	};

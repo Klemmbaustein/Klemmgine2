@@ -37,6 +37,7 @@ void engine::editor::ItemBrowser::Update()
 				return;
 			}
 		}
+		this->OnBackgroundRightClick();
 	}
 }
 void engine::editor::ItemBrowser::OnResized()
