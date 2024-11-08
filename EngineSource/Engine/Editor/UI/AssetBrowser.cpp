@@ -87,4 +87,8 @@ void engine::editor::AssetBrowser::Back()
 	Path = Path.substr(0, LastSlash);
 	UpdateItems();
 }
+void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
+{
+	new DropdownMenu({DropdownMenu::Option{.Name = "New..."}}, Position);
+}
 #endif

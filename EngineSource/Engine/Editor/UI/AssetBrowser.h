@@ -9,5 +9,6 @@ namespace engine::editor
 		AssetBrowser();
 		std::vector<Item> GetItems() override;
 		void Back() override;
+		void OnBackgroundRightClick(kui::Vec2f Position) override;
 	};
 }

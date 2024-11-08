@@ -1,6 +1,7 @@
 #ifdef EDITOR
 #include "ItemBrowser.h"
 #include <iostream>
+#include <kui/Window.h>
 #include <Engine/Input.h>
 using namespace kui;
 
@@ -37,7 +38,7 @@ void engine::editor::ItemBrowser::Update()
 				return;
 			}
 		}
-		this->OnBackgroundRightClick();
+		this->OnBackgroundRightClick(ItemsScrollBox->GetParentWindow()->Input.MousePosition);
 	}
 }
 void engine::editor::ItemBrowser::OnResized()
