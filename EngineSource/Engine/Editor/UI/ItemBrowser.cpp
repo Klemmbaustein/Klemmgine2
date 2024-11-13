@@ -1,6 +1,6 @@
 #ifdef EDITOR
 #include "ItemBrowser.h"
-#include <iostream>
+#include "EditorUI.h"
 #include <kui/Window.h>
 #include <Engine/Input.h>
 using namespace kui;
@@ -24,21 +24,37 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 void engine::editor::ItemBrowser::Update()
 {
 	ItemsScrollBox->SetMinSize(Background->GetUsedSize() - Vec2f(0, Heading->GetUsedSize().Y)
-		- Vec2f(0, UIBox::PixelSizeToScreenSize(25, ItemsScrollBox->GetParentWindow()).Y));
+		- UIBox::PixelSizeToScreenSize(Vec2f(1, 25), ItemsScrollBox->GetParentWindow()));
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
 	Heading->SetPathWrapping(Background->GetUsedSize().X - UIBox::PixelSizeToScreenSize(60, Background->GetParentWindow()).X);
 
-	if (input::IsRMBClicked)
+	bool ScrollBoxHovered = ItemsScrollBox->IsBeingHovered();
+
+	if (input::IsLMBClicked && ScrollBoxHovered)
 	{
-		for (auto& i : Buttons)
+		auto* Hovered = GetHoveredButton();
+		if (!Hovered)
 		{
-			if (i.second->IsBeingHovered() && i.first.OnRightClick)
+			for (auto& i : Buttons)
 			{
-				i.first.OnRightClick();
-				return;
+				i.first.Selected = false;
 			}
+			DisplayList();
 		}
-		this->OnBackgroundRightClick(ItemsScrollBox->GetParentWindow()->Input.MousePosition);
+	}
+
+	if (input::IsRMBClicked && ScrollBoxHovered)
+	{
+		auto* Hovered = GetHoveredButton();
+
+		if (Hovered)
+		{
+			Hovered->first.OnRightClick();
+		}
+		else
+		{
+			this->OnBackgroundRightClick(ItemsScrollBox->GetParentWindow()->Input.MousePosition);
+		}
 	}
 }
 void engine::editor::ItemBrowser::OnResized()
@@ -49,11 +65,27 @@ void engine::editor::ItemBrowser::OnResized()
 void engine::editor::ItemBrowser::UpdateItems()
 {
 	Heading->SetPathText("Assets/" + Path);
-	ItemsScrollBox->DeleteChildren();
+
 	Buttons.clear();
+	CurrentItems = GetItems();
+	DisplayList();
 
-	std::vector<Item> NewItems = GetItems();
+}
+std::pair<engine::editor::ItemBrowser::Item, ItemBrowserButton*>* engine::editor::ItemBrowser::GetHoveredButton()
+{
+	for (auto& i : Buttons)
+	{
+		if (i.second->IsBeingHovered() && i.first.OnRightClick)
+		{
+			return &i;
+		}
+	}
 
+	return nullptr;
+}
+void engine::editor::ItemBrowser::DisplayList()
+{
+	ItemsScrollBox->DeleteChildren();
 	UIBox* CurrentBox = new UIBox(true, 0);
 	ItemsScrollBox->AddChild(CurrentBox);
 
@@ -65,14 +97,17 @@ void engine::editor::ItemBrowser::UpdateItems()
 		return;
 
 	size_t Column = 0;
-	for (size_t i = 0; i < NewItems.size(); i++)
+	Buttons.resize(CurrentItems.size());
+	for (size_t i = 0; i < CurrentItems.size(); i++)
 	{
-		Item NewItem = NewItems[i];
+		Item NewItem = CurrentItems[i];
+		NewItem.Selected = Buttons[i].first.Selected;
 
 		if (!Filter.empty() && NewItem.Name.find(Filter) == std::string::npos)
 			continue;
 
 		auto* btn = new ItemBrowserButton();
+		btn->SetBackgroundColor(NewItem.Selected ?  EditorUI::Theme.HighlightDark : EditorUI::Theme.DarkBackground);
 		btn->SetColor(NewItem.Color);
 		btn->SetName(NewItem.Name);
 		btn->SetImage(NewItem.Image);
@@ -88,15 +123,18 @@ void engine::editor::ItemBrowser::UpdateItems()
 						}
 					}
 					Buttons[i].first.Selected = true;
+					DisplayList();
 				}
 				else
 				{
 					Buttons[i].first.Selected = false;
 					if (Buttons[i].first.OnClick)
 						Buttons[i].first.OnClick();
+					DisplayList();
 				}
 			};
-		Buttons.push_back({ NewItem, btn });
+
+		Buttons[i] = { NewItem, btn };
 		CurrentBox->AddChild(btn);
 
 		Column++;

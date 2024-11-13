@@ -23,6 +23,7 @@ namespace engine
 			Vector3,
 			String,
 			Array,
+			BinaryTypedArray,
 			Object
 		};
 

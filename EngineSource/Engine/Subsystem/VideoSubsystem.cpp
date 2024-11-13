@@ -86,10 +86,15 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 
 	if (SceneSystem)
 	{
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+		glClearColor(0, 0, 0, 1);
 		for (Scene* scn : SceneSystem->LoadedScenes)
 		{
 			scn->Draw();
 		}
+		glEnable(GL_BLEND);
+		glDisable(GL_DEPTH_TEST);
 	}
 
 	auto PostProcess = MainWindow->Shaders.LoadShader("shader/postProcess.vert", "shader/drawToWindow.frag", "engineToWindow");
@@ -98,7 +103,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	PostProcess->Bind();
 	glActiveTexture(GL_TEXTURE0);
 	if (SceneSystem && SceneSystem->Main)
-		glBindTexture(GL_TEXTURE_2D, SceneSystem->Main->Buffer->Texture);
+		glBindTexture(GL_TEXTURE_2D, SceneSystem->Main->Buffer->Textures[0]);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[0]);
 	glActiveTexture(GL_TEXTURE2);

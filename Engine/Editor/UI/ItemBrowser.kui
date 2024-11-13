@@ -50,13 +50,14 @@ element ItemBrowserButton
 {
 	var Name;
 	var Color = (1, 0, 0);
+	var BackgroundColor = 0;
 	var Image;
 
 	child UIButton button
 	{
 		leftPadding = 10px;
 		upPadding = 10px;
-		color = Color_DarkBackground;
+		color = BackgroundColor;
 		size = (80, 120)px;
 		orientation = vertical;
 

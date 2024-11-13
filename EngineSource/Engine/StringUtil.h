@@ -8,6 +8,7 @@ namespace engine
 
 	namespace str
 	{
-		std::vector<std::string> Split(string Target, const string& Delim);
+		std::vector<string> Split(string Target, const string& Delim);
+		string ReplaceChar(string Target, char c, char With);
 	}
 }

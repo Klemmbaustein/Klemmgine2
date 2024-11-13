@@ -11,7 +11,7 @@ namespace engine
 		static const string FormatVersion;
 
 		static void ToBinaryData(const std::vector<SerializedData>& Target, std::vector<uByte>& Out, string FormatIdentifier = "k2b");
-		static void ValueToBinaryData(const SerializedValue& Target, std::vector<uByte>& Out);
+		static void ValueToBinaryData(const SerializedValue& Target, std::vector<uByte>& Out, SerializedData::DataType Type = SerializedData::DataType::None);
 
 		static void ToFile(const std::vector<SerializedData>& Target, string FileName, string FormatIdentifier = "k2b");
 
@@ -37,7 +37,7 @@ namespace engine
 		};
 
 		static SerializedData ReadSerializedData(BinaryStream& From);
-		static SerializedValue ReadValue(BinaryStream& From);
+		static void ReadValue(BinaryStream& From, SerializedValue& To, SerializedData::DataType Type = SerializedData::DataType::None);
 
 		static void WriteString(string Str, std::vector<uByte>& Out);
 		static void CopyTo(void* Data, size_t Size, std::vector<uByte>& Out);

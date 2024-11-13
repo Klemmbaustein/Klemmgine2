@@ -356,7 +356,7 @@ void kui::systemWM::SysWindow::UpdateEvents()
 			Parent->Close();
 			break;
 		case SDL_EVENT_MOUSE_WHEEL:
-			Parent->Input.MoveMouseWheel(ev.wheel.y);
+			Parent->Input.MoveMouseWheel(int(ev.wheel.y));
 			break;
 		case SDL_EVENT_KEY_DOWN:
 			HandleKey(ev.key.key, true);

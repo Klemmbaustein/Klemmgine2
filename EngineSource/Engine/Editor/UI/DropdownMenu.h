@@ -12,6 +12,7 @@ namespace engine::editor
 		{
 			std::function<void()> OnClicked;
 			string Name;
+			bool Separator = false;
 		};
 
 		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position);
@@ -20,7 +21,7 @@ namespace engine::editor
 		static void UpdateDropdowns();
 
 		kui::UIBox* Box = nullptr;
-
+		static void Clear();
 	private:
 		static DropdownMenu* Current;
 	};

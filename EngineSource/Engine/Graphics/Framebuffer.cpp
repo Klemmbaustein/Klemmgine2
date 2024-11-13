@@ -12,7 +12,7 @@ engine::graphics::Framebuffer::Framebuffer(int64 Width, int64 Height)
 engine::graphics::Framebuffer::~Framebuffer()
 {
 	glDeleteFramebuffers(1, &Buffer);
-	glDeleteTextures(1, &Texture);
+	glDeleteTextures(NUM_TEXTURES, Textures);
 }
 
 void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
@@ -22,13 +22,13 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 	if (Buffer)
 	{
 		glDeleteFramebuffers(1, &Buffer);
-		glDeleteTextures(1, &Texture);
+		glDeleteTextures(NUM_TEXTURES, Textures);
 	}
 
 	glGenFramebuffers(1, &Buffer);
-	glGenTextures(1, &Texture);
+	glGenTextures(NUM_TEXTURES, Textures);
 
-	glBindTexture(GL_TEXTURE_2D, Texture);
+	glBindTexture(GL_TEXTURE_2D, Textures[0]);
 	glTexImage2D(GL_TEXTURE_2D, 0,
 		GL_RGBA16F, GLsizei(NewWidth), GLsizei(NewHeight), 0, GL_RGBA,
 		GL_FLOAT, 0);
@@ -39,8 +39,16 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, Color);
 
+	glBindTexture(GL_TEXTURE_2D, Textures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, GLsizei(NewWidth), GLsizei(NewHeight), 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
 	Bind();
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Textures[0], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, Textures[1], 0);
 	Unbind();
 }
 void engine::graphics::Framebuffer::Bind() const

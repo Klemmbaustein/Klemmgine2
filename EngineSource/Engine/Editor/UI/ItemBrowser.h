@@ -17,10 +17,11 @@ namespace engine::editor
 		{
 			string Name;
 			bool Selected = false;
+			bool IsDirectory = false;
+			kui::Vec3f Color;
 			std::function<void()> OnRightClick;
 			std::function<void()> OnClick;
 			string Image;
-			kui::Vec3f Color;
 		};
 
 		std::vector<std::pair<Item, ItemBrowserButton*>> Buttons;
@@ -33,5 +34,9 @@ namespace engine::editor
 		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
 		virtual std::vector<Item> GetItems() = 0;
 		virtual void Back() = 0;
+	private:
+		std::pair<Item, ItemBrowserButton*>* GetHoveredButton();
+		std::vector<Item> CurrentItems;
+		void DisplayList();
 	};
 }

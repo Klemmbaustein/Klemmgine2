@@ -6,7 +6,10 @@ namespace engine::graphics
 	class Framebuffer
 	{
 	public:
-		uint32 Buffer = 0, Texture = 0;
+		static constexpr size_t NUM_TEXTURES = 2;
+
+		uint32 Buffer = 0;
+		uint32 Textures[NUM_TEXTURES];
 		int64 Width = 0, Height = 0;
 
 		Framebuffer(int64 Width, int64 Height);

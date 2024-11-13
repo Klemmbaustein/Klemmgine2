@@ -1,6 +1,7 @@
 #include "StringUtil.h"
+#include <iostream>
 
-std::vector<std::string> engine::str::Split(string Target, const string& Delim)
+std::vector<engine::string> engine::str::Split(string Target, const string& Delim)
 {
 	std::vector<std::string> Out;
 
@@ -19,4 +20,16 @@ std::vector<std::string> engine::str::Split(string Target, const string& Delim)
 	Out.push_back(Target);
 
 	return Out;
+}
+
+engine::string engine::str::ReplaceChar(string Target, char c, char With)
+{
+	for (char& it : Target)
+	{
+		if (it == c)
+		{
+			it = With;
+		}
+	}
+	return Target;
 }

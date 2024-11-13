@@ -22,18 +22,17 @@ Engine* Engine::Init()
 
 	internal::AdjustWorkingDirectory();
 
-	Engine* New = new Engine();
-	Instance = New;
+	Instance = new Engine();
 
-	New->LoadSubsystem(new VideoSubsystem());
-	New->LoadSubsystem(new InputSubsystem());
-	New->LoadSubsystem(new SceneSubsystem());
+	Instance->LoadSubsystem(new VideoSubsystem());
+	Instance->LoadSubsystem(new InputSubsystem());
+	Instance->LoadSubsystem(new SceneSubsystem());
 
 #ifdef EDITOR
-	New->LoadSubsystem(new EditorSubsystem());
+	Instance->LoadSubsystem(new EditorSubsystem());
 #endif
 
-	return New;
+	return Instance;
 }
 
 void Engine::Run()

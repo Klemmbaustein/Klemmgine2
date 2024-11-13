@@ -39,7 +39,7 @@ void engine::SerializedData::DataValue::CopyFrom(const DataValue& From)
 
 void engine::SerializedData::DataValue::Free() const
 {
-	if (Type == DataType::Array)
+	if (Type == DataType::Array || Type == DataType::BinaryTypedArray)
 	{
 		delete Array;
 	}

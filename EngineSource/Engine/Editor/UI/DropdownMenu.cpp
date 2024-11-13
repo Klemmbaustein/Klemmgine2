@@ -6,6 +6,12 @@
 #include <iostream>
 using namespace kui;
 
+void engine::editor::DropdownMenu::Clear()
+{
+	delete Current;
+	Current = nullptr;
+}
+
 engine::editor::DropdownMenu* engine::editor::DropdownMenu::Current = nullptr;
 
 engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position)
@@ -20,11 +26,17 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 
 	for (auto i = Options.begin(); i < Options.end(); i++)
 	{
+		auto& OnClicked = i->OnClicked;
 		Box
-			->AddChild((new UIButton(true, 0, EditorUI::Theme.LightBackground, i->OnClicked))
+			->AddChild((new UIButton(true, 0, EditorUI::Theme.LightBackground, [OnClicked]() 
+				{
+					if (OnClicked)
+						OnClicked();
+					Clear();
+				}))
 				->SetBorder(1, UIBox::SizeMode::PixelRelative)
 				->SetBorderColor(EditorUI::Theme.DarkBackground)
-				->SetBorderEdges(i == Options.begin(), i == Options.end() - 1, true, true)
+				->SetBorderEdges(i == Options.begin(), i == Options.end() - 1 || i->Separator, true, true)
 				->SetMinSize(Vec2f(150, 24))
 				->SetVerticalAlign(UIBox::Align::Centered)
 				->SetSizeMode(UIBox::SizeMode::PixelRelative)
@@ -55,11 +67,10 @@ engine::editor::DropdownMenu::~DropdownMenu()
 
 void engine::editor::DropdownMenu::UpdateDropdowns()
 {
-	if (Current 
+	if (Current
 		&& (((input::IsLMBClicked || input::IsRMBClicked) && !Current->Box->IsBeingHovered())
-		|| input::IsKeyDown(input::Key::ESCAPE)))
+			|| input::IsKeyDown(input::Key::ESCAPE)))
 	{
-		delete Current;
-		Current = nullptr;
+		Clear();
 	}
 }

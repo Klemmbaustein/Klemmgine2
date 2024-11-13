@@ -14,6 +14,7 @@ static const std::map<engine::SerializedData::DataType, engine::string> TypeName
 	{ engine::SerializedData::DataType::Vector3, "vec3" },
 	{ engine::SerializedData::DataType::String, "str" },
 	{ engine::SerializedData::DataType::Array, "array" },
+	{ engine::SerializedData::DataType::BinaryTypedArray, "typed_array" },
 	{ engine::SerializedData::DataType::Object, "obj" },
 };
 
@@ -100,6 +101,7 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 	case SerializedData::DataType::String:
 		Stream << "\"" << EscapeString(Target.GetString()) << "\"";
 		break;
+	case SerializedData::DataType::BinaryTypedArray:
 	case SerializedData::DataType::Array:
 	{
 		Stream << "[\n";
@@ -205,6 +207,7 @@ engine::SerializedValue engine::TextSerializer::ReadValue(std::istream& Stream, 
 	case engine::SerializedData::DataType::String:
 		return ReadString(Stream);
 
+	case SerializedData::DataType::BinaryTypedArray:
 	case engine::SerializedData::DataType::Array:
 	{
 		std::vector<SerializedValue> Array;

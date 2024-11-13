@@ -50,19 +50,19 @@ void engine::Scene::Update()
 {
 	if (input::IsKeyDown(input::Key::w))
 	{
-		Cam->Position += Vector3::Forward(Cam->Rotation) * Vector3(stats::DeltaTime);
+		Cam->Position += Vector3::Forward(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
 	}
 	if (input::IsKeyDown(input::Key::s))
 	{
-		Cam->Position -= Vector3::Forward(Cam->Rotation) * Vector3(stats::DeltaTime);
+		Cam->Position -= Vector3::Forward(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
 	}
 	if (input::IsKeyDown(input::Key::d))
 	{
-		Cam->Position += Vector3::Right(Cam->Rotation) * Vector3(stats::DeltaTime);
+		Cam->Position += Vector3::Right(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
 	}
 	if (input::IsKeyDown(input::Key::a))
 	{
-		Cam->Position -= Vector3::Right(Cam->Rotation) * Vector3(stats::DeltaTime);
+		Cam->Position -= Vector3::Right(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
 	}
 
 	Cam->Rotation = Cam->Rotation + Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
