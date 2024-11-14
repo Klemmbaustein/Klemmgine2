@@ -8,6 +8,7 @@
 #include "Platform.h"
 
 static std::mutex EventsMutex;
+static std::mutex WindowCreateMutex;
 
 std::vector<kui::systemWM::SysWindow*> ActiveWindows;
 
@@ -15,15 +16,33 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	Window* Parent, Vec2ui Size, Vec2ui Pos, std::string Title, Window::WindowFlag Flags)
 {
 	engine::internal::platform::Init();
-
-	std::lock_guard g{ EventsMutex };
+	
+	std::lock_guard g{ WindowCreateMutex };
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
-	OutWindow->SDLWindow = SDL_CreateWindow(Title.c_str(), int(Size.X), int(Size.Y), SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+
+	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL;
+
+	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
+	{
+		SDLFlags |= SDL_WINDOW_RESIZABLE;
+	}
+
+	if ((Flags & Window::WindowFlag::AlwaysOnTop) == Window::WindowFlag::AlwaysOnTop)
+	{
+		SDLFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
+	}
+
+	OutWindow->SDLWindow = SDL_CreateWindow(Title.c_str(), int(Size.X), int(Size.Y), SDLFlags);
 
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
-	ActiveWindows.push_back(OutWindow);
+	{
+		std::lock_guard gev{ EventsMutex };
+		ActiveWindows.push_back(OutWindow);
+		OutWindow->IsMain = ActiveWindows.empty();
+	}
+
 	SDL_StartTextInput(OutWindow->SDLWindow);
 	SDL_SetTextInputArea(OutWindow->SDLWindow, NULL, 0);
 
@@ -40,6 +59,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 void kui::systemWM::DestroyWindow(SysWindow* Target)
 {
+	std::lock_guard g{ WindowCreateMutex };
 	for (SDL_Cursor* Cursor : Target->WindowCursors)
 	{
 		SDL_DestroyCursor(Cursor);
@@ -52,7 +72,12 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 
 void kui::systemWM::SwapWindow(SysWindow* Target)
 {
-	// Don't swap, the engine does that elsewhere.
+	if (!Target->IsMain)
+	{
+		SDL_GL_SetSwapInterval(1);
+		SDL_GL_SwapWindow(Target->SDLWindow);
+	}
+	// Don't swap the main window, the engine does that elsewhere.
 }
 
 void kui::systemWM::WaitFrame(SysWindow* Target, float RemainingTime)
@@ -78,13 +103,12 @@ void kui::systemWM::SetWindowIcon(SysWindow* Target, uint8_t* Bytes, size_t Widt
 void kui::systemWM::UpdateWindow(SysWindow* Target)
 {
 	{
-		std::lock_guard g{ EventsMutex };
-		
 		SDL_Event ev;
 		SDL_Window* LastWindow = nullptr;
 		SDL_WindowID LastID = 0;
 		while (SDL_PollEvent(&ev))
 		{
+			std::lock_guard g{ EventsMutex };
 			for (auto& i : ActiveWindows)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)

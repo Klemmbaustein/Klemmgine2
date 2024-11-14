@@ -8,6 +8,8 @@
 using namespace engine::subsystem;
 using namespace kui;
 
+engine::editor::Viewport* engine::editor::Viewport::Current = nullptr;
+
 engine::editor::Viewport::Viewport()
 	: EditorPanel("Viewport", "viewport")
 {
@@ -29,7 +31,7 @@ engine::editor::Viewport::Viewport()
 		->SetSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetVerticalAlign(UIBox::Align::Centered);
 
-	ViewportStatusText = new UIText(12, 0.8f, "STATUS HERE", EditorUI::EditorFont);
+	ViewportStatusText = new UIText(12, 0.8f, "", EditorUI::EditorFont);
 	ViewportStatusText
 		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetPadding(4)
@@ -40,6 +42,7 @@ engine::editor::Viewport::Viewport()
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
 	RedrawStats = true;
+	Current = this;
 }
 
 void engine::editor::Viewport::OnResized()

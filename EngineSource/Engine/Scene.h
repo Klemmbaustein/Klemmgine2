@@ -1,5 +1,4 @@
 #pragma once
-#include "Graphics/Drawable/IDrawable.h"
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
 #include "Objects/SceneObject.h"
@@ -15,7 +14,6 @@ namespace engine
 		void Update();
 
 		graphics::Framebuffer* Buffer = nullptr;
-		std::vector<graphics::IDrawable*> Drawables;
 		graphics::Camera* Cam = nullptr;
 		std::vector<SceneObject*> Objects;
 

@@ -22,6 +22,10 @@ Scene* engine::SceneObject::GetScene()
 	return OriginScene;
 }
 
+void engine::SceneObject::Draw(graphics::Camera* Cam)
+{
+}
+
 void engine::SceneObject::Begin()
 {
 }

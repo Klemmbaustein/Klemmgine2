@@ -7,7 +7,7 @@
 #include <kui/Window.h>
 #include <Engine/Editor/ModelConverter.h>
 #include <algorithm>
-#include <iostream>
+#include "Windows/ProgressBar.h"
 #include <thread>
 
 static std::map<engine::string, kui::Vec3f> FileNameColors =
@@ -162,7 +162,17 @@ static void ImportThread(engine::string CurrentPath)
 	string Extension = File.substr(File.find_last_of(".") + 1);
 
 	if (Contains(Extension, ModelExtensions))
-		modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{});
+	{
+		auto* Progress = new ProgressBar("Importing " + Extension + " file");
+		Progress->Progress = -1;
+		modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
+			.OnLoadStatusChanged = [Progress](string NewMessage)
+			{
+				Progress->SetMessage("Importing model: " + NewMessage);
+			}
+			});
+		Progress->Close();
+	}
 }
 
 static void Import(engine::string CurrentPath)
@@ -181,9 +191,14 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			DropdownMenu::Option{.Name = "New scene"},
 			DropdownMenu::Option{.Name = "New material", .Separator = true},
 			DropdownMenu::Option{.OnClicked = [this]()
-		{
-			platform::Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
-		}, .Name = "Open in file explorer"},
+			{
+#if WINDOWS
+				platform::Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
+#else
+
+			std::thread([this]() {platform::Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
+#endif
+			}, .Name = "Open in file explorer"},
 		},
 		Position);
 }

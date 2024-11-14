@@ -23,6 +23,6 @@ namespace engine::editor
 		kui::UIBox* Box = nullptr;
 		static void Clear();
 	private:
-		static DropdownMenu* Current;
+		static thread_local DropdownMenu* Current;
 	};
 }

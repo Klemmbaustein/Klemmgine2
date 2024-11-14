@@ -1,0 +1,51 @@
+element LoadingBarElement
+{
+	var LoadingText = "Loading...";
+	var BarLeftPadding = 0;
+	var BarRightPadding = 0;
+
+	position = -1;
+	size = 2;
+
+	child UIBackground
+	{
+		color = Color_Background;
+		size = 2;
+		orientation = vertical;
+
+		child UIBox
+		{
+			child UIText
+			{
+				text = LoadingText;
+				size = 13px;
+				padding = 10px;
+			}
+		}
+
+		child UIBackground bar
+		{
+			tryFill = true;
+			size = 25px;
+			padding = 10px;
+			color = Color_DarkBackground;
+			orientation = vertical;
+			border = 1px;
+			borderColor = Color_HighlightDark;
+
+			corners = 5px;
+
+			child UIBackground
+			{
+				border = 1px;
+				borderColor = Color_HighlightDark;
+				color = Color_Highlight1;
+				corners = 5px;
+				tryFill = true;
+				size = 25px;
+				leftPadding = BarLeftPadding;
+				rightPadding = BarRightPadding;
+			}
+		}
+	}
+}

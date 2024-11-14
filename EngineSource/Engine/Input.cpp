@@ -5,10 +5,10 @@
 bool engine::input::ShowMouseCursor = false;
 engine::Vector2 engine::input::MouseMovement = 0;
 
-extern bool engine::input::IsLMBDown = false;
-extern bool engine::input::IsLMBClicked = false;
-extern bool engine::input::IsRMBDown = false;
-extern bool engine::input::IsRMBClicked = false;
+bool engine::input::IsLMBDown = false;
+bool engine::input::IsLMBClicked = false;
+bool engine::input::IsRMBDown = false;
+bool engine::input::IsRMBClicked = false;
 
 bool engine::input::IsKeyDown(Key k)
 {

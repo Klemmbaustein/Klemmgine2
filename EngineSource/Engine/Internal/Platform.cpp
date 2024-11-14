@@ -183,4 +183,10 @@ void engine::internal::platform::Execute(string Command)
 	system(Command.c_str());
 }
 
+engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
+{
+	// TODO: implement
+	return "";
+}
+
 #endif

@@ -33,8 +33,10 @@ void engine::editor::EditorPanel::UpdateLayout()
 	GenerateTabs();
 	if (PanelElement)
 	{
-		PanelElement->SetSize(UsedSizeToPanelSize(UsedSize));
-		PanelElement->SetPosition(PositionToPanelPosition(Position));
+		Size = UsedSizeToPanelSize(UsedSize);
+		PanelElement->SetSize(Size);
+		PanelPosition = PositionToPanelPosition(Position);
+		PanelElement->SetPosition(PanelPosition);
 	}
 	OnResized();
 

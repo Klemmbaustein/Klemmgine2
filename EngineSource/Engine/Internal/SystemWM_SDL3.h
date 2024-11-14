@@ -10,6 +10,7 @@ namespace kui::systemWM
 	class SysWindow
 	{
 	public:
+		bool IsMain = false;
 		SDL_Window* SDLWindow = nullptr;
 		Window* Parent = nullptr;
 		SDL_GLContext GLContext;

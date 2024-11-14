@@ -13,6 +13,10 @@ int32 EngineMain(int argc, char** argv)
 	auto Object = Scene::GetMain()->CreateObject<MeshObject>();
 	Object->Name = "Test Object";
 
+	auto Object2 = Scene::GetMain()->CreateObject<MeshObject>();
+	Object->Name = "Test Object2";
+	Object->Position = Vector3(0, 20, 0);
+
 	Instance->Run();
 	
 	return 0;

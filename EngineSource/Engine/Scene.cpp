@@ -7,6 +7,20 @@
 #include "Stats.h"
 #include <Engine/File/TextSerializer.h>
 #include <Engine/File/BinarySerializer.h>
+#include <Engine/Subsystem/EditorSubsystem.h>
+#include <Engine/Editor/UI/Viewport.h>
+
+#if EDITOR
+
+static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
+{
+	using namespace engine;
+
+	kui::Vec2f ViewportSize = editor::Viewport::Current->ViewportBackground->GetUsedSize();
+
+	return kui::Vec2i(int64(float(FromSize.X * ViewportSize.X / 2)), int64(float(FromSize.Y * ViewportSize.Y / 2)));
+}
+#endif
 
 engine::Scene::Scene()
 {
@@ -16,7 +30,13 @@ engine::Scene::Scene()
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
 	kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
-	Buffer = new Framebuffer(uint64(BufferSize.X), uint64(BufferSize.Y));
+#if EDITOR
+	if (EditorSubsystem::Active)
+	{
+		BufferSize = GetEditorSize(BufferSize);
+	}
+#endif
+	Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
 
 	Cam = new Camera(1);
 	Cam->Position.Z = 2;
@@ -27,6 +47,15 @@ engine::Scene::Scene()
 	VideoSystem->OnResizedCallbacks.push_back(
 		[this](kui::Vec2ui NewSize)
 		{
+#if EDITOR
+			if (EditorSubsystem::Active)
+			{
+				auto Size = GetEditorSize(NewSize);
+				Buffer->Resize(Size.X, Size.Y);
+				Cam->Aspect = float(Size.X) / float(Size.Y);
+				return;
+			}
+#endif
 			Buffer->Resize(NewSize.X, NewSize.Y);
 			Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
 		});
@@ -40,9 +69,11 @@ void engine::Scene::Draw()
 
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	for (graphics::IDrawable* i : Drawables)
+	glViewport(0, 0, Buffer->Width, Buffer->Height);
+	for (SceneObject* i : Objects)
 	{
-		i->Draw(Cam);
+		if (i->HasVisuals)
+			i->Draw(Cam);
 	}
 }
 

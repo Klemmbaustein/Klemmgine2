@@ -20,6 +20,8 @@ namespace engine::editor
 		bool RedrawStats = false;
 		uint64 FameCount = 0;
 
+		static Viewport* Current;
+
 		void OnResized() override;
 		void Update() override;
 	};

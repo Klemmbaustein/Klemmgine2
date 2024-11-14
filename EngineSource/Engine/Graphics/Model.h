@@ -1,20 +1,23 @@
 #pragma once
-#include "IDrawable.h"
 #include <Engine/Graphics/VertexBuffer.h>
 #include <Engine/Graphics/ShaderObject.h>
-#include <Engine/File/ModelData.h>
+#include <Engine/Graphics/Camera.h>
+
+namespace engine
+{
+	struct ModelData;
+}
 
 namespace engine::graphics
 {
-	class Model : public IDrawable
+	class Model
 	{
 	public:
-		Model(ModelData* From);
+		Model(const ModelData* From);
 		~Model();
 
-		ShaderObject* ModelShader;
 		std::vector<VertexBuffer*> ModelVertexBuffer;
 
-		virtual void Draw(Camera* With) override;
+		virtual void Draw(Vector3 At, Camera* With, ShaderObject* UsedShader);
 	};
 }

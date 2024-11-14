@@ -75,7 +75,7 @@ std::pair<engine::editor::ItemBrowser::Item, ItemBrowserButton*>* engine::editor
 {
 	for (auto& i : Buttons)
 	{
-		if (i.second->IsBeingHovered() && i.first.OnRightClick)
+		if (i.second && i.second->IsBeingHovered() && i.first.OnRightClick)
 		{
 			return &i;
 		}

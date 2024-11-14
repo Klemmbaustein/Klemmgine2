@@ -1,5 +1,6 @@
 #pragma once
 #include <Engine/File/SerializedData.h>
+#include <Engine/Graphics/Camera.h>
 
 namespace engine
 {
@@ -23,6 +24,9 @@ namespace engine
 		Scene* GetScene();
 
 	protected:
+		bool HasVisuals = false;
+
+		virtual void Draw(graphics::Camera* From);
 		virtual ~SceneObject()
 		{
 		}

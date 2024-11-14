@@ -9,10 +9,13 @@ namespace engine::subsystem
 	{
 	public:
 		EditorSubsystem();
+		virtual ~EditorSubsystem() override;
 
 		virtual void Update() override;
 		
 		editor::EditorUI* UI;
+
+		static bool Active;
 	};
 }
 #endif

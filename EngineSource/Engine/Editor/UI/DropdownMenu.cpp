@@ -12,7 +12,7 @@ void engine::editor::DropdownMenu::Clear()
 	Current = nullptr;
 }
 
-engine::editor::DropdownMenu* engine::editor::DropdownMenu::Current = nullptr;
+thread_local engine::editor::DropdownMenu* engine::editor::DropdownMenu::Current = nullptr;
 
 engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position)
 {

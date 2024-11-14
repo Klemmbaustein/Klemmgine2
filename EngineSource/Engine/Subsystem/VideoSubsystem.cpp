@@ -3,10 +3,13 @@
 #include <kui/App.h>
 #include <SDL3/SDL.h>
 #include <GL/glew.h>
+#include "EditorSubsystem.h"
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
+#include <Engine/Editor/UI/Viewport.h>
+#include <iostream>
 using namespace kui;
 
 static void GLAPIENTRY MessageCallback(
@@ -93,6 +96,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 		{
 			scn->Draw();
 		}
+		glViewport(0, 0, MainWindow->GetSize().X, MainWindow->GetSize().Y);
 		glEnable(GL_BLEND);
 		glDisable(GL_DEPTH_TEST);
 	}
@@ -108,9 +112,26 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[0]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[1]);
+
 	PostProcess->SetInt("u_texture", 0);
 	PostProcess->SetInt("u_ui", 1);
 	PostProcess->SetInt("u_alpha", 2);
+
+#if EDITOR
+	if (EditorSubsystem::Active)
+	{
+		editor::Viewport* View = editor::Viewport::Current;
+
+		PostProcess->SetVec2("u_pos", View->ViewportBackground->GetScreenPosition() / 2 + 0.5);
+		PostProcess->SetVec2("u_size", View->ViewportBackground->GetUsedSize() / 2);
+	}
+	else
+#endif
+	{
+		PostProcess->SetVec2("u_pos", 0);
+		PostProcess->SetVec2("u_size", 1);
+	}
+
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	SDL_GL_SetSwapInterval(1);
 	SDL_GL_SwapWindow(GetSysWindow(MainWindow)->SDLWindow);

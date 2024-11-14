@@ -1,7 +1,9 @@
 #include "ModelData.h"
 #include "BinarySerializer.h"
+#include <filesystem>
 
 const engine::string FormatName = "kmdl";
+std::unordered_map<engine::string, engine::GraphicsModel> engine::GraphicsModel::Models;
 
 engine::ModelData::ModelData(string FilePath)
 {
@@ -95,4 +97,44 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	{
 		Indices.push_back(i.GetInt());
 	}
+}
+
+void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name)
+{
+	Models.insert({ Name, GraphicsModel{
+		.Data = new ModelData(Mesh),
+		.Drawable = new Model(&Mesh),
+		.References = 1,
+		} });
+}
+
+void engine::GraphicsModel::RegisterModel(string AssetPath)
+{
+	ModelData* New = new ModelData(AssetPath);
+
+	Models.insert({ AssetPath, GraphicsModel{
+		.Data = New,
+		.Drawable = new Model(New),
+		.References = 1,
+		} });
+}
+
+engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
+{
+	auto Found = Models.find(NameOrPath);
+	if (Found == Models.end())
+	{
+		if (std::filesystem::exists(NameOrPath))
+		{
+			RegisterModel(NameOrPath);
+			Found = Models.find(NameOrPath);
+		}
+		else
+			return nullptr;
+	}
+	return &Found->second;
+}
+
+void engine::GraphicsModel::UnloadModel(ModelData* Target)
+{
 }

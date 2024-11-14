@@ -3,6 +3,8 @@
 #include <vector>
 #include <Engine/Graphics/Vertex.h>
 #include <Engine/File/SerializedData.h>
+#include <Engine/Graphics/Model.h>
+#include <unordered_map>
 
 namespace engine
 {
@@ -30,5 +32,19 @@ namespace engine
 		virtual void DeSerialize(SerializedValue* From) override;
 
 		std::vector<Mesh> Meshes;
+	};
+
+	struct GraphicsModel
+	{
+		ModelData* Data = nullptr;
+		graphics::Model* Drawable = nullptr;
+		size_t References;
+
+		static void RegisterModel(const ModelData& Mesh, string Name);
+		static void RegisterModel(string AssetPath);
+		static GraphicsModel* GetModel(string NameOrPath);
+		static void UnloadModel(ModelData* Target);
+	private:
+		static std::unordered_map<string, GraphicsModel> Models;
 	};
 }
