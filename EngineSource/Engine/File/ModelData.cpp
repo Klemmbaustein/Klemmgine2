@@ -1,7 +1,10 @@
 #include "ModelData.h"
 #include "BinarySerializer.h"
 #include <filesystem>
+#include <mutex>
+#include <Engine/MainThread.h>
 
+std::mutex ModelDataMutex;
 const engine::string FormatName = "kmdl";
 std::unordered_map<engine::string, engine::GraphicsModel> engine::GraphicsModel::Models;
 
@@ -17,7 +20,7 @@ engine::ModelData::ModelData()
 
 void engine::ModelData::ToFile(string FilePath)
 {
-	BinarySerializer::ToFile({ SerializedData("meshes", Serialize())}, FilePath, FormatName);
+	BinarySerializer::ToFile({ SerializedData("meshes", Serialize()) }, FilePath, FormatName);
 }
 
 engine::SerializedValue engine::ModelData::Serialize()
@@ -101,26 +104,52 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 
 void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name)
 {
-	Models.insert({ Name, GraphicsModel{
-		.Data = new ModelData(Mesh),
-		.Drawable = new Model(&Mesh),
-		.References = 1,
+	std::lock_guard g{ ModelDataMutex };
+	if (thread::IsMainThread)
+	{
+		Models.insert({ Name, GraphicsModel{
+			.Data = new ModelData(Mesh),
+			.Drawable = new Model(&Mesh),
+			.References = 1,
 		} });
+	}
+	else
+	{
+		Models.insert({ Name, GraphicsModel{
+			.Data = new ModelData(Mesh),
+			.Drawable = nullptr,
+			.References = 1,
+			} });
+	}
+
 }
 
 void engine::GraphicsModel::RegisterModel(string AssetPath)
 {
 	ModelData* New = new ModelData(AssetPath);
+	std::lock_guard g{ ModelDataMutex };
 
-	Models.insert({ AssetPath, GraphicsModel{
-		.Data = New,
-		.Drawable = new Model(New),
-		.References = 1,
+	if (thread::IsMainThread)
+	{
+		Models.insert({ AssetPath, GraphicsModel{
+			.Data = New,
+			.Drawable = new Model(New),
+			.References = 1,
 		} });
+	}
+	else
+	{
+		Models.insert({ AssetPath, GraphicsModel{
+			.Data = New,
+			.Drawable = nullptr,
+			.References = 1,
+		} });
+	}
 }
 
 engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
 {
+	std::lock_guard g{ ModelDataMutex };
 	auto Found = Models.find(NameOrPath);
 	if (Found == Models.end())
 	{
@@ -132,6 +161,12 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
 		else
 			return nullptr;
 	}
+
+	if (Found->second.Drawable == nullptr)
+	{
+		Found->second.Drawable = new Model(Found->second.Data);
+	}
+
 	return &Found->second;
 }
 

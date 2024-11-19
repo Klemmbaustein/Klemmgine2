@@ -3,9 +3,10 @@
 #include <Windows.h>
 #include <ShObjIdl_core.h>
 #include <algorithm>
-#include <iostream>
 #include <filesystem>
 #include <functiondiscoverykeys.h>
+#include <map>
+#include <iostream>
 
 void engine::internal::platform::Init()
 {
@@ -50,6 +51,25 @@ static std::wstring StrToWstr(const std::string& str)
 	std::wstring OutStr = wstr;
 	delete[] wstr;
 	return OutStr;
+}
+
+void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
+{
+	static std::map<Log::LogColor, WORD> WindowsColors =
+	{
+		std::pair(Log::LogColor::Default, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED),
+		std::pair(Log::LogColor::White, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY),
+		std::pair(Log::LogColor::Gray, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED),
+		std::pair(Log::LogColor::Red, FOREGROUND_RED | FOREGROUND_INTENSITY),
+		std::pair(Log::LogColor::Green,FOREGROUND_GREEN | FOREGROUND_INTENSITY),
+		std::pair(Log::LogColor::Cyan, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY),
+		std::pair(Log::LogColor::Blue, FOREGROUND_BLUE | FOREGROUND_INTENSITY),
+		std::pair(Log::LogColor::Yellow, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY),
+	};
+	static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	std::cout.flush();
+	SetConsoleTextAttribute(hConsole, WindowsColors[NewColor]);
 }
 
 engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
@@ -173,6 +193,22 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 }
 
 #else
+
+void OS::SetConsoleColor(Log::LogColor NewColor)
+{
+	static std::map<Log::LogColor, const char*> ColorCodes =
+	{
+		std::pair(Log::LogColor::Default, "39"),
+		std::pair(Log::LogColor::White, "97"),
+		std::pair(Log::LogColor::Gray, "39"),
+		std::pair(Log::LogColor::Red, "91"),
+		std::pair(Log::LogColor::Green, "92"),
+		std::pair(Log::LogColor::Blue, "94"),
+		std::pair(Log::LogColor::Yellow, "93"),
+	};
+
+	std::cout << "\033[" << ColorCodes[NewColor] << "m";
+}
 
 void engine::internal::platform::Init()
 {

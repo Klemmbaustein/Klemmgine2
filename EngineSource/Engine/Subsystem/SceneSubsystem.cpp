@@ -1,10 +1,13 @@
 #include "SceneSubsystem.h"
+#include <Engine/MainThread.h>
+#include <thread>
+
+engine::subsystem::SceneSubsystem* engine::subsystem::SceneSubsystem::Current = nullptr;
 
 engine::subsystem::SceneSubsystem::SceneSubsystem()
-	: ISubsystem("Scene")
+	: ISubsystem("Scene", Log::LogColor::Green)
 {
-	LoadedScenes.push_back(new Scene());
-	Main = LoadedScenes[0];
+	Current = this;
 }
 
 engine::subsystem::SceneSubsystem::~SceneSubsystem()
@@ -14,6 +17,16 @@ engine::subsystem::SceneSubsystem::~SceneSubsystem()
 		delete scn;
 	}
 	LoadedScenes.clear();
+	Current = nullptr;
+}
+
+void engine::subsystem::SceneSubsystem::LoadSceneAsync(string SceneName)
+{
+	Print(str::Format("Loading scene asynchronously: %s", SceneName.c_str()), LogType::Info);
+
+	std::thread([this, SceneName]() {
+		LoadSceneThread(SceneName);
+		}).detach();
 }
 
 void engine::subsystem::SceneSubsystem::Update()
@@ -22,4 +35,17 @@ void engine::subsystem::SceneSubsystem::Update()
 	{
 		scn->Update();
 	}
+}
+
+void engine::subsystem::SceneSubsystem::LoadSceneThread(string SceneName)
+{
+	Scene* New = new Scene(true);
+
+	New->LoadAsync(SceneName);
+
+	thread::ExecuteOnMainThread([this, SceneName, New]() {
+		Print(str::Format("Finished loading scene: %s", SceneName.c_str()));
+		New->LoadAsyncFinish();
+		Main = New;
+		});
 }

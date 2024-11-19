@@ -1,5 +1,6 @@
 #pragma once
 #include <Engine/Types.h>
+#include <Engine/Log.h>
 #include <vector>
 
 namespace engine::internal::platform
@@ -14,5 +15,7 @@ namespace engine::internal::platform
 		std::vector<string> FileTypes;
 	};
 
+	void SetConsoleColor(Log::LogColor NewColor);
+	
 	string OpenFileDialog(std::vector<FileDialogFilter> Filters);
 }

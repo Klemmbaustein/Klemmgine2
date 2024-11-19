@@ -2,8 +2,10 @@
 #include "Subsystem/VideoSubsystem.h"
 #include "Subsystem/EditorSubsystem.h"
 #include "Subsystem/InputSubsystem.h"
+#include "Subsystem/ConsoleSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
-#include "Engine/Internal/WorkingDirectory.h"
+#include "Internal/WorkingDirectory.h"
+#include "MainThread.h"
 using namespace engine;
 using namespace engine::subsystem;
 
@@ -23,7 +25,10 @@ Engine* Engine::Init()
 	internal::AdjustWorkingDirectory();
 
 	Instance = new Engine();
+	
+	thread::IsMainThread = true;
 
+	Instance->LoadSubsystem(new ConsoleSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());
@@ -43,6 +48,7 @@ void Engine::Run()
 		{
 			System->Update();
 		}
+		thread::MainThreadUpdate();
 		for (ISubsystem* System : LoadedSystems)
 		{
 			System->RenderUpdate();

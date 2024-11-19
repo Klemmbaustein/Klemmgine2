@@ -7,6 +7,8 @@ engine::graphics::Framebuffer::Framebuffer(int64 Width, int64 Height)
 {
 	this->Width = Width;
 	this->Height = Height;
+	Textures[0] = 0;
+	Textures[1] = 0;
 	Resize(Width, Height);
 }
 engine::graphics::Framebuffer::~Framebuffer()

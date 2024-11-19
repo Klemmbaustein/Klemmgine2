@@ -2,6 +2,7 @@
 #include <Engine/File/ModelData.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <Engine/File/FileUtil.h>
 #include <assimp/postprocess.h>
 using namespace engine;
 using namespace engine::editor::modelConverter;
@@ -110,8 +111,10 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 		Options.OnLoadStatusChanged("Saving");
 	}
 
-	ctx.Data->ToFile(OutDir + "/importTest.kmdl");
+	string OutFileName = file::FileNameWithoutExt(ModelPath) + ".kmdl";
+
+	ctx.Data->ToFile(OutDir + OutFileName);
 
 	delete ctx.Data;
-	return string();
+	return OutDir + OutFileName;
 }

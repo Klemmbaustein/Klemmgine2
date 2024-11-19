@@ -51,7 +51,7 @@ void main()
 		discard;
 	}
 
-	f_color = vec4(u_color, 1);
+	f_color = vec4(u_color, u_opacity);
 	if (u_drawCorner && (u_cornerFlags & (1 << cornerIndex)) != 0
 		&& (centeredTexCoords.y >= scale.y - u_cornerScale) && (centeredTexCoords.x >= scale.x - u_cornerScale))
 	{
@@ -66,4 +66,5 @@ void main()
 	}
 	f_alpha.xyz = vec3(0);
 	f_alpha.w = f_color.w;
+	f_color.w = 0;
 }

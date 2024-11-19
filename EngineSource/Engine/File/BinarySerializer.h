@@ -8,7 +8,7 @@ namespace engine
 	class BinarySerializer
 	{
 	public:
-		static const string FormatVersion;
+		static const string FORMAT_VERSION;
 
 		static void ToBinaryData(const std::vector<SerializedData>& Target, std::vector<uByte>& Out, string FormatIdentifier = "k2b");
 		static void ValueToBinaryData(const SerializedValue& Target, std::vector<uByte>& Out, SerializedData::DataType Type = SerializedData::DataType::None);

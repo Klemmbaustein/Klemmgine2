@@ -14,9 +14,9 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	Background->AddChild(ItemsScrollBox);
 
 	Heading->backButton->OnClicked = [this]() { Back(); };
-	Heading->searchBox->OnClickedFunction = [this]()
+	Heading->searchBox->field->OnClickedFunction = [this]()
 		{
-			Filter = Heading->searchBox->GetText();
+			Filter = Heading->searchBox->field->GetText();
 			UpdateItems();
 		};
 }
@@ -60,6 +60,8 @@ void engine::editor::ItemBrowser::Update()
 void engine::editor::ItemBrowser::OnResized()
 {
 	Background->UpdateElement();
+	Heading->searchBox->field->SetSizeMode(UIBox::SizeMode::ScreenRelative);
+	Heading->searchBox->SetSize(Vec2f(Size.X, 0) + UIBox::PixelSizeToScreenSize(Vec2f(-33, 22), Heading->GetParentWindow()));
 	UpdateItems();
 }
 void engine::editor::ItemBrowser::UpdateItems()

@@ -11,10 +11,17 @@ namespace engine::subsystem
 		SceneSubsystem();
 		virtual ~SceneSubsystem() override;
 
+		void LoadSceneAsync(string SceneName);
+
 		void Update() override;
 
 		std::vector<Scene*> LoadedScenes;
 
 		Scene* Main = nullptr;
+
+		static SceneSubsystem* Current;
+
+	private:
+		void LoadSceneThread(string SceneName);
 	};
 }

@@ -38,11 +38,12 @@ namespace engine
 
 	private:
 		template<typename T>
-		static T* New(Scene* Scn)
+		static T* New(Scene* Scn, bool CallBegin)
 		{
 			T* Object = new T();
 			Object->OriginScene = Scn;
-			Object->Begin();
+			if (CallBegin)
+				Object->Begin();
 			return Object;
 		}
 

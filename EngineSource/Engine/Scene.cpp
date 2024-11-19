@@ -9,6 +9,11 @@
 #include <Engine/File/BinarySerializer.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Editor/UI/Viewport.h>
+#include <iostream>
+#include "Objects/MeshObject.h"
+#include "File/ModelData.h"
+
+std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
 #if EDITOR
 
@@ -18,47 +23,27 @@ static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
 
 	kui::Vec2f ViewportSize = editor::Viewport::Current->ViewportBackground->GetUsedSize();
 
-	return kui::Vec2i(int64(float(FromSize.X * ViewportSize.X / 2)), int64(float(FromSize.Y * ViewportSize.Y / 2)));
+	return kui::Vec2i(
+		int64(float(FromSize.X * ViewportSize.X / 2)),
+		int64(float(FromSize.Y * ViewportSize.Y / 2))
+	);
 }
 #endif
 
-engine::Scene::Scene()
+
+engine::Scene::Scene(bool DoLoadAsync)
 {
-	using namespace graphics;
-	using namespace subsystem;
-
-	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-
-	kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
-#if EDITOR
-	if (EditorSubsystem::Active)
+	if (!DoLoadAsync)
 	{
-		BufferSize = GetEditorSize(BufferSize);
+		Init();
 	}
-#endif
-	Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
+}
 
-	Cam = new Camera(1);
-	Cam->Position.Z = 2;
-	Cam->Rotation.Y = 3.14f / -2.0f;
+engine::Scene::Scene(string FilePath)
+{
+	SerializedValue Scene = TextSerializer::FromFile(FilePath);
 
-	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
-
-	VideoSystem->OnResizedCallbacks.push_back(
-		[this](kui::Vec2ui NewSize)
-		{
-#if EDITOR
-			if (EditorSubsystem::Active)
-			{
-				auto Size = GetEditorSize(NewSize);
-				Buffer->Resize(Size.X, Size.Y);
-				Cam->Aspect = float(Size.X) / float(Size.Y);
-				return;
-			}
-#endif
-			Buffer->Resize(NewSize.X, NewSize.Y);
-			Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
-		});
+	SerializedValue& Objects = Scene.At("objects");
 }
 
 void engine::Scene::Draw()
@@ -103,12 +88,46 @@ engine::Scene* engine::Scene::GetMain()
 {
 	using namespace subsystem;
 
-	SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
-
-	if (!SceneSystem)
+	if (!SceneSubsystem::Current)
 		return nullptr;
 
-	return SceneSystem->Main;
+	return SceneSubsystem::Current->Main;
+}
+
+void engine::Scene::OnResized(kui::Vec2ui NewSize)
+{
+	using namespace subsystem;
+
+#if EDITOR
+	if (EditorSubsystem::Active)
+	{
+		auto Size = GetEditorSize(NewSize);
+		Buffer->Resize(Size.X, Size.Y);
+		Cam->Aspect = float(Size.X) / float(Size.Y);
+		return;
+	}
+#endif
+	Buffer->Resize(NewSize.X, NewSize.Y);
+	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
+}
+
+void engine::Scene::LoadAsync(string SceneFile)
+{
+	AsyncLoads++;
+	GraphicsModel::RegisterModel("Assets/importTest.kmdl");
+	SceneObject* Object = SceneObject::New<MeshObject>(this, false);
+	Object->Name = "Test Object";
+	this->Objects.push_back(Object);
+}
+
+void engine::Scene::LoadAsyncFinish()
+{
+	AsyncLoads--;
+	Init();
+	for (SceneObject* obj : Objects)
+	{
+		obj->Begin();
+	}
 }
 
 void engine::Scene::Save(string FileName)
@@ -127,6 +146,36 @@ void engine::Scene::Save(string FileName)
 		});
 
 	TextSerializer::ToFile(Serialized.GetObject(), FileName);
+}
+
+void engine::Scene::Init()
+{
+	using namespace graphics;
+	using namespace subsystem;
+
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+
+	kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
+#if EDITOR
+	if (EditorSubsystem::Active)
+	{
+		BufferSize = GetEditorSize(BufferSize);
+	}
+#endif
+	Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
+
+	Cam = new Camera(1);
+	Cam->Position.Z = 2;
+	Cam->Rotation.Y = 3.14f / -2.0f;
+
+	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
+
+	VideoSystem->OnResizedCallbacks.push_back(
+		[this](kui::Vec2ui NewSize)
+		{
+			OnResized(NewSize);
+		});
+	SceneSubsystem::Current->LoadedScenes.push_back(this);
 }
 
 engine::SerializedValue engine::Scene::GetSceneInfo()

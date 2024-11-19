@@ -2,13 +2,16 @@
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
 #include "Objects/SceneObject.h"
+#include <kui/Vec2.h>
+#include <atomic>
 
 namespace engine
 {
 	class Scene
 	{
 	public:
-		Scene();
+		Scene(bool DoLoadAsync = false);
+		Scene(string FilePath);
 
 		void Draw();
 		void Update();
@@ -19,16 +22,24 @@ namespace engine
 
 		static Scene* GetMain();
 
+		void OnResized(kui::Vec2ui NewSize);
+
 		template<typename T>
 		T* CreateObject()
 		{
-			T* New = SceneObject::New<T>(this);
+			T* New = SceneObject::New<T>(this, true);
 			this->Objects.push_back(New);
 			return New;
 		}
 
+		static std::atomic<int32> AsyncLoads;
+
+		void LoadAsync(string SceneFile);
+		void LoadAsyncFinish();
+
 		void Save(string FileName);
 	private:
+		void Init();
 		SerializedValue GetSceneInfo();
 	};
 }

@@ -1,15 +1,18 @@
 #pragma once
 #include "Engine/Types.h"
 #include <typeinfo>
+#include <Engine/Log.h>
 
 namespace engine::subsystem
 {
 	class ISubsystem
 	{
 		const char* Name = "";
+	protected:
+		engine::Log::LogColor SubsystemColor = Log::LogColor::Blue;
 
 	public:
-		ISubsystem(const char* Name);
+		ISubsystem(const char* Name, engine::Log::LogColor Color);
 		virtual ~ISubsystem();
 
 		virtual void Update();

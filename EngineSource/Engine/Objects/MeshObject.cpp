@@ -42,5 +42,5 @@ engine::SerializedValue engine::MeshObject::Serialize()
 void engine::MeshObject::Begin()
 {
 	HasVisuals = true;
-	LoadMesh(Name);
+	LoadMesh(ModelName);
 }

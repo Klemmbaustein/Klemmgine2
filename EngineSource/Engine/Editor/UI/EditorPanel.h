@@ -45,8 +45,15 @@ namespace engine::editor
 		void GenerateTabs();
 		size_t SelectedTab = 0;
 
+		void SetFocused();
+
+	protected:
+		bool CanClose = true;
+
 	private:
+		void UpdateFocusState();
 		void AddTabFor(EditorPanel* Target, bool Selected);
+		std::vector<EditorPanelTab*> TabElements;
 		string Name;
 		Align ChildrenAlign = Align::Horizontal;
 		

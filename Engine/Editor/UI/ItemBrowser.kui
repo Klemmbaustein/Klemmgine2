@@ -26,15 +26,12 @@ element ItemBrowserHeading
 			wrap = PathWrapping;
 		}
 	}
-	child UITextField searchBox
+	child EditorTextField searchBox
 	{
-		tryFill = true;
-		color = Color_DarkBackground;
-		textColor = Color_Text;
-		hintText = "Search";
-		textSize = 12px;
-		padding = 4px;
-		corners = 5px;
+		HintText = "Search";
+		Image = "Engine/Editor/Assets/Search.png";
+		Size = (200, 22)px;
+		padding = 5px;
 	}
 
 	child UIBackground
@@ -42,7 +39,7 @@ element ItemBrowserHeading
 		tryFill = true;
 		size = 1px;
 		padding = 1px;
-		color = Color_LightBackground;
+		color = Color_BackgroundHighlight;
 	}
 }
 

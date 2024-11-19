@@ -29,7 +29,9 @@ element EditorPanelTab
 
 		child UIText
 		{
-			padding = 5px;
+			padding = 4px;
+			leftPadding = 6px;
+			rightPadding = 6px;
 			size = 12px;
 			color = Color_Text;
 			text = Title;
@@ -48,6 +50,7 @@ element EditorPanelTab
 element EditorPanelElement
 {
 	var Size;
+	var BorderColor;
 
 	orientation = vertical;
 	verticalAlign = default;
@@ -56,7 +59,7 @@ element EditorPanelElement
 	{
 		orientation = vertical;
 		color = Color_Background;
-		borderColor = Color_Highlight1;
+		borderColor = BorderColor;
 
 		border = 1px;
 		corners = 5px;
@@ -72,10 +75,10 @@ element EditorPanelElement
 		corners = 5px;
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
-		minSize = (0, 26)px;
-		maxSize = (99999999, 26)px;
+		minSize = (0, 24)px;
+		maxSize = (99999999, 24)px;
 
 		tryFill = true;
-		color = Color_DarkBackground;
+		color = Color_DarkBackground2;
 	}
 }

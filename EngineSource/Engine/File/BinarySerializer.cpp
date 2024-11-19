@@ -5,12 +5,12 @@
 #include <cmath>
 using namespace engine;
 
-const string engine::BinarySerializer::FormatVersion = "0";
+const string engine::BinarySerializer::FORMAT_VERSION = "0";
 void BinarySerializer::ToBinaryData(const std::vector<SerializedData>& Target, std::vector<uByte>& Out, string FormatIdentifier)
 {
 	if (!FormatIdentifier.empty())
 	{
-		WriteString(FormatIdentifier + "/" + FormatVersion, Out);
+		WriteString(FormatIdentifier + "/" + FORMAT_VERSION, Out);
 	}
 	uint32 Size = uint32(Target.size());
 	CopyTo(&Size, sizeof(Size), Out);
@@ -156,10 +156,11 @@ std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, stri
 	In.close();
 
 	string FormatName = ReadString(Stream);
-	string ExpectedFormat = FormatIdentifier + "/" + FormatVersion;
+	string ExpectedFormat = FormatIdentifier + "/" + FORMAT_VERSION;
 	if (FormatName != ExpectedFormat)
 	{
-		std::cerr << "File read error: Attempted to read '" << File << "' with format '" << ExpectedFormat << "' but the file has format '" << FormatName << "'" << std::endl;
+		std::cerr << str::Format("Attempted to read binary file '%s' with format '%s' but the file has format '%s'",
+			File.c_str(), ExpectedFormat.c_str(), FormatName.c_str());
 		return {};
 	}
 

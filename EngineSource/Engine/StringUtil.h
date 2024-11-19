@@ -10,5 +10,7 @@ namespace engine
 	{
 		std::vector<string> Split(string Target, const string& Delim);
 		string ReplaceChar(string Target, char c, char With);
+
+		string Format(string Format, ...);
 	}
 }

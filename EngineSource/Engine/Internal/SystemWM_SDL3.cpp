@@ -21,7 +21,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
 
-	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL;
+	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
 
 	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
 	{
@@ -35,6 +35,12 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 	OutWindow->SDLWindow = SDL_CreateWindow(Title.c_str(), int(Size.X), int(Size.Y), SDLFlags);
 
+	if ((Flags & Window::WindowFlag::Resizable) != Window::WindowFlag::Resizable)
+	{
+		SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
+	}
+
+	SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
 	{

@@ -1,5 +1,6 @@
 #include "StringUtil.h"
 #include <iostream>
+#include <cstdarg>
 
 std::vector<engine::string> engine::str::Split(string Target, const string& Delim)
 {
@@ -32,4 +33,29 @@ engine::string engine::str::ReplaceChar(string Target, char c, char With)
 		}
 	}
 	return Target;
+}
+
+engine::string engine::str::Format(string Format, ...)
+{
+	size_t Size = Format.size() + 50, NewSize = Size;
+	char* Buffer = nullptr;
+	do
+	{
+		Size = NewSize;
+		if (Buffer)
+		{
+			delete[] Buffer;
+		}
+		Buffer = new char[Size]();
+		va_list va;
+		va_start(va, Format);
+		NewSize = vsnprintf(Buffer, Size, Format.c_str(), va);
+		va_end(va);
+
+	} while (NewSize > Size);
+
+
+	string StrBuffer = Buffer;
+	delete[] Buffer;
+	return StrBuffer;
 }

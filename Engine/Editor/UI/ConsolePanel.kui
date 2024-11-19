@@ -1,0 +1,53 @@
+element ConsolePanelElement
+{
+	var LogSize;
+
+	tryFill = true;
+	orientation = vertical;
+	padding = 1px;
+
+	child UIBackground
+	{
+		color = Color_DarkBackground2;
+		orientation = vertical;
+		tryFill = true;
+		size = LogSize;
+
+		child UIScrollBox logBox
+		{
+			tryFill = true;
+			size = LogSize;
+			orientation = vertical;
+		}
+	}
+
+	child UIBackground
+	{
+		size = 1px;
+		tryFill = true;
+		color = Color_BackgroundHighlight;
+	}
+
+	child UIBox
+	{
+		verticalAlign = centered;
+		size = 32px;
+		tryFill = true;
+
+		child EditorTextField
+		{
+			HintText = "Execute command";
+			Size = (400, 22);
+			Image = "Engine/Editor/Assets/Command.png";
+			padding = 5px;
+		}
+
+		child EditorTextField
+		{
+			Size = (200, 22);
+			HintText = "Search log";
+			Image = "Engine/Editor/Assets/Search.png";
+			padding = 5px;
+		}
+	}
+}

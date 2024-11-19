@@ -9,6 +9,8 @@
 #include <algorithm>
 #include "Windows/ProgressBar.h"
 #include <thread>
+#include "EditorUI.h"
+#include <Engine/File/FileUtil.h>
 
 static std::map<engine::string, kui::Vec3f> FileNameColors =
 {
@@ -20,6 +22,7 @@ static std::map<engine::string, engine::string> FileNameIcons =
 {
 	{"kscn", ""},
 	{"", "Engine/Editor/Assets/Document.png"},
+	{"kmdl", "Engine/Editor/Assets/Model.png"},
 	{"<dir>", "Engine/Editor/Assets/Folder.png"},
 };
 
@@ -27,6 +30,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
 }
+
 std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems()
 {
 	std::vector<Item> Out;
@@ -40,7 +44,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 	{
 		string FilePath = i.path().string();
 
-		string Extension = i.path().has_extension() ? i.path().extension().string() : "";
+		string Extension = i.path().has_extension() ? i.path().extension().string().substr(1) : "";
 		std::function<void()> OnClick = nullptr;
 
 		if (i.is_directory())
@@ -85,7 +89,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			};
 
 		Out.push_back(Item{
-			.Name = i.path().filename().string(),
+			.Name = file::FileNameWithoutExt(i.path().filename().string()),
 			.IsDirectory = bool(i.is_directory()),
 			.Color = FileNameColors[i.is_directory() ? "<dir>" : ""],
 			.OnRightClick = OnRightClick,
@@ -149,7 +153,7 @@ static void ImportThread(engine::string CurrentPath)
 		},
 		platform::FileDialogFilter{
 			.Name = "Klemmgine 2 Assets",
-			.FileTypes = {"kmdl", "kscn"}
+			.FileTypes = {"kmdl", "kts",  "kbs"}
 		},
 		platform::FileDialogFilter{
 			.Name = "_ALL",
@@ -163,14 +167,16 @@ static void ImportThread(engine::string CurrentPath)
 
 	if (Contains(Extension, ModelExtensions))
 	{
+		EditorUI::SetStatusMessage(str::Format("Importing file: '%s'", File.c_str()), EditorUI::StatusType::Info);
 		auto* Progress = new ProgressBar("Importing " + Extension + " file");
 		Progress->Progress = -1;
-		modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
+		string Out = modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
 			.OnLoadStatusChanged = [Progress](string NewMessage)
 			{
 				Progress->SetMessage("Importing model: " + NewMessage);
 			}
 			});
+		EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", File.c_str(), Out.c_str()), EditorUI::StatusType::Info);
 		Progress->Close();
 	}
 }
@@ -183,7 +189,7 @@ static void Import(engine::string CurrentPath)
 
 void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
-	using namespace engine::internal;
+	using namespace engine::internal::platform;
 
 	new DropdownMenu(
 		{
@@ -193,10 +199,10 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			DropdownMenu::Option{.OnClicked = [this]()
 			{
 #if WINDOWS
-				platform::Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
+				Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
 #else
 
-			std::thread([this]() {platform::Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
+				std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
 #endif
 			}, .Name = "Open in file explorer"},
 		},

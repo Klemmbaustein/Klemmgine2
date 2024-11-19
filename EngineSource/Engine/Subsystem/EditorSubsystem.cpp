@@ -4,7 +4,7 @@
 bool engine::subsystem::EditorSubsystem::Active = false;
 
 engine::subsystem::EditorSubsystem::EditorSubsystem()
-	: ISubsystem("Editor")
+	: ISubsystem("Editor", Log::LogColor::Yellow)
 {
 	UI = new editor::EditorUI();
 	Active = true;

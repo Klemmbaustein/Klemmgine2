@@ -36,7 +36,7 @@ static systemWM::SysWindow* GetSysWindow(kui::Window* From)
 }
 
 engine::subsystem::VideoSubsystem::VideoSubsystem()
-	: ISubsystem("Video")
+	: ISubsystem("Video", Log::LogColor::Cyan)
 {
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 		{
@@ -108,6 +108,8 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	glActiveTexture(GL_TEXTURE0);
 	if (SceneSystem && SceneSystem->Main)
 		glBindTexture(GL_TEXTURE_2D, SceneSystem->Main->Buffer->Textures[0]);
+	else
+		glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[0]);
 	glActiveTexture(GL_TEXTURE2);

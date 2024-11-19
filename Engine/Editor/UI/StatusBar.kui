@@ -1,7 +1,7 @@
 element StatusBarElement
 {
-	var Icon = "Engine/Editor/Assets/Warn.png";
-	var Text = "No default scene - Loading empty...";
+	var Icon = "file:Engine/Editor/Assets/Info.png";
+	var Text = "";
 
 	tryFill = true;
 	size = 24px;

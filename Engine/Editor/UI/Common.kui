@@ -1,0 +1,49 @@
+element EditorTextField
+{
+	var Size;
+	var HintText;
+	var Image;
+
+	tryFill = true;
+	verticalAlign = centered;
+
+	child UITextField field
+	{
+		hintText = HintText;
+		size = Size;
+		sizeMode = px;
+		textSize = 11px;
+		color = Color_DarkBackground;
+		textColor = Color_Text;
+		rightPadding = 0;
+
+		border = 1px;
+		rightBorder = false;
+		borderColor = Color_LightBackground;
+
+		corners = 5px;
+		topRightCorner = false;
+		bottomRightCorner = false;
+	}
+	
+	child UIButton
+	{
+		size = 22px;
+		tryFill = true;
+		color = Color_DarkBackground;
+		corners = 5px;
+		topLeftCorner = false;
+		bottomLeftCorner = false;
+
+		border = 1px;
+		borderColor = Color_LightBackground;
+
+		child UIBackground
+		{
+			image = Image;
+			size = 12px;
+			padding = 5px;
+			color = Color_Text;
+		}
+	}
+}

@@ -1,4 +1,5 @@
 #include "IPopupWindow.h"
+#include <Engine/Editor/UI/EditorUI.h>
 #include <thread>
 
 void engine::editor::IPopupWindow::SetTitle(string NewTitle)
@@ -37,7 +38,9 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 
 	Popup = new Window(Name, Flags, Window::POSITION_CENTERED, Size);
 
-	DefaultFont = new kui::Font("res:DefaultFont.ttf");
+	EditorUI::UpdateTheme(Popup);
+
+	DefaultFont = new kui::Font(EditorUI::DefaultFontName);
 	Popup->Markup.SetDefaultFont(DefaultFont);
 
 	this->Begin();

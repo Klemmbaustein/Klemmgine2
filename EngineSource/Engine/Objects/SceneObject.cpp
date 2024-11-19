@@ -1,8 +1,10 @@
 #include "SceneObject.h"
+#include <iostream>
 using namespace engine;
 
 SerializedValue engine::SceneObject::Serialize()
 {
+	std::cout << Name << std::endl;
 	return SerializedValue({
 		SerializedData("position", Position),
 		SerializedData("name", Name),

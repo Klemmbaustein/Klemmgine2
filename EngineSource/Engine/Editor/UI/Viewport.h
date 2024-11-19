@@ -10,10 +10,6 @@ namespace engine::editor
 	{
 	public:
 		Viewport();
-
-		kui::UIBackground* ViewportBackground = nullptr;
-		kui::UIText* ViewportStatusText = nullptr;
-		kui::UIBox* StatusBarBox = nullptr;
 		bool MouseGrabbed = false;
 
 		kui::Timer StatsRedrawTimer;
@@ -24,6 +20,14 @@ namespace engine::editor
 
 		void OnResized() override;
 		void Update() override;
+		kui::UIBackground* ViewportBackground = nullptr;
+
+	private:
+
+		kui::UIBackground* ViewportToolbar = nullptr;
+		kui::UIText* ViewportStatusText = nullptr;
+		kui::UIBox* StatusBarBox = nullptr;
+		kui::UIBackground* LoadingScreenBox = nullptr;
 	};
 }
 #endif

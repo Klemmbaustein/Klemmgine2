@@ -163,21 +163,28 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 	while (true)
 	{
 		if (TryReadChar(Stream, '}'))
+		{
 			break;
+		}
 
 		string Name = ReadString(Stream);
 
 		if (!TryReadChar(Stream, ':'))
+		{
+			std::cerr << "expected a :" << std::endl;
 			return;
-
-		std::string Type;
-		Stream >> Type;
-
-		if (!TryReadChar(Stream, '='))
-			return;
-
-		SerializedValue Value = ReadValue(Stream, GetTypeFromString(Type));
-
+		}
+		std::string Type = ReadWord(Stream);
+		SerializedValue Value;
+		if (Type != "none")
+		{
+			if (!TryReadChar(Stream, '='))
+			{
+				std::cerr << "expected a =" << std::endl;
+				return;
+			}
+			Value = ReadValue(Stream, GetTypeFromString(Type));
+		}
 		if (!TryReadChar(Stream, ';'))
 		{
 			std::cerr << "expected a semicolon" << std::endl;

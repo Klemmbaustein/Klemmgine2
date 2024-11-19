@@ -5,8 +5,8 @@
 #include <iostream>
 using namespace kui;
 
-const float PanelPadding = 5;
-const float TabsSize = 26;
+const float PanelPadding = 3;
+const float TabsSize = 25;
 
 engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 {
@@ -14,6 +14,7 @@ engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 	{
 		PanelElement = new EditorPanelElement();
 		Background = PanelElement->panelBackground;
+		Background->HasMouseCollision = true;
 	}
 	ShouldUpdate = true;
 	this->Name = Name;
@@ -30,15 +31,16 @@ void engine::editor::EditorPanel::UpdateLayout()
 		UsedSize = EditorUI::Instance->MainBackground->GetMinSize();
 		Position = EditorUI::Instance->MainBackground->GetPosition();
 	}
-	GenerateTabs();
+
 	if (PanelElement)
 	{
+		UpdateFocusState();
+		GenerateTabs();
 		Size = UsedSizeToPanelSize(UsedSize);
 		PanelElement->SetSize(Size);
 		PanelPosition = PositionToPanelPosition(Position);
 		PanelElement->SetPosition(PanelPosition);
 	}
-	OnResized();
 
 	if (ChildrenAlign != Align::Tabs)
 	{
@@ -93,6 +95,7 @@ void engine::editor::EditorPanel::UpdateLayout()
 			Child->UpdateLayout();
 		}
 	}
+	OnResized();
 }
 
 void engine::editor::EditorPanel::UpdatePanel()
@@ -103,11 +106,22 @@ void engine::editor::EditorPanel::UpdatePanel()
 		ShouldUpdate = false;
 	}
 
-	Update();
+	if (PanelElement)
+	{
+		bool IsFocused = EditorUI::FocusedPanel == this;
+		auto HoveredBox = PanelElement->GetParentWindow()->UI.HoveredBox;
+		if (!IsFocused && HoveredBox && PanelElement->GetParentWindow()->Input.IsLMBClicked && HoveredBox->IsChildOf(PanelElement))
+		{
+			SetFocused();
+		}
+
+		Update();
+	}
+
 
 	for (EditorPanel* Child : Children)
 	{
-		Child->Update();
+		Child->UpdatePanel();
 	}
 }
 
@@ -143,6 +157,7 @@ void engine::editor::EditorPanel::GenerateTabs()
 		return;
 
 	PanelElement->tabBox->DeleteChildren();
+	TabElements.clear();
 
 	auto* ChildrenList = &Children;
 	size_t Selected = SelectedTab;
@@ -161,6 +176,42 @@ void engine::editor::EditorPanel::GenerateTabs()
 	{
 		AddTabFor(Child, ChildrenList->at(Selected) == Child);
 	}
+}
+
+void engine::editor::EditorPanel::SetFocused()
+{
+	if (EditorUI::FocusedPanel == this)
+		return;
+
+	EditorPanel* Old = EditorUI::FocusedPanel;
+	EditorUI::FocusedPanel = this;
+	if (Old)
+	{
+		Old->UpdateFocusState();
+		Old->PanelElement->RedrawElement();
+	}
+	PanelElement->RedrawElement();
+	UpdateFocusState();
+}
+
+void engine::editor::EditorPanel::UpdateFocusState()
+{
+	bool Focused = this == EditorUI::FocusedPanel;
+	PanelElement->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
+
+	size_t Selected = SelectedTab;
+	auto* ChildrenList = &Children;
+
+	if (Parent && Parent->ChildrenAlign == Align::Tabs)
+	{
+		Selected = Parent->SelectedTab;
+	}
+
+	if (TabElements.size() <= Selected)
+		return;
+
+	TabElements[Selected]->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
+	TabElements[Selected]->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
 }
 
 void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
@@ -183,6 +234,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 					{
 						Parent->SelectedTab = i;
 						Parent->ShouldUpdate = true;
+						Parent->Children[i]->SetFocused();
 						break;
 					}
 				}
@@ -191,18 +243,24 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 	if (Selected)
 	{
-		NewTab->SetBorderColor(EditorUI::Theme.Highlight1);
-		NewTab->SetColor(EditorUI::Theme.HighlightDark);
+		bool Focused = EditorUI::FocusedPanel == this;
+
+		NewTab->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
+		NewTab->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
 		NewTab->SetBorderSize(1);
 		NewTab->SetPaddingSize(-1);
 	}
 	else
 	{
-		NewTab->SetColor(EditorUI::Theme.DarkBackground);
+		NewTab->SetColor(EditorUI::Theme.DarkBackground2);
 		NewTab->SetBorderSize(0);
 		NewTab->SetPaddingSize(0);
 	}
+
+	if (!Target->CanClose)
+		delete NewTab->closeButton;
 	PanelElement->tabBox->AddChild(NewTab);
+	TabElements.push_back(NewTab);
 }
 
 kui::Vec2f engine::editor::EditorPanel::UsedSizeToPanelSize(kui::Vec2f Used)

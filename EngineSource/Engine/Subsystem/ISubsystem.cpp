@@ -4,10 +4,11 @@
 #include <Engine/Engine.h>
 using namespace engine::subsystem;
 
-ISubsystem::ISubsystem(const char* Name)
+ISubsystem::ISubsystem(const char* Name, engine::Log::LogColor Color)
 {
 	Engine::Instance->LoadedSystems.push_back(this);
 	this->Name = Name;
+	this->SubsystemColor = Color;
 	Print("Creating subsystem: " + string(Name), LogType::Note);
 }
 
@@ -34,11 +35,25 @@ void ISubsystem::Print(string Message, LogType Severity)
 		"Error",
 		"Critical"
 	};
+	static std::array<Log::LogColor, 5> SeverityColors =
+	{
+		Log::LogColor::Gray,
+		Log::LogColor::White,
+		Log::LogColor::Yellow,
+		Log::LogColor::Red,
+		Log::LogColor::Red
+	};
+
+	size_t SeverityIndex = size_t(Severity);
 
 	std::string DisplayedName = this->Name;
-	DisplayedName.resize(6, ' ');
+	DisplayedName.resize(7, ' ');
 
-	std::cout << "[" << SeverityStrings[size_t(Severity)] << "]: [" << DisplayedName << "]: "  << Message << std::endl;
+	Log::PrintMsg(Message, SeverityColors[SeverityIndex],
+		std::vector{
+			Log::LogPrefix{ SeverityStrings[SeverityIndex], SeverityColors[SeverityIndex] },
+			Log::LogPrefix{ DisplayedName, SubsystemColor },
+		});
 }
 
 void ISubsystem::SubsystemDependsOn(const std::type_info& Type, string Name)
