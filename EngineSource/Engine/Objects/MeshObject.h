@@ -8,7 +8,7 @@ namespace engine
 	{
 	public:
 
-		ENGINE_OBJECT(MeshObject, "Path/Test");
+		ENGINE_OBJECT(MeshObject, "Engine");
 
 		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("model", AssetRef(""), this);
 

@@ -1,7 +1,7 @@
 #include "StringUtil.h"
 #include <iostream>
 #include <cstdarg>
-#include <unordered_map>
+#include <cmath>
 
 std::vector<engine::string> engine::str::Split(string Target, const string& Delim)
 {
@@ -38,7 +38,14 @@ engine::string engine::str::ReplaceChar(string Target, char c, char With)
 
 int32_t engine::str::Hash(const string& Target)
 {
-	return int32_t(std::hash<std::string>{}(Target));
+	unsigned int hash = 1315423911;
+
+	for (size_t i = 0; i < Target.size(); i++)
+	{
+		hash ^= ((hash << 5) + Target[i] + (hash >> 2));
+	}
+
+	return (hash & 0x7FFFFFFF);
 }
 
 engine::string engine::str::Format(string Format, ...)

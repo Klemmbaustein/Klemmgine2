@@ -278,7 +278,7 @@ engine::SerializeException::SerializeException(const char* Msg)
 	this->ErrorMsg = Msg;
 }
 
-const char* engine::SerializeException::what() const
+const char* engine::SerializeException::what() const noexcept
 {
 	return this->ErrorMsg;
 }

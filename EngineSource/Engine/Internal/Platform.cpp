@@ -193,8 +193,10 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 }
 
 #else
+#include <map>
+#include <iostream>
 
-void OS::SetConsoleColor(Log::LogColor NewColor)
+void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 {
 	static std::map<Log::LogColor, const char*> ColorCodes =
 	{
