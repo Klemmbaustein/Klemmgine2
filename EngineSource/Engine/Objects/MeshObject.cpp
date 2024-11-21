@@ -5,17 +5,9 @@
 
 void engine::MeshObject::LoadMesh(string Name)
 {
-	ModelName = Name;
+	ModelName = AssetRef(Name);
 
-	//Model.Meshes.push_back(ModelData::Mesh(std::vector<Vertex>{
-	//		Vertex(Vector3(0.5f,  -0.5f, 0.0f)),
-	//		Vertex(Vector3(0.5f, 0.5f, 0.0f)),
-	//		Vertex(Vector3(-0.5f, -0.5f, 0.0f)),
-	//		Vertex(Vector3(-0.5f,   0.5f, 0.0f)),
-	//	},
-	//	std::vector<uint32>{ 0, 1, 2, 1, 3, 2 }));
-
-	GraphicsModel* LoadedModel = GraphicsModel::GetModel("Assets/importTest.kmdl");
+	GraphicsModel* LoadedModel = GraphicsModel::GetModel(ModelName.Value.FilePath);
 
 	Shader = new ShaderObject(
 		{ kui::resource::GetStringFile("res:shader/basic.vert") },
@@ -31,16 +23,8 @@ void engine::MeshObject::Draw(Camera* From)
 	DrawnModel->Draw(Position, From, Shader);
 }
 
-engine::SerializedValue engine::MeshObject::Serialize()
-{
-	auto DefaultValues = SceneObject::Serialize();
-
-	DefaultValues.Append(SerializedData("model", ModelName));
-	return DefaultValues;
-}
-
 void engine::MeshObject::Begin()
 {
 	HasVisuals = true;
-	LoadMesh(ModelName);
+	LoadMesh(ModelName.Value.FilePath);
 }

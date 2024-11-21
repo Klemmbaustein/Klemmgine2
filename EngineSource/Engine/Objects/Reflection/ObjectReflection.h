@@ -1,25 +1,38 @@
 #pragma once
 #include <Engine/Types.h>
 #include <functional>
+#include <unordered_map>
 
 namespace engine
 {
 	class SceneObject;
-#define REGISTER_OBJECT(name, fullName) inline uByte _ ## name ## _refl_\
- = ::engine::Reflection::Register(# name, []() -> ::engine::SceneObject* { \
-	return static_cast<engine::SceneObject*>(new fullName());\
-}, # fullName)
+#define ENGINE_OBJECT(name, path) private: static ::engine::SceneObject* Internal_Reflect_CreateNewInst() { \
+	return reinterpret_cast<engine::SceneObject*>(new name());\
+}\
+public: static inline const ObjectTypeID ObjectType = ::engine::Reflection::RegisterObject(# name, Internal_Reflect_CreateNewInst, path)
+
+	using ObjectTypeID = int32;
 
 	class Reflection
 	{
 	public:
-		static uByte Register(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
+		
+		static ObjectTypeID RegisterObject(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
 
 		struct ObjectInfo
 		{
-			uint32 TypeID;
+			ObjectTypeID TypeID = 0;
 			string Name;
 			string Path;
+
+			std::function<SceneObject* ()> CreateInstance;
 		};
+
+		static void Init();
+
+		static std::unordered_map<ObjectTypeID, ObjectInfo> ObjectTypes;
+
+	private:
+		static std::vector<ObjectInfo>* MacroTypes;
 	};
 }

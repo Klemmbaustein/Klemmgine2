@@ -2,6 +2,7 @@
 #include "BinarySerializer.h"
 #include <filesystem>
 #include <mutex>
+#include <optional>
 #include <Engine/MainThread.h>
 
 std::mutex ModelDataMutex;
@@ -102,9 +103,11 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	}
 }
 
-void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name)
+void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name, bool Lock)
 {
-	std::lock_guard g{ ModelDataMutex };
+	if (Lock)
+		ModelDataMutex.lock();
+
 	if (thread::IsMainThread)
 	{
 		Models.insert({ Name, GraphicsModel{
@@ -121,13 +124,15 @@ void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name)
 			.References = 1,
 			} });
 	}
-
+	if (Lock)
+		ModelDataMutex.unlock();
 }
 
-void engine::GraphicsModel::RegisterModel(string AssetPath)
+void engine::GraphicsModel::RegisterModel(string AssetPath, bool Lock)
 {
 	ModelData* New = new ModelData(AssetPath);
-	std::lock_guard g{ ModelDataMutex };
+	if (Lock)
+		ModelDataMutex.lock();
 
 	if (thread::IsMainThread)
 	{
@@ -145,6 +150,8 @@ void engine::GraphicsModel::RegisterModel(string AssetPath)
 			.References = 1,
 		} });
 	}
+	if (Lock)
+		ModelDataMutex.unlock();
 }
 
 engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
@@ -155,7 +162,7 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
 	{
 		if (std::filesystem::exists(NameOrPath))
 		{
-			RegisterModel(NameOrPath);
+			RegisterModel(NameOrPath, false);
 			Found = Models.find(NameOrPath);
 		}
 		else

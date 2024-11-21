@@ -10,6 +10,16 @@ namespace engine
 
 	};
 
+	class SerializeException : std::exception
+	{
+	public:
+		SerializeException(const char* Msg);
+
+		const char* ErrorMsg = nullptr;
+
+		const char* what() const override;
+	};
+
 	class SerializedData
 	{
 	public:

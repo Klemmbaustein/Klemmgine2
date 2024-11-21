@@ -1,8 +1,35 @@
 #include "ObjectReflection.h"
 #include <iostream>
 
-uByte engine::Reflection::Register(string Name, std::function<SceneObject* ()> NewFunc, string Category)
+std::unordered_map<engine::ObjectTypeID, engine::Reflection::ObjectInfo> engine::Reflection::ObjectTypes;
+std::vector<engine::Reflection::ObjectInfo>* engine::Reflection::MacroTypes = nullptr;
+
+engine::ObjectTypeID engine::Reflection::RegisterObject(string Name, std::function<SceneObject* ()> NewFunc, string Category)
 {
-	std::cout << Name << std::endl;
-	return 0;
+	ObjectTypeID ID = str::Hash(Name + Category);
+
+	if (!MacroTypes)
+	{
+		MacroTypes = new std::vector<ObjectInfo>();
+	}
+
+	MacroTypes->push_back(ObjectInfo{
+		.TypeID = ID,
+		.Name = Name,
+		.Path = Category,
+		.CreateInstance = NewFunc,
+		});
+
+	return ID;
+}
+
+void engine::Reflection::Init()
+{
+	if (MacroTypes)
+	{
+		for (auto& i : *MacroTypes)
+		{
+			ObjectTypes.insert({ i.TypeID, i });
+		}
+	}
 }

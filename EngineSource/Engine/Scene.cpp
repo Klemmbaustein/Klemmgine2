@@ -11,7 +11,6 @@
 #include <Engine/Editor/UI/Viewport.h>
 #include <iostream>
 #include "Objects/MeshObject.h"
-#include "File/ModelData.h"
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
@@ -41,9 +40,13 @@ engine::Scene::Scene(bool DoLoadAsync)
 
 engine::Scene::Scene(string FilePath)
 {
-	SerializedValue Scene = TextSerializer::FromFile(FilePath);
+	LoadInternal(FilePath, false);
+	Init();
+}
 
-	SerializedValue& Objects = Scene.At("objects");
+engine::Scene::Scene(const char* FilePath)
+	: Scene(string(FilePath))
+{
 }
 
 void engine::Scene::Draw()
@@ -114,10 +117,7 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 void engine::Scene::LoadAsync(string SceneFile)
 {
 	AsyncLoads++;
-	GraphicsModel::RegisterModel("Assets/importTest.kmdl");
-	SceneObject* Object = SceneObject::New<MeshObject>(this, false);
-	Object->Name = "Test Object";
-	this->Objects.push_back(Object);
+	LoadInternal(SceneFile, true);
 }
 
 void engine::Scene::LoadAsyncFinish()
@@ -146,6 +146,23 @@ void engine::Scene::Save(string FileName)
 		});
 
 	TextSerializer::ToFile(Serialized.GetObject(), FileName);
+}
+
+void engine::Scene::LoadInternal(string File, bool Async)
+{
+	SerializedValue SceneData = TextSerializer::FromFile(File);
+
+	for (auto& i : SceneData.At("objects").GetArray())
+	{
+		ObjectTypeID ID = i.At("typeId").GetInt();
+
+		const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
+		SceneObject* Object = Type.CreateInstance();
+		Object->DeSerialize(&i);
+		Object->InitObj(this, !Async, Type.TypeID);
+
+		this->Objects.push_back(Object);
+	}
 }
 
 void engine::Scene::Init()

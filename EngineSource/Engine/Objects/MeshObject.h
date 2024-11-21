@@ -7,16 +7,17 @@ namespace engine
 	class MeshObject : public SceneObject
 	{
 	public:
+
+		ENGINE_OBJECT(MeshObject, "Path/Test");
+
+		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("model", AssetRef(""), this);
+
 		graphics::ShaderObject* Shader = nullptr;
-		string ModelName;
 		graphics::Model* DrawnModel = nullptr;
 
 		void LoadMesh(string Name);
 
 		virtual void Draw(graphics::Camera* From) override;
-
-		SerializedValue Serialize() override;
 		void Begin() override;
 	};
-	REGISTER_OBJECT(MeshObject, engine::MeshObject);
 }

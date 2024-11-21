@@ -27,6 +27,7 @@ Engine* Engine::Init()
 	Instance = new Engine();
 	
 	thread::IsMainThread = true;
+	Reflection::Init();
 
 	Instance->LoadSubsystem(new ConsoleSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());

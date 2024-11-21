@@ -113,21 +113,29 @@ engine::string engine::SerializedData::DataValue::GetString() const
 
 std::vector<engine::SerializedData::DataValue>& engine::SerializedData::DataValue::GetArray()
 {
+	if (Type != DataType::Array)
+		throw SerializeException("GetArray called on a value that is not an array value.");
 	return *Array;
 }
 
 const std::vector<engine::SerializedData::DataValue>& engine::SerializedData::DataValue::GetArray() const
 {
+	if (Type != DataType::Array)
+		throw SerializeException("GetArray called on a value that is not an array value.");
 	return *Array;
 }
 
 std::vector<engine::SerializedData>& engine::SerializedData::DataValue::GetObject()
 {
+	if (Type != DataType::Object)
+		throw SerializeException("GetObject called on a value that is not an object value.");
 	return *Object;
 }
 
 const std::vector<engine::SerializedData>& engine::SerializedData::DataValue::GetObject() const
 {
+	if (Type != DataType::Object)
+		throw SerializeException("GetObject called on a value that is not an object value.");
 	return *Object;
 }
 
@@ -196,7 +204,7 @@ engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(string 
 			return Element.Value;
 		}
 	}
-	throw 0;
+	throw SerializeException("Invalid type for SerializedValue::At(string name). Has to be object.");
 }
 
 engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(size_t Index)
@@ -213,7 +221,7 @@ engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(size_t 
 
 		return Array.at(Index);
 	}
-	throw 0;
+	throw SerializeException("Invalid type for SerializedValue::At(size_t Index). Has to be array or object.");
 }
 
 void engine::SerializedData::DataValue::Append(const SerializedData& New)
@@ -263,4 +271,14 @@ engine::string engine::SerializedData::ToString(size_t Depth) const
 
 	Out += Name + ": " + std::to_string(int32(Value.GetType())) + " = " + Value.ToString(Depth) + "\n";
 	return Out;
+}
+
+engine::SerializeException::SerializeException(const char* Msg)
+{
+	this->ErrorMsg = Msg;
+}
+
+const char* engine::SerializeException::what() const
+{
+	return this->ErrorMsg;
 }

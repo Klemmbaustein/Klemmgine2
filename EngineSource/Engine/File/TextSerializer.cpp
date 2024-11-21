@@ -6,7 +6,7 @@
 
 static const std::map<engine::SerializedData::DataType, engine::string> TypeNames =
 {
-	{ engine::SerializedData::DataType::None, "none" },
+	{ engine::SerializedData::DataType::None, "null" },
 	{ engine::SerializedData::DataType::Int32, "int" },
 	{ engine::SerializedData::DataType::Byte, "byte" },
 	{ engine::SerializedData::DataType::Boolean, "bool" },
@@ -176,7 +176,7 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 		}
 		std::string Type = ReadWord(Stream);
 		SerializedValue Value;
-		if (Type != "none")
+		if (Type != "null")
 		{
 			if (!TryReadChar(Stream, '='))
 			{

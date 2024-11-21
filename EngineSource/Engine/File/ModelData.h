@@ -40,8 +40,8 @@ namespace engine
 		graphics::Model* Drawable = nullptr;
 		size_t References;
 
-		static void RegisterModel(const ModelData& Mesh, string Name);
-		static void RegisterModel(string AssetPath);
+		static void RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
+		static void RegisterModel(string AssetPath, bool Lock = true);
 		static GraphicsModel* GetModel(string NameOrPath);
 		static void UnloadModel(ModelData* Target);
 	private:

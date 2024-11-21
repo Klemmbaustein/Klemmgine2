@@ -10,8 +10,9 @@ namespace engine
 	class Scene
 	{
 	public:
-		Scene(bool DoLoadAsync = false);
+		explicit Scene(bool DoLoadAsync = false);
 		Scene(string FilePath);
+		Scene(const char* FilePath);
 
 		void Draw();
 		void Update();
@@ -39,6 +40,7 @@ namespace engine
 
 		void Save(string FileName);
 	private:
+		void LoadInternal(string File, bool Async);
 		void Init();
 		SerializedValue GetSceneInfo();
 	};
