@@ -12,7 +12,7 @@ int32 EngineMain(int argc, char** argv)
 
 	Engine* Instance = Engine::Init();
 
-	subsystem::SceneSubsystem::Current->LoadSceneAsync("Assets/test.kscn");
+	subsystem::SceneSubsystem::Current->LoadSceneAsync("Assets/test.kts");
 
 	Instance->Run();
 	

@@ -18,4 +18,5 @@ namespace engine
 		SerializedValue Serialize() override;
 		void Begin() override;
 	};
+	REGISTER_OBJECT(MeshObject, engine::MeshObject);
 }

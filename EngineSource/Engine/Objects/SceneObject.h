@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine/File/SerializedData.h>
 #include <Engine/Graphics/Camera.h>
+#include "Reflection/ObjectReflection.h"
 
 namespace engine
 {
