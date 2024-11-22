@@ -57,8 +57,6 @@ engine::editor::Viewport::Viewport()
 	delete TestButton->dropdownButton;
 
 	auto TestButton2 = new ToolBarButton();
-
-	TestButton2->SetIcon("file:Engine/Editor/Assets/Folder.png");
 	TestButton2->SetName("View");
 
 	ViewportToolbar->AddChild(TestButton);
@@ -130,11 +128,15 @@ void engine::editor::Viewport::Update()
 		SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
 		uint64 Fps = uint64(std::round(float(FameCount) / StatsRedrawTimer.Get()));
 
+		int ObjCount = 0;
+		string SceneName = "<No name> (Unsaved)";
+
 		if (SceneSystem->Main)
 		{
-			string SceneName = "<No name> (Unsaved)";
-			ViewportStatusText->SetText(str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), int(SceneSystem->Main->Objects.size()), int(Fps)));
+			SceneName = SceneSystem->Main->Name;
+			ObjCount = int(SceneSystem->Main->Objects.size());
 		}
+		ViewportStatusText->SetText(str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, int(Fps)));
 		FameCount = 0;
 		StatsRedrawTimer.Reset();
 		RedrawStats = false;

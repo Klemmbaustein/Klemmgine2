@@ -1,0 +1,77 @@
+element ObjectListHeader
+{
+	orientation = vertical;
+	tryFill = true;
+
+	padding = 1px;
+
+	child EditorTextField search
+	{
+		HintText = "Search objects";
+		Image = "Engine/Editor/Assets/Search.png";
+		Size = (100, 22);
+		padding = 5px;
+	}
+
+	child UIScrollBox listBox
+	{
+		orientation = vertical;
+		tryFill = true;
+		size = 100px;
+	}
+}
+
+element ObjectEntryElement
+{
+	var Icon;
+	var Name;
+	var Color;
+	var LeftPadding = 5;
+
+	tryFill = true;
+	orientation = vertical;
+
+	child UIButton button
+	{
+		size = 24px;
+
+		color = Color;
+
+		padding = 1px;
+		upPadding = 0;
+		downPadding = 0;
+		tryFill = true;
+
+		verticalAlign = centered;
+		child UIBox
+		{
+			leftPadding = LeftPadding;
+			paddingSizeMode = px;
+		}
+		child UIBackground arrow
+		{
+			size = 16px;
+			padding = 5px;
+			leftPadding = 0;
+			rightPadding = 0;
+			color = Color_Text;
+			image = "Engine/Editor/Assets/DownArrow.png";
+		}
+
+		child UIBackground
+		{
+			image = Icon;
+			size = 16px;
+			color = Color_Text;
+			padding = 5px;
+			leftPadding = 2px;
+		}
+
+		child UIText
+		{
+			text = Name;
+			color = Color_Text;
+			size = 11px;
+		}
+	}
+}

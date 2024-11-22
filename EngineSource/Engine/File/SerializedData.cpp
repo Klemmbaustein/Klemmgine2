@@ -204,7 +204,7 @@ engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(string 
 			return Element.Value;
 		}
 	}
-	throw SerializeException("Invalid type for SerializedValue::At(string name). Has to be object.");
+	throw SerializeException("At(string Name): Given name does not exist in this object.");
 }
 
 engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(size_t Index)
@@ -222,6 +222,17 @@ engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(size_t 
 		return Array.at(Index);
 	}
 	throw SerializeException("Invalid type for SerializedValue::At(size_t Index). Has to be array or object.");
+}
+
+bool engine::SerializedData::DataValue::Contains(string Name)
+{
+	auto& Obj = GetObject();
+	for (auto& i : Obj)
+	{
+		if (i.Name == Name)
+			return true;
+	}
+	return false;
 }
 
 void engine::SerializedData::DataValue::Append(const SerializedData& New)

@@ -5,6 +5,8 @@
 #include <optional>
 #include <Engine/MainThread.h>
 
+using namespace engine::graphics;
+
 std::mutex ModelDataMutex;
 const engine::string FormatName = "kmdl";
 std::unordered_map<engine::string, engine::GraphicsModel> engine::GraphicsModel::Models;

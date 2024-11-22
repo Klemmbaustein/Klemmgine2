@@ -29,7 +29,7 @@ static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context)
 		{
 			Normal = &TargetMesh->mNormals[i];
 		}
-		OutMesh.Vertices.push_back(Vertex{
+		OutMesh.Vertices.push_back(graphics::Vertex{
 			.Position = Vector3(Pos.x, Pos.y, Pos.z) * Context.Options.ImportScale,
 			.Normal = Normal ? Vector3(Normal->x, Normal->y, Normal->z) : 0,
 			});

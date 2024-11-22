@@ -133,6 +133,7 @@ namespace engine
 			string ToString(size_t Depth) const;
 			DataValue& At(string Name);
 			DataValue& At(size_t Index);
+			bool Contains(string Name);
 			void Append(const SerializedData& New);
 			void Append(const DataValue& New);
 		};

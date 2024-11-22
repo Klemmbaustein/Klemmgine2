@@ -1,7 +1,6 @@
 element EditorPanelTab
 {
 	var Title;
-	var Selected = false;
 	var Color;
 	var BorderColor = 1;
 	var BorderSize = 1;
@@ -16,9 +15,6 @@ element EditorPanelTab
 		border = BorderSize;
 		borderSizeMode = px;
 		bottomBorder = false;
-		rightBorder = Selected;
-		leftBorder = Selected;
-		topBorder = Selected;
 		
 		corners = 5px;
 		bottomLeftCorner = false;

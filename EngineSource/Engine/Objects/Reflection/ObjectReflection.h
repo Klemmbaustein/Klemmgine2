@@ -9,7 +9,8 @@ namespace engine
 #define ENGINE_OBJECT(name, path) private: static ::engine::SceneObject* Internal_Reflect_CreateNewInst() { \
 	return reinterpret_cast<engine::SceneObject*>(new name());\
 }\
-public: static inline const ObjectTypeID ObjectType = ::engine::Reflection::RegisterObject(# name, Internal_Reflect_CreateNewInst, path)
+public: static inline const ObjectTypeID ObjectType\
+	 = ::engine::Reflection::RegisterObject(# name, Internal_Reflect_CreateNewInst, path)
 
 	using ObjectTypeID = int32;
 

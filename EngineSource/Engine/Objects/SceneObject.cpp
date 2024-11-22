@@ -29,21 +29,24 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 	Name = From->At("name").GetString();
 	TypeID = ObjectTypeID(From->At("typeId").GetInt());
 
-	auto& Array = From->At("properties").GetArray();
-	for (SerializedValue& i : Array)
+	if (From->Contains("properties"))
 	{
-		string Name = i.At("name").GetString();
-		SerializedValue& Value = i.At("val");
-
-		for (auto& prop : Properties)
+		auto& Array = From->At("properties").GetArray();
+		for (SerializedValue& i : Array)
 		{
-			if (prop->Name == Name)
+			string Name = i.At("name").GetString();
+			SerializedValue& Value = i.At("val");
+
+			for (auto& prop : Properties)
 			{
-				prop->DeSerialize(&Value);
-				ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
-				if (Ref)
+				if (prop->Name == Name)
 				{
-					GraphicsModel::RegisterModel(Ref->Value.FilePath);
+					prop->DeSerialize(&Value);
+					ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
+					if (Ref)
+					{
+						GraphicsModel::RegisterModel(Ref->Value.FilePath);
+					}
 				}
 			}
 		}

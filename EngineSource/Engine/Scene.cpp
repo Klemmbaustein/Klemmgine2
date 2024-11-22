@@ -152,6 +152,11 @@ void engine::Scene::LoadInternal(string File, bool Async)
 {
 	SerializedValue SceneData = TextSerializer::FromFile(File);
 
+	Name = File;
+
+	if (SceneData.GetObject().empty())
+		return;
+
 	for (auto& i : SceneData.At("objects").GetArray())
 	{
 		ObjectTypeID ID = i.At("typeId").GetInt();

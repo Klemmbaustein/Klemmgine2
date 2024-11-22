@@ -217,7 +217,6 @@ void engine::editor::EditorPanel::UpdateFocusState()
 void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 {
 	EditorPanelTab* NewTab = new EditorPanelTab();
-	NewTab->SetSelected(Selected);
 	NewTab->SetTitle(Target->Name);
 
 	if (Target != this)

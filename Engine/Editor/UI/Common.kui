@@ -1,6 +1,6 @@
 element EditorTextField
 {
-	var Size;
+	var Size = 22;
 	var HintText;
 	var Image;
 

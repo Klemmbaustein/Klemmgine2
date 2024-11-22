@@ -10,7 +10,7 @@ namespace engine::editor::modelConverter
 		bool GenerateUV : 1 = true;
 		bool ImportTextures : 1 = true;
 
-		float ImportScale = 0.01f;
+		float ImportScale = 1.0f;
 
 		std::function<void(string)> OnLoadStatusChanged;
 	};

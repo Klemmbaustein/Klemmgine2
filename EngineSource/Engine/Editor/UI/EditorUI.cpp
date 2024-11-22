@@ -131,7 +131,7 @@ engine::editor::EditorUI::EditorUI()
 	auto vp = new Viewport();
 
 	Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
-	RootPanel->AddChild(Center->SetWidth(0.72f), EditorPanel::Align::Horizontal);
+	RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
 	RootPanel->AddChild((new ObjectListPanel())->SetWidth(0.15f), EditorPanel::Align::Horizontal);
 
 	FocusedPanel = vp;

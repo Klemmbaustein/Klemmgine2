@@ -35,6 +35,8 @@ namespace engine
 
 		static std::atomic<int32> AsyncLoads;
 
+		string Name;
+
 		void LoadAsync(string SceneFile);
 		void LoadAsyncFinish();
 

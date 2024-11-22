@@ -7,17 +7,15 @@
 #include <unordered_map>
 
 namespace engine
-{
-	using namespace engine::graphics;
-	
+{	
 	struct ModelData : ISerializable
 	{
 		struct Mesh : ISerializable
 		{
 			Mesh();
-			Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices);
+			Mesh(const std::vector<graphics::Vertex>& Vertices, const std::vector<uint32>& Indices);
 
-			std::vector<Vertex> Vertices;
+			std::vector<graphics::Vertex> Vertices;
 			std::vector<uint32> Indices;
 
 			virtual SerializedValue Serialize() override;
