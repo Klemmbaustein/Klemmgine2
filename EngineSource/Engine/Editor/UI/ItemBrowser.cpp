@@ -23,6 +23,9 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 
 void engine::editor::ItemBrowser::Update()
 {
+	if (!Visible)
+		return;
+
 	ItemsScrollBox->SetMinSize(Background->GetUsedSize() - Vec2f(0, Heading->GetUsedSize().Y)
 		- UIBox::PixelSizeToScreenSize(Vec2f(1, 25), ItemsScrollBox->GetParentWindow()));
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
@@ -66,7 +69,7 @@ void engine::editor::ItemBrowser::OnResized()
 }
 void engine::editor::ItemBrowser::UpdateItems()
 {
-	Heading->SetPathText("Assets/" + Path);
+	Heading->SetPathText(RootPathName + Path);
 
 	Buttons.clear();
 	CurrentItems = GetItems();

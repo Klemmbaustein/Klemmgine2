@@ -3,9 +3,15 @@
 #include <Engine/Log.h>
 #include <vector>
 
+namespace kui::systemWM
+{
+	class SysWindow;
+}
+
 namespace engine::internal::platform
 {
 	void Init();
+	void InitWindow(kui::systemWM::SysWindow* Target);
 
 	void Execute(string Command);
 	

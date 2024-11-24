@@ -51,7 +51,7 @@ namespace engine
 	};
 
 	template<>
-	struct ObjProperty<AssetRef> : public ObjPropertyBase
+	struct ObjProperty<engine::AssetRef> : public ObjPropertyBase
 	{
 		ObjProperty(string Name, AssetRef Value, SceneObject* Obj);
 

@@ -13,6 +13,8 @@ namespace engine::editor
 		ItemBrowser(string Name, string InternalName);
 		ItemBrowserHeading* Heading = nullptr;
 
+		string RootPathName;
+
 		struct Item
 		{
 			string Name;

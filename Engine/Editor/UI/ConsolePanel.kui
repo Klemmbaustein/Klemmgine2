@@ -5,6 +5,7 @@ element ConsolePanelElement
 	tryFill = true;
 	orientation = vertical;
 	padding = 1px;
+	rightPadding = 1.1px;
 
 	child UIBackground
 	{

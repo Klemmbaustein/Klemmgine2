@@ -9,8 +9,6 @@
 #include <Engine/File/BinarySerializer.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Editor/UI/Viewport.h>
-#include <iostream>
-#include "Objects/MeshObject.h"
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
@@ -23,8 +21,8 @@ static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
 	kui::Vec2f ViewportSize = editor::Viewport::Current->ViewportBackground->GetUsedSize();
 
 	return kui::Vec2i(
-		int64(float(FromSize.X * ViewportSize.X / 2)),
-		int64(float(FromSize.Y * ViewportSize.Y / 2))
+		int64(FromSize.X * ViewportSize.X) >> 1,
+		int64(FromSize.Y * ViewportSize.Y) >> 1
 	);
 }
 #endif

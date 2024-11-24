@@ -29,6 +29,7 @@ static std::map<engine::string, engine::string> FileNameIcons =
 engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
+	RootPathName = "Assets/";
 }
 
 std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems()

@@ -8,9 +8,26 @@
 #include <map>
 #include <iostream>
 
+#undef DELETE
+#include "SystemWM_SDL3.h"
+#include <SDL3/SDL.h>
+#include <dwmapi.h>
+
+#pragma comment(lib, "Dwmapi.lib")
+
 void engine::internal::platform::Init()
 {
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+}
+
+void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target)
+{
+	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+
+	BOOL UseDarkMode = true;
+	DwmSetWindowAttribute(
+		hwnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE,
+		&UseDarkMode, sizeof(UseDarkMode));
 }
 
 void engine::internal::platform::Execute(string Command)
@@ -210,6 +227,10 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	};
 
 	std::cout << "\033[" << ColorCodes[NewColor] << "m";
+}
+
+void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target)
+{
 }
 
 void engine::internal::platform::Init()

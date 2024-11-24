@@ -46,7 +46,7 @@ engine::editor::Viewport::Viewport()
 		->SetMinSize(TOOLBAR_SIZE)
 		->SetMaxSize(TOOLBAR_SIZE)
 		->SetTryFill(true)
-		->SetPadding(1, 0, 1, 1)
+		->SetPadding(1, 0, 1, 1.1f)
 		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetSizeMode(UIBox::SizeMode::PixelRelative);
 
@@ -57,6 +57,7 @@ engine::editor::Viewport::Viewport()
 	delete TestButton->dropdownButton;
 
 	auto TestButton2 = new ToolBarButton();
+	TestButton2->SetIcon("file:Engine/Editor/Assets/Options.png");
 	TestButton2->SetName("View");
 
 	ViewportToolbar->AddChild(TestButton);
@@ -104,7 +105,7 @@ engine::editor::Viewport::Viewport()
 
 void engine::editor::Viewport::OnResized()
 {
-	ViewportBackground->SetMinSize(Background->GetMinSize() - UIBox::PixelSizeToScreenSize(Vec2f(2, 25 + TOOLBAR_SIZE + 2), ViewportBackground->GetParentWindow()));
+	ViewportBackground->SetMinSize(Background->GetMinSize() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + TOOLBAR_SIZE + 2), ViewportBackground->GetParentWindow()));
 	PanelElement->UpdateElement();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();

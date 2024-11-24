@@ -9,9 +9,11 @@
 
 #include "Viewport.h"
 #include "AssetBrowser.h"
+#include "ClassBrowser.h"
 #include "ConsolePanel.h"
 #include "MessagePanel.h"
 #include "ObjectListPanel.h"
+#include "PropertyPanel.h"
 
 const float StatusBarSize = 24;
 const float MenuBarSize = 24;
@@ -120,7 +122,11 @@ engine::editor::EditorUI::EditorUI()
 
 	RootPanel = new EditorPanel("root");
 
-	RootPanel->AddChild((new AssetBrowser())->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+	EditorPanel* Left = new EditorPanel("panel");
+	Left->AddChild(new AssetBrowser(), EditorPanel::Align::Tabs);
+	Left->AddChild(new ClassBrowser(), EditorPanel::Align::Tabs);
+
+	RootPanel->AddChild(Left->SetWidth(0.15f), EditorPanel::Align::Horizontal);
 
 	EditorPanel* Center = new EditorPanel("panel");
 	EditorPanel* LowerPanel = new EditorPanel("panel");
@@ -132,7 +138,10 @@ engine::editor::EditorUI::EditorUI()
 
 	Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
 	RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
-	RootPanel->AddChild((new ObjectListPanel())->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+	EditorPanel* Right = new EditorPanel("panel");
+	Right->AddChild(new PropertyPanel(), EditorPanel::Align::Vertical);
+	Right->AddChild(new ObjectListPanel(), EditorPanel::Align::Vertical);
+	RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
 
 	FocusedPanel = vp;
 

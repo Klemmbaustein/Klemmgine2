@@ -39,6 +39,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	{
 		SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
 	}
+	engine::internal::platform::InitWindow(OutWindow);
 
 	SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
