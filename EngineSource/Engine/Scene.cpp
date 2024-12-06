@@ -8,7 +8,7 @@
 #include <Engine/File/TextSerializer.h>
 #include <Engine/File/BinarySerializer.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
-#include <Engine/Editor/UI/Viewport.h>
+#include <Engine/Editor/UI/Panels/Viewport.h>
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
@@ -17,6 +17,9 @@ std::atomic<int32> engine::Scene::AsyncLoads = 0;
 static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
 {
 	using namespace engine;
+
+	if (!editor::Viewport::Current)
+		return FromSize;
 
 	kui::Vec2f ViewportSize = editor::Viewport::Current->ViewportBackground->GetUsedSize();
 
@@ -65,24 +68,6 @@ void engine::Scene::Draw()
 
 void engine::Scene::Update()
 {
-	if (input::IsKeyDown(input::Key::w))
-	{
-		Cam->Position += Vector3::Forward(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
-	}
-	if (input::IsKeyDown(input::Key::s))
-	{
-		Cam->Position -= Vector3::Forward(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
-	}
-	if (input::IsKeyDown(input::Key::d))
-	{
-		Cam->Position += Vector3::Right(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
-	}
-	if (input::IsKeyDown(input::Key::a))
-	{
-		Cam->Position -= Vector3::Right(Cam->Rotation) * Vector3(stats::DeltaTime * 5);
-	}
-
-	Cam->Rotation = Cam->Rotation + Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
 }
 
 engine::Scene* engine::Scene::GetMain()
@@ -130,6 +115,10 @@ void engine::Scene::LoadAsyncFinish()
 
 void engine::Scene::Save(string FileName)
 {
+	using namespace subsystem;
+
+	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), ISubsystem::LogType::Info);
+
 	std::vector<SerializedValue> SerializedObjects;
 
 	for (SceneObject* Object : this->Objects)
@@ -148,23 +137,45 @@ void engine::Scene::Save(string FileName)
 
 void engine::Scene::LoadInternal(string File, bool Async)
 {
-	SerializedValue SceneData = TextSerializer::FromFile(File);
+	SerializedValue SceneData;
+	try
+	{
+		SceneData = TextSerializer::FromFile(File);
+	}
+	catch (SerializeReadException& ReadErr)
+	{
+		subsystem::SceneSubsystem::Current->Print(
+			str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
+			subsystem::ISubsystem::LogType::Error
+		);
+		return;
+	}
 
 	Name = File;
 
-	if (SceneData.GetObject().empty())
+	if (SceneData.GetType() != SerializedData::DataType::Object || SceneData.GetObject().empty())
 		return;
 
 	for (auto& i : SceneData.At("objects").GetArray())
 	{
-		ObjectTypeID ID = i.At("typeId").GetInt();
+		try
+		{
+			ObjectTypeID ID = i.At("typeId").GetInt();
 
-		const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
-		SceneObject* Object = Type.CreateInstance();
-		Object->DeSerialize(&i);
-		Object->InitObj(this, !Async, Type.TypeID);
+			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
+			SceneObject* Object = Type.CreateInstance();
+			Object->DeSerialize(&i);
+			Object->InitObj(this, !Async, Type.TypeID);
 
-		this->Objects.push_back(Object);
+			this->Objects.push_back(Object);
+		}
+		catch (SerializeException& SerializeErr)
+		{
+			subsystem::SceneSubsystem::Current->Print(
+				str::Format("Failed to deserialize object in scene: '%s'", SerializeErr.what()),
+				subsystem::ISubsystem::LogType::Warning
+			);
+		}
 	}
 }
 

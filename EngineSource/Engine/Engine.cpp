@@ -6,6 +6,7 @@
 #include "Subsystem/SceneSubsystem.h"
 #include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
+#include "Error/EngineError.h"
 using namespace engine;
 using namespace engine::subsystem;
 
@@ -26,6 +27,7 @@ Engine* Engine::Init()
 
 	Instance = new Engine();
 	
+	error::InitForThread("Main");
 	thread::IsMainThread = true;
 	Reflection::Init();
 

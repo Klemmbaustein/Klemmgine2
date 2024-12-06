@@ -1,7 +1,7 @@
 #ifdef EDITOR
 #include "EditorPanel.h"
 #include <kui/Window.h>
-#include "EditorUI.h"
+#include <Engine/Editor/UI/EditorUI.h>
 #include <iostream>
 using namespace kui;
 

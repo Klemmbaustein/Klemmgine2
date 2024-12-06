@@ -21,6 +21,7 @@ namespace engine::editor
 		{
 			string Name;
 			SceneObject* From = nullptr;
+			bool Selected = false;
 			std::vector<ListObject> Children;
 		};
 

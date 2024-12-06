@@ -86,7 +86,7 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 
 	if (Options.OnLoadStatusChanged)
 	{
-		Options.OnLoadStatusChanged("Reading file");
+		Options.OnLoadStatusChanged("Reading file (1/3)");
 	}
 
 	Assimp::Importer Import;
@@ -99,7 +99,7 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 
 	if (Options.OnLoadStatusChanged)
 	{
-		Options.OnLoadStatusChanged("Processing");
+		Options.OnLoadStatusChanged("Processing (2/3)");
 	}
 
 	Import.ApplyPostProcessing(Flags);
@@ -108,7 +108,7 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 
 	if (Options.OnLoadStatusChanged)
 	{
-		Options.OnLoadStatusChanged("Saving");
+		Options.OnLoadStatusChanged("Saving (3/3)");
 	}
 
 	string OutFileName = file::FileNameWithoutExt(ModelPath) + ".kmdl";

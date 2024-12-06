@@ -1,9 +1,10 @@
 #include "ObjectListPanel.h"
 #include <Engine/Scene.h>
 #include <Engine/File/FileUtil.h>
+#include "Viewport.h"
 #include <iostream>
-#include "EditorUI.h"
-
+#include <Engine/Input.h>
+#include <Engine/Editor/UI/EditorUI.h>
 using namespace kui;
 
 engine::editor::ObjectListPanel::ObjectListPanel()
@@ -24,6 +25,14 @@ void engine::editor::ObjectListPanel::Update()
 	);
 
 	Scene* Current = Scene::GetMain();
+
+	if (EditorUI::FocusedPanel == this
+		&& input::IsKeyDown(input::Key::ESCAPE)
+		&& !Viewport::Current->SelectedObjects.empty())
+	{
+		Viewport::Current->SelectedObjects.clear();
+		DisplayList();
+	}
 
 	if (!Current && LastLength != SIZE_MAX)
 	{
@@ -54,12 +63,13 @@ void engine::editor::ObjectListPanel::DisplayList()
 		}
 	};
 
-	for (auto& i : Objects)
+	for (SceneObject* i : Objects)
 	{
-		ObjectTree[0].Children.emplace_back(i->Name, i);
+		ObjectTree[0].Children.emplace_back(i->Name, i, Viewport::Current->SelectedObjects.contains(i));
 	}
 
 	AddListObjects(ObjectTree, 0);
+	Heading->UpdateElement();
 	Heading->RedrawElement();
 }
 
@@ -71,10 +81,22 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 
 		Elem->SetName(Obj.Name);
 		Elem->SetLeftPadding(float(16 * Depth + (Obj.Children.empty() ? 21 : 5)));
-		Elem->SetColor(Heading->listBox->GetChildren().size() % 2 == 0 
-			? EditorUI::Theme.LightBackground : EditorUI::Theme.Background);
+		Elem->SetColor(Obj.Selected 
+			? EditorUI::Theme.Highlight1
+			: (Heading->listBox->GetChildren().size() % 2 == 0 
+				? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
+		Elem->SetTextColor(Obj.Selected ? EditorUI::Theme.HighlightText : EditorUI::Theme.Text);
 		if (Obj.Children.empty())
 			delete Elem->arrow;
+		Elem->button->OnClicked = [this, Obj]()
+			{
+				if (!input::IsKeyDown(input::Key::LSHIFT))
+					Viewport::Current->SelectedObjects.clear();
+
+				if (Obj.From)
+					Viewport::Current->SelectedObjects.insert(Obj.From);
+				DisplayList();
+			};
 		Heading->listBox->AddChild(Elem);
 
 		if (!Obj.Children.empty())

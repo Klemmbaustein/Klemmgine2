@@ -5,7 +5,8 @@
 #include <Engine/Subsystem/VideoSubsystem.h>
 #include <Engine/Input.h>
 #include <kui/UI/UISpinner.h>
-#include "EditorUI.h"
+#include <Engine/Editor/UI/EditorUI.h>
+#include <Engine/Stats.h>
 #include <iostream>
 #include <Toolbar.kui.hpp>
 using namespace engine::subsystem;
@@ -54,6 +55,12 @@ engine::editor::Viewport::Viewport()
 
 	TestButton->SetIcon("file:Engine/Editor/Assets/Save.png");
 	TestButton->SetName("Save");
+	TestButton->btn->OnClicked = [this]()
+		{
+			Scene* Current = Scene::GetMain();
+			if (Current)
+				Current->Save(Current->Name);
+		};
 	delete TestButton->dropdownButton;
 
 	auto TestButton2 = new ToolBarButton();
@@ -117,7 +124,7 @@ void engine::editor::Viewport::OnResized()
 
 void engine::editor::Viewport::Update()
 {
-	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>(); 
 
 	Window* Win = VideoSystem->MainWindow;
 	FameCount++;
@@ -156,6 +163,30 @@ void engine::editor::Viewport::Update()
 		input::ShowMouseCursor = true;
 		Win->Input.KeyboardFocusInput = true;
 		MouseGrabbed = false;
+	}
+
+	Scene* Current = Scene::GetMain();
+	if (MouseGrabbed && Current)
+	{
+		if (input::IsKeyDown(input::Key::w))
+		{
+			Current->Cam->Position += Vector3::Forward(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+		}
+		if (input::IsKeyDown(input::Key::s))
+		{
+			Current->Cam->Position -= Vector3::Forward(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+		}
+		if (input::IsKeyDown(input::Key::d))
+		{
+			Current->Cam->Position += Vector3::Right(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+		}
+		if (input::IsKeyDown(input::Key::a))
+		{
+			Current->Cam->Position -= Vector3::Right(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+		}
+
+		Current->Cam->Rotation = Current->Cam->Rotation + Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
+
 	}
 }
 #endif

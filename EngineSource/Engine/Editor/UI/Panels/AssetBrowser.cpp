@@ -1,35 +1,35 @@
 #ifdef EDITOR
 #include "AssetBrowser.h"
 #include <filesystem>
-#include "DropdownMenu.h"
+#include <Engine/Editor/UI/DropdownMenu.h>
 #include <Engine/Input.h>
 #include <Engine/Internal/Platform.h>
 #include <kui/Window.h>
 #include <Engine/Editor/ModelConverter.h>
 #include <algorithm>
-#include "Windows/ProgressBar.h"
+#include <Engine/Editor/UI/Windows/ProgressBar.h>
 #include <thread>
-#include "EditorUI.h"
+#include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/File/FileUtil.h>
 
 static std::map<engine::string, kui::Vec3f> FileNameColors =
 {
-	{"kscn", kui::Vec3f(0)},
+	{"kts", kui::Vec3f(0.6f, 0.1f, 0.3f)},
+	{"kmdl", kui::Vec3f(0.2f, 0.4f, 0.8f)},
 	{"", kui::Vec3f(0.5f)},
-	{"<dir>", kui::Vec3f(0.8f, 0.5f, 0) },
+	{"/dir/", kui::Vec3f(0.8f, 0.5f, 0) },
 };
 static std::map<engine::string, engine::string> FileNameIcons =
 {
-	{"kscn", ""},
+	{"kts", ""},
 	{"", "Engine/Editor/Assets/Document.png"},
 	{"kmdl", "Engine/Editor/Assets/Model.png"},
-	{"<dir>", "Engine/Editor/Assets/Folder.png"},
+	{"/dir/", "Engine/Editor/Assets/Folder.png"},
 };
 
 engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
-	RootPathName = "Assets/";
 }
 
 std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems()
@@ -41,7 +41,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 		std::filesystem::create_directories("Assets/");
 	}
 
-	for (auto& i : std::filesystem::directory_iterator("Assets/" + Path))
+	for (auto& i : std::filesystem::directory_iterator(GetPathDisplayName()))
 	{
 		string FilePath = i.path().string();
 
@@ -50,7 +50,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 		if (i.is_directory())
 		{
-			Extension = "<dir>";
+			Extension = "/dir/";
 			OnClick = [this, i]()
 				{
 					Path.append(i.path().filename().string() + "/");
@@ -91,8 +91,9 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 		Out.push_back(Item{
 			.Name = file::FileNameWithoutExt(i.path().filename().string()),
+			.Path = i.path().filename().string(),
 			.IsDirectory = bool(i.is_directory()),
-			.Color = FileNameColors[i.is_directory() ? "<dir>" : ""],
+			.Color = FileNameColors[i.is_directory() ? "/dir/" : Extension],
 			.OnRightClick = OnRightClick,
 			.OnClick = OnClick,
 			.Image = Image,
@@ -105,8 +106,9 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				return true;
 			if (!a.IsDirectory && b.IsDirectory)
 				return false;
-			return a.Name > b.Name;
+			return str::Lower(a.Name) < str::Lower(b.Name);
 		});
+
 
 	return Out;
 }
@@ -190,15 +192,18 @@ static void Import(engine::string CurrentPath)
 
 void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
-	using namespace engine::internal::platform;
-
 	new DropdownMenu(
 		{
-			DropdownMenu::Option{.OnClicked = [this]() { Import("Assets/" + Path); }, .Name = "Import...", .Separator = true},
-			DropdownMenu::Option{.Name = "New scene"},
+			DropdownMenu::Option{.OnClicked = [this]() { Import(GetPathDisplayName()); }, .Name = "Import...", .Separator = true},
+			DropdownMenu::Option{.OnClicked = [this]()
+			{
+				EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
+				UpdateItems();
+			}, .Name = "New scene"},
 			DropdownMenu::Option{.Name = "New material", .Separator = true},
 			DropdownMenu::Option{.OnClicked = [this]()
 			{
+				using namespace engine::internal::platform;
 #if WINDOWS
 				Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
 #else
@@ -208,5 +213,9 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			}, .Name = "Open in file explorer"},
 		},
 		Position);
+}
+engine::string engine::editor::AssetBrowser::GetPathDisplayName()
+{
+	return "Assets/" + Path;
 }
 #endif

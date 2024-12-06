@@ -5,6 +5,7 @@
 #include <Engine/File/SerializedData.h>
 #include <Engine/Graphics/Model.h>
 #include <unordered_map>
+#include "AssetRef.h"
 
 namespace engine
 {	
@@ -23,6 +24,7 @@ namespace engine
 		};
 		ModelData(string FilePath);
 		ModelData();
+		~ModelData();
 
 		void ToFile(string FilePath);
 
@@ -39,9 +41,9 @@ namespace engine
 		size_t References;
 
 		static void RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
-		static void RegisterModel(string AssetPath, bool Lock = true);
-		static GraphicsModel* GetModel(string NameOrPath);
-		static void UnloadModel(ModelData* Target);
+		static void RegisterModel(AssetRef Asset, bool Lock = true);
+		static GraphicsModel* GetModel(AssetRef Asset);
+		static void UnloadModel(GraphicsModel* Target);
 	private:
 		static std::unordered_map<string, GraphicsModel> Models;
 	};

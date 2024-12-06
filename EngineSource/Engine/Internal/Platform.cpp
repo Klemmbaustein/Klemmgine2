@@ -1,4 +1,5 @@
 #include "Platform.h"
+#include <array>
 #ifdef WINDOWS
 #include <Windows.h>
 #include <ShObjIdl_core.h>
@@ -80,6 +81,7 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 		std::pair(Log::LogColor::Red, FOREGROUND_RED | FOREGROUND_INTENSITY),
 		std::pair(Log::LogColor::Green,FOREGROUND_GREEN | FOREGROUND_INTENSITY),
 		std::pair(Log::LogColor::Cyan, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY),
+		std::pair(Log::LogColor::Magenta, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY),
 		std::pair(Log::LogColor::Blue, FOREGROUND_BLUE | FOREGROUND_INTENSITY),
 		std::pair(Log::LogColor::Yellow, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY),
 	};
@@ -141,8 +143,8 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 			WideFilters.pop_back();
 
 		Types.push_back(COMDLG_FILTERSPEC{
-			.pszName = wcsdup(StrToWstr(i.Name).c_str()),
-			.pszSpec = wcsdup(WideFilters.c_str())
+			.pszName = SDL_wcsdup(StrToWstr(i.Name).c_str()),
+			.pszSpec = SDL_wcsdup(WideFilters.c_str())
 			});
 		FilterIndex++;
 	}
@@ -217,16 +219,18 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 {
 	static std::map<Log::LogColor, const char*> ColorCodes =
 	{
-		std::pair(Log::LogColor::Default, "39"),
-		std::pair(Log::LogColor::White, "97"),
-		std::pair(Log::LogColor::Gray, "39"),
-		std::pair(Log::LogColor::Red, "91"),
-		std::pair(Log::LogColor::Green, "92"),
-		std::pair(Log::LogColor::Blue, "94"),
-		std::pair(Log::LogColor::Yellow, "93"),
+		std::pair(Log::LogColor::Default,"\x1B[0m"),
+		std::pair(Log::LogColor::White, "\x1B[37m"),
+		std::pair(Log::LogColor::Gray, "\x1B[0m"),
+		std::pair(Log::LogColor::Cyan, "\x1B[36m"),
+		std::pair(Log::LogColor::Magenta, "\x1B[35m"),
+		std::pair(Log::LogColor::Red, "\x1B[31m"),
+		std::pair(Log::LogColor::Green, "\x1B[32m"),
+		std::pair(Log::LogColor::Blue, "\x1B[34m"),
+		std::pair(Log::LogColor::Yellow, "\x1B[33m"),
 	};
 
-	std::cout << "\033[" << ColorCodes[NewColor] << "m";
+	printf("%s", ColorCodes[NewColor]);
 }
 
 void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target)
@@ -249,3 +253,58 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 }
 
 #endif
+
+
+#if WINDOWS
+static std::wstring ToWstring(std::string utf8)
+{
+	int WideLength = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, NULL, 0);
+	wchar_t* wstr = new wchar_t[WideLength];
+	MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, wstr, WideLength);
+	std::wstring str = wstr;
+	delete[] wstr;
+	return str;
+}
+#else
+static bool CommandExists(std::string Command)
+{
+	return system(("command -v " + Command + " > /dev/null").c_str()) == 0;
+}
+#endif
+
+// Stolen from SystemWM_Win32 and SystemWM_Linux in KlemmUI.
+// SDL also has a message box function but that one looks weird. (It doesn't even seem to use MessageBox() on Windows)
+void engine::internal::platform::ShowMessageBox(string Title, string Message, int Type)
+{
+	if (Type < 0 || Type > 2)
+	{
+		return;
+	}
+
+#if WINDOWS
+	std::array<UINT, 3> Types = { 0, MB_ICONWARNING, MB_ICONERROR };
+
+	::MessageBoxW(NULL, ToWstring(Message).c_str(), ToWstring(Title).c_str(), Types[Type]);
+#else
+	if (CommandExists("kdialog"))
+	{
+		std::array<const char*, 3> Types = { "msgbox", "sorry", "error" };
+
+		Execute("/usr/bin/env kdialog --title \"" + Title + "\" --" + Types[Type] + " \"" + Message + "\"");
+		return;
+	}
+
+	if (CommandExists("zenity"))
+	{
+		std::array<const char*, 3> Types = { "info", "warning", "error" };
+
+		Execute("/usr/bin/env zenity --no-markup --title \"" + Title + "\" --" + Types[Type] + " --text \"" + Message + "\"");
+		return;
+	}
+
+	// If kdialog and zenity don't exist, there's no good way of creating a message box.
+	// TODO: Maybe create a KlemmUI window containing the message?
+	// Making GUI apps for Linux is great!
+#endif
+
+}

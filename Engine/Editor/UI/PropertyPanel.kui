@@ -1,0 +1,69 @@
+
+element PropertyEntryElement
+{
+	var PropertyName;
+	var CompactTextPadding = 5;
+
+	orientation = horizontal;
+	verticalAlign = centered;
+
+	child UIBox textBox
+	{
+		child UIText
+		{
+			padding = 5px;
+			upPadding = 7px;
+			rightPadding = 10px;
+			text = PropertyName;
+			color = Color_Text;
+			size = 12px;
+			wrap = 80px;
+			downPadding = CompactTextPadding;
+		}
+		minSize = (80, 0)px;
+		maxSize = (80, 200)px;
+		horizontalAlign = reverse;
+	}
+
+	child UIBackground separator
+	{
+		size = 1px;
+
+		color = Color_BackgroundHighlight;
+		tryFill = true;
+	}
+
+	child UIBox valueBox
+	{
+		padding = 5px;
+		upPadding = 7px;
+		orientation = vertical;
+	}
+}
+
+element PropertyHeaderElement
+{
+	var Title;
+
+	orientation = vertical;
+	tryFill = true;
+
+	child UIText
+	{
+		padding = 5px;
+		downPadding = 3px;
+		leftPadding = 10px;
+		color = Color_Text;
+		text = Title;
+		size = 12px;
+	}
+
+	child UIBackground
+	{
+		padding = 1px;
+		downPadding = 0;
+		color = Color_BackgroundHighlight;
+		tryFill = true;
+		size = 1px;
+	}
+}

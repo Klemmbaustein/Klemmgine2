@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdarg>
 #include <cmath>
+#include <algorithm>
 
 std::vector<engine::string> engine::str::Split(string Target, const string& Delim)
 {
@@ -36,6 +37,13 @@ engine::string engine::str::ReplaceChar(string Target, char c, char With)
 	return Target;
 }
 
+engine::string engine::str::Lower(string Input)
+{
+	std::transform(Input.begin(), Input.end(), Input.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+	return Input;
+}
+
 int32_t engine::str::Hash(const string& Target)
 {
 	unsigned int hash = 1315423911;
@@ -59,10 +67,10 @@ engine::string engine::str::Format(string Format, ...)
 		{
 			delete[] Buffer;
 		}
-		Buffer = new char[Size]();
+		Buffer = new char[Size + 1]();
 		va_list va;
 		va_start(va, Format);
-		NewSize = vsnprintf(Buffer, Size, Format.c_str(), va);
+		NewSize = vsnprintf(Buffer, Size + 1, Format.c_str(), va);
 		va_end(va);
 
 	} while (NewSize > Size);

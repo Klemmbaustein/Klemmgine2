@@ -1,12 +1,11 @@
 #include "TextSerializer.h"
-#include <iostream>
 #include <fstream>
 #include <filesystem>
 #include <map>
 
 static const std::map<engine::SerializedData::DataType, engine::string> TypeNames =
 {
-	{ engine::SerializedData::DataType::None, "null" },
+	{ engine::SerializedData::DataType::Null, "null" },
 	{ engine::SerializedData::DataType::Int32, "int" },
 	{ engine::SerializedData::DataType::Byte, "byte" },
 	{ engine::SerializedData::DataType::Boolean, "bool" },
@@ -14,7 +13,7 @@ static const std::map<engine::SerializedData::DataType, engine::string> TypeName
 	{ engine::SerializedData::DataType::Vector3, "vec3" },
 	{ engine::SerializedData::DataType::String, "str" },
 	{ engine::SerializedData::DataType::Array, "array" },
-	{ engine::SerializedData::DataType::BinaryTypedArray, "typed_array" },
+	{ engine::SerializedData::DataType::Internal_BinaryTypedArray, "typed_array" },
 	{ engine::SerializedData::DataType::Object, "obj" },
 };
 
@@ -38,7 +37,7 @@ void engine::TextSerializer::WriteObject(const std::vector<SerializedData>& Targ
 		WriteIndent(Depth + 1, Stream);
 		Stream << "\"" << EscapeString(i.Name) << "\"";
 		Stream << ": " << TypeNames.at(i.Value.GetType());
-		if (i.Value.GetType() != SerializedData::DataType::None)
+		if (i.Value.GetType() != SerializedData::DataType::Null)
 		{
 			Stream << " = ";
 			ValueToString(i.Value, Stream, Depth + 1);
@@ -87,10 +86,10 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 		Stream << Target.GetInt();
 		break;
 	case SerializedData::DataType::Byte:
-		Stream << Target.GetByte() + "b";
+		Stream << Target.GetByte();
 		break;
 	case SerializedData::DataType::Boolean:
-		Stream << Target.GetBool() ? "true" : "false";
+		Stream << (Target.GetBool() ? "true" : "false");
 		break;
 	case SerializedData::DataType::Float:
 		Stream << Target.GetFloat();
@@ -101,7 +100,7 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 	case SerializedData::DataType::String:
 		Stream << "\"" << EscapeString(Target.GetString()) << "\"";
 		break;
-	case SerializedData::DataType::BinaryTypedArray:
+	case SerializedData::DataType::Internal_BinaryTypedArray:
 	case SerializedData::DataType::Array:
 	{
 		Stream << "[\n";
@@ -119,7 +118,7 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 	case SerializedData::DataType::Object:
 		WriteObject(Target.GetObject(), Stream, Depth);
 		break;
-	case SerializedData::DataType::None:
+	case SerializedData::DataType::Null:
 	default:
 		break;
 	}
@@ -156,8 +155,7 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 {
 	if (!TryReadChar(Stream, '{'))
 	{
-		std::cerr << "object does not start with '{' (starts with: '" << char() << "')" << std::endl;
-		return;
+		throw SerializeReadException(str::Format("object does not start with '{' (starts with: '%c')", GetNextChar(Stream)));
 	}
 
 	while (true)
@@ -171,8 +169,7 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 
 		if (!TryReadChar(Stream, ':'))
 		{
-			std::cerr << "expected a :" << std::endl;
-			return;
+			throw SerializeReadException(str::Format("Expected a ':' after \"%s\", got '%c'", Name.c_str(), GetNextChar(Stream)));
 		}
 		std::string Type = ReadWord(Stream);
 		SerializedValue Value;
@@ -180,14 +177,13 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 		{
 			if (!TryReadChar(Stream, '='))
 			{
-				std::cerr << "expected a =" << std::endl;
-				return;
+				throw SerializeReadException(str::Format("Expected a '=' after the type, got '%c'", GetNextChar(Stream)));
 			}
 			Value = ReadValue(Stream, GetTypeFromString(Type));
 		}
 		if (!TryReadChar(Stream, ';'))
 		{
-			std::cerr << "expected a semicolon" << std::endl;
+			throw SerializeReadException(str::Format("Expected a ';' after value, got '%c'", GetNextChar(Stream)));
 		}
 		Object.push_back(SerializedData(Name, Value));
 	}
@@ -214,24 +210,24 @@ engine::SerializedValue engine::TextSerializer::ReadValue(std::istream& Stream, 
 	case engine::SerializedData::DataType::String:
 		return ReadString(Stream);
 
-	case SerializedData::DataType::BinaryTypedArray:
+	case SerializedData::DataType::Internal_BinaryTypedArray:
 	case engine::SerializedData::DataType::Array:
 	{
 		std::vector<SerializedValue> Array;
 		if (!TryReadChar(Stream, '['))
 		{
-			std::cerr << "Invalid array" << std::endl;
+			throw SerializeReadException(str::Format("Invalid array. Should start with [, starts with %c", GetNextChar(Stream)));
 		}
 		while (!TryReadChar(Stream, ']'))
 		{
 			ReadWhitespace(Stream);
 			char TypeBuffer[128];
 			Stream.get(TypeBuffer, sizeof(TypeBuffer) - 1, ':');
+			TypeBuffer[sizeof(TypeBuffer) - 1] = 0;
 
 			if (!TryReadChar(Stream, ':'))
 			{
-				std::cout << "expected :" << std::endl;
-				break;
+				throw SerializeReadException(str::Format("Expected a ':' after '%s', got '%c'", TypeBuffer, GetNextChar(Stream)));
 			}
 			Array.push_back(ReadValue(Stream, GetTypeFromString(TypeBuffer)));
 			TryReadChar(Stream, ',');
@@ -244,7 +240,7 @@ engine::SerializedValue engine::TextSerializer::ReadValue(std::istream& Stream, 
 		ReadObject(Object, Stream);
 		return Object;
 	}
-	case engine::SerializedData::DataType::None:
+	case engine::SerializedData::DataType::Null:
 	default:
 		break;
 	}
@@ -263,8 +259,7 @@ engine::string engine::TextSerializer::ReadString(std::istream& Stream)
 			continue;
 		if (New == '"')
 			break;
-		std::cerr << "Unexpected '" << char(New) << "' (dec " << New << ")" << std::endl;
-		return "";
+		throw SerializeReadException(str::Format("Unexpected character '%c' (hex %x)", char(New), New));
 	}
 
 	string Out;
@@ -312,8 +307,7 @@ engine::string engine::TextSerializer::ReadVector(std::istream& Stream)
 			continue;
 		if (New == '<')
 			break;
-		std::cerr << "Unexpected '" << char(New) << "' (dec " << New << ")" << std::endl;
-		return "";
+		throw SerializeReadException(str::Format("Unexpected character '%c' (hex %x)", char(New), New));
 	}
 
 	string Out;
@@ -360,7 +354,7 @@ engine::string engine::TextSerializer::ReadWord(std::istream& Stream)
 		if (New == EOF)
 			break;
 
-		if (New == '\n' || New == '\t' || New == ' ' || New == '\r' || New == ',' || New == ';')
+		if (New == '\n' || New == '\t' || New == ' ' || New == '\r' || New == ',' || New == ';' || New == ':')
 			break;
 
 		Out.push_back(char(New));
@@ -404,6 +398,12 @@ void engine::TextSerializer::ReadWhitespace(std::istream& Stream)
 	Stream.seekg(-1, Stream.cur);
 }
 
+char engine::TextSerializer::GetNextChar(std::istream& Stream)
+{
+	ReadWhitespace(Stream);
+	return char(Stream.get());
+}
+
 engine::SerializedData::DataType engine::TextSerializer::GetTypeFromString(string Str)
 {
 	for (auto& i : TypeNames)
@@ -411,5 +411,5 @@ engine::SerializedData::DataType engine::TextSerializer::GetTypeFromString(strin
 		if (i.second == Str)
 			return i.first;
 	}
-	return SerializedData::DataType::None;
+	return SerializedData::DataType::Null;
 }

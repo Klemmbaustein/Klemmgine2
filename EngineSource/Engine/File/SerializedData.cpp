@@ -30,7 +30,7 @@ void engine::SerializedData::DataValue::CopyFrom(const DataValue& From)
 	case engine::SerializedData::DataType::Object:
 		Object = new std::vector<SerializedData>(*From.Object);
 		break;
-	case engine::SerializedData::DataType::None:
+	case engine::SerializedData::DataType::Null:
 	default:
 		Int = 0;
 		break;
@@ -39,7 +39,7 @@ void engine::SerializedData::DataValue::CopyFrom(const DataValue& From)
 
 void engine::SerializedData::DataValue::Free() const
 {
-	if (Type == DataType::Array || Type == DataType::BinaryTypedArray)
+	if (Type == DataType::Array || Type == DataType::Internal_BinaryTypedArray)
 	{
 		delete Array;
 	}
@@ -186,7 +186,7 @@ engine::string engine::SerializedData::DataValue::ToString(size_t Depth) const
 		Out.push_back('}');
 		return Out;
 	}
-	case DataType::None:
+	case DataType::Null:
 	default:
 		break;
 	}
@@ -284,12 +284,17 @@ engine::string engine::SerializedData::ToString(size_t Depth) const
 	return Out;
 }
 
-engine::SerializeException::SerializeException(const char* Msg)
+engine::SerializeException::SerializeException(string Msg)
 {
 	this->ErrorMsg = Msg;
 }
 
 const char* engine::SerializeException::what() const noexcept
 {
-	return this->ErrorMsg;
+	return this->ErrorMsg.c_str();
+}
+
+engine::SerializeReadException::SerializeReadException(string Msg)
+	: SerializeException(str::Format("File read error: %s", Msg.c_str()))
+{
 }

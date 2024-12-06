@@ -28,6 +28,7 @@ namespace engine
 		static string ReadWord(std::istream& Stream);
 		static bool TryReadChar(std::istream& Stream, char c);
 		static void ReadWhitespace(std::istream& Stream);
+		static char GetNextChar(std::istream& Stream);
 
 		static SerializedData::DataType GetTypeFromString(string Str);
 	};

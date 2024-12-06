@@ -48,19 +48,23 @@
 	},
 	{
 	  "name": "WSL-GCC-Debug",
-	  "generator": "Unix Makefiles",
+	  "generator": "Ninja",
 	  "configurationType": "Debug",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeExecutable": "cmake",
 	  "cmakeCommandArgs": "",
-	  "buildCommandArgs": "-j 32",
 	  "ctestCommandArgs": "",
 	  "inheritEnvironments": [ "linux_x64" ],
 	  "wslPath": "${defaultWSLPath}",
 	  "variables": [
 		{
 		  "name": "ENGINE_EDITOR",
+		  "value": "True",
+		  "type": "BOOL"
+		},
+		{
+		  "name": "ENGINE_DYNAMIC_SYMBOLS",
 		  "value": "True",
 		  "type": "BOOL"
 		}
@@ -85,7 +89,6 @@
 		  "type": "BOOL"
 		}
 	  ]
-
 	}
   ]
 }

@@ -168,6 +168,11 @@ Vector3 engine::Vector3::operator/(const Vector3& Other)
 	return Vector3(X / Other.X, Y / Other.Y, Z / Other.Z);
 }
 
+bool engine::Vector3::operator==(const Vector3& Other) const
+{
+	return X == Other.X && Y == Other.Y && Z == Other.Z;
+}
+
 Vector3 engine::Vector3::FromString(string VectorString)
 {
 	std::vector Elements = str::Split(VectorString, " \t\n");

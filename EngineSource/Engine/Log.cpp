@@ -6,6 +6,43 @@ std::mutex engine::Log::LogMutex;
 
 void engine::Log::PrintMsg(string Message, LogColor Color, std::vector<LogPrefix> Prefixes)
 {
+	std::vector<string> Lines = str::Split(Message, "\n");
+	for (auto& i : Lines)
+	{
+		PrintLine(i, Color, Prefixes);
+	}
+}
+
+void engine::Log::Info(string Message, std::vector<LogPrefix> Prefixes)
+{
+	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Info", .Color = Log::LogColor::White, });
+
+	PrintMsg(Message, Log::LogColor::White, Prefixes);
+}
+
+void engine::Log::Warn(string Message, std::vector<LogPrefix> Prefixes)
+{
+	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Warn", .Color = Log::LogColor::Yellow, });
+
+	PrintMsg(Message, Log::LogColor::Yellow, Prefixes);
+}
+
+std::vector<engine::Log::Message> engine::Log::GetMessages()
+{
+	std::lock_guard g{ LogMutex };
+
+	std::vector<Message> MessagesCopy = LogMessages;
+	return MessagesCopy;
+}
+
+size_t engine::Log::GetLogMessagesCount()
+{
+	std::lock_guard g{ LogMutex };
+	return LogMessages.size();
+}
+
+void engine::Log::PrintLine(string Message, LogColor Color, const std::vector<LogPrefix>& Prefixes)
+{
 	using namespace internal::platform;
 
 	std::lock_guard g{ LogMutex };
@@ -28,18 +65,4 @@ void engine::Log::PrintMsg(string Message, LogColor Color, std::vector<LogPrefix
 		.Message = Message,
 		.Color = Color,
 		});
-}
-
-std::vector<engine::Log::Message> engine::Log::GetMessages()
-{
-	std::lock_guard g{ LogMutex };
-
-	std::vector<Message> MessagesCopy = LogMessages;
-	return MessagesCopy;
-}
-
-size_t engine::Log::GetLogMessagesCount()
-{
-	std::lock_guard g{ LogMutex };
-	return LogMessages.size();
 }

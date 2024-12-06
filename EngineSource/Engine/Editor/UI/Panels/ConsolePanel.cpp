@@ -13,6 +13,7 @@ static std::map<Log::LogColor, kui::Vec3f> LogColorValues =
 	std::pair(Log::LogColor::Red, kui::Vec3f(1, 0.2f, 0.0f)),
 	std::pair(Log::LogColor::Green, kui::Vec3f(0.5f, 1.0f, 0.0f)),
 	std::pair(Log::LogColor::Cyan, kui::Vec3f(0, 1, 1)),
+	std::pair(Log::LogColor::Magenta, kui::Vec3f(1, 0.1f, 1)),
 	std::pair(Log::LogColor::Blue, kui::Vec3f(0.25f, 0.25f, 1)),
 	std::pair(Log::LogColor::Yellow, kui::Vec3f(1, 1, 0)),
 };

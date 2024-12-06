@@ -29,6 +29,7 @@ element LoadingBarElement
 			tryFill = true;
 			size = 25px;
 			padding = 10px;
+			upPadding = 0;
 			color = Color_DarkBackground;
 			orientation = vertical;
 			border = 1px;

@@ -27,3 +27,8 @@ std::vector<engine::editor::ItemBrowser::Item> engine::editor::ClassBrowser::Get
 void engine::editor::ClassBrowser::Back()
 {
 }
+
+engine::string engine::editor::ClassBrowser::GetPathDisplayName()
+{
+	return "Classes::" + str::ReplaceChar(Path, '/', '.');
+}

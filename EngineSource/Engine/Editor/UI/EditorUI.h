@@ -1,7 +1,7 @@
 #ifdef EDITOR
 #pragma once
 #include <kui/UI/UIBackground.h>
-#include "EditorPanel.h"
+#include "Panels/EditorPanel.h"
 #include "StatusBar.kui.hpp"
 
 namespace engine::editor
@@ -41,6 +41,22 @@ namespace engine::editor
 		static kui::Font* MonospaceFont;
 		static EditorTheme Theme;
 
+		kui::UIBox* DraggedBox = nullptr;
+
+		struct DraggedItem
+		{
+		public:
+			string Name;
+			string Type;
+			string Path;
+			string Icon;
+			kui::Vec3f Color;
+		};
+
+		DraggedItem CurrentDraggedItem;
+
+		void StartDrag(DraggedItem With);
+
 		enum class StatusType
 		{
 			Info,
@@ -51,6 +67,7 @@ namespace engine::editor
 		static void SetStatusMessage(string NewMessage, StatusType Type);
 
 		EditorUI();
+		static string CreateAsset(string Path, string Name, string Extension);
 		static void UpdateTheme(kui::Window* Target);
 		void Update();
 		void UpdateBackgrounds();

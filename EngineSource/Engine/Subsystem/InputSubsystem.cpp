@@ -6,7 +6,7 @@
 #include <Engine/Internal/SystemWM_SDL3.h>
 
 engine::subsystem::InputSubsystem::InputSubsystem()
-	: ISubsystem("Input", Log::LogColor::Cyan)
+	: ISubsystem("Input", Log::LogColor::Magenta)
 {
 	THIS_SUBSYSTEM_DEPENDS_ON(VideoSubsystem);
 #if !EDITOR

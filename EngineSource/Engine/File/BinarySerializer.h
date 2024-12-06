@@ -5,16 +5,74 @@
 
 namespace engine
 {
+
+	/**
+	* @brief
+	* Class to convert a SerializedValue objects to binary files and .
+	* 
+	* @ingroup serialize
+	*/
 	class BinarySerializer
 	{
 	public:
+		/// The current version of the binary format used by the engine.
 		static const string FORMAT_VERSION;
 
+		/**
+		* @brief
+		* Converts the given serialized data structure to a binary array.
+		* 
+		* @param Target
+		* The serialized object to be written.
+		* 
+		* @param Out
+		* The Output bytes.
+		* 
+		* @param FormatIdentifier
+		* The name of the format written to the binary data.
+		* 
+		* @see BinarySerializer::ToFile()
+		*/
 		static void ToBinaryData(const std::vector<SerializedData>& Target, std::vector<uByte>& Out, string FormatIdentifier = "k2b");
-		static void ValueToBinaryData(const SerializedValue& Target, std::vector<uByte>& Out, SerializedData::DataType Type = SerializedData::DataType::None);
 
+		/**
+		* @brief
+		* Converts the given serialized value to bytes.
+		*/
+		static void ValueToBinaryData(const SerializedValue& Target, std::vector<uByte>& Out, SerializedData::DataType Type = SerializedData::DataType::Null);
+
+		/**
+		* @brief
+		* Converts the given serialized data structure to a binary format and writes them to a file.
+		* 
+		* @param Target
+		* The serialized object to be written.
+		*
+		* @param FileName
+		* The output file.
+		*
+		* @param FormatIdentifier
+		* The name of the format written to the binary data.
+		* 
+		* @see BinarySerializer::ToBinaryData()
+		*/
 		static void ToFile(const std::vector<SerializedData>& Target, string FileName, string FormatIdentifier = "k2b");
 
+		/**
+		* @brief
+		* Loads serialized data from the given file.
+		* 
+		* @param File
+		* The file from which the binary data should be read.
+		* 
+		* @param FormatIdentifier
+		* The format that the file should use. If the format doesn't match, this function will fail.
+		* 
+		* @return
+		* A vector of serialized data read from the file.
+		* 
+		* @throw SerializeReadException
+		*/
 		static std::vector<SerializedData> FromFile(string File, string FormatIdentifier);
 	private:
 		struct BinaryStream
@@ -36,8 +94,8 @@ namespace engine
 			bool Empty() const;
 		};
 
-		static SerializedData ReadSerializedData(BinaryStream& From);
-		static void ReadValue(BinaryStream& From, SerializedValue& To, SerializedData::DataType Type = SerializedData::DataType::None);
+		static void ReadSerializedData(BinaryStream& From, SerializedData& Out);
+		static void ReadValue(BinaryStream& From, SerializedValue& To, SerializedData::DataType Type = SerializedData::DataType::Null);
 
 		static void WriteString(string Str, std::vector<uByte>& Out);
 		static void CopyTo(void* Data, size_t Size, std::vector<uByte>& Out);

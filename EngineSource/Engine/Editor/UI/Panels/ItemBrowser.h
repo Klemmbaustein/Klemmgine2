@@ -13,11 +13,10 @@ namespace engine::editor
 		ItemBrowser(string Name, string InternalName);
 		ItemBrowserHeading* Heading = nullptr;
 
-		string RootPathName;
-
 		struct Item
 		{
 			string Name;
+			string Path;
 			bool Selected = false;
 			bool IsDirectory = false;
 			kui::Vec3f Color;
@@ -33,6 +32,7 @@ namespace engine::editor
 		void OnResized() override;
 
 		void UpdateItems();
+		virtual string GetPathDisplayName() = 0;
 		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
 		virtual std::vector<Item> GetItems() = 0;
 		virtual void Back() = 0;

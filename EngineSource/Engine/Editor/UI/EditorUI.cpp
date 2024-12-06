@@ -1,30 +1,56 @@
 #ifdef EDITOR
 #include "EditorUI.h"
 #include <Engine/Engine.h>
+#include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
-#include <kui/Resource.h>
-#include <MenuBar.kui.hpp>
+#include <Engine/Editor/Assets.h>
 #include "DropdownMenu.h"
+#include <kui/Resource.h>
+#include <filesystem>
+#include <fstream>
 
-#include "Viewport.h"
-#include "AssetBrowser.h"
-#include "ClassBrowser.h"
-#include "ConsolePanel.h"
-#include "MessagePanel.h"
-#include "ObjectListPanel.h"
-#include "PropertyPanel.h"
+#include "Panels/Viewport.h"
+#include "Panels/AssetBrowser.h"
+#include "Panels/ClassBrowser.h"
+#include "Panels/ConsolePanel.h"
+#include "Panels/MessagePanel.h"
+#include "Panels/ObjectListPanel.h"
+#include "Panels/PropertyPanel.h"
 
-const float StatusBarSize = 24;
-const float MenuBarSize = 24;
-engine::editor::EditorUI* engine::editor::EditorUI::Instance = nullptr;
-kui::Font* engine::editor::EditorUI::EditorFont = nullptr;
-kui::Font* engine::editor::EditorUI::MonospaceFont = nullptr;
-engine::editor::EditorTheme engine::editor::EditorUI::Theme;
-engine::string engine::editor::EditorUI::DefaultFontName = "res:DefaultFont.ttf";
-engine::editor::EditorPanel* engine::editor::EditorUI::FocusedPanel = nullptr;
+#include <ItemBrowser.kui.hpp>
+#include <MenuBar.kui.hpp>
+
+using namespace engine::editor;
+
+static const float StatusBarSize = 24;
+static const float MenuBarSize = 24;
+
+EditorUI* EditorUI::Instance = nullptr;
+kui::Font* EditorUI::EditorFont = nullptr;
+kui::Font* EditorUI::MonospaceFont = nullptr;
+EditorTheme EditorUI::Theme;
+engine::string EditorUI::DefaultFontName = "res:DefaultFont.ttf";
+EditorPanel* EditorUI::FocusedPanel = nullptr;
 
 std::vector<engine::string> MenuBarEntries = { "File", "Edit", "Scene", "Window", "Help" };
+
+void engine::editor::EditorUI::StartDrag(DraggedItem With)
+{
+	if (DraggedBox)
+		return;
+
+	CurrentDraggedItem = With;
+
+	auto* NewDragElement = new ItemBrowserButton();
+	NewDragElement->UpdateElement();
+	NewDragElement->SetBackgroundColor(EditorUI::Theme.DarkBackground2);
+	NewDragElement->SetImage(With.Icon);
+	NewDragElement->SetColor(With.Color);
+	NewDragElement->SetName(With.Name);
+
+	DraggedBox = NewDragElement;
+}
 
 void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Type)
 {
@@ -34,8 +60,9 @@ void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Ty
 	}
 	else
 	{
-		thread::ExecuteOnMainThread([NewMessage, Type]() {
-			SetStatusMainThread(NewMessage, Type);
+		thread::ExecuteOnMainThread([NewMessage, Type]()
+			{
+				SetStatusMainThread(NewMessage, Type);
 			});
 	}
 }
@@ -55,7 +82,7 @@ engine::editor::EditorUI::EditorUI()
 	using namespace subsystem;
 
 	Instance = this;
-
+	assets::ScanForAssets();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	VideoSystem->OnResizedCallbacks.push_back([this](kui::Vec2ui NewSize)
@@ -91,7 +118,7 @@ engine::editor::EditorUI::EditorUI()
 	{
 		auto* btn = new MenuBarButton();
 		btn->SetName(i);
-		btn->button->OnClicked = [this, btn]()
+		btn->button->OnClicked = [btn]()
 			{
 				new DropdownMenu({ DropdownMenu::Option{
 					.OnClicked = []() {abort(); },
@@ -148,6 +175,25 @@ engine::editor::EditorUI::EditorUI()
 	SetStatusMainThread("Ready", StatusType::Info);
 }
 
+engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)
+{
+	string FileName = Path + "/" + Name;
+	string FileNumber = "";
+	int32 FileNumberValue = 0;
+
+	while (std::filesystem::exists(FileName + FileNumber + "." + Extension))
+	{
+		FileNumber = str::Format(" (%i)", ++FileNumberValue);
+	}
+
+	string NewPath = FileName + FileNumber + "." + Extension;
+
+	std::ofstream File = std::ofstream(NewPath);
+	File.close();
+
+	return NewPath;
+}
+
 void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
 {
 	Target->Markup.SetGlobal("Color_Text", Theme.Text);
@@ -165,6 +211,17 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
 
 void engine::editor::EditorUI::Update()
 {
+	if (DraggedBox)
+	{
+		DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize() / 2);
+
+		if (!input::IsLMBDown || input::IsRMBDown)
+		{
+			delete DraggedBox;
+			DraggedBox = nullptr;
+		}
+	}
+
 	RootPanel->UpdatePanel();
 
 	DropdownMenu::UpdateDropdowns();

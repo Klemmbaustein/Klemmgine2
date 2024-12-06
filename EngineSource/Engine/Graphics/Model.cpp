@@ -15,6 +15,10 @@ engine::graphics::Model::Model(const ModelData* From)
 
 engine::graphics::Model::~Model()
 {
+	for (VertexBuffer* i : ModelVertexBuffer)
+	{
+		delete i;
+	}
 }
 
 void engine::graphics::Model::Draw(Vector3 At, graphics::Camera* With, ShaderObject* UsedShader)

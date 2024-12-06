@@ -2,7 +2,7 @@
 #include "BinarySerializer.h"
 #include <filesystem>
 #include <mutex>
-#include <optional>
+#include <Engine/Log.h>
 #include <Engine/MainThread.h>
 
 using namespace engine::graphics;
@@ -18,6 +18,10 @@ engine::ModelData::ModelData(string FilePath)
 }
 
 engine::ModelData::ModelData()
+{
+}
+
+engine::ModelData::~ModelData()
 {
 }
 
@@ -130,15 +134,27 @@ void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name, bo
 		ModelDataMutex.unlock();
 }
 
-void engine::GraphicsModel::RegisterModel(string AssetPath, bool Lock)
+void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 {
-	ModelData* New = new ModelData(AssetPath);
+	if (Lock)
+		ModelDataMutex.lock();
+
+	if (Models.contains(Asset.FilePath))
+	{
+		if (Lock)
+			ModelDataMutex.unlock();
+		return;
+	}
+	if (Lock)
+		ModelDataMutex.unlock();
+
+	ModelData* New = new ModelData(Asset.FilePath);
 	if (Lock)
 		ModelDataMutex.lock();
 
 	if (thread::IsMainThread)
 	{
-		Models.insert({ AssetPath, GraphicsModel{
+		Models.insert({ Asset.FilePath, GraphicsModel{
 			.Data = New,
 			.Drawable = new Model(New),
 			.References = 1,
@@ -146,7 +162,7 @@ void engine::GraphicsModel::RegisterModel(string AssetPath, bool Lock)
 	}
 	else
 	{
-		Models.insert({ AssetPath, GraphicsModel{
+		Models.insert({ Asset.FilePath, GraphicsModel{
 			.Data = New,
 			.Drawable = nullptr,
 			.References = 1,
@@ -154,21 +170,26 @@ void engine::GraphicsModel::RegisterModel(string AssetPath, bool Lock)
 	}
 	if (Lock)
 		ModelDataMutex.unlock();
+
 }
 
-engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
+engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 {
 	std::lock_guard g{ ModelDataMutex };
-	auto Found = Models.find(NameOrPath);
+	auto Found = Models.find(Asset.FilePath);
 	if (Found == Models.end())
 	{
-		if (std::filesystem::exists(NameOrPath))
+		if (std::filesystem::exists(Asset.FilePath))
 		{
-			RegisterModel(NameOrPath, false);
-			Found = Models.find(NameOrPath);
+			RegisterModel(Asset, false);
+			Found = Models.find(Asset.FilePath);
 		}
 		else
 			return nullptr;
+	}
+	else
+	{
+		Found->second.References++;
 	}
 
 	if (Found->second.Drawable == nullptr)
@@ -179,6 +200,22 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(string NameOrPath)
 	return &Found->second;
 }
 
-void engine::GraphicsModel::UnloadModel(ModelData* Target)
+void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 {
+	for (auto& i : Models)
+	{
+		if (&i.second != Target)
+		{
+			continue;
+		}
+		i.second.References--;
+		if (i.second.References == 0)
+		{
+			delete i.second.Data;
+			delete i.second.Drawable;
+			Models.erase(i.first);
+		}
+		return;
+	}
+	Log::Warn("Failed to unload model.");
 }

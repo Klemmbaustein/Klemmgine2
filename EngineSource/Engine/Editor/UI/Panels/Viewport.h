@@ -3,6 +3,8 @@
 #include "EditorPanel.h"
 #include <kui/Timer.h>
 #include <kui/UI/UIText.h>
+#include <Engine/Objects/SceneObject.h>
+#include <set>
 
 namespace engine::editor
 {
@@ -21,6 +23,7 @@ namespace engine::editor
 		void OnResized() override;
 		void Update() override;
 		kui::UIBackground* ViewportBackground = nullptr;
+		std::set<SceneObject*> SelectedObjects;
 
 	private:
 

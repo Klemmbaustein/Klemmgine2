@@ -26,6 +26,7 @@ element ObjectEntryElement
 	var Icon;
 	var Name;
 	var Color;
+	var TextColor = 1;
 	var LeftPadding = 5;
 
 	tryFill = true;
@@ -54,7 +55,7 @@ element ObjectEntryElement
 			padding = 5px;
 			leftPadding = 0;
 			rightPadding = 0;
-			color = Color_Text;
+			color = TextColor;
 			image = "Engine/Editor/Assets/DownArrow.png";
 		}
 
@@ -62,7 +63,7 @@ element ObjectEntryElement
 		{
 			image = Icon;
 			size = 16px;
-			color = Color_Text;
+			color = TextColor;
 			padding = 5px;
 			leftPadding = 2px;
 		}
@@ -70,7 +71,7 @@ element ObjectEntryElement
 		child UIText
 		{
 			text = Name;
-			color = Color_Text;
+			color = TextColor;
 			size = 11px;
 		}
 	}

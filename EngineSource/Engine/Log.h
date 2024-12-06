@@ -16,6 +16,7 @@ namespace engine
 			Blue,
 			Yellow,
 			Gray,
+			Magenta,
 			Green,
 		};
 
@@ -33,10 +34,13 @@ namespace engine
 		};
 
 		static void PrintMsg(string Message, LogColor Color, std::vector<LogPrefix> Prefixes = {});
+		static void Info(string Message, std::vector<LogPrefix> Prefixes = {});
+		static void Warn(string Message, std::vector<LogPrefix> Prefixes = {});
 
 		static std::vector<Message> GetMessages();
 		static size_t GetLogMessagesCount();
 	private:
+		static void PrintLine(string Message, LogColor Color, const std::vector<LogPrefix>& Prefixes);
 		static std::vector<Message> LogMessages;
 		static std::mutex LogMutex;
 	};

@@ -7,8 +7,13 @@
 
 namespace kui::systemWM
 {
+	/**
+	* @brief
+	* Internal KlemmUI Window implementation using SDL.
+	*/
 	class SysWindow
 	{
+		// @cond
 	public:
 		bool IsMain = false;
 		SDL_Window* SDLWindow = nullptr;
@@ -24,5 +29,6 @@ namespace kui::systemWM
 		void HandleKey(SDL_Keycode k, bool IsDown);
 
 		void UpdateEvents();
+		// @endcond
 	};
 }

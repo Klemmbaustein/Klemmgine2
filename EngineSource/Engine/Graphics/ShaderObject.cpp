@@ -63,7 +63,6 @@ engine::graphics::ShaderObject::ShaderObject(std::vector<string> VertexFiles, st
 	glShaderSource(fragment, GLsizei(FragmentCstringArray.size()), FragmentCstringArray.data(), NULL);
 	glCompileShader(fragment);
 	CheckCompileErrors(fragment, "FRAGMENT");
-	unsigned int geometry = 0;
 
 	// shader Program
 	ShaderID = glCreateProgram();

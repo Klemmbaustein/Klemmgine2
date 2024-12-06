@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneObject.h"
-#include <Engine/Graphics/Model.h>
+#include <Engine/File/ModelData.h>
+#include <Engine/Graphics/ShaderObject.h>
 
 namespace engine
 {
@@ -10,10 +11,10 @@ namespace engine
 
 		ENGINE_OBJECT(MeshObject, "Engine");
 
-		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("model", AssetRef(""), this);
+		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", ".kmdl"_asset, this);
 
 		graphics::ShaderObject* Shader = nullptr;
-		graphics::Model* DrawnModel = nullptr;
+		GraphicsModel* DrawnModel = nullptr;
 
 		void LoadMesh(string Name);
 

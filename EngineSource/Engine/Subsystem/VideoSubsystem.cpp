@@ -8,7 +8,7 @@
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
-#include <Engine/Editor/UI/Viewport.h>
+#include <Engine/Editor/UI/Panels/Viewport.h>
 #include <iostream>
 using namespace kui;
 

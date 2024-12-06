@@ -7,6 +7,10 @@
 #include <Engine/Subsystem/InputSubsystem.h>
 #include "Platform.h"
 
+#pragma comment(linker, "\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 static std::mutex EventsMutex;
 static std::mutex WindowCreateMutex;
 
@@ -111,8 +115,6 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 {
 	{
 		SDL_Event ev;
-		SDL_Window* LastWindow = nullptr;
-		SDL_WindowID LastID = 0;
 		while (SDL_PollEvent(&ev))
 		{
 			std::lock_guard g{ EventsMutex };
@@ -288,6 +290,7 @@ void kui::systemWM::HideWindow(SysWindow* Target)
 
 void kui::systemWM::MessageBox(std::string Text, std::string Title, int Type)
 {
+	engine::internal::platform::ShowMessageBox(Title, Text, Type);
 }
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)

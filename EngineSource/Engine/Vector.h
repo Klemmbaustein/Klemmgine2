@@ -34,6 +34,8 @@ namespace engine
 		Vector3 operator*(const Vector3& Other);
 		Vector3 operator/(const Vector3& Other);
 
+		bool operator==(const Vector3& Other) const;
+
 		static Vector3 FromString(string VectorString);
 
 		float& operator[](size_t Index);

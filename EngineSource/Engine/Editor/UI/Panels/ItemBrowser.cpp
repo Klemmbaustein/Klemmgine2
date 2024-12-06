@@ -1,8 +1,9 @@
 #ifdef EDITOR
 #include "ItemBrowser.h"
-#include "EditorUI.h"
+#include <Engine/Editor/UI/EditorUI.h>
 #include <kui/Window.h>
 #include <Engine/Input.h>
+#include <Engine/Log.h>
 using namespace kui;
 
 engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
@@ -69,7 +70,7 @@ void engine::editor::ItemBrowser::OnResized()
 }
 void engine::editor::ItemBrowser::UpdateItems()
 {
-	Heading->SetPathText(RootPathName + Path);
+	Heading->SetPathText(GetPathDisplayName());
 
 	Buttons.clear();
 	CurrentItems = GetItems();
@@ -80,7 +81,7 @@ std::pair<engine::editor::ItemBrowser::Item, ItemBrowserButton*>* engine::editor
 {
 	for (auto& i : Buttons)
 	{
-		if (i.second && i.second->IsBeingHovered() && i.first.OnRightClick)
+		if (i.second && i.second->button->IsBeingHovered() && i.first.OnRightClick)
 		{
 			return &i;
 		}
@@ -116,6 +117,17 @@ void engine::editor::ItemBrowser::DisplayList()
 		btn->SetColor(NewItem.Color);
 		btn->SetName(NewItem.Name);
 		btn->SetImage(NewItem.Image);
+		btn->button->OnDragged = [NewItem](int)
+			{
+				EditorUI::Instance->StartDrag(EditorUI::DraggedItem{
+					.Name = NewItem.Name,
+					.Type = "asset",
+					.Path = NewItem.Path,
+					.Icon = NewItem.Image,
+					.Color = NewItem.Color,
+					});
+			};
+
 		btn->button->OnClicked = [this, i]()
 			{
 				if (!Buttons[i].first.Selected)

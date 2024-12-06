@@ -5,14 +5,13 @@ using namespace engine;
 
 SerializedValue engine::SceneObject::Serialize()
 {
-	SerializedValue SerializedProperties = std::vector<SerializedValue>();
+	SerializedValue SerializedProperties = std::vector<SerializedData>();
 
 	for (auto& i : this->Properties)
 	{
-		SerializedProperties.Append(SerializedValue({
-			SerializedData("name", i->Name),
-			SerializedData("val", i->Serialize())
-			}));
+		SerializedProperties.Append({
+			SerializedData(i->Name, i->Serialize()),
+			});
 	}
 
 	return SerializedValue({
@@ -31,11 +30,11 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 
 	if (From->Contains("properties"))
 	{
-		auto& Array = From->At("properties").GetArray();
-		for (SerializedValue& i : Array)
+		auto& Array = From->At("properties").GetObject();
+		for (SerializedData& i : Array)
 		{
-			string Name = i.At("name").GetString();
-			SerializedValue& Value = i.At("val");
+			const string& Name = i.Name;
+			SerializedValue& Value = i.Value;
 
 			for (auto& prop : Properties)
 			{
@@ -45,7 +44,7 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 					ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
 					if (Ref)
 					{
-						GraphicsModel::RegisterModel(Ref->Value.FilePath);
+						GraphicsModel::RegisterModel(AssetRef(Ref->Value.FilePath));
 					}
 				}
 			}

@@ -1,19 +1,26 @@
 #pragma once
 #include <Engine/Types.h>
 #include <Engine/File/SerializedData.h>
+#include "Engine/File/AssetRef.h"
+#include <functional>
 
 namespace engine
 {
 	class SceneObject;
 
-	struct ObjPropertyBase : ISerializable
+	enum class PropertyType
 	{
-		string Name;
+		Float,
+		String,
+		AssetRef,
+		Unknown,
 	};
 
-	struct AssetRef
+	struct ObjPropertyBase : ISerializable
 	{
-		string FilePath;
+		PropertyType Type = PropertyType::Unknown;
+		std::function<void()> OnChanged;
+		string Name;
 	};
 
 	template<typename T>
@@ -22,7 +29,6 @@ namespace engine
 	public:
 		ObjProperty()
 		{
-
 		}
 
 		ObjProperty(T Value, SceneObject* Obj)
@@ -34,7 +40,7 @@ namespace engine
 	};
 
 	template<>
-	struct ObjProperty<string> : public ObjPropertyBase
+	struct ObjProperty<engine::string> : public ObjPropertyBase
 	{
 		ObjProperty(string Name, string Value, SceneObject* Obj);
 
@@ -48,6 +54,23 @@ namespace engine
 		void DeSerialize(SerializedValue* From) override;
 
 		string Value;
+	};
+
+	template<>
+	struct ObjProperty<float> : public ObjPropertyBase
+	{
+		ObjProperty(string Name, float Value, SceneObject* Obj);
+
+		ObjProperty<float>& operator=(const float& Target)
+		{
+			this->Value = Target;
+			return *this;
+		}
+
+		SerializedValue Serialize() override;
+		void DeSerialize(SerializedValue* From) override;
+
+		float Value;
 	};
 
 	template<>

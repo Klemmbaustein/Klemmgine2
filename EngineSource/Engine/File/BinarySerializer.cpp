@@ -24,7 +24,7 @@ void BinarySerializer::ToBinaryData(const std::vector<SerializedData>& Target, s
 void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vector<uByte>& Out, SerializedData::DataType Type)
 {
 	bool InitialTypeChanged = false;
-	if (Type == SerializedData::DataType::None)
+	if (Type == SerializedData::DataType::Null)
 	{
 		InitialTypeChanged = true;
 		Type = Target.GetType();
@@ -65,17 +65,17 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 		auto& Array = Target.GetArray();
 
 		bool SameType = true;
-		SerializedData::DataType tp = SerializedData::DataType::None;
+		SerializedData::DataType tp = SerializedData::DataType::Null;
 		if (!InitialTypeChanged)
 		{
 			for (auto& i : Array)
 			{
-				if (i.GetType() == SerializedData::DataType::None)
+				if (i.GetType() == SerializedData::DataType::Null)
 				{
 					SameType = false;
 					break;
 				}
-				else if (tp == SerializedData::DataType::None)
+				else if (tp == SerializedData::DataType::Null)
 				{
 					tp = i.GetType();
 				}
@@ -96,10 +96,10 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 			}
 			break;
 		}
-		Out[Out.size() - 1] = uByte(engine::SerializedData::DataType::BinaryTypedArray);
+		Out[Out.size() - 1] = uByte(engine::SerializedData::DataType::Internal_BinaryTypedArray);
 		[[fallthrough]];
 	}
-	case engine::SerializedData::DataType::BinaryTypedArray:
+	case engine::SerializedData::DataType::Internal_BinaryTypedArray:
 	{
 		auto& Array = Target.GetArray();
 
@@ -108,7 +108,7 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 
 		if (Size == 0)
 		{
-			auto ArrayType = SerializedData::DataType::None;
+			auto ArrayType = SerializedData::DataType::Null;
 			CopyTo(&ArrayType, sizeof(ArrayType), Out);
 		}
 
@@ -123,7 +123,7 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 	case engine::SerializedData::DataType::Object:
 		ToBinaryData(Target.GetObject(), Out, "");
 		break;
-	case engine::SerializedData::DataType::None:
+	case engine::SerializedData::DataType::Null:
 	default:
 		break;
 	}
@@ -159,9 +159,8 @@ std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, stri
 	string ExpectedFormat = FormatIdentifier + "/" + FORMAT_VERSION;
 	if (FormatName != ExpectedFormat)
 	{
-		std::cerr << str::Format("Attempted to read binary file '%s' with format '%s' but the file has format '%s'",
-			File.c_str(), ExpectedFormat.c_str(), FormatName.c_str());
-		return {};
+		throw SerializeReadException(str::Format("Attempted to read binary file '%s' with format '%s' but the file has format '%s'",
+			File.c_str(), ExpectedFormat.c_str(), FormatName.c_str()));
 	}
 
 	int32 Length = Stream.Get<int32>();
@@ -170,24 +169,23 @@ std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, stri
 
 	for (int32 i = 0; i < Length; i++)
 	{
-		Out.push_back(ReadSerializedData(Stream));
+		auto& New = Out.emplace_back();
+		ReadSerializedData(Stream, New);
 	}
 
 	return Out;
 }
 
-SerializedData engine::BinarySerializer::ReadSerializedData(BinaryStream& From)
+void engine::BinarySerializer::ReadSerializedData(BinaryStream& From, SerializedData& Out)
 {
-	string Name = ReadString(From);
+	Out.Name = ReadString(From);
 
-	SerializedValue Out;
-	ReadValue(From, Out);
-	return SerializedData(Name, Out);
+	ReadValue(From, Out.Value);
 }
 
 void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To, SerializedData::DataType Type)
 {
-	if (Type == SerializedData::DataType::None)
+	if (Type == SerializedData::DataType::Null)
 		Type = From.Get<SerializedData::DataType>();
 
 	switch (Type)
@@ -230,7 +228,7 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 		break;
 	}
 
-	case SerializedData::DataType::BinaryTypedArray:
+	case SerializedData::DataType::Internal_BinaryTypedArray:
 	{
 		To = std::vector<SerializedValue>();
 		int32 Length = From.Get<int32>();
@@ -253,12 +251,13 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 		To.GetObject().reserve(Length);
 		for (int32 i = 0; i < Length; i++)
 		{
-			To.GetObject().push_back(ReadSerializedData(From));
+			auto& New =To.GetObject().emplace_back();
+			ReadSerializedData(From, New);
 		}
 		break;
 	}
 
-	case SerializedData::DataType::None:
+	case SerializedData::DataType::Null:
 	default:
 		To = SerializedValue();
 		break;

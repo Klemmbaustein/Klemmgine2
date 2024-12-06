@@ -1,9 +1,12 @@
 ﻿# CMakeList.txt : CMake project for Klemmgine2, include source and define
 # project specific logic here.
 #
-cmake_minimum_required(VERSION 3.8)
-
-set(CMAKE_CXX_STANDARD 20)
+cmake_minimum_required(VERSION 3.12)
+if(WIN32)
+	set(CMAKE_CXX_STANDARD 23)#
+else()
+	set(CMAKE_CXX_STANDARD 20)
+endif()
 set(CMAKE_C_STANDARD 17)
 
 # Enable Hot Reload for MSVC compilers if supported.
@@ -15,8 +18,10 @@ if(POLICY CMP0141)
 	)
 endif()
 
+
 option(USE_ENGINEMAIN "Use EngineMain() function as a replacement for main() or WinMain()" ON)
 option(USE_WINDOWS_SUBSYSTEM "Use the Windows subsystem on windows. When this is off, a console will be allocated for the program." ON)
+option(ENGINE_DYNAMIC_SYMBOLS "Link with -rdynamic on linux for more descriptive stack traces" OFF)
 option(ENGINE_SERVER "Is a server" OFF)
 option(ENGINE_EDITOR "Compile the editor" OFF)
 project("Klemmgine")
@@ -48,6 +53,12 @@ endif()
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)
 set(KLEMMUI_INCLUDE_EXAMPLES OFF)
 
+if(UNIX)
+	if(ENGINE_DYNAMIC_SYMBOLS)
+		target_link_options(Klemmgine PUBLIC "-rdynamic")
+	endif()
+endif()
+
 add_subdirectory("Dependencies/KlemmUI")
 add_subdirectory("Dependencies/SDL")
 set(BUILD_SHARED_LIBS OFF)
@@ -74,11 +85,16 @@ elseif(ENGINE_EDITOR)
 	set(ASSIMP_NO_EXPORT ON)
 	set(ASSIMP_BUILD_ZLIB ON)
 	SET(ASSIMP_INJECT_DEBUG_POSTFIX OFF)
-	if (WIN32)
+	if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+		set(USING_MSVC ON)
+	else()
+		set(USING_MSVC OFF)
+	endif()
+
+	if (WIN32 AND USING_MSVC)
 		# assimp causes hundreds of warnings with MSVC if this is on because they for some reason manually add
 		# /Zi to generate debug files for debug builds.
 		# (which then causes warnings because it conflicts with /ZI used for hotreloading above)
-		set(OLD_MSVC_VALUE ${MSVC})
 		set(MSVC OFF)
 
 		# Add some other compile flags that cause warnings with MSVC
@@ -87,9 +103,9 @@ elseif(ENGINE_EDITOR)
 	endif()
 	add_subdirectory("Dependencies/assimp")
 
-	if (WIN32)
-		set(MSVC ${OLD_MSVC_VALUE})
-	target_compile_options(Klemmgine PUBLIC "/w44244")
+	if (WIN32 AND USING_MSVC)
+		set(MSVC ON)
+		target_compile_options(Klemmgine PUBLIC "/w44244")
 	endif()
 
 	target_link_libraries(Klemmgine PUBLIC assimp::assimp)
