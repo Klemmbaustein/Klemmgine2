@@ -21,6 +21,8 @@ namespace engine
 
 			virtual SerializedValue Serialize() override;
 			virtual void DeSerialize(SerializedValue* From) override;
+
+			string Material;
 		};
 		ModelData(string FilePath);
 		ModelData();
@@ -44,6 +46,7 @@ namespace engine
 		static void RegisterModel(AssetRef Asset, bool Lock = true);
 		static GraphicsModel* GetModel(AssetRef Asset);
 		static void UnloadModel(GraphicsModel* Target);
+		static void UnloadModel(AssetRef Asset);
 	private:
 		static std::unordered_map<string, GraphicsModel> Models;
 	};

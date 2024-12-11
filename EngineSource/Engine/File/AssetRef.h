@@ -28,6 +28,8 @@ namespace engine
 		string FilePath;
 
 		string Extension;
+
+		string DisplayName() const;
 	};
 
 }

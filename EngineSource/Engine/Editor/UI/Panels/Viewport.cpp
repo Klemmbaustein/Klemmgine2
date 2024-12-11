@@ -20,7 +20,7 @@ engine::editor::Viewport::Viewport()
 	: EditorPanel("Viewport", "viewport")
 {
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	
+
 	kui::Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader("shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
 
 	ViewportBackground = new UIBackground(false, 0, 1, 0, HoleShader);
@@ -56,11 +56,11 @@ engine::editor::Viewport::Viewport()
 	TestButton->SetIcon("file:Engine/Editor/Assets/Save.png");
 	TestButton->SetName("Save");
 	TestButton->btn->OnClicked = [this]()
-		{
-			Scene* Current = Scene::GetMain();
-			if (Current)
-				Current->Save(Current->Name);
-		};
+	{
+		Scene* Current = Scene::GetMain();
+		if (Current)
+			Current->Save(Current->Name);
+	};
 	delete TestButton->dropdownButton;
 
 	auto TestButton2 = new ToolBarButton();
@@ -110,6 +110,10 @@ engine::editor::Viewport::Viewport()
 	Current = this;
 }
 
+engine::editor::Viewport::~Viewport()
+{
+}
+
 void engine::editor::Viewport::OnResized()
 {
 	ViewportBackground->SetMinSize(Background->GetMinSize() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + TOOLBAR_SIZE + 2), ViewportBackground->GetParentWindow()));
@@ -124,7 +128,7 @@ void engine::editor::Viewport::OnResized()
 
 void engine::editor::Viewport::Update()
 {
-	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>(); 
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
 	Window* Win = VideoSystem->MainWindow;
 	FameCount++;

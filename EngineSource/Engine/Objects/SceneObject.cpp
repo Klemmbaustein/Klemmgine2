@@ -1,6 +1,7 @@
 #include "SceneObject.h"
 #include <iostream>
 #include <Engine/File/ModelData.h>
+#include <Engine/Scene.h>
 using namespace engine;
 
 SerializedValue engine::SceneObject::Serialize()
@@ -45,6 +46,10 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 					if (Ref)
 					{
 						GraphicsModel::RegisterModel(AssetRef(Ref->Value.FilePath));
+						if (OriginScene)
+						{
+							OriginScene->ReferencedAssets.push_back(Ref->Value);
+						}
 					}
 				}
 			}
@@ -62,6 +67,10 @@ void engine::SceneObject::Draw(graphics::Camera* Cam)
 }
 
 void engine::SceneObject::Begin()
+{
+}
+
+void engine::SceneObject::Destroy()
 {
 }
 

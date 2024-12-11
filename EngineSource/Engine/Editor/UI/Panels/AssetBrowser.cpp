@@ -1,30 +1,32 @@
 #ifdef EDITOR
 #include "AssetBrowser.h"
-#include <filesystem>
-#include <Engine/Editor/UI/DropdownMenu.h>
-#include <Engine/Input.h>
-#include <Engine/Internal/Platform.h>
-#include <kui/Window.h>
+#include "Assets/ModelEditor.h"
+#include "Viewport.h"
 #include <Engine/Editor/ModelConverter.h>
-#include <algorithm>
-#include <Engine/Editor/UI/Windows/ProgressBar.h>
-#include <thread>
+#include <Engine/Editor/UI/DropdownMenu.h>
 #include <Engine/Editor/UI/EditorUI.h>
+#include <Engine/Editor/UI/Windows/ProgressBar.h>
 #include <Engine/File/FileUtil.h>
+#include <Engine/Internal/Platform.h>
+#include <Engine/Subsystem/SceneSubsystem.h>
+#include <kui/Window.h>
+#include <filesystem>
+#include <thread>
+#include <algorithm>
 
 static std::map<engine::string, kui::Vec3f> FileNameColors =
 {
-	{"kts", kui::Vec3f(0.6f, 0.1f, 0.3f)},
-	{"kmdl", kui::Vec3f(0.2f, 0.4f, 0.8f)},
-	{"", kui::Vec3f(0.5f)},
-	{"/dir/", kui::Vec3f(0.8f, 0.5f, 0) },
+	{ "kts", kui::Vec3f(0.6f, 0.1f, 0.3f) },
+	{ "kmdl", kui::Vec3f(0.2f, 0.4f, 0.8f) },
+	{ "", kui::Vec3f(0.5f) },
+	{ "/dir/", kui::Vec3f(0.8f, 0.5f, 0) },
 };
 static std::map<engine::string, engine::string> FileNameIcons =
 {
-	{"kts", ""},
-	{"", "Engine/Editor/Assets/Document.png"},
-	{"kmdl", "Engine/Editor/Assets/Model.png"},
-	{"/dir/", "Engine/Editor/Assets/Folder.png"},
+	{ "kts", "" },
+	{ "", "Engine/Editor/Assets/Document.png" },
+	{ "kmdl", "Engine/Editor/Assets/Model.png" },
+	{ "/dir/", "Engine/Editor/Assets/Folder.png" },
 };
 
 engine::editor::AssetBrowser::AssetBrowser()
@@ -57,6 +59,23 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 					UpdateItems();
 				};
 		}
+		else if (Extension == "kts")
+		{
+			OnClick = [this, FilePath]()
+				{
+					if (Scene::AsyncLoads)
+						return;
+					delete Scene::GetMain();
+					subsystem::SceneSubsystem::Current->LoadSceneAsync(FilePath);
+				};
+		}
+		else if (Extension == "kmdl")
+		{
+			OnClick = [this, FilePath]()
+				{
+					Viewport::Current->AddChild(new ModelEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
+				};
+		}
 
 		string Image = "";
 
@@ -79,11 +98,11 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 					},
 					DropdownMenu::Option{
 						.OnClicked = [this, FilePath]()
-						{
-							std::filesystem::remove_all(FilePath);
-							UpdateItems();
-						},
-						.Name = "Delete",
+					{
+						std::filesystem::remove_all(FilePath);
+						UpdateItems();
+					},
+					.Name = "Delete",
 					}
 					}, kui::Window::GetActiveWindow()->Input.MousePosition);
 
@@ -148,22 +167,22 @@ static void ImportThread(engine::string CurrentPath)
 		},
 		platform::FileDialogFilter{
 			.Name = "Images",
-			.FileTypes = {"png", "jpg", "bmp"}
+			.FileTypes = { "png", "jpg", "bmp" }
 		},
 		platform::FileDialogFilter{
 			.Name = "Sound",
-			.FileTypes = {"wav"}
+			.FileTypes = { "wav" }
 		},
 		platform::FileDialogFilter{
 			.Name = "Klemmgine 2 Assets",
-			.FileTypes = {"kmdl", "kts",  "kbs"}
+			.FileTypes = { "kmdl", "kts", "kbs" }
 		},
 		platform::FileDialogFilter{
 			.Name = "_ALL",
 		},
 		platform::FileDialogFilter{
 			.Name = "Any",
-			.FileTypes = {"*"}
+			.FileTypes = { "*" }
 		} });
 
 	string Extension = File.substr(File.find_last_of(".") + 1);
@@ -194,23 +213,23 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
 	new DropdownMenu(
 		{
-			DropdownMenu::Option{.OnClicked = [this]() { Import(GetPathDisplayName()); }, .Name = "Import...", .Separator = true},
-			DropdownMenu::Option{.OnClicked = [this]()
-			{
-				EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
-				UpdateItems();
-			}, .Name = "New scene"},
-			DropdownMenu::Option{.Name = "New material", .Separator = true},
-			DropdownMenu::Option{.OnClicked = [this]()
-			{
-				using namespace engine::internal::platform;
+			DropdownMenu::Option{ .OnClicked = [this]() { Import(GetPathDisplayName()); }, .Name = "Import...", .Separator = true },
+			DropdownMenu::Option{ .OnClicked = [this]()
+		{
+			EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
+			UpdateItems();
+		}, .Name = "New scene" },
+		DropdownMenu::Option{ .Name = "New material", .Separator = true },
+		DropdownMenu::Option{ .OnClicked = [this]()
+		{
+			using namespace engine::internal::platform;
 #if WINDOWS
-				Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
+			Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
 #else
 
-				std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
+			std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
 #endif
-			}, .Name = "Open in file explorer"},
+		}, .Name = "Open in file explorer" },
 		},
 		Position);
 }

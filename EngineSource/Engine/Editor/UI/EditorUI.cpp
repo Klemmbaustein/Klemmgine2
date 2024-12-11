@@ -61,9 +61,9 @@ void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Ty
 	else
 	{
 		thread::ExecuteOnMainThread([NewMessage, Type]()
-			{
-				SetStatusMainThread(NewMessage, Type);
-			});
+		{
+			SetStatusMainThread(NewMessage, Type);
+		});
 	}
 }
 
@@ -85,11 +85,11 @@ engine::editor::EditorUI::EditorUI()
 	assets::ScanForAssets();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	VideoSystem->OnResizedCallbacks.push_back([this](kui::Vec2ui NewSize)
+	VideoSystem->OnResizedCallbacks.insert({ this, [this](kui::Vec2ui NewSize)
 		{
 			UpdateBackgrounds();
 			RootPanel->ShouldUpdate = true;
-		});
+		} });
 
 	UpdateTheme(VideoSystem->MainWindow);
 
@@ -119,16 +119,16 @@ engine::editor::EditorUI::EditorUI()
 		auto* btn = new MenuBarButton();
 		btn->SetName(i);
 		btn->button->OnClicked = [btn]()
-			{
-				new DropdownMenu({ DropdownMenu::Option{
-					.OnClicked = []() {abort(); },
-					.Name = "Testing",
-					},
-					DropdownMenu::Option{
+		{
+			new DropdownMenu({ DropdownMenu::Option{
+				.OnClicked = []() {abort(); },
+				.Name = "Testing",
+				},
+				DropdownMenu::Option{
 					.OnClicked = []() {abort(); },
 					.Name = "Testing 2",
-					} }, btn->GetPosition());
-			};
+				} }, btn->GetPosition());
+		};
 		MenuBar->AddChild(btn);
 	}
 	Root->AddChild(MenuBar);

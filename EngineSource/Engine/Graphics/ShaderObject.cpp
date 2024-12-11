@@ -79,3 +79,23 @@ void engine::graphics::ShaderObject::Bind()
 {
 	glUseProgram(ShaderID);
 }
+
+uint32 engine::graphics::ShaderObject::GetUniformLocation(string Name) const
+{
+	return glGetUniformLocation(ShaderID, Name.c_str());
+}
+
+void engine::graphics::ShaderObject::SetInt(uint32 UniformLocation, uint32 Value)
+{
+	glUniform1i(UniformLocation, Value);
+}
+
+void engine::graphics::ShaderObject::SetFloat(uint32 UniformLocation, float Value)
+{
+	glUniform1f(UniformLocation, Value);
+}
+
+void engine::graphics::ShaderObject::SetVec3(uint32 UniformLocation, Vector3 Value)
+{
+	glUniform3f(UniformLocation, Value.X, Value.Y, Value.Z);
+}

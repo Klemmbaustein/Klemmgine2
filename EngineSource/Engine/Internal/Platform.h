@@ -11,7 +11,7 @@ namespace kui::systemWM
 namespace engine::internal::platform
 {
 	void Init();
-	void InitWindow(kui::systemWM::SysWindow* Target);
+	void InitWindow(kui::systemWM::SysWindow* Target, int Flags);
 
 	void Execute(string Command);
 	

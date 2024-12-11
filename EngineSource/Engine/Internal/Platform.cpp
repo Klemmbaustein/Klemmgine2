@@ -21,7 +21,7 @@ void engine::internal::platform::Init()
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 }
 
-void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target)
+void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
 	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
@@ -29,6 +29,12 @@ void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target)
 	DwmSetWindowAttribute(
 		hwnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE,
 		&UseDarkMode, sizeof(UseDarkMode));
+
+
+	if (Flags & int(kui::Window::WindowFlag::Popup))
+	{
+		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION | WS_THICKFRAME);
+	}
 }
 
 void engine::internal::platform::Execute(string Command)
@@ -233,7 +239,7 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	printf("%s", ColorCodes[NewColor]);
 }
 
-void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target)
+void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
 }
 

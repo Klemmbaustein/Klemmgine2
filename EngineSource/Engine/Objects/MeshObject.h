@@ -1,7 +1,7 @@
 #pragma once
 #include "SceneObject.h"
 #include <Engine/File/ModelData.h>
-#include <Engine/Graphics/ShaderObject.h>
+#include <Engine/Graphics/Material.h>
 
 namespace engine
 {
@@ -13,12 +13,13 @@ namespace engine
 
 		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", ".kmdl"_asset, this);
 
-		graphics::ShaderObject* Shader = nullptr;
+		graphics::Material* Mat = nullptr;
 		GraphicsModel* DrawnModel = nullptr;
 
-		void LoadMesh(string Name);
+		void LoadMesh(AssetRef File);
 
 		virtual void Draw(graphics::Camera* From) override;
 		void Begin() override;
+		void Destroy() override;
 	};
 }

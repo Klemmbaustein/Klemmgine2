@@ -77,7 +77,8 @@ engine::SerializedValue engine::ModelData::Mesh::Serialize()
 	{
 		OutVertices.push_back(SerializedValue({
 			SerializedData("ps", v.Position),
-			SerializedData("nm", v.Normal)
+			SerializedData("nm", v.Normal),
+			SerializedData("uv", SerializedValue(v.UV)),
 			}));
 	}
 
@@ -90,6 +91,7 @@ engine::SerializedValue engine::ModelData::Mesh::Serialize()
 	return std::vector{
 		SerializedData("vrt", OutVertices),
 		SerializedData("ind", OutIndices),
+		SerializedData("mat", Material)
 	};
 }
 
@@ -98,14 +100,32 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	SerializedValue& InVertices = From->At("vrt");
 	SerializedValue& InIndices = From->At("ind");
 
+	bool CheckedUV = false;
+	bool HasUV = false;
+
 	for (auto& i : InVertices.GetArray())
 	{
-		Vertices.emplace_back(i.At("ps").GetVector3(), i.At("nm").GetVector3());
+		if (!CheckedUV)
+			HasUV = i.Contains("uv");
+
+		if (HasUV)
+		{
+			Vertices.emplace_back(i.At("ps").GetVector3(), i.At("uv").GetVector2(), i.At("nm").GetVector3());
+		}
+		else
+		{
+			Vertices.emplace_back(i.At("ps").GetVector3(), Vector2(-1), i.At("nm").GetVector3());
+		}
 	}
 
 	for (auto& i : InIndices.GetArray())
 	{
 		Indices.push_back(i.GetInt());
+	}
+
+	if (From->Contains("mat"))
+	{
+		this->Material = From->At("mat").GetString();
 	}
 }
 
@@ -120,7 +140,7 @@ void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name, bo
 			.Data = new ModelData(Mesh),
 			.Drawable = new Model(&Mesh),
 			.References = 1,
-		} });
+			} });
 	}
 	else
 	{
@@ -141,6 +161,7 @@ void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 
 	if (Models.contains(Asset.FilePath))
 	{
+		Models[Asset.FilePath].References++;
 		if (Lock)
 			ModelDataMutex.unlock();
 		return;
@@ -158,7 +179,7 @@ void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 			.Data = New,
 			.Drawable = new Model(New),
 			.References = 1,
-		} });
+			} });
 	}
 	else
 	{
@@ -166,7 +187,7 @@ void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 			.Data = New,
 			.Drawable = nullptr,
 			.References = 1,
-		} });
+			} });
 	}
 	if (Lock)
 		ModelDataMutex.unlock();
@@ -205,6 +226,26 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 	for (auto& i : Models)
 	{
 		if (&i.second != Target)
+		{
+			continue;
+		}
+		i.second.References--;
+		if (i.second.References == 0)
+		{
+			delete i.second.Data;
+			delete i.second.Drawable;
+			Models.erase(i.first);
+		}
+		return;
+	}
+	Log::Warn("Failed to unload model.");
+}
+
+void engine::GraphicsModel::UnloadModel(AssetRef Asset)
+{
+	for (auto& i : Models)
+	{
+		if (i.first != Asset.FilePath)
 		{
 			continue;
 		}

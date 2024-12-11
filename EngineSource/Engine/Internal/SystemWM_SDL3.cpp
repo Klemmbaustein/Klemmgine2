@@ -43,16 +43,15 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	{
 		SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
 	}
-	engine::internal::platform::InitWindow(OutWindow);
-
-	SDL_ShowWindow(OutWindow->SDLWindow);
-	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
 	{
 		std::lock_guard gev{ EventsMutex };
-		ActiveWindows.push_back(OutWindow);
 		OutWindow->IsMain = ActiveWindows.empty();
+		ActiveWindows.push_back(OutWindow);
 	}
+	engine::internal::platform::InitWindow(OutWindow, int(Flags));
+	SDL_ShowWindow(OutWindow->SDLWindow);
+	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
 	SDL_StartTextInput(OutWindow->SDLWindow);
 	SDL_SetTextInputArea(OutWindow->SDLWindow, NULL, 0);
@@ -71,6 +70,17 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 void kui::systemWM::DestroyWindow(SysWindow* Target)
 {
 	std::lock_guard g{ WindowCreateMutex };
+
+	for (auto i = ActiveWindows.begin(); i < ActiveWindows.end(); i++)
+	{
+		if (*i == Target)
+		{
+			ActiveWindows.erase(i);
+			break;
+		}
+	}
+
+
 	for (SDL_Cursor* Cursor : Target->WindowCursors)
 	{
 		SDL_DestroyCursor(Cursor);
@@ -117,7 +127,7 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev))
 		{
-			std::lock_guard g{ EventsMutex };
+			std::lock_guard g{ WindowCreateMutex };
 			for (auto& i : ActiveWindows)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)

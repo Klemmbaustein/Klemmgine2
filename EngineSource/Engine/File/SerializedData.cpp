@@ -18,6 +18,9 @@ void engine::SerializedData::DataValue::CopyFrom(const DataValue& From)
 	case engine::SerializedData::DataType::Float:
 		Float = From.Float;
 		break;
+	case engine::SerializedData::DataType::Vector2:
+		Vec2 = From.Vec2;
+		break;
 	case engine::SerializedData::DataType::Vector3:
 		Vec = From.Vec;
 		break;
@@ -104,6 +107,13 @@ engine::Vector3 engine::SerializedData::DataValue::GetVector3() const
 	return Vector3();
 }
 
+engine::Vector2 engine::SerializedData::DataValue::GetVector2() const
+{
+	if (Type == DataType::Vector2)
+		return Vec2;
+	return Vector2();
+}
+
 engine::string engine::SerializedData::DataValue::GetString() const
 {
 	if (Type == DataType::String)
@@ -160,6 +170,9 @@ engine::string engine::SerializedData::DataValue::ToString(size_t Depth) const
 
 	case DataType::Vector3:
 		return GetVector3().ToString();
+
+	case DataType::Vector2:
+		return GetVector2().ToString();
 
 	case DataType::Array:
 	{

@@ -57,6 +57,12 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 		CopyTo(&Value, sizeof(Value), Out);
 		break;
 	}
+	case engine::SerializedData::DataType::Vector2:
+	{
+		Vector2 Value = Target.GetVector2();
+		CopyTo(&Value, sizeof(Value), Out);
+		break;
+	}
 	case engine::SerializedData::DataType::String:
 		WriteString(Target.GetString(), Out);
 		break;
@@ -204,6 +210,10 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 
 	case SerializedData::DataType::Float:
 		To = From.Get<float>();
+		break;
+
+	case SerializedData::DataType::Vector2:
+		To = SerializedValue(From.Get<Vector2>());
 		break;
 
 	case SerializedData::DataType::Vector3:

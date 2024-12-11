@@ -1,5 +1,6 @@
 #include "TextSerializer.h"
 #include <fstream>
+#include <Engine/Log.h>
 #include <filesystem>
 #include <map>
 
@@ -11,6 +12,7 @@ static const std::map<engine::SerializedData::DataType, engine::string> TypeName
 	{ engine::SerializedData::DataType::Boolean, "bool" },
 	{ engine::SerializedData::DataType::Float, "float" },
 	{ engine::SerializedData::DataType::Vector3, "vec3" },
+	{ engine::SerializedData::DataType::Vector2, "vec2" },
 	{ engine::SerializedData::DataType::String, "str" },
 	{ engine::SerializedData::DataType::Array, "array" },
 	{ engine::SerializedData::DataType::Internal_BinaryTypedArray, "typed_array" },
@@ -95,6 +97,9 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 		Stream << Target.GetFloat();
 		break;
 	case SerializedData::DataType::Vector3:
+		Stream << "<" << Target.GetVector3().ToString() << ">";
+		break;
+	case SerializedData::DataType::Vector2:
 		Stream << "<" << Target.GetVector3().ToString() << ">";
 		break;
 	case SerializedData::DataType::String:
@@ -207,6 +212,8 @@ engine::SerializedValue engine::TextSerializer::ReadValue(std::istream& Stream, 
 
 	case engine::SerializedData::DataType::Vector3:
 		return Vector3::FromString(ReadVector(Stream));
+	case engine::SerializedData::DataType::Vector2:
+		return SerializedValue(Vector2::FromString(ReadVector(Stream)));
 	case engine::SerializedData::DataType::String:
 		return ReadString(Stream);
 
@@ -411,5 +418,6 @@ engine::SerializedData::DataType engine::TextSerializer::GetTypeFromString(strin
 		if (i.second == Str)
 			return i.first;
 	}
+	Log::Warn(str::Format("Unkown type: %s", Str.c_str()));
 	return SerializedData::DataType::Null;
 }

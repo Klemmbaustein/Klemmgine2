@@ -25,12 +25,18 @@ static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context)
 		auto& Pos = TargetMesh->mVertices[i];
 
 		aiVector3D* Normal = nullptr;
+		aiVector3D* UV = nullptr;
 		if (TargetMesh->mNormals)
 		{
 			Normal = &TargetMesh->mNormals[i];
 		}
+		if (TargetMesh->mTextureCoords[0])
+		{
+			UV = &TargetMesh->mTextureCoords[0][i];
+		}
 		OutMesh.Vertices.push_back(graphics::Vertex{
 			.Position = Vector3(Pos.x, Pos.y, Pos.z) * Context.Options.ImportScale,
+			.UV = Vector2(UV->x, UV->y),
 			.Normal = Normal ? Vector3(Normal->x, Normal->y, Normal->z) : 0,
 			});
 	}

@@ -1,34 +1,40 @@
 #include "MeshObject.h"
 #include <kui/Resource.h>
 
-void engine::MeshObject::LoadMesh(string Name)
+void engine::MeshObject::LoadMesh(AssetRef File)
 {
 	if (DrawnModel)
 	{
 		GraphicsModel::UnloadModel(DrawnModel);
 	}
 
-	ModelName = AssetRef::FromPath(Name);
+	ModelName = File;
 
 	DrawnModel = GraphicsModel::GetModel(ModelName.Value);
 
-	Shader = new graphics::ShaderObject(
-		{ kui::resource::GetStringFile("res:shader/basic.vert") },
-		{ kui::resource::GetStringFile("res:shader/basic.frag") }
-	);
+	Mat = new graphics::Material("Assets/material.kmt");
 }
 
 void engine::MeshObject::Draw(graphics::Camera* From)
 {
-	if (DrawnModel)
-		DrawnModel->Drawable->Draw(Position, From, Shader);
+	if (DrawnModel && Mat && Mat->Shader)
+	{
+		Mat->Apply();
+		DrawnModel->Drawable->Draw(Position, From, Mat->Shader);
+	}
 }
 
 void engine::MeshObject::Begin()
 {
 	ModelName.OnChanged = [this]() {
-		LoadMesh(ModelName.Value.FilePath);
-		};
+		LoadMesh(ModelName.Value);
+	};
 	HasVisuals = true;
 	ModelName.OnChanged();
+}
+
+void engine::MeshObject::Destroy()
+{
+	if (DrawnModel)
+		GraphicsModel::UnloadModel(DrawnModel);
 }

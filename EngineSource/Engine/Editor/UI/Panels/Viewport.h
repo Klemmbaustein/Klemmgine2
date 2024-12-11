@@ -12,6 +12,7 @@ namespace engine::editor
 	{
 	public:
 		Viewport();
+		~Viewport();
 		bool MouseGrabbed = false;
 
 		kui::Timer StatsRedrawTimer;

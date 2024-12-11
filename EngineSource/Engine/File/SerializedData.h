@@ -84,7 +84,9 @@ namespace engine
 			/// Do not use. @see engine::BinarySerializer
 			Internal_BinaryTypedArray,
 			/// A C++ vector of SerializedData objects. @see engine::SerializedData
-			Object
+			Object,
+			/// Stores X and Y components. @see engine::Vector2
+			Vector2,
 		};
 
 		/**
@@ -108,6 +110,7 @@ namespace engine
 				uByte Byte;
 				float Float;
 				Vector3 Vec;
+				Vector2 Vec2;
 				string* String;
 				std::vector<DataValue>* Array;
 				std::vector<SerializedData>* Object;
@@ -158,6 +161,12 @@ namespace engine
 			{
 				Vec = Value;
 				Type = DataType::Vector3;
+			}
+			/// Constructs a data value from a Vector2.
+			explicit DataValue(Vector2 Value)
+			{
+				Vec2 = Value;
+				Type = DataType::Vector2;
 			}
 			/// Constructs a data value from a string.
 			DataValue(string Value)
@@ -228,9 +237,16 @@ namespace engine
 			* @brief
 			* Gets this value as a Vector3.
 			*
-			* If the type of this value isn't DataType::Vec3, this returns Vector3(0).
+			* If the type of this value isn't DataType::Vector3, this returns Vector3(0).
 			*/
 			Vector3 GetVector3() const;
+			/**
+			* @brief
+			* Gets this value as a Vector2.
+			*
+			* If the type of this value isn't DataType::Vector2, this returns Vector2(0).
+			*/
+			Vector2 GetVector2() const;
 			/**
 			* @brief
 			* Gets this value as a string.

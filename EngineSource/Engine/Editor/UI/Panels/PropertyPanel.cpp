@@ -23,7 +23,7 @@ void engine::editor::PropertyPanel::Update()
 		{
 			New = *Viewport::Current->SelectedObjects.begin();
 		}
-		
+
 		if (New != SelectedObj)
 		{
 			SelectedObj = New;
@@ -64,32 +64,32 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	float Size = UIBox::PixelSizeToScreenSize(kui::Vec2f(float(PixelSize - (Compact ? 10 : 90))), Background->GetParentWindow()).X;
 
 	auto CreateNewHeading = [this](string Title) -> PropertyHeaderElement*
-		{
-			auto* New = new PropertyHeaderElement();
+	{
+		auto* New = new PropertyHeaderElement();
 
-			New->SetTitle(Title);
-			Background->AddChild(New);
+		New->SetTitle(Title);
+		Background->AddChild(New);
 
-			return New;
-		};
+		return New;
+	};
 
 	auto CreateNewEntry = [this, Compact](string Name) -> PropertyEntryElement*
+	{
+		auto* New = new PropertyEntryElement();
+		New->SetPropertyName(Name);
+
+		if (Compact)
 		{
-			auto* New = new PropertyEntryElement();
-			New->SetPropertyName(Name);
+			New->SetHorizontal(false);
+			New->SetVerticalAlign(UIBox::Align::Reverse);
+			New->textBox->SetHorizontalAlign(UIBox::Align::Default);
+			New->SetCompactTextPadding(0);
+			delete New->separator;
+		}
 
-			if (Compact)
-			{
-				New->SetHorizontal(false);
-				New->SetVerticalAlign(UIBox::Align::Reverse);
-				New->textBox->SetHorizontalAlign(UIBox::Align::Default);
-				New->SetCompactTextPadding(0);
-				delete New->separator;
-			}
-
-			Background->AddChild(New);
-			return New;
-		};
+		Background->AddChild(New);
+		return New;
+	};
 
 	CreateNewHeading("Object: " + Object->Name + "\nClass: " + Reflection::ObjectTypes[Object->TypeID].Name + "");
 
@@ -97,9 +97,9 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	auto* PosField = new VectorField(Object->Position, Size, nullptr);
 	PosField->OnChanged = [Object, PosField]()
-		{
-			Object->Position = PosField->GetValue();
-		};
+	{
+		Object->Position = PosField->GetValue();
+	};
 	Position->valueBox->AddChild(PosField);
 
 	for (ObjPropertyBase* i : Object->Properties)
@@ -117,11 +117,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			auto* Selector = new AssetSelector(Ref->Value, Size, nullptr);
 
 			Selector->OnChanged = [Selector, Ref]()
-				{
-					Ref->Value = Selector->SelectedAsset;
-					if (Ref->OnChanged)
-						Ref->OnChanged();
-				};
+			{
+				Ref->Value = Selector->SelectedAsset;
+				if (Ref->OnChanged)
+					Ref->OnChanged();
+			};
 
 			New->valueBox->AddChild(Selector);
 			break;

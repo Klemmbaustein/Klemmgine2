@@ -2,7 +2,8 @@
 #include "EditorPanel.h"
 #include <kui/Window.h>
 #include <Engine/Editor/UI/EditorUI.h>
-#include <iostream>
+#include <Engine/Log.h>
+#include <Engine/Error/EngineError.h>
 using namespace kui;
 
 const float PanelPadding = 3;
@@ -10,6 +11,7 @@ const float TabsSize = 25;
 
 engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 {
+	TypeName = InternalName;
 	if (InternalName != "panel")
 	{
 		PanelElement = new EditorPanelElement();
@@ -22,6 +24,37 @@ engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 
 engine::editor::EditorPanel::~EditorPanel()
 {
+	if (EditorUI::FocusedPanel == this)
+	{
+		EditorUI::FocusedPanel = nullptr;
+	}
+
+	delete PanelElement;
+
+	if (Parent)
+	{
+		for (size_t i = 0; i < Parent->Children.size(); i++)
+		{
+			if (Parent->Children[i] != this)
+			{
+				continue;
+			}
+
+			if (Parent->ChildrenAlign == Align::Tabs && Parent->SelectedTab >= i && Parent->SelectedTab > 0)
+			{
+				Parent->SelectedTab--;
+			}
+
+			Parent->ShouldUpdate = true;
+			Parent->Children.erase(Parent->Children.begin() + i);
+			break;
+		}
+
+		if (Parent->Children.empty())
+		{
+			delete Parent;
+		}
+	}
 }
 
 void engine::editor::EditorPanel::UpdateLayout()
@@ -140,15 +173,53 @@ engine::editor::EditorPanel* engine::editor::EditorPanel::SetWidth(float NewWidt
 	return this;
 }
 
-void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAlign)
+void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select)
 {
-	if (ChildAlign == ChildrenAlign || Children.empty())
+	if ((ChildAlign == this->ChildrenAlign || Children.empty()) && TypeName == "panel")
 	{
 		NewChild->Parent = this;
 		Children.push_back(NewChild);
 		ShouldUpdate = true;
-		ChildrenAlign = ChildAlign;
+		this->ChildrenAlign = ChildAlign;
+		if (Select)
+		{
+			SelectedTab = Children.size() - 1;
+			NewChild->SetFocused();
+		}
 	}
+	else if (TypeName != "panel" && Parent)
+	{
+		if (Parent->ChildrenAlign != ChildAlign)
+		{
+			EditorPanel* New = new EditorPanel("panel");
+			New->Children = { this, NewChild };
+			New->Parent = this->Parent;
+			New->ChildrenAlign = ChildAlign;
+
+			for (EditorPanel*& Child : Parent->Children)
+			{
+				if (Child == this)
+				{
+					Child = New;
+				}
+			}
+			if (Select)
+			{
+				New->SelectedTab = 1;
+				NewChild->SetFocused();
+			}
+			Parent->ShouldUpdate = true;
+
+			NewChild->Parent = New;
+			this->Parent = New;
+		}
+		else
+		{
+			Parent->AddChild(NewChild, ChildAlign, Select);
+		}
+	}
+	else
+		ENGINE_UNREACHABLE();
 }
 
 void engine::editor::EditorPanel::GenerateTabs()
@@ -239,6 +310,11 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 				}
 			};
 	}
+
+	NewTab->closeButton->OnClicked = [Target]()
+		{
+			delete Target;
+		};
 
 	if (Selected)
 	{

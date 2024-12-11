@@ -8,7 +8,7 @@ engine::ObjProperty<string>::ObjProperty(string Name, string Value, SceneObject*
 	this->Type = PropertyType::String;
 	this->Name = Name;
 	this->Value = Value;
-	Obj->Properties.push_back(this);
+	RegisterSelf(Obj);
 }
 
 engine::ObjProperty<AssetRef>::ObjProperty(string Name, AssetRef Value, SceneObject* Obj)
@@ -16,7 +16,7 @@ engine::ObjProperty<AssetRef>::ObjProperty(string Name, AssetRef Value, SceneObj
 	this->Type = PropertyType::AssetRef;
 	this->Name = Name;
 	this->Value = Value;
-	Obj->Properties.push_back(this);
+	RegisterSelf(Obj);
 }
 
 engine::ObjProperty<float>::ObjProperty(string Name, float Value, SceneObject* Obj)
@@ -24,7 +24,7 @@ engine::ObjProperty<float>::ObjProperty(string Name, float Value, SceneObject* O
 	this->Type = PropertyType::Float;
 	this->Name = Name;
 	this->Value = Value;
-	Obj->Properties.push_back(this);
+	RegisterSelf(Obj);
 }
 
 SerializedValue engine::ObjProperty<string>::Serialize()
@@ -55,4 +55,9 @@ SerializedValue engine::ObjProperty<AssetRef>::Serialize()
 void engine::ObjProperty<AssetRef>::DeSerialize(SerializedValue* From)
 {
 	Value = AssetRef::FromPath(From->GetString());
+}
+
+void engine::ObjPropertyBase::RegisterSelf(SceneObject* Parent)
+{
+	Parent->Properties.push_back(this);
 }

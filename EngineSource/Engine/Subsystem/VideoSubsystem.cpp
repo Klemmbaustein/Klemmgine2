@@ -141,7 +141,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 
 void engine::subsystem::VideoSubsystem::OnResized()
 {
-	for (auto& Callback : OnResizedCallbacks)
+	for (auto& [_, Callback] : OnResizedCallbacks)
 	{
 		Callback(MainWindow->GetSize());
 	}

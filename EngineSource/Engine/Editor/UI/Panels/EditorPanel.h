@@ -40,7 +40,7 @@ namespace engine::editor
 
 		bool Visible = true;
 
-		void AddChild(EditorPanel* NewChild, Align ChildAlign);
+		void AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select = false);
 
 		void GenerateTabs();
 		size_t SelectedTab = 0;
@@ -54,7 +54,7 @@ namespace engine::editor
 		void UpdateFocusState();
 		void AddTabFor(EditorPanel* Target, bool Selected);
 		std::vector<EditorPanelTab*> TabElements;
-		string Name;
+		string Name, TypeName;
 		Align ChildrenAlign = Align::Horizontal;
 		
 		kui::Vec2f UsedSize;

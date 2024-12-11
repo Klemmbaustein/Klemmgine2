@@ -30,7 +30,8 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, float Size, std::
 	: kui::UIBox(true, 0)
 {
 	this->OnChanged = OnChanged;
-	TextFields = {
+	this->Value = InitialValue;
+	this->TextFields = {
 		nullptr, nullptr, nullptr
 	};
 
@@ -44,25 +45,26 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, float Size, std::
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetHorizontalAlign(UIBox::Align::Centered)
 			->SetTryFill(true)
-			->AddChild((new UIText(11, 1, string({ char('X' + i)}), EditorUI::EditorFont))
+			->AddChild((new UIText(11, 1, string({ char('X' + i) }), EditorUI::EditorFont))
 				->SetTextSizeMode(UIBox::SizeMode::PixelRelative));
 
 		AddChild(CoordBackground);
 
 		auto* NewField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, [this, i]()
+		{
+			try
 			{
-				try
-				{
-					Value[i] = std::stof(TextFields[i]->GetText());
-				}
-				catch (std::exception)
-				{
-					TextFields[i]->SetText(FloatToString(Value[i]));
-				}
-				this->OnChanged();
-			});
+				Value[i] = std::stof(TextFields[i]->GetText());
+			}
+			catch (std::exception)
+			{
+				TextFields[i]->SetText(FloatToString(Value[i]));
+			}
+			this->OnChanged();
+		});
 		AddChild(NewField
 			->SetText(FloatToString(Value[i]))
+			->SetTextColor(EditorUI::Theme.Text)
 			->SetTextSize(11)
 			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 			->SetMinSize(Vec2f(ElementSize, 0)));

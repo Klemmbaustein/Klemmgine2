@@ -5,8 +5,6 @@
 
 engine::graphics::Framebuffer::Framebuffer(int64 Width, int64 Height)
 {
-	this->Width = Width;
-	this->Height = Height;
 	Textures[0] = 0;
 	Textures[1] = 0;
 	Resize(Width, Height);
@@ -19,6 +17,11 @@ engine::graphics::Framebuffer::~Framebuffer()
 
 void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 {
+	if (Width == NewWidth && Height == NewHeight)
+	{
+		return;
+	}
+
 	this->Width = NewWidth;
 	this->Height = NewHeight;
 	if (Buffer)
@@ -36,7 +39,7 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 		GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	float Color[4] = { 1, 0, 1, 1 };
+	float Color[4] = { 0, 0, 0, 1 };
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, Color);

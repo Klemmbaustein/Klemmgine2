@@ -229,3 +229,29 @@ Vector2 engine::Vector2::operator*(const Vector2& Other)
 {
 	return Vector2(X * Other.X, Y * Other.Y);
 }
+
+string engine::Vector2::ToString() const
+{
+	return std::to_string(X) + " " + std::to_string(Y);
+}
+
+Vector2 engine::Vector2::FromString(string VectorString)
+{
+	std::vector Elements = str::Split(VectorString, " \t\n");
+
+	if (Elements.size() != 2)
+		return 0;
+
+	try
+	{
+		return Vector2(std::stof(Elements.at(0)), std::stof(Elements.at(1)));
+	}
+	catch (std::invalid_argument)
+	{
+		return 0;
+	}
+	catch (std::out_of_range)
+	{
+		return 0;
+	}
+}

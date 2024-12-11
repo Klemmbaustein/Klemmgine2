@@ -51,5 +51,7 @@ namespace engine
 		Vector2(float X, float Y);
 		Vector2 operator+(const Vector2& Other);
 		Vector2 operator*(const Vector2& Other);
+		string ToString() const;
+		static Vector2 FromString(string VectorString);
 	};
 }

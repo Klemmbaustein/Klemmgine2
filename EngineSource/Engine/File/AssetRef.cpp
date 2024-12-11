@@ -1,4 +1,5 @@
 #include "AssetRef.h"
+#include "FileUtil.h"
 
 engine::AssetRef operator""_asset(const char* Name, std::size_t Size)
 {
@@ -25,4 +26,9 @@ engine::AssetRef engine::AssetRef::FromPath(string Path)
 		.FilePath = Path,
 		.Extension = Path.substr(Dot + 1),
 	};
+}
+
+engine::string engine::AssetRef::DisplayName() const
+{
+	return file::FileNameWithoutExt(FilePath);
 }

@@ -21,6 +21,9 @@ namespace engine
 		PropertyType Type = PropertyType::Unknown;
 		std::function<void()> OnChanged;
 		string Name;
+
+	protected:
+		void RegisterSelf(SceneObject* Parent);
 	};
 
 	template<typename T>
@@ -31,9 +34,11 @@ namespace engine
 		{
 		}
 
-		ObjProperty(T Value, SceneObject* Obj)
+		ObjProperty(string Name, T Value, SceneObject* Obj)
 		{
+			this->Name = Name;
 			this->Value = Value;
+			RegisterSelf(Obj);
 		}
 
 		T Value;

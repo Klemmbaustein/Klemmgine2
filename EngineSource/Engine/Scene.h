@@ -13,6 +13,9 @@ namespace engine
 		explicit Scene(bool DoLoadAsync = false);
 		Scene(string FilePath);
 		Scene(const char* FilePath);
+		~Scene();
+
+		Scene(const Scene&) = delete;
 
 		void Draw();
 		void Update();
@@ -20,6 +23,8 @@ namespace engine
 		graphics::Framebuffer* Buffer = nullptr;
 		graphics::Camera* Cam = nullptr;
 		std::vector<SceneObject*> Objects;
+
+		kui::Vec2ui BufferSize;
 
 		static Scene* GetMain();
 
@@ -42,6 +47,8 @@ namespace engine
 
 		void Save(string FileName);
 	private:
+		friend class SceneObject;
+		std::vector<AssetRef> ReferencedAssets;
 		void LoadInternal(string File, bool Async);
 		void Init();
 		SerializedValue GetSceneInfo();

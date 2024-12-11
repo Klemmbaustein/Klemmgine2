@@ -32,6 +32,7 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 	AssetPath
 		->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath))
 		->SetHintText(SelectedAsset.Extension + " file")
+		->SetTextColor(EditorUI::Theme.Text)
 		->SetTextSize(11)
 		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetTryFill(true);
@@ -48,9 +49,9 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 	UpdateSelection();
 
 	OnDrop = [this](EditorUI::DraggedItem Item)
-		{
-			SelectedAsset = AssetRef::FromPath(Item.Path);
-		};
+	{
+		SelectedAsset = AssetRef::FromPath(Item.Path);
+	};
 	UpdateElement();
 }
 
@@ -77,24 +78,24 @@ void engine::editor::AssetSelector::Tick()
 		if (LastEnteredText != AssetPath->GetText())
 		{
 			ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-				{
-					SearchBackground->UpdateElement();
-					SearchBackground->RedrawElement();
-					UpdateSearchResults();
-				}, nullptr, 0));
+			{
+				SearchBackground->UpdateElement();
+				SearchBackground->RedrawElement();
+				UpdateSearchResults();
+			}, nullptr, 0));
 			LastEnteredText = AssetPath->GetText();
 			UpdateSearchSize();
 		}
 	}
 	else if (SearchBackground
-		&& (!ParentWindow->UI.HoveredBox 
-			|| (!ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground)
-			&& !ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground->GetScrollBarBackground()))))
+		&& (!ParentWindow->UI.HoveredBox
+		|| (!ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground)
+		&& !ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground->GetScrollBarBackground()))))
 	{
 		ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-			{
-				RemoveSearchResults();
-			}, nullptr, 0));
+		{
+			RemoveSearchResults();
+		}, nullptr, 0));
 	}
 }
 
@@ -148,23 +149,23 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 		}
 
 		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Path]()
-			{
-				AssetPath->SetText(Name);
-				RemoveSearchResults();
-				SelectedAsset = AssetRef::FromPath(Path);
-				OnChanged();
-				UpdateSelection();
-			}))
+		{
+			AssetPath->SetText(Name);
+			RemoveSearchResults();
+			SelectedAsset = AssetRef::FromPath(Path);
+			OnChanged();
+			UpdateSelection();
+		}))
 			->SetTryFill(true)
 			->AddChild((new UIText(11,
-				{
-					TextSegment(First, EditorUI::Theme.Text),
-					TextSegment(Second, Vec3f(1, 0.5f, 0.0f)),
-					TextSegment(Third, EditorUI::Theme.Text),
-				}, EditorUI::EditorFont))
-				->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-				->SetWrapEnabled(true, AssetPath->GetUsedSize().X - PixelSizeToScreenSize(10, ParentWindow).X , UIBox::SizeMode::ScreenRelative)
-				->SetPadding(4, 4, 3, 3)
-				->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)));
+			{
+				TextSegment(First, EditorUI::Theme.Text),
+				TextSegment(Second, Vec3f(1, 0.5f, 0.0f)),
+				TextSegment(Third, EditorUI::Theme.Text),
+			}, EditorUI::EditorFont))
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+			->SetWrapEnabled(true, AssetPath->GetUsedSize().X - PixelSizeToScreenSize(10, ParentWindow).X, UIBox::SizeMode::ScreenRelative)
+			->SetPadding(4, 4, 3, 3)
+			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)));
 	}
 }

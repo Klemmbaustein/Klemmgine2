@@ -3,8 +3,7 @@
 #include "Engine/Subsystem/VideoSubsystem.h"
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include "Engine/Engine.h"
-#include "Engine/Input.h"
-#include "Stats.h"
+#include <Engine/File/ModelData.h>
 #include <Engine/File/TextSerializer.h>
 #include <Engine/File/BinarySerializer.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
@@ -45,13 +44,49 @@ engine::Scene::Scene(string FilePath)
 	Init();
 }
 
+engine::Scene::~Scene()
+{
+	using namespace subsystem;
+
+	SceneSubsystem* Sys = SceneSubsystem::Current;
+
+	if (Sys->Main == this)
+	{
+		Sys->Main = nullptr;
+	}
+
+	for (auto i = Sys->LoadedScenes.begin(); i < Sys->LoadedScenes.end(); i++)
+	{
+		if (*i == this)
+		{
+			Sys->LoadedScenes.erase(i);
+			break;
+		}
+	}
+
+	for (auto& i : ReferencedAssets)
+	{
+		GraphicsModel::UnloadModel(i);
+	}
+
+	for (auto& i : Objects)
+	{
+		i->Destroy();
+		delete i;
+	}
+
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+
+	VideoSystem->OnResizedCallbacks.erase(this);
+}
+
 engine::Scene::Scene(const char* FilePath)
 	: Scene(string(FilePath))
 {
 }
 
 void engine::Scene::Draw()
-{	
+{
 	Cam->Update();
 
 	Buffer->Bind();
@@ -84,16 +119,23 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 {
 	using namespace subsystem;
 
-#if EDITOR
-	if (EditorSubsystem::Active)
+	if (BufferSize != 0)
 	{
-		auto Size = GetEditorSize(NewSize);
-		Buffer->Resize(Size.X, Size.Y);
-		Cam->Aspect = float(Size.X) / float(Size.Y);
-		return;
+		Buffer->Resize(int64(BufferSize.X), int64(BufferSize.Y));
 	}
+	else
+	{
+#if EDITOR
+		if (EditorSubsystem::Active)
+		{
+			auto Size = GetEditorSize(NewSize);
+			Buffer->Resize(Size.X, Size.Y);
+			Cam->Aspect = float(Size.X) / float(Size.Y);
+			return;
+		}
 #endif
-	Buffer->Resize(NewSize.X, NewSize.Y);
+		Buffer->Resize(NewSize.X, NewSize.Y);
+	}
 	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
 }
 
@@ -138,6 +180,7 @@ void engine::Scene::Save(string FileName)
 void engine::Scene::LoadInternal(string File, bool Async)
 {
 	SerializedValue SceneData;
+	Name = File;
 	try
 	{
 		SceneData = TextSerializer::FromFile(File);
@@ -151,7 +194,6 @@ void engine::Scene::LoadInternal(string File, bool Async)
 		return;
 	}
 
-	Name = File;
 
 	if (SceneData.GetType() != SerializedData::DataType::Object || SceneData.GetObject().empty())
 		return;
@@ -164,6 +206,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 
 			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
 			SceneObject* Object = Type.CreateInstance();
+			Object->OriginScene = this;
 			Object->DeSerialize(&i);
 			Object->InitObj(this, !Async, Type.TypeID);
 
@@ -172,7 +215,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 		catch (SerializeException& SerializeErr)
 		{
 			subsystem::SceneSubsystem::Current->Print(
-				str::Format("Failed to deserialize object in scene: '%s'", SerializeErr.what()),
+				str::Format("Failed to DeSerialize object in scene: '%s'", SerializeErr.what()),
 				subsystem::ISubsystem::LogType::Warning
 			);
 		}
@@ -200,13 +243,13 @@ void engine::Scene::Init()
 	Cam->Rotation.Y = 3.14f / -2.0f;
 
 	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
+	SceneSubsystem::Current->LoadedScenes.push_back(this);
 
-	VideoSystem->OnResizedCallbacks.push_back(
+	VideoSystem->OnResizedCallbacks.insert({ this,
 		[this](kui::Vec2ui NewSize)
 		{
 			OnResized(NewSize);
-		});
-	SceneSubsystem::Current->LoadedScenes.push_back(this);
+		} });
 }
 
 engine::SerializedValue engine::Scene::GetSceneInfo()

@@ -38,6 +38,7 @@ namespace engine
 		}
 		
 		virtual void Begin();
+		virtual void Destroy();
 
 	private:
 
@@ -45,7 +46,7 @@ namespace engine
 		static T* New(Scene* Scn, bool CallBegin)
 		{
 			T* Object = new T();
-			Object->InitObj(Scn, CallBegin, T::ObjectTypeID);
+			Object->InitObj(Scn, CallBegin, T::ObjectType);
 			return Object;
 		}
 

@@ -58,9 +58,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 	auto& Objects = Scene::GetMain()->Objects;
 
 	std::vector<ListObject> ObjectTree = {
-		ListObject{
-			.Name = file::FileNameWithoutExt(Current->Name) + " (Scene)"
-		}
+		ListObject{.Name = file::FileNameWithoutExt(Current->Name) + " (Scene)"}
 	};
 
 	for (SceneObject* i : Objects)
@@ -81,22 +79,22 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 
 		Elem->SetName(Obj.Name);
 		Elem->SetLeftPadding(float(16 * Depth + (Obj.Children.empty() ? 21 : 5)));
-		Elem->SetColor(Obj.Selected 
+		Elem->SetColor(Obj.Selected
 			? EditorUI::Theme.Highlight1
-			: (Heading->listBox->GetChildren().size() % 2 == 0 
-				? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
+			: (Heading->listBox->GetChildren().size() % 2 == 0
+			? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
 		Elem->SetTextColor(Obj.Selected ? EditorUI::Theme.HighlightText : EditorUI::Theme.Text);
 		if (Obj.Children.empty())
 			delete Elem->arrow;
 		Elem->button->OnClicked = [this, Obj]()
-			{
-				if (!input::IsKeyDown(input::Key::LSHIFT))
-					Viewport::Current->SelectedObjects.clear();
+		{
+			if (!input::IsKeyDown(input::Key::LSHIFT))
+				Viewport::Current->SelectedObjects.clear();
 
-				if (Obj.From)
-					Viewport::Current->SelectedObjects.insert(Obj.From);
-				DisplayList();
-			};
+			if (Obj.From)
+				Viewport::Current->SelectedObjects.insert(Obj.From);
+			DisplayList();
+		};
 		Heading->listBox->AddChild(Elem);
 
 		if (!Obj.Children.empty())
