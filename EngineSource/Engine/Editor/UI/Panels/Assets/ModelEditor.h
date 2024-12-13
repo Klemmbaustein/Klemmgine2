@@ -4,6 +4,7 @@
 #include <Engine/Scene.h>
 #include <thread>
 #include <Engine/Objects/MeshObject.h>
+#include <memory>
 
 namespace engine::editor
 {
@@ -21,5 +22,6 @@ namespace engine::editor
 		Scene* EditorScene = nullptr;
 		MeshObject* CurrentObj = nullptr;
 		std::thread LoadModelThread;
+		std::shared_ptr<bool> CancelLoad;
 	};
 }

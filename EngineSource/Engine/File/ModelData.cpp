@@ -53,8 +53,7 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 
 	for (SerializedValue& Elem : Array)
 	{
-		Meshes.emplace_back();
-		Meshes[Meshes.size() - 1].DeSerialize(&Elem);
+		Meshes.emplace_back().DeSerialize(&Elem);
 	}
 }
 

@@ -57,7 +57,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	int32 PixelSize = int32(Background->GetUsedSize().X
 		* float(Background->GetParentWindow()->GetSize().X)
-		/ float(Background->GetParentWindow()->DPIMultiplier)
+		/ float(Background->GetParentWindow()->GetDPI())
 		/ 2.0);
 
 	bool Compact = PixelSize < 220;

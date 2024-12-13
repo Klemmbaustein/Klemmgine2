@@ -150,6 +150,7 @@ void Material::Clear()
 
 	if (Shader)
 		delete Shader;
+	Shader = nullptr;
 }
 
 void engine::graphics::Material::Apply()

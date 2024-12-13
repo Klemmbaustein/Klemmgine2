@@ -37,4 +37,6 @@ void engine::MeshObject::Destroy()
 {
 	if (DrawnModel)
 		GraphicsModel::UnloadModel(DrawnModel);
+	if (Mat)
+		delete Mat;
 }
