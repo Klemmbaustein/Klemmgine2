@@ -27,6 +27,13 @@ void engine::Log::Warn(string Message, std::vector<LogPrefix> Prefixes)
 	PrintMsg(Message, Log::LogColor::Yellow, Prefixes);
 }
 
+void engine::Log::Error(string Message, std::vector<LogPrefix> Prefixes)
+{
+	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Error", .Color = Log::LogColor::Red, });
+
+	PrintMsg(Message, Log::LogColor::Red, Prefixes);
+}
+
 std::vector<engine::Log::Message> engine::Log::GetMessages()
 {
 	std::lock_guard g{ LogMutex };

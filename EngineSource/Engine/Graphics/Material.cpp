@@ -1,10 +1,10 @@
 #include "Material.h"
-#include "ShaderObject.h"
-#include <GL/glew.h>
+#include "ShaderLoader.h"
 #include <kui/Image.h>
 #include <kui/Resource.h>
 #include <Engine/Log.h>
 #include <Engine/File/TextSerializer.h>
+#include <Engine/Internal/OpenGL.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -24,6 +24,27 @@ engine::graphics::Material::Material(string FilePath)
 	{
 		Log::Warn(Err.what());
 	}
+}
+
+Material* engine::graphics::Material::MakeDefault()
+{
+	auto* Result = new Material();
+
+	Result->VertexShader = "basic.vert";
+	Result->FragmentShader = "basic.frag";
+
+	Field UseTextureField;
+
+	UseTextureField.Name = "u_useTexture";
+	UseTextureField.FieldType = Field::Type::Int;
+	UseTextureField.Int = 0;
+
+	Result->Fields = {
+		UseTextureField
+	};
+	Result->UpdateShader();
+
+	return Result;
 }
 
 engine::graphics::Material::Material()
@@ -131,10 +152,8 @@ void Material::DeSerialize(SerializedValue* From)
 		}
 		Fields.push_back(NewField);
 	}
-	Shader = new ShaderObject(
-		{ kui::resource::GetStringFile("res:shader/" + VertexShader) },
-		{ kui::resource::GetStringFile("res:shader/" + FragmentShader) }
-	);
+
+	UpdateShader();
 }
 
 void Material::Clear()
@@ -148,8 +167,6 @@ void Material::Clear()
 	}
 	Fields.clear();
 
-	if (Shader)
-		delete Shader;
 	Shader = nullptr;
 }
 
@@ -194,4 +211,12 @@ void engine::graphics::Material::Apply()
 			break;
 		}
 	}
+}
+
+void engine::graphics::Material::UpdateShader()
+{
+	Shader = ShaderLoader::Current->Get(
+		"res:shader/" + VertexShader,
+		"res:shader/" + FragmentShader
+	);
 }

@@ -1,26 +1,37 @@
 #include "MeshObject.h"
 #include <kui/Resource.h>
+#include <Engine/Log.h>
 
 void engine::MeshObject::LoadMesh(AssetRef File)
 {
 	if (DrawnModel)
 	{
-		GraphicsModel::UnloadModel(DrawnModel);
+		Destroy();
 	}
 
 	ModelName = File;
 
 	DrawnModel = GraphicsModel::GetModel(ModelName.Value);
 
-	Mat = new graphics::Material("Assets/material.kmt");
+	if (DrawnModel)
+	{
+		for (auto& m : DrawnModel->Data->Meshes)
+		{
+			if (m.Material.empty())
+			{
+				Materials.push_back(graphics::Material::MakeDefault());
+				continue;
+			}
+			Materials.push_back(new graphics::Material(m.Material));
+		}
+	}
 }
 
 void engine::MeshObject::Draw(graphics::Camera* From)
 {
-	if (DrawnModel && Mat && Mat->Shader)
+	if (DrawnModel)
 	{
-		Mat->Apply();
-		DrawnModel->Drawable->Draw(Position, From, Mat->Shader);
+		DrawnModel->Drawable->Draw(Position, From, Materials);
 	}
 }
 
@@ -37,6 +48,11 @@ void engine::MeshObject::Destroy()
 {
 	if (DrawnModel)
 		GraphicsModel::UnloadModel(DrawnModel);
-	if (Mat)
+
+	for (graphics::Material* Mat : Materials)
+	{
 		delete Mat;
+	}
+
+	Materials.clear();
 }

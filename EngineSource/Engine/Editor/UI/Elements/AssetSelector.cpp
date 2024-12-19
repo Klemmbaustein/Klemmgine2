@@ -49,9 +49,9 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 	UpdateSelection();
 
 	OnDrop = [this](EditorUI::DraggedItem Item)
-	{
-		SelectedAsset = AssetRef::FromPath(Item.Path);
-	};
+		{
+			SelectedAsset = AssetRef::FromPath(Item.Path);
+		};
 	UpdateElement();
 }
 
@@ -65,10 +65,20 @@ engine::editor::AssetSelector::~AssetSelector()
 
 void engine::editor::AssetSelector::Tick()
 {
+	if (SearchBackground)
+		UpdateSearchSize();
+	if (RemoveSearchList)
+	{
+		ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
+			{
+				RemoveSearchResults();
+			}, nullptr, 0));
+	}
 	if (AssetPath->GetIsEdited())
 	{
 		if (!SearchBackground)
 		{
+			RemoveSearchList = false;
 			if (!SearchBackground)
 				SearchBackground = new UIScrollBox(false, 0, true);
 			UpdateSearchResults();
@@ -78,11 +88,11 @@ void engine::editor::AssetSelector::Tick()
 		if (LastEnteredText != AssetPath->GetText())
 		{
 			ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-			{
-				SearchBackground->UpdateElement();
-				SearchBackground->RedrawElement();
-				UpdateSearchResults();
-			}, nullptr, 0));
+				{
+					SearchBackground->UpdateElement();
+					SearchBackground->RedrawElement();
+					UpdateSearchResults();
+				}, nullptr, 0));
 			LastEnteredText = AssetPath->GetText();
 			UpdateSearchSize();
 		}
@@ -93,9 +103,9 @@ void engine::editor::AssetSelector::Tick()
 		&& !ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground->GetScrollBarBackground()))))
 	{
 		ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-		{
-			RemoveSearchResults();
-		}, nullptr, 0));
+			{
+				RemoveSearchList = true;
+			}, nullptr, 0));
 	}
 }
 
@@ -106,16 +116,24 @@ void engine::editor::AssetSelector::UpdateSelection()
 
 void engine::editor::AssetSelector::UpdateSearchSize()
 {
+	float Offset = 0;
+
+	if (CurrentScrollObject)
+	{
+		Offset = CurrentScrollObject->Percentage;
+	}
+
 	float VerticalSize = PixelSizeToScreenSize(200, ParentWindow).Y;
 	SearchBackground->SetMinSize(Vec2f(AssetPath->GetUsedSize().X, VerticalSize));
 	SearchBackground->SetMaxSize(Vec2f(AssetPath->GetUsedSize().X, VerticalSize));
-	SearchBackground->SetPosition(AssetPath->GetScreenPosition() - Vec2f(0, VerticalSize));
+	SearchBackground->SetPosition(AssetPath->GetScreenPosition() - Vec2f(0, VerticalSize - Offset));
 }
 
 void engine::editor::AssetSelector::RemoveSearchResults()
 {
 	delete SearchBackground;
 	SearchBackground = nullptr;
+	RemoveSearchList = false;
 }
 
 void engine::editor::AssetSelector::UpdateSearchResults()
@@ -149,13 +167,13 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 		}
 
 		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Path]()
-		{
-			AssetPath->SetText(Name);
-			RemoveSearchResults();
-			SelectedAsset = AssetRef::FromPath(Path);
-			OnChanged();
-			UpdateSelection();
-		}))
+			{
+				AssetPath->SetText(Name);
+				RemoveSearchResults();
+				SelectedAsset = AssetRef::FromPath(Path);
+				OnChanged();
+				UpdateSelection();
+			}))
 			->SetTryFill(true)
 			->AddChild((new UIText(11,
 			{

@@ -34,6 +34,19 @@ namespace engine::editor
 			Tabs
 		};
 
+		template<typename T>
+		void ForEachPanel(std::function<void(T*)> Func)
+		{
+			if (dynamic_cast<T*>(this))
+			{
+				Func(dynamic_cast<T*>(this));
+			}
+			for (auto& i : Children)
+			{
+				i->ForEachPanel<T>(Func);
+			}
+		}
+
 		EditorPanel* SetWidth(float NewWidth);
 
 		float WidthFraction = 0.5f;

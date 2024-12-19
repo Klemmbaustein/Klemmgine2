@@ -44,6 +44,18 @@ engine::string engine::str::Lower(string Input)
 	return Input;
 }
 
+engine::string engine::str::Trim(string Input)
+{
+	Input.erase(Input.begin(), std::find_if(Input.begin(), Input.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}));
+
+	Input.erase(std::find_if(Input.rbegin(), Input.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}).base(), Input.end());
+	return Input;
+}
+
 int32_t engine::str::Hash(const string& Target)
 {
 	unsigned int hash = 1315423911;

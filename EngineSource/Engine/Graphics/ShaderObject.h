@@ -7,8 +7,8 @@ namespace engine::graphics
 {
 	class ShaderObject
 	{
-		void CheckCompileErrors(uint32 ShaderID, string Type);
 	public:
+		static void CheckCompileErrors(uint32 ShaderID, string Type);
 		ShaderObject(std::vector<string> VertexFiles, std::vector<string> FragmentFiles);
 
 		void Bind();

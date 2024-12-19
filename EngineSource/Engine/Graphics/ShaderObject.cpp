@@ -1,7 +1,8 @@
 #include "ShaderObject.h"
 #include <kui/Resource.h>
-#include <GL/glew.h>
-#include <iostream>
+#include "ShaderLoader.h"
+#include <Engine/Internal/OpenGL.h>
+#include <Engine/Log.h>
 
 void engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string Type)
 {
@@ -13,10 +14,10 @@ void engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string 
 		if (!success)
 		{
 			glGetShaderInfoLog(ShaderID, 1024, NULL, infoLog);
-			std::cerr << ("Shader compilation error of type: "
+			Log::Error("Shader compilation error of type: "
 				+ Type
 				+ "\n"
-				+ std::string(infoLog)) << std::endl;
+				+ std::string(infoLog));
 		}
 	}
 	else
@@ -25,10 +26,10 @@ void engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string 
 		if (!success)
 		{
 			glGetProgramInfoLog(ShaderID, 1024, NULL, infoLog);
-			std::cerr << ("Shader linking error of type: "
+			Log::Error("Shader linking error of type: "
 				+ Type
 				+ "\n"
-				+ std::string(infoLog)) << std::endl;
+				+ std::string(infoLog));
 		}
 	}
 
@@ -46,9 +47,17 @@ engine::graphics::ShaderObject::ShaderObject(std::vector<string> VertexFiles, st
 
 	std::vector<const char*> FragmentCstringArray;
 
+	std::vector<uint32> FragmentModules;
+
 	VertexCstringArray.reserve(FragmentFiles.size());
 	for (auto& i : FragmentFiles)
 	{
+		auto Res = ShaderLoader::Current->Modules.ParseShader(i);
+		i = Res.ResultSource;
+		for (auto& mod : Res.DependencyModules)
+		{
+			FragmentModules.push_back(mod.ModuleObject);
+		}
 		FragmentCstringArray.push_back(i.c_str());
 	}
 
@@ -60,7 +69,7 @@ engine::graphics::ShaderObject::ShaderObject(std::vector<string> VertexFiles, st
 	CheckCompileErrors(vertex, "VERTEX");
 	// fragment Shader
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, GLsizei(FragmentCstringArray.size()), FragmentCstringArray.data(), NULL);
+	glShaderSource(fragment, GLsizei(FragmentCstringArray.size()), FragmentCstringArray.data(), nullptr);
 	glCompileShader(fragment);
 	CheckCompileErrors(fragment, "FRAGMENT");
 
@@ -68,11 +77,16 @@ engine::graphics::ShaderObject::ShaderObject(std::vector<string> VertexFiles, st
 	ShaderID = glCreateProgram();
 	glAttachShader(ShaderID, vertex);
 	glAttachShader(ShaderID, fragment);
+
+	for (uint32 mod : FragmentModules)
+	{
+		glAttachShader(ShaderID, mod);
+	}
+
 	glLinkProgram(ShaderID);
 	CheckCompileErrors(ShaderID, "PROGRAM");
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
-
 }
 
 void engine::graphics::ShaderObject::Bind()

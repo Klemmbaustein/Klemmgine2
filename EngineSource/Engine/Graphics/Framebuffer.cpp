@@ -1,7 +1,7 @@
 #include "Framebuffer.h"
 #include "Engine/Subsystem/VideoSubsystem.h"
 #include "Engine/Engine.h"
-#include <gl/glew.h>
+#include <Engine/Internal/OpenGL.h>
 
 engine::graphics::Framebuffer::Framebuffer(int64 Width, int64 Height)
 {

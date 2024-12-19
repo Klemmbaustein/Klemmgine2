@@ -9,6 +9,9 @@ namespace engine::graphics
 	public:
 
 		Material(string FilePath);
+
+		static Material* MakeDefault();
+
 		Material();
 		~Material();
 
@@ -53,5 +56,7 @@ namespace engine::graphics
 
 		void Clear();
 		void Apply();
+	private:
+		void UpdateShader();
 	};
 }

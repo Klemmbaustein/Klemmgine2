@@ -9,7 +9,6 @@
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
 #include <Engine/Editor/UI/Panels/Viewport.h>
-#include <iostream>
 using namespace kui;
 
 static void GLAPIENTRY MessageCallback(
@@ -40,7 +39,11 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 {
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 		{
+#if !SERVER
+			app::MessageBox("kui error: " + Message, "Error", Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
+#else
 			Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
+#endif
 		});
 
 	Print("Initializing SDL", LogType::Info);
@@ -61,6 +64,8 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	MainWindow->UI.DrawToWindow = false;
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, this);
+
+	Loader.Modules.ScanModules();
 }
 
 engine::subsystem::VideoSubsystem::~VideoSubsystem()

@@ -16,9 +16,18 @@ namespace engine::editor
 
 		void Update();
 
+		void Save();
+
+	private:
+		void OnModelLoaded();
+
+		void OnModelChanged();
+
 		bool ModelLoaded = false;
 		AssetRef EditedModel;
 		kui::UIBackground* SceneBackground = nullptr;
+		kui::UIBox* SidebarBox = nullptr;
+		kui::UIBox* MainBox = nullptr;
 		Scene* EditorScene = nullptr;
 		MeshObject* CurrentObj = nullptr;
 		std::thread LoadModelThread;

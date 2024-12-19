@@ -2,6 +2,7 @@
 #include <Engine/Graphics/VertexBuffer.h>
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/Graphics/Camera.h>
+#include <Engine/Graphics/Material.h>
 
 namespace engine
 {
@@ -16,8 +17,8 @@ namespace engine::graphics
 		Model(const ModelData* From);
 		~Model();
 
-		std::vector<VertexBuffer*> ModelVertexBuffer;
+		std::vector<VertexBuffer*> ModelVertexBuffers;
 
-		virtual void Draw(Vector3 At, Camera* With, ShaderObject* UsedShader);
+		virtual void Draw(Vector3 At, Camera* With, std::vector<Material*>& UsedMaterials);
 	};
 }

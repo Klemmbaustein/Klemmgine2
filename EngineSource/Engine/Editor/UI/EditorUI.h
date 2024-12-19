@@ -64,6 +64,14 @@ namespace engine::editor
 			Error
 		};
 
+		template<typename T>
+		static void ForEachPanel(std::function<void(T*)> Function)
+		{
+			if (!Instance || !Instance->RootPanel)
+				return;
+			Instance->RootPanel->ForEachPanel<T>(Function);
+		}
+
 		static void SetStatusMessage(string NewMessage, StatusType Type);
 
 		EditorUI();

@@ -13,7 +13,7 @@ namespace engine
 
 		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", ".kmdl"_asset, this);
 
-		graphics::Material* Mat = nullptr;
+		std::vector<graphics::Material*> Materials;
 		GraphicsModel* DrawnModel = nullptr;
 
 		void LoadMesh(AssetRef File);

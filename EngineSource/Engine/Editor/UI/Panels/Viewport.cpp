@@ -7,7 +7,7 @@
 #include <kui/UI/UISpinner.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/Stats.h>
-#include <iostream>
+#include <Engine/Log.h>
 #include <Toolbar.kui.hpp>
 using namespace engine::subsystem;
 using namespace kui;
@@ -189,8 +189,7 @@ void engine::editor::Viewport::Update()
 			Current->Cam->Position -= Vector3::Right(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
 		}
 
-		Current->Cam->Rotation = Current->Cam->Rotation + Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
-
+		Current->Cam->Rotation = Current->Cam->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
 }
 #endif

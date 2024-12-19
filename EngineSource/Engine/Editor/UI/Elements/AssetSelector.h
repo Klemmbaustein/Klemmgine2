@@ -24,6 +24,7 @@ namespace engine::editor
 		virtual void Tick() override;
 	private:
 		string LastEnteredText;
+		bool RemoveSearchList = false;
 		void UpdateSelection();
 		void UpdateSearchSize();
 		void RemoveSearchResults();

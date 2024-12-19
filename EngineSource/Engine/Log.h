@@ -36,6 +36,7 @@ namespace engine
 		static void PrintMsg(string Message, LogColor Color, std::vector<LogPrefix> Prefixes = {});
 		static void Info(string Message, std::vector<LogPrefix> Prefixes = {});
 		static void Warn(string Message, std::vector<LogPrefix> Prefixes = {});
+		static void Error(string Message, std::vector<LogPrefix> Prefixes = {});
 
 		static std::vector<Message> GetMessages();
 		static size_t GetLogMessagesCount();

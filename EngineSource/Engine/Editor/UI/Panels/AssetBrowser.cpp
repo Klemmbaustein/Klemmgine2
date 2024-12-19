@@ -1,7 +1,7 @@
 #ifdef EDITOR
 #include "AssetBrowser.h"
-#include "Assets/ModelEditor.h"
 #include "Viewport.h"
+#include "Assets/ModelEditor.h"
 #include <Engine/Editor/ModelConverter.h>
 #include <Engine/Editor/UI/DropdownMenu.h>
 #include <Engine/Editor/UI/EditorUI.h>
@@ -9,6 +9,8 @@
 #include <Engine/File/FileUtil.h>
 #include <Engine/Internal/Platform.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
+#include <Engine/MainThread.h>
+
 #include <kui/Window.h>
 #include <filesystem>
 #include <thread>
@@ -200,6 +202,12 @@ static void ImportThread(engine::string CurrentPath)
 			});
 		EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", File.c_str(), Out.c_str()), EditorUI::StatusType::Info);
 		Progress->Close();
+
+		thread::ExecuteOnMainThread([]() {
+			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
+				Browser->UpdateItems();
+				});
+			});
 	}
 }
 
