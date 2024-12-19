@@ -1,19 +1,12 @@
 #version 330
 #module "engine.common"
 
-// Pixel position
-#export
 in vec3 v_position;
 
-// Pixel texture coordinate
-#export
 in vec2 v_texCoord;
 
-// Pixel normal
-#export
 in vec3 v_normal;
 
-// Final pixel color
 #export
 out vec4 f_color;
 
