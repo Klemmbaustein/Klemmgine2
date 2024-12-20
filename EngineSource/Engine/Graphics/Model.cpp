@@ -31,6 +31,9 @@ void engine::graphics::Model::Draw(Vector3 At, graphics::Camera* With, std::vect
 
 		ShaderObject* Used = UsedMaterials[i]->Shader;
 
+		if (Used == nullptr)
+			continue;
+
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_model"), 1, false, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_view"), 1, false, &With->View[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_projection"), 1, false, &With->Projection[0][0]);

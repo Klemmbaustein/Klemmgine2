@@ -2,6 +2,8 @@
 #include <Engine/Log.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <ConsolePanel.kui.hpp>
+#include <Engine/Subsystem/ConsoleSubsystem.h>
+#include <Engine/Engine.h>
 #include <iostream>
 using namespace engine;
 
@@ -21,7 +23,15 @@ static std::map<Log::LogColor, kui::Vec3f> LogColorValues =
 engine::editor::ConsolePanel::ConsolePanel()
 	: EditorPanel("Console", "console")
 {
+
 	Element = new ConsolePanelElement();
+	Element->commandField->field->OnClickedFunction = [this]() {
+		using namespace subsystem;
+		string Command = Element->commandField->field->GetText();
+		Log::Info("> " + Command);
+		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
+		Element->commandField->field->SetText("");
+		};
 	Background->AddChild(Element);
 }
 
@@ -78,11 +88,17 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 		txt
 			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPadding(0, i == LogMessages.size() - 1 ? 15 : 0, 5, 0)
+			->SetPadding(0, 0, 5, 0)
 			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
 
 		Element->logBox->AddChild(txt);
 	}
+
+	if (LastLogSize > 0)
+	{
+		Element->logBox->GetChildren()[LogMessages.size() - 1]->SetPadding(0, 15, 5, 0);
+	}
+
 	LastLogSize = LogMessages.size();
 	PanelElement->UpdateElement();
 	Element->logBox->CurrentScrollObject->Percentage = Element->logBox->CurrentScrollObject->MaxScroll;

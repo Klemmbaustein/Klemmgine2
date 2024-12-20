@@ -64,6 +64,11 @@ std::vector<engine::SerializedData> engine::TextSerializer::FromFile(string File
 		return {};
 	}
 
+	if (std::filesystem::is_empty(File))
+	{
+		return {};
+	}
+
 	std::ifstream In = std::ifstream(File);
 	std::vector<SerializedData> Out;
 	ReadObject(Out, In);

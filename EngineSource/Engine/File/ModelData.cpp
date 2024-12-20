@@ -167,8 +167,16 @@ void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 	}
 	if (Lock)
 		ModelDataMutex.unlock();
-
-	ModelData* New = new ModelData(Asset.FilePath);
+	ModelData* New = nullptr;
+	try
+	{
+		New = new ModelData(Asset.FilePath);
+	}
+	catch (SerializeReadException& e)
+	{
+		Log::Warn(str::Format("Failed to load model: %s", e.what()));
+		return;
+	}
 	if (Lock)
 		ModelDataMutex.lock();
 

@@ -35,7 +35,7 @@ element ConsolePanelElement
 		size = 32px;
 		tryFill = true;
 
-		child EditorTextField
+		child EditorTextField commandField
 		{
 			HintText = "Execute command";
 			Size = (400, 22);
@@ -43,7 +43,7 @@ element ConsolePanelElement
 			padding = 5px;
 		}
 
-		child EditorTextField
+		child EditorTextField searchField
 		{
 			Size = (200, 22);
 			HintText = "Search log";

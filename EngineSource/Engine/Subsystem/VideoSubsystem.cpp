@@ -1,5 +1,6 @@
 #include "VideoSubsystem.h"
 #include "SceneSubsystem.h"
+#include "ConsoleSubsystem.h"
 #include <kui/App.h>
 #include <SDL3/SDL.h>
 #include <GL/glew.h>
@@ -57,7 +58,6 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 
 	MainWindow->OnResizedCallback = [this](Window*)
 		{
-			Print("Main window resized", LogType::Note);
 			OnResized();
 		};
 
@@ -65,7 +65,21 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, this);
 
+	Print("Compiling shader modules", LogType::Note);
 	Loader.Modules.ScanModules();
+
+	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
+	if (ConsoleSys)
+	{
+		ConsoleSys->AddCommand(console::Command{
+			.Name = "reload_shaders",
+			.Args = {},
+			.OnCalled = [this](const console::Command::CallContext& ctx) {
+				Print("Reloading shaders...");
+				Loader.ReloadAll();
+			}
+			});
+	}
 }
 
 engine::subsystem::VideoSubsystem::~VideoSubsystem()

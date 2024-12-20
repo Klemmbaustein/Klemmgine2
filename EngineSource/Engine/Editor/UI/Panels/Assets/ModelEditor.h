@@ -18,6 +18,8 @@ namespace engine::editor
 
 		void Save();
 
+		void OnResized() override;
+
 	private:
 		void OnModelLoaded();
 

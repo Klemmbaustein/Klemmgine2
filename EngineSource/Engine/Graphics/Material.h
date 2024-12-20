@@ -19,6 +19,7 @@ namespace engine::graphics
 		{
 			Field()
 			{
+
 			}
 			enum class Type
 			{
@@ -51,12 +52,18 @@ namespace engine::graphics
 		std::vector<Field> Fields;
 		ShaderObject* Shader = nullptr;
 
+		void ToFile(string Path);
+
 		virtual SerializedValue Serialize() override;
 		virtual void DeSerialize(SerializedValue* From) override;
 
 		void Clear();
 		void Apply();
+		void VerifyUniforms();
+		Material::Field* FindField(string Name, Field::Type Type);
 	private:
+		bool IsDefault = false;
+		void SetToDefault();
 		void UpdateShader();
 	};
 }

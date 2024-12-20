@@ -2,6 +2,7 @@
 #include <Engine/Types.h>
 #include <vector>
 #include <map>
+#include "Material.h"
 
 namespace engine::graphics
 {
@@ -11,6 +12,13 @@ namespace engine::graphics
 		string Name;
 		uint32 ModuleObject = 0;
 		std::vector<string> Exported;
+	};
+
+	struct ShaderUniform
+	{
+		Material::Field::Type Type = Material::Field::Type::None;
+		string Name;
+		string DefaultValue;
 	};
 
 	class ShaderModuleLoader
@@ -24,6 +32,7 @@ namespace engine::graphics
 		{
 			string ResultSource;
 			std::vector<ShaderModule> DependencyModules;
+			std::vector<ShaderUniform> ShaderUniforms;
 			bool IsModule;
 			ShaderModule ThisModule;
 		};
@@ -33,6 +42,8 @@ namespace engine::graphics
 
 		void ScanModules();
 	private:
+		void FreeModules();
+		ShaderUniform ReadUniformDefinition(string DefinitionSource);
 		void LoadModule(const string& Source, ShaderModule& Info);
 		std::map<string, ShaderModule> LoadedModules;
 	};

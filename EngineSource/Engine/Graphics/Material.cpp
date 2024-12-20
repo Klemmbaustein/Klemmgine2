@@ -1,8 +1,8 @@
 #include "Material.h"
 #include "ShaderLoader.h"
 #include <kui/Image.h>
-#include <kui/Resource.h>
 #include <Engine/Log.h>
+#include <Engine/File/Resource.h>
 #include <Engine/File/TextSerializer.h>
 #include <Engine/Internal/OpenGL.h>
 
@@ -14,7 +14,11 @@ engine::graphics::Material::Material(string FilePath)
 	try
 	{
 		SerializedValue FileData = TextSerializer::FromFile(FilePath);
-		DeSerialize(&FileData);
+		if (!FileData.GetObject().empty())
+		{
+			DeSerialize(&FileData);
+			return;
+		}
 	}
 	catch (SerializeReadException& ReadErr)
 	{
@@ -24,25 +28,14 @@ engine::graphics::Material::Material(string FilePath)
 	{
 		Log::Warn(Err.what());
 	}
+	SetToDefault();
 }
 
 Material* engine::graphics::Material::MakeDefault()
 {
 	auto* Result = new Material();
 
-	Result->VertexShader = "basic.vert";
-	Result->FragmentShader = "basic.frag";
-
-	Field UseTextureField;
-
-	UseTextureField.Name = "u_useTexture";
-	UseTextureField.FieldType = Field::Type::Int;
-	UseTextureField.Int = 0;
-
-	Result->Fields = {
-		UseTextureField
-	};
-	Result->UpdateShader();
+	Result->SetToDefault();
 
 	return Result;
 }
@@ -54,6 +47,11 @@ engine::graphics::Material::Material()
 engine::graphics::Material::~Material()
 {
 	Clear();
+}
+
+void engine::graphics::Material::ToFile(string Path)
+{
+	TextSerializer::ToFile(Serialize().GetObject(), Path);
 }
 
 SerializedValue Material::Serialize()
@@ -75,7 +73,14 @@ SerializedValue Material::Serialize()
 			Val = i.Vec3;
 			break;
 		case Field::Type::Texture:
-			Val = *i.Texture.Name;
+			if (i.Texture.Name)
+			{
+				Val = *i.Texture.Name;
+			}
+			else
+			{
+				Val = "";
+			}
 			break;
 		case Field::Type::None:
 		default:
@@ -90,17 +95,11 @@ SerializedValue Material::Serialize()
 	}
 
 	Values.push_back(SerializedData("vertexShader",
-		std::vector{
-			SerializedData("type", int32(-1)),
-			SerializedData("val", VertexShader),
-		}
-		));
+		VertexShader
+	));
 	Values.push_back(SerializedData("fragmentShader",
-		std::vector{
-			SerializedData("type", int32(-1)),
-			SerializedData("val", FragmentShader),
-		}
-		));
+		FragmentShader
+	));
 
 	return Values;
 }
@@ -213,10 +212,113 @@ void engine::graphics::Material::Apply()
 	}
 }
 
+void engine::graphics::Material::VerifyUniforms()
+{
+	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader));
+
+	std::vector<Field> NewFields;
+
+	for (auto& i : Result.ShaderUniforms)
+	{
+		auto Found = FindField(i.Name, i.Type);
+		if (Found)
+		{
+			NewFields.push_back(*Found);
+			continue;
+		}
+		Field NewField;
+		NewField.Name = i.Name;
+		NewField.FieldType = i.Type;
+		if (i.DefaultValue != "")
+		{
+			switch (NewField.FieldType)
+			{
+			case Field::Type::Int:
+				NewField.Int = std::stoi(i.DefaultValue);
+				break;
+			case Field::Type::Float:
+				NewField.Float = std::stof(i.DefaultValue);
+				break;
+			case Field::Type::Vec3:
+				NewField.Vec3 = Vector3::FromString(i.DefaultValue);
+				break;
+			case Field::Type::None:
+			default:
+				break;
+			}
+		}
+		else if (NewField.FieldType == Field::Type::Texture)
+		{
+			NewField.Texture.Name = nullptr;
+			NewField.Texture.Value = 0;
+		}
+
+		NewFields.push_back(NewField);
+	}
+	Fields = NewFields;
+}
+
+Material::Field* engine::graphics::Material::FindField(string Name, Field::Type Type)
+{
+	for (auto& i : Fields)
+	{
+		if (i.Name == Name && i.FieldType == Type)
+		{
+			return &i;
+		}
+	}
+	return nullptr;
+}
+
+void engine::graphics::Material::SetToDefault()
+{
+	VertexShader = "res:shader/basic.vert";
+	FragmentShader = "res:shader/basic.frag";
+
+	Field UseTextureField;
+
+	UseTextureField.Name = "u_useTexture";
+	UseTextureField.FieldType = Field::Type::Int;
+	UseTextureField.Int = 0;
+
+	Field ColorField;
+
+	UseTextureField.Name = "u_color";
+	UseTextureField.FieldType = Field::Type::Vec3;
+	UseTextureField.Vec3 = 1;
+
+	Fields = {
+		UseTextureField,
+		ColorField,
+	};
+	IsDefault = true;
+
+	UpdateShader();
+}
+
 void engine::graphics::Material::UpdateShader()
 {
 	Shader = ShaderLoader::Current->Get(
-		"res:shader/" + VertexShader,
-		"res:shader/" + FragmentShader
+		VertexShader,
+		FragmentShader
 	);
+
+	// Don't try to use an invalid shader.
+	if (!Shader->Valid)
+	{
+		// Default shader isn't valid, oh no!
+		if (IsDefault)
+		{
+			Log::Error("Default shader is not valid!");
+			Shader = nullptr;
+		}
+		else
+		{
+			SetToDefault();
+		}
+	}
+
+#if EDITOR || DEBUG
+	VerifyUniforms();
+#endif
 }

@@ -48,6 +48,9 @@ engine::Scene::~Scene()
 {
 	using namespace subsystem;
 
+	delete Buffer;
+	delete Cam;
+
 	SceneSubsystem* Sys = SceneSubsystem::Current;
 
 	if (Sys->Main == this)

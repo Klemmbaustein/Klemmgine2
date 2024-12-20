@@ -4,7 +4,7 @@
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/Log.h>
 
-void engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string Type)
+bool engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string Type)
 {
 	GLint success;
 	GLchar infoLog[1024];
@@ -18,6 +18,7 @@ void engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string 
 				+ Type
 				+ "\n"
 				+ std::string(infoLog));
+			return true;
 		}
 	}
 	else
@@ -30,49 +31,62 @@ void engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string 
 				+ Type
 				+ "\n"
 				+ std::string(infoLog));
+			return true;
 		}
 	}
-
+	return false;
 }
 
-engine::graphics::ShaderObject::ShaderObject(std::vector<string> VertexFiles, std::vector<string> FragmentFiles)
+engine::graphics::ShaderObject::ShaderObject(string VertexFile, string FragmentFile)
 {
-	std::vector<const char*> VertexCstringArray;
+	Compile(VertexFile, FragmentFile);
+}
 
-	VertexCstringArray.reserve(VertexFiles.size());
-	for (auto& i : VertexFiles)
-	{
-		VertexCstringArray.push_back(i.c_str());
-	}
+engine::graphics::ShaderObject::~ShaderObject()
+{
+	if (Valid)
+		Clear();
+}
 
-	std::vector<const char*> FragmentCstringArray;
+void engine::graphics::ShaderObject::ReCompile()
+{
+	Compile(VertexFile, FragmentFile);
+}
 
+void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentFile)
+{
+	this->VertexFile = VertexFile;
+	this->FragmentFile = FragmentFile;
 	std::vector<uint32> FragmentModules;
 
-	VertexCstringArray.reserve(FragmentFiles.size());
-	for (auto& i : FragmentFiles)
+	auto Res = ShaderLoader::Current->Modules.ParseShader(FragmentFile);
+	FragmentFile = Res.ResultSource;
+	for (auto& mod : Res.DependencyModules)
 	{
-		auto Res = ShaderLoader::Current->Modules.ParseShader(i);
-		i = Res.ResultSource;
-		for (auto& mod : Res.DependencyModules)
-		{
-			FragmentModules.push_back(mod.ModuleObject);
-		}
-		FragmentCstringArray.push_back(i.c_str());
+		FragmentModules.push_back(mod.ModuleObject);
 	}
-
+	Valid = true;
 	unsigned int vertex, fragment;
+	const char* VertexCString = VertexFile.c_str();
+	const char* FragmentCString = FragmentFile.c_str();
 	// vertex shader
 	vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, GLsizei(VertexCstringArray.size()), VertexCstringArray.data(), nullptr);
+	glShaderSource(vertex, GLsizei(1), &VertexCString, nullptr);
 	glCompileShader(vertex);
-	CheckCompileErrors(vertex, "VERTEX");
+	if (CheckCompileErrors(vertex, "VERTEX"))
+	{
+		Valid = false;
+		return;
+	}
 	// fragment Shader
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, GLsizei(FragmentCstringArray.size()), FragmentCstringArray.data(), nullptr);
+	glShaderSource(fragment, GLsizei(1), &FragmentCString, nullptr);
 	glCompileShader(fragment);
-	CheckCompileErrors(fragment, "FRAGMENT");
-
+	if (CheckCompileErrors(fragment, "FRAGMENT"))
+	{
+		Valid = false;
+		return;
+	}
 	// shader Program
 	ShaderID = glCreateProgram();
 	glAttachShader(ShaderID, vertex);
@@ -84,14 +98,19 @@ engine::graphics::ShaderObject::ShaderObject(std::vector<string> VertexFiles, st
 	}
 
 	glLinkProgram(ShaderID);
-	CheckCompileErrors(ShaderID, "PROGRAM");
+	if (CheckCompileErrors(ShaderID, "PROGRAM"))
+	{
+		Valid = false;
+		return;
+	}
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
 }
 
 void engine::graphics::ShaderObject::Bind()
 {
-	glUseProgram(ShaderID);
+	if (Valid)
+		glUseProgram(ShaderID);
 }
 
 uint32 engine::graphics::ShaderObject::GetUniformLocation(string Name) const
@@ -112,4 +131,9 @@ void engine::graphics::ShaderObject::SetFloat(uint32 UniformLocation, float Valu
 void engine::graphics::ShaderObject::SetVec3(uint32 UniformLocation, Vector3 Value)
 {
 	glUniform3f(UniformLocation, Value.X, Value.Y, Value.Z);
+}
+
+void engine::graphics::ShaderObject::Clear()
+{
+	glDeleteProgram(ShaderID);
 }

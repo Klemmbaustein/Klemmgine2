@@ -4,6 +4,8 @@
 #include <Engine/Editor/UI/Elements/AssetSelector.h>
 #include <kui/UI/UISpinner.h>
 #include <kui/Window.h>
+#include <Toolbar.kui.hpp>
+#include <Engine/Log.h>
 using namespace kui;
 
 engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
@@ -14,40 +16,52 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	EditedModel = ModelFile;
 	EditorScene = new Scene();
-	EditorScene->BufferSize = 250 / Background->GetParentWindow()->GetDPI();
 	EditorScene->Cam->Rotation = Vector3(-0.7f, -2.4f, 0);
 	EditorScene->Cam->Position = Vector3(3, 3, 3);
-	EditorScene->OnResized(EditorScene->BufferSize);
 
 	CurrentObj = EditorScene->CreateObject<MeshObject>();
 
 	Background->SetHorizontal(true);
 
-	SceneBackground = new UIBackground(false, 0, 1, 250);
+	SceneBackground = new UIBackground(false, 0, 1, 0);
+	SceneBackground->SetCorner(5, UIBox::SizeMode::PixelRelative);
+	SceneBackground->SetCorners(false, false, true, false);
 
-	SidebarBox = new UIScrollBox(false, 0, true);
+	MainBox = new UIScrollBox(false, 0, true);
 
-	Background->AddChild(SidebarBox
-		->SetPadding(5)
+	Background->AddChild(MainBox
+		->SetPadding(0, 5, 1, 5)
 		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
 	);
 
-	SidebarBox->AddChild(SceneBackground
+	auto SaveButton = new ToolBarButton();
+	SaveButton->SetIcon("Engine/Editor/Assets/Save.png");
+	SaveButton->SetName("Save");
+	SaveButton->btn->OnClicked = [this]() {
+		Save();
+		};
+	delete SaveButton->dropdownButton;
+
+	MainBox->AddChild((new UIBox(true))
+		->SetTryFill(true)
+		->SetMinSize(38)
+		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->AddChild(SaveButton));
+
+	MainBox->AddChild(SceneBackground
+		->SetBorder(1, UIBox::SizeMode::PixelRelative)
+		->SetBorderColor(EditorUI::Theme.BackgroundHighlight)
 		->SetSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->AddChild(new UISpinner(0, EditorUI::Theme.Highlight1)));
 
-	SidebarBox->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, [this]()
-		{
-			Save();
-		}))
-		->AddChild((new UIText(15, EditorUI::Theme.HighlightText, "save", EditorUI::EditorFont))
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)));
+	SidebarBox = new UIScrollBox(false, 0, true);
 
-	MainBox = new UIScrollBox(false, 0, true);
-
-	Background->AddChild(MainBox
+	Background->AddChild(SidebarBox
+		->SetMinSize(280)
+		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetPadding(5)
 		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetTryFill(true));
@@ -85,13 +99,26 @@ engine::editor::ModelEditor::~ModelEditor()
 
 void engine::editor::ModelEditor::OnModelLoaded()
 {
-	MainBox->DeleteChildren();
+	SidebarBox->DeleteChildren();
+
+	SidebarBox->AddChild((new UIBox(true))
+		->SetTryFill(true)
+		->AddChild((new UIText(14, 1, "Materials", EditorUI::EditorFont))
+			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)));
 
 	GraphicsModel* Data = CurrentObj->DrawnModel;
 
+	if (!Data)
+	{
+		SidebarBox->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30))
+			->SetBackgroundColor(EditorUI::Theme.HighlightDark));
+		return;
+	}
+	float Width = UIBox::PixelSizeToScreenSize(245, Background->GetParentWindow()).X;
+
 	for (ModelData::Mesh& m : Data->Data->Meshes)
 	{
-		auto* NewSelector = new AssetSelector(AssetRef::FromPath(m.Material), 0.3f, nullptr);
+		auto* NewSelector = new AssetSelector(AssetRef::FromPath(m.Material), Width, nullptr);
 		NewSelector->SelectedAsset.Extension = "kmt";
 		NewSelector->OnChanged = [this, &m, NewSelector]()
 			{
@@ -102,7 +129,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		NewSelector->SetPadding(10, 10, 20, 20);
 		NewSelector->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
 
-		MainBox->AddChild(NewSelector);
+		SidebarBox->AddChild(NewSelector);
 	}
 }
 
@@ -127,4 +154,20 @@ void engine::editor::ModelEditor::Save()
 {
 	GraphicsModel* Data = CurrentObj->DrawnModel;
 	Data->Data->ToFile(EditedModel.FilePath);
+}
+
+void engine::editor::ModelEditor::OnResized()
+{
+	Vec2i PixelSize = Vec2f(Size
+		* Vec2f(Background->GetParentWindow()->GetSize())
+		/ Vec2f(Background->GetParentWindow()->GetDPI())
+		/ Vec2f(2.0));
+
+	PixelSize = PixelSize - Vec2i(300, 39);
+
+	EditorScene->BufferSize = PixelSize * Background->GetParentWindow()->GetDPI();
+	EditorScene->OnResized(EditorScene->BufferSize);
+	SceneBackground->SetMinSize(PixelSize);
+	SceneBackground->SetMaxSize(PixelSize);
+	OnModelLoaded();
 }

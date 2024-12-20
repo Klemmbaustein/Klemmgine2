@@ -17,15 +17,17 @@ ShaderModuleLoader::~ShaderModuleLoader()
 
 ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource)
 {
-
 	std::stringstream SourceStream;
 	SourceStream << ShaderSource;
 
 	std::stringstream OutStream;
 
 	std::vector<ShaderModule> FoundModules;
-	// When #export is used, the next line exports a function.
+	std::vector<ShaderUniform> FoundUniforms;
+	// When #export is used, the next line exports a function or variable.
 	bool NextLineIsExport = false;
+	// When #param is used, the next line exports a GLSL uniform.
+	bool NextLineIsParam = false;
 	bool IsModule = false;
 	size_t Line = 0;
 	ShaderModule ParsedModule;
@@ -78,8 +80,17 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 				ParsedModule.Exported.push_back(LineString);
 				NextLineIsExport = false;
 			}
+			if (NextLineIsParam)
+			{
+				FoundUniforms.push_back(ReadUniformDefinition(LineString));
+				NextLineIsParam = false;
+			}
 			NextLine(LineBuffer);
 			continue;
+		}
+		else if (NextLineIsExport || NextLineIsParam)
+		{
+			abort();
 		}
 
 		std::vector Statement = str::Split(LineString.substr(1), "\t ");
@@ -102,6 +113,18 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			continue;
 		};
 
+		if (Statement[0] == "param")
+		{
+			if (IsModule)
+			{
+				ParseError("Cannot use #param in modules");
+			}
+
+			NextLineIsParam = true;
+			NextLine("");
+			continue;
+		};
+
 		if (Statement[0] == "using")
 		{
 			if (Statement.size() < 2)
@@ -113,7 +136,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			ShaderModule& Found = LoadedModules[ModuleFile];
 
 			FoundModules.push_back(Found);
-		
+
 			for (auto& i : Found.Exported)
 			{
 				OutStream << i << ";";
@@ -138,6 +161,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 	return Result{
 		.ResultSource = OutStream.str(),
 		.DependencyModules = FoundModules,
+		.ShaderUniforms = FoundUniforms,
 		.IsModule = IsModule,
 		.ThisModule = ParsedModule,
 	};
@@ -145,6 +169,8 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 
 void engine::graphics::ShaderModuleLoader::ScanModules()
 {
+	FreeModules();
+
 	static std::array<string, 1> EngineDefaultModules =
 	{
 		"res:shader/engine.common.glsl"
@@ -157,6 +183,65 @@ void engine::graphics::ShaderModuleLoader::ScanModules()
 		LoadModule(Res.ResultSource, Res.ThisModule);
 		LoadedModules.insert({ Res.ThisModule.Name, Res.ThisModule });
 	}
+}
+
+void engine::graphics::ShaderModuleLoader::FreeModules()
+{
+	for (auto& [name, mod] : LoadedModules)
+	{
+		glDeleteShader(mod.ModuleObject);
+	}
+	LoadedModules.clear();
+}
+
+ShaderUniform engine::graphics::ShaderModuleLoader::ReadUniformDefinition(string DefinitionSource)
+{
+	DefinitionSource = str::ReplaceChar(DefinitionSource, ';', ' ');
+	std::vector SplitValue = str::Split(DefinitionSource, "\t ");
+
+	if (SplitValue.size() < 3)
+	{
+		"Peak error handling";
+		abort();
+	}
+
+	string Uniform = SplitValue[0];
+	string Type = SplitValue[1];
+	string Name = SplitValue[2];
+
+	std::map<string, Material::Field::Type> TypeNames = {
+		{ "int", Material::Field::Type::Int },
+		{ "float", Material::Field::Type::Int },
+		{ "sampler2D", Material::Field::Type::Texture },
+		{ "vec3", Material::Field::Type::Vec3 },
+		{ "bool", Material::Field::Type::Int },
+	};
+	string ValueString;
+	if (SplitValue.size() >= 4 && SplitValue[3] == "=")
+	{
+		ValueString = str::Trim(DefinitionSource.substr(DefinitionSource.find_first_of("=") + 1));
+
+		if (Type == "vec3")
+		{
+			DefinitionSource = str::ReplaceChar(DefinitionSource, ';', ' ');
+			if (ValueString.size() < 6)
+			{
+				abort();
+			}
+			if (ValueString.substr(0, 5) != "vec3(")
+			{
+				abort();
+			}
+			ValueString = ValueString.substr(5);
+			ValueString = str::ReplaceChar(ValueString.substr(0, ValueString.size() - 1), ',', ' ');
+		}
+	}
+
+	return ShaderUniform{
+		.Type = TypeNames[Type],
+		.Name = Name,
+		.DefaultValue = ValueString,
+	};
 }
 
 void engine::graphics::ShaderModuleLoader::LoadModule(const string& Source, ShaderModule& Info)

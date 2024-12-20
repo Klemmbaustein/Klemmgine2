@@ -2,6 +2,7 @@
 #include "AssetBrowser.h"
 #include "Viewport.h"
 #include "Assets/ModelEditor.h"
+#include "Assets/MaterialEditor.h"
 #include <Engine/Editor/ModelConverter.h>
 #include <Engine/Editor/UI/DropdownMenu.h>
 #include <Engine/Editor/UI/EditorUI.h>
@@ -9,8 +10,8 @@
 #include <Engine/File/FileUtil.h>
 #include <Engine/Internal/Platform.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
+#include <Engine/Editor/Assets.h>
 #include <Engine/MainThread.h>
-
 #include <kui/Window.h>
 #include <filesystem>
 #include <thread>
@@ -78,6 +79,13 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 					Viewport::Current->AddChild(new ModelEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
 				};
 		}
+		else if (Extension == "kmt")
+		{
+			OnClick = [this, FilePath]()
+				{
+					Viewport::Current->AddChild(new MaterialEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
+				};
+		}
 
 		string Image = "";
 
@@ -102,6 +110,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 						.OnClicked = [this, FilePath]()
 					{
 						std::filesystem::remove_all(FilePath);
+						assets::ScanForAssets();
 						UpdateItems();
 					},
 					.Name = "Delete",
@@ -143,11 +152,14 @@ void engine::editor::AssetBrowser::Back()
 	UpdateItems();
 }
 
-static void ImportThread(engine::string CurrentPath)
+static std::vector<engine::string> ModelExtensions = { "glb", "gltf", "obj", "fbx", "ply", "blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
+
+static void ImportItem(engine::string File, engine::string CurrentPath)
 {
 	using namespace engine;
 	using namespace engine::editor;
-	using namespace engine::internal;
+
+	string Extension = File.substr(File.find_last_of(".") + 1);
 
 	auto Contains = [](string Value, const std::vector<string>& Values) -> bool
 		{
@@ -160,9 +172,36 @@ static void ImportThread(engine::string CurrentPath)
 			return Found;
 		};
 
-	std::vector<string> ModelExtensions = { "glb", "gltf", "obj", "fbx", "ply", "blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
+	if (Contains(Extension, ModelExtensions))
+	{
+		EditorUI::SetStatusMessage(str::Format("Importing file: '%s'", File.c_str()), EditorUI::StatusType::Info);
+		auto* Progress = new ProgressBar("Importing " + Extension + " file");
+		Progress->Progress = -1;
+		string Out = modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
+			.OnLoadStatusChanged = [Progress](string NewMessage)
+			{
+				Progress->SetMessage("Importing model: " + NewMessage);
+			}
+			});
+		EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", File.c_str(), Out.c_str()), EditorUI::StatusType::Info);
+		Progress->Close();
 
-	string File = platform::OpenFileDialog({
+		thread::ExecuteOnMainThread([]() {
+			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
+				assets::ScanForAssets();
+				Browser->UpdateItems();
+				});
+			});
+	}
+}
+
+static void ImportThread(engine::string CurrentPath)
+{
+	using namespace engine;
+	using namespace engine::internal;
+
+
+	std::vector Files = platform::OpenFileDialog({
 		platform::FileDialogFilter{
 			.Name = "3D Models",
 			.FileTypes = ModelExtensions,
@@ -187,27 +226,9 @@ static void ImportThread(engine::string CurrentPath)
 			.FileTypes = { "*" }
 		} });
 
-	string Extension = File.substr(File.find_last_of(".") + 1);
-
-	if (Contains(Extension, ModelExtensions))
+	for (auto& i : Files)
 	{
-		EditorUI::SetStatusMessage(str::Format("Importing file: '%s'", File.c_str()), EditorUI::StatusType::Info);
-		auto* Progress = new ProgressBar("Importing " + Extension + " file");
-		Progress->Progress = -1;
-		string Out = modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
-			.OnLoadStatusChanged = [Progress](string NewMessage)
-			{
-				Progress->SetMessage("Importing model: " + NewMessage);
-			}
-			});
-		EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", File.c_str(), Out.c_str()), EditorUI::StatusType::Info);
-		Progress->Close();
-
-		thread::ExecuteOnMainThread([]() {
-			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
-				Browser->UpdateItems();
-				});
-			});
+		ImportItem(i, CurrentPath);
 	}
 }
 
@@ -225,9 +246,15 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			DropdownMenu::Option{ .OnClicked = [this]()
 		{
 			EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
+			assets::ScanForAssets();
 			UpdateItems();
 		}, .Name = "New scene" },
-		DropdownMenu::Option{ .Name = "New material", .Separator = true },
+		DropdownMenu::Option{ .OnClicked = [this]()
+		{
+			EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
+			assets::ScanForAssets();
+			UpdateItems();
+		}, .Name = "New material", .Separator = true },
 		DropdownMenu::Option{ .OnClicked = [this]()
 		{
 			using namespace engine::internal::platform;
@@ -238,8 +265,8 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
 #endif
 		}, .Name = "Open in file explorer" },
-		},
-		Position);
+},
+Position);
 }
 engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 {

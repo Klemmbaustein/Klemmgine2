@@ -4,20 +4,23 @@
 #include <assimp/scene.h>
 #include <Engine/File/FileUtil.h>
 #include <assimp/postprocess.h>
+#include <Engine/Log.h>
+#include <assimp/cimport.h>
+#include <fstream>
 using namespace engine;
 using namespace engine::editor::modelConverter;
 
 struct ConvertContext
 {
 	ModelData* Data = nullptr;
+	string SceneName;
 	const aiScene* ImportedScene = nullptr;
 	ConvertOptions Options;
 };
 
-static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context)
+static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context, string OutDir)
 {
-	Context.Data->Meshes.push_back(ModelData::Mesh());
-	ModelData::Mesh& OutMesh = Context.Data->Meshes[Context.Data->Meshes.size() - 1];
+	ModelData::Mesh& OutMesh = Context.Data->Meshes.emplace_back();
 
 	OutMesh.Vertices.reserve(TargetMesh->mNumVertices);
 	for (uint32 i = 0; i < TargetMesh->mNumVertices; i++)
@@ -52,24 +55,91 @@ static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context)
 			OutMesh.Indices.push_back(TargetMesh->mFaces[i].mIndices[j]);
 		}
 	}
+
+	string MaterialPath = str::Format("%s/%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(TargetMesh->mMaterialIndex));
+	OutMesh.Material = MaterialPath;
 }
 
-static void ProcessScene(const aiNode* Node, ConvertContext Context)
+static void ProcessScene(const aiNode* Node, ConvertContext Context, string OutDir)
 {
 	for (uint32 i = 0; i < Node->mNumMeshes; i++)
 	{
-		ProcessMesh(Context.ImportedScene->mMeshes[Node->mMeshes[i]], Context);
+		ProcessMesh(Context.ImportedScene->mMeshes[Node->mMeshes[i]], Context, OutDir);
 	}
 
 	for (uint32 i = 0; i < Node->mNumChildren; i++)
 	{
-		ProcessScene(Node->mChildren[i], Context);
+		ProcessScene(Node->mChildren[i], Context, OutDir);
 	}
+}
+
+static void WriteMaterial(string Path, ConvertContext Context, string Texture)
+{
+	using namespace graphics;
+
+	Material* NewMaterial = Material::MakeDefault();
+
+	NewMaterial->FindField("u_useTexture", Material::Field::Type::Int)->Int = 1;
+	auto TextureField = NewMaterial->FindField("u_texture", Material::Field::Type::Texture);
+
+	if (TextureField)
+	{
+		TextureField->Texture.Name = new std::string(Texture);
+	}
+
+	NewMaterial->ToFile(Path);
+	delete NewMaterial;
+}
+
+static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, string OutDir)
+{
+	for (size_t i = 0; i < Scene->mNumMaterials; i++)
+	{
+		aiMaterial* material = Scene->mMaterials[i];
+		aiString texture_file;
+		material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
+		string TexturePath = "";
+		if (auto texture = Scene->GetEmbeddedTexture(texture_file.C_Str()))
+		{
+			string FileName = "";
+			FileName = texture->mFilename.C_Str();
+			if (FileName.empty())
+			{
+				FileName = Context.SceneName;
+			}
+
+			TexturePath = str::Format("%s/%s_%i.png", OutDir.c_str(), FileName.c_str(), int(i));
+
+			std::ofstream TextureOutput = std::ofstream(TexturePath, std::ios::binary);
+			if (!texture->mHeight)
+			{
+				TextureOutput.write((char*)texture->pcData, texture->mWidth);
+			}
+			TextureOutput.close();
+		}
+		else
+		{
+			Log::Info(str::Format("Texture: %s", texture_file.C_Str()));
+			//regular file, check if it exists and read it
+		}
+
+		string MaterialPath = str::Format("%s/%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));
+		WriteMaterial(MaterialPath, Context, TexturePath);
+	}
+}
+static void AssimpLogCallback(const char* msg, char* userData)
+{
+	Log::Info(msg);
 }
 
 string engine::editor::modelConverter::ConvertModel(string ModelPath, string OutDir, ConvertOptions Options)
 {
 	ConvertContext ctx;
+	ctx.SceneName = file::FileNameWithoutExt(ModelPath);
+
+	aiLogStream stream;
+	stream.callback = AssimpLogCallback;
+	aiAttachLogStream(&stream);
 
 	uint32 Flags = aiProcess_Triangulate
 		| aiProcess_GenSmoothNormals
@@ -99,7 +169,10 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	ctx.ImportedScene = Import.ReadFile(ModelPath, 0);
 
 	if (ctx.ImportedScene == nullptr)
+	{
+		aiDetachLogStream(&stream);
 		return "";
+	}
 
 	ctx.Data = new ModelData();
 
@@ -110,7 +183,8 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 
 	Import.ApplyPostProcessing(Flags);
 
-	ProcessScene(ctx.ImportedScene->mRootNode, ctx);
+	ProcessScene(ctx.ImportedScene->mRootNode, ctx, OutDir);
+	ProcessMaterials(ctx.ImportedScene, ctx, OutDir);
 
 	if (Options.OnLoadStatusChanged)
 	{
@@ -120,6 +194,7 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	string OutFileName = file::FileNameWithoutExt(ModelPath) + ".kmdl";
 
 	ctx.Data->ToFile(OutDir + OutFileName);
+	aiDetachLogStream(&stream);
 
 	delete ctx.Data;
 	return OutDir + OutFileName;

@@ -55,7 +55,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	if (!Object)
 		return;
 
-	int32 PixelSize = int32(Background->GetUsedSize().X
+	int32 PixelSize = int32(Size.X
 		* float(Background->GetParentWindow()->GetSize().X)
 		/ float(Background->GetParentWindow()->GetDPI())
 		/ 2.0);

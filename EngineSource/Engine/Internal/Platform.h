@@ -26,5 +26,5 @@ namespace engine::internal::platform
 
 	void SetConsoleColor(Log::LogColor NewColor);
 	
-	string OpenFileDialog(std::vector<FileDialogFilter> Filters);
+	std::vector<string> OpenFileDialog(std::vector<FileDialogFilter> Filters);
 }

@@ -26,11 +26,17 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 		return Found->second;
 	}
 
-
-
-	ShaderObject* New = new ShaderObject({ resource::GetTextFile(Vertex) }, {resource::GetTextFile(Fragment)});
-
+	ShaderObject* New = new ShaderObject(resource::GetTextFile(Vertex), resource::GetTextFile(Fragment));
 	Loaded.insert({ Vertex + ";" + Fragment, New });
 
 	return New;
+}
+
+void engine::graphics::ShaderLoader::ReloadAll()
+{
+	Modules.ScanModules();
+	for (auto& i : Loaded)
+	{
+		i.second->ReCompile();
+	}
 }

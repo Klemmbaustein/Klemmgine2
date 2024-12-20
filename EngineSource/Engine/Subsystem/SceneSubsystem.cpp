@@ -12,11 +12,12 @@ engine::subsystem::SceneSubsystem::SceneSubsystem()
 
 engine::subsystem::SceneSubsystem::~SceneSubsystem()
 {
-	for (Scene* scn : LoadedScenes)
+	std::vector OldScenes = LoadedScenes;
+	LoadedScenes.clear();
+	for (Scene* scn : OldScenes)
 	{
 		delete scn;
 	}
-	LoadedScenes.clear();
 	Current = nullptr;
 }
 

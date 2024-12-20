@@ -17,6 +17,7 @@ namespace engine::graphics
 		ShaderModuleLoader Modules;
 
 		ShaderObject* Get(string Vertex, string Fragment);
+		void ReloadAll();
 
 		static ShaderLoader* Current;
 	};

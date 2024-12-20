@@ -97,12 +97,12 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	SetConsoleTextAttribute(hConsole, WindowsColors[NewColor]);
 }
 
-engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
+std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (!SUCCEEDED(hr))
 	{
-		return "";
+		return {};
 	}
 	IFileOpenDialog* pFileOpen = nullptr;
 
@@ -162,6 +162,8 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 	if (AllIndex != SIZE_MAX)
 		pFileOpen->SetFileTypeIndex(UINT(FilterIndex - 1));
 
+	pFileOpen->SetOptions(FOS_ALLOWMULTISELECT);
+
 	for (auto& i : Types)
 	{
 		free(const_cast<wchar_t*>(i.pszName));
@@ -170,7 +172,9 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 
 	if (!SUCCEEDED(hr))
 	{
-		return "";
+		pFileOpen->Release();
+		CoUninitialize();
+		return {};
 	}
 
 	IShellItem2* AssetsItem = nullptr;
@@ -181,8 +185,6 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 
 	ItemName.vt = VT_LPWSTR;
 	ItemName.pwszVal = AssetsName.data();
-
-	pFileOpen->SetOkButtonLabel(L"Import");
 
 	hr = SHCreateItemFromParsingName((std::filesystem::current_path() / "Assets").wstring().c_str(), NULL, IID_PPV_ARGS(&AssetsItem));
 	if (SUCCEEDED(hr))
@@ -196,25 +198,39 @@ engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialog
 	// Get the file name from the dialog box.
 	if (!SUCCEEDED(hr))
 	{
-		return "";
+		pFileOpen->Release();
+		CoUninitialize();
+		return {};
 	}
-	IShellItem* pItem;
-	hr = pFileOpen->GetResult(&pItem);
+	IShellItemArray* pItems;
+	hr = pFileOpen->GetResults(&pItems);
 	if (SUCCEEDED(hr))
 	{
-		PWSTR pszFilePath;
-		hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-		// Display the file name to the user.
-		if (SUCCEEDED(hr))
+		std::vector<string> Items;
+
+		DWORD Count;
+		if (!SUCCEEDED(pItems->GetCount(&Count)))
 		{
-			return WstrToStr(pszFilePath);
+			Count = 0;
 		}
-		pItem->Release();
+		for (size_t i = 0; i < Count; i++)
+		{
+			IShellItem* pItem;
+			PWSTR pszFilePath;
+
+			hr = pItems->GetItemAt(i, &pItem);
+			pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+			Items.push_back(WstrToStr(pszFilePath));
+		}
+
+		pFileOpen->Release();
+		CoUninitialize();
+		return Items;
 	}
 
 	pFileOpen->Release();
 	CoUninitialize();
-	return "";
+	return {};
 }
 
 #else
@@ -252,10 +268,10 @@ void engine::internal::platform::Execute(string Command)
 	system(Command.c_str());
 }
 
-engine::string engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
+std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
 	// TODO: implement
-	return "";
+	return {};
 }
 
 #endif

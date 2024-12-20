@@ -101,7 +101,7 @@ engine::editor::EditorUI::EditorUI()
 
 	EditorFont = new Font(DefaultFontName);
 	VideoSystem->MainWindow->Markup.SetDefaultFont(EditorFont);
-	MonospaceFont = new Font("res:EditorMono.ttf");
+	MonospaceFont = new Font("Engine/Editor/Assets/EditorMono.ttf");
 
 	UIBackground* Root = new UIBackground(false, -1, Theme.Background, 2);
 	Root

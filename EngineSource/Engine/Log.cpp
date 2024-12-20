@@ -6,6 +6,10 @@ std::mutex engine::Log::LogMutex;
 
 void engine::Log::PrintMsg(string Message, LogColor Color, std::vector<LogPrefix> Prefixes)
 {
+	if (Message.size() && Message[Message.size() - 1] == '\n')
+	{
+		Message.pop_back();
+	}
 	std::vector<string> Lines = str::Split(Message, "\n");
 	for (auto& i : Lines)
 	{

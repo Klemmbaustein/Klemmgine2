@@ -26,7 +26,7 @@ element EditorTextField
 		bottomRightCorner = false;
 	}
 	
-	child UIButton
+	child UIBackground
 	{
 		size = 22px;
 		tryFill = true;
