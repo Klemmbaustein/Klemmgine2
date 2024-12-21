@@ -53,8 +53,5 @@ element DialogWindowMainElement
 
 		horizontalAlign = reverse;
 		verticalAlign = centered;
-
-		child DialogWindowButton { Text = "Import" }
-		child DialogWindowButton { Text = "Cancel" }
 	}
 }

@@ -215,6 +215,10 @@ void engine::editor::EditorUI::Update()
 		DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize() / 2);
 		kui::Window::GetActiveWindow()->CurrentCursor = kui::Window::Cursor::Default;
 
+		// Don't hover anything new when dragging something.
+		kui::Window::GetActiveWindow()->UI.HoveredBox = nullptr;
+		kui::Window::GetActiveWindow()->UI.NewHoveredBox = nullptr;
+
 		if (!input::IsLMBDown || input::IsRMBDown)
 		{
 			delete DraggedBox;
