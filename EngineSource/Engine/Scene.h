@@ -7,10 +7,16 @@
 
 namespace engine
 {
+	/**
+	* @brief
+	* A scene is a collection of objects and rendering information.
+	* 
+	* Each scene can have one graphics::Camera
+	*/
 	class Scene
 	{
 	public:
-		explicit Scene(bool DoLoadAsync = false);
+		Scene(bool DoLoadAsync = false);
 		Scene(string FilePath);
 		Scene(const char* FilePath);
 		~Scene();
@@ -26,10 +32,18 @@ namespace engine
 
 		kui::Vec2ui BufferSize;
 
+		/**
+		* @brief
+		* Gets the main scene.
+		*/
+		[[nodiscard]]
 		static Scene* GetMain();
 
 		void OnResized(kui::Vec2ui NewSize);
 
+		/**
+		* @brief
+		*/
 		template<typename T>
 		T* CreateObject()
 		{
@@ -38,10 +52,21 @@ namespace engine
 			return New;
 		}
 
+		/// The number of async scene loading operations in progress.
 		static std::atomic<int32> AsyncLoads;
 
+		/**
+		* @brief
+		* A string representing the scene.
+		* 
+		* Usually this is the path to the scene file (kts or kbs) that this scene was loaded from.
+		*/
 		string Name;
 
+		/**
+		* @brief
+		* Starts asynchronously loading this scene from a file.
+		*/
 		void LoadAsync(string SceneFile);
 		void LoadAsyncFinish();
 

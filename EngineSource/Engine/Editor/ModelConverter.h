@@ -9,6 +9,7 @@ namespace engine::editor::modelConverter
 		bool Optimize : 1 = true;
 		bool GenerateUV : 1 = true;
 		bool ImportTextures : 1 = true;
+		bool ImportMaterials : 1 = true;
 
 		float ImportScale = 0.01f;
 

@@ -15,6 +15,7 @@ namespace engine
 
 		string ToString() const;
 
+		[[nodiscard]]
 		Vector3 Normalize();
 		float Length() const;
 

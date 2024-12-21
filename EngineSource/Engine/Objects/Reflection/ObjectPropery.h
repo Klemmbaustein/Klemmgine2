@@ -8,11 +8,29 @@ namespace engine
 {
 	class SceneObject;
 
+	/**
+	* @brief
+	* A type that a reflected object property can have.
+	* 
+	* Used by ObjProperty to define it's type.
+	*/
 	enum class PropertyType
 	{
+		/// A float property.
 		Float,
+		/**
+		* A string property.
+		* 
+		* @see engine::string
+		*/
 		String,
+		/**
+		* An asset reference property.
+		* 
+		* @see engine::AssetRef
+		*/
 		AssetRef,
+		/// Unknown property. Unknown properties can still be serialized and de-serialized, but can't be shown in the editor.
 		Unknown,
 	};
 
@@ -26,6 +44,14 @@ namespace engine
 		void RegisterSelf(SceneObject* Parent);
 	};
 
+	/**
+	* @brief
+	* An object property with an unkown serializable type.
+	* 
+	* T must derive from ISerializable.
+	* 
+	* @see ISerializable
+	*/
 	template<typename T>
 	struct ObjProperty : public ObjPropertyBase
 	{

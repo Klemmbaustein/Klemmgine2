@@ -15,12 +15,14 @@ namespace engine
 		* 
 		* Equivalent to writing "FileName.ext"_asset
 		*/
+		[[nodiscard]]
 		static AssetRef FromName(string Name, string Extension);
 
 		/**
 		* @brief
 		* Creates an asset reference from a file path.
 		*/
+		[[nodiscard]]
 		static AssetRef FromPath(string Path);
 
 

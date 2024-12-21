@@ -117,11 +117,6 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 			}
 			TextureOutput.close();
 		}
-		else
-		{
-			Log::Info(str::Format("Texture: %s", texture_file.C_Str()));
-			//regular file, check if it exists and read it
-		}
 
 		string MaterialPath = str::Format("%s/%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));
 		WriteMaterial(MaterialPath, Context, TexturePath);
