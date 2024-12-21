@@ -1,0 +1,60 @@
+element DialogWindowButton
+{
+	var Text;
+
+	child UIButton btn
+	{
+		color = Color_Highlight2;
+		border = 1px;
+		borderColor = Color_HighlightDark;
+
+		minSize = (50, 24)px;
+		maxSize = (400, 24)px;
+
+		allAlign = centered;
+
+		padding = 6px;
+		leftPadding = 0;
+
+		child UIText
+		{
+			text = Text;
+			size = 11px;
+			color = Color_HighlightText;
+			padding = 5px;
+		}
+	}
+}
+
+element DialogWindowMainElement
+{
+	var MainBackgroundSize;
+	var ButtonBackgroundSize;
+
+	size = 2sr;
+	position = -1;
+
+	orientation = vertical;
+
+	child UIBackground windowMain
+	{
+		color = Color_Background;
+		size = MainBackgroundSize;
+		tryFill = true;
+	}
+
+	child UIBackground buttonBox
+	{
+		border = 1px;
+		borderColor = Color_DarkBackground2;
+		size = ButtonBackgroundSize;
+		color = Color_DarkBackground;
+		tryFill = true;
+
+		horizontalAlign = reverse;
+		verticalAlign = centered;
+
+		child DialogWindowButton { Text = "Import" }
+		child DialogWindowButton { Text = "Cancel" }
+	}
+}

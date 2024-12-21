@@ -20,7 +20,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	Window* Parent, Vec2ui Size, Vec2ui Pos, std::string Title, Window::WindowFlag Flags)
 {
 	engine::internal::platform::Init();
-	
+
 	std::lock_guard g{ WindowCreateMutex };
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
@@ -44,11 +44,9 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 		SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
 	}
 
-	{
-		std::lock_guard gev{ EventsMutex };
-		OutWindow->IsMain = ActiveWindows.empty();
-		ActiveWindows.push_back(OutWindow);
-	}
+	OutWindow->IsMain = ActiveWindows.empty();
+	ActiveWindows.push_back(OutWindow);
+
 	engine::internal::platform::InitWindow(OutWindow, int(Flags));
 	SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
@@ -127,7 +125,8 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev))
 		{
-			std::lock_guard g{ WindowCreateMutex };
+			if (!WindowCreateMutex.try_lock())
+				break;
 			for (auto& i : ActiveWindows)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)
@@ -135,6 +134,7 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 					i->Events.push_back(ev);
 				}
 			}
+			WindowCreateMutex.unlock();
 		}
 
 	}
@@ -307,66 +307,66 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 {
 	static std::map<int, kui::Key> Keys =
 	{
-		{SDLK_ESCAPE, Key::ESCAPE},
-		{SDLK_BACKSPACE, Key::BACKSPACE},
-		{SDLK_TAB, Key::TAB},
-		{SDLK_SPACE, Key::SPACE},
-		{SDLK_DELETE, Key::DELETE},
-		{SDLK_PLUS, Key::PLUS},
-		{SDLK_COMMA, Key::COMMA},
-		{SDLK_PERIOD, Key::PERIOD},
-		{SDLK_SLASH, Key::SLASH},
-		{SDLK_0, Key::k0},
-		{SDLK_1, Key::k1},
-		{SDLK_2, Key::k2},
-		{SDLK_3, Key::k3},
-		{SDLK_4, Key::k4},
-		{SDLK_5, Key::k5},
-		{SDLK_6, Key::k6},
-		{SDLK_7, Key::k7},
-		{SDLK_8, Key::k8},
-		{SDLK_9, Key::k9},
-		{SDLK_SEMICOLON, Key::SEMICOLON},
-		{SDLK_LESS, Key::LESS},
-		{SDLK_RETURN, Key::RETURN},
-		{SDLK_LEFTBRACKET, Key::LEFTBRACKET},
-		{SDLK_RIGHTBRACKET, Key::RIGHTBRACKET},
-		{SDLK_RIGHT, Key::RIGHT},
-		{SDLK_LEFT, Key::LEFT},
-		{SDLK_UP, Key::UP},
-		{SDLK_DOWN, Key::DOWN},
-		{SDLK_LSHIFT, Key::LSHIFT},
-		{SDLK_RSHIFT, Key::LSHIFT},
-		{SDLK_LCTRL, Key::LCTRL},
-		{SDLK_RCTRL, Key::LCTRL},
-		{SDLK_LALT, Key::LALT},
-		{SDLK_RALT, Key::LALT},
-		{SDLK_A, Key::a},
-		{SDLK_B, Key::b},
-		{SDLK_C, Key::c},
-		{SDLK_D, Key::d},
-		{SDLK_E, Key::e},
-		{SDLK_F, Key::f},
-		{SDLK_G, Key::g},
-		{SDLK_H, Key::h},
-		{SDLK_I, Key::i},
-		{SDLK_J, Key::j},
-		{SDLK_K, Key::k},
-		{SDLK_L, Key::l},
-		{SDLK_M, Key::m},
-		{SDLK_N, Key::n},
-		{SDLK_O, Key::o},
-		{SDLK_P, Key::p},
-		{SDLK_Q, Key::q},
-		{SDLK_R, Key::r},
-		{SDLK_S, Key::s},
-		{SDLK_T, Key::t},
-		{SDLK_U, Key::u},
-		{SDLK_V, Key::v},
-		{SDLK_W, Key::w},
-		{SDLK_X, Key::x},
-		{SDLK_Y, Key::y},
-		{SDLK_Z, Key::z},
+		{ SDLK_ESCAPE, Key::ESCAPE },
+		{ SDLK_BACKSPACE, Key::BACKSPACE },
+		{ SDLK_TAB, Key::TAB },
+		{ SDLK_SPACE, Key::SPACE },
+		{ SDLK_DELETE, Key::DELETE },
+		{ SDLK_PLUS, Key::PLUS },
+		{ SDLK_COMMA, Key::COMMA },
+		{ SDLK_PERIOD, Key::PERIOD },
+		{ SDLK_SLASH, Key::SLASH },
+		{ SDLK_0, Key::k0 },
+		{ SDLK_1, Key::k1 },
+		{ SDLK_2, Key::k2 },
+		{ SDLK_3, Key::k3 },
+		{ SDLK_4, Key::k4 },
+		{ SDLK_5, Key::k5 },
+		{ SDLK_6, Key::k6 },
+		{ SDLK_7, Key::k7 },
+		{ SDLK_8, Key::k8 },
+		{ SDLK_9, Key::k9 },
+		{ SDLK_SEMICOLON, Key::SEMICOLON },
+		{ SDLK_LESS, Key::LESS },
+		{ SDLK_RETURN, Key::RETURN },
+		{ SDLK_LEFTBRACKET, Key::LEFTBRACKET },
+		{ SDLK_RIGHTBRACKET, Key::RIGHTBRACKET },
+		{ SDLK_RIGHT, Key::RIGHT },
+		{ SDLK_LEFT, Key::LEFT },
+		{ SDLK_UP, Key::UP },
+		{ SDLK_DOWN, Key::DOWN },
+		{ SDLK_LSHIFT, Key::LSHIFT },
+		{ SDLK_RSHIFT, Key::LSHIFT },
+		{ SDLK_LCTRL, Key::LCTRL },
+		{ SDLK_RCTRL, Key::LCTRL },
+		{ SDLK_LALT, Key::LALT },
+		{ SDLK_RALT, Key::LALT },
+		{ SDLK_A, Key::a },
+		{ SDLK_B, Key::b },
+		{ SDLK_C, Key::c },
+		{ SDLK_D, Key::d },
+		{ SDLK_E, Key::e },
+		{ SDLK_F, Key::f },
+		{ SDLK_G, Key::g },
+		{ SDLK_H, Key::h },
+		{ SDLK_I, Key::i },
+		{ SDLK_J, Key::j },
+		{ SDLK_K, Key::k },
+		{ SDLK_L, Key::l },
+		{ SDLK_M, Key::m },
+		{ SDLK_N, Key::n },
+		{ SDLK_O, Key::o },
+		{ SDLK_P, Key::p },
+		{ SDLK_Q, Key::q },
+		{ SDLK_R, Key::r },
+		{ SDLK_S, Key::s },
+		{ SDLK_T, Key::t },
+		{ SDLK_U, Key::u },
+		{ SDLK_V, Key::v },
+		{ SDLK_W, Key::w },
+		{ SDLK_X, Key::x },
+		{ SDLK_Y, Key::y },
+		{ SDLK_Z, Key::z },
 	};
 	using namespace engine::subsystem;
 	using namespace engine;
@@ -379,9 +379,8 @@ void kui::systemWM::SysWindow::UpdateEvents()
 {
 	using namespace engine;
 
-	std::lock_guard g{EventsMutex};
-
-	std::vector EventsCopy = Events;
+	std::vector<SDL_Event> EventsCopy;
+	EventsCopy = Events;
 	Events.clear();
 
 	input::MouseMovement = 0;

@@ -49,7 +49,9 @@ namespace engine::editor
 
 		EditorPanel* SetWidth(float NewWidth);
 
-		float WidthFraction = 0.5f;
+		float SizeFraction = 0.5f;
+
+		static void UpdateAllPanels();
 
 		bool Visible = true;
 
@@ -63,8 +65,19 @@ namespace engine::editor
 	protected:
 		bool CanClose = true;
 
+		static EditorPanel* DraggedPanel;
+		static bool DraggingHorizontal;
+		static float DragStartPosition;
+		static kui::UIBackground* PanelMoveHighlight;
+		static EditorPanel* MovedPanel;
+		static EditorPanel* MoveEndPanel;
 	private:
+		void ClearParent();
+		void HandleResizing();
+		void HandleResizeDrag();
 		void UpdateFocusState();
+		void MovePanel();
+		void UpdatePanelMove();
 		void AddTabFor(EditorPanel* Target, bool Selected);
 		std::vector<EditorPanelTab*> TabElements;
 		string Name, TypeName;

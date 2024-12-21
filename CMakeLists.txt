@@ -114,7 +114,10 @@ elseif(ENGINE_EDITOR)
 	klemmui_markup(Klemmgine "Engine/Editor/UI")
 endif()
 
+# KlemmUI SystemWM declarations
 target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/SystemWM")
+# KlemmUI stb headers
+target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/Util")
 target_include_directories(Klemmgine PRIVATE "EngineSource")
 target_link_libraries(Klemmgine PUBLIC SDL3::SDL3)
 target_link_libraries(Klemmgine PUBLIC KlemmUI)

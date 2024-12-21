@@ -66,7 +66,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	glDebugMessageCallback(MessageCallback, this);
 
 	Print("Compiling shader modules", LogType::Note);
-	Loader.Modules.ScanModules();
+	Shaders.Modules.ScanModules();
 
 	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
 	if (ConsoleSys)
@@ -76,7 +76,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 			.Args = {},
 			.OnCalled = [this](const console::Command::CallContext& ctx) {
 				Print("Reloading shaders...");
-				Loader.ReloadAll();
+				Shaders.ReloadAll();
 			}
 			});
 	}

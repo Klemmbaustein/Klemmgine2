@@ -10,7 +10,7 @@
 #include <Engine/File/FileUtil.h>
 #include <Engine/Internal/Platform.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
-#include <Engine/Editor/Assets.h>
+#include <Engine/File/Resource.h>
 #include <Engine/MainThread.h>
 #include <kui/Window.h>
 #include <filesystem>
@@ -110,7 +110,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 						.OnClicked = [this, FilePath]()
 					{
 						std::filesystem::remove_all(FilePath);
-						assets::ScanForAssets();
+						resource::ScanForAssets();
 						UpdateItems();
 					},
 					.Name = "Delete",
@@ -188,7 +188,7 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 
 		thread::ExecuteOnMainThread([]() {
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
-				assets::ScanForAssets();
+				resource::ScanForAssets();
 				Browser->UpdateItems();
 				});
 			});
@@ -246,13 +246,13 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			DropdownMenu::Option{ .OnClicked = [this]()
 		{
 			EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
-			assets::ScanForAssets();
+			resource::ScanForAssets();
 			UpdateItems();
 		}, .Name = "New scene" },
 		DropdownMenu::Option{ .OnClicked = [this]()
 		{
 			EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
-			assets::ScanForAssets();
+			resource::ScanForAssets();
 			UpdateItems();
 		}, .Name = "New material", .Separator = true },
 		DropdownMenu::Option{ .OnClicked = [this]()

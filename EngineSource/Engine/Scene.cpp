@@ -180,6 +180,15 @@ void engine::Scene::Save(string FileName)
 	TextSerializer::ToFile(Serialized.GetObject(), FileName);
 }
 
+void engine::Scene::PreLoadAsset(AssetRef Target)
+{
+	if (Target.Extension == "kmdl")
+	{
+		GraphicsModel::RegisterModel(Target);
+	}
+	ReferencedAssets.push_back(Target);
+}
+
 void engine::Scene::LoadInternal(string File, bool Async)
 {
 	SerializedValue SceneData;

@@ -163,7 +163,7 @@ void engine::editor::ModelEditor::OnResized()
 		/ Vec2f(Background->GetParentWindow()->GetDPI())
 		/ Vec2f(2.0));
 
-	PixelSize = PixelSize - Vec2i(300, 39);
+	PixelSize = Vec2i::Max(PixelSize - Vec2i(300, 39), Vec2i(10));
 
 	EditorScene->BufferSize = PixelSize * Background->GetParentWindow()->GetDPI();
 	EditorScene->OnResized(EditorScene->BufferSize);

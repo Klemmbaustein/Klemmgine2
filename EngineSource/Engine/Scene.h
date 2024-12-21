@@ -71,6 +71,8 @@ namespace engine
 		void LoadAsyncFinish();
 
 		void Save(string FileName);
+
+		void PreLoadAsset(AssetRef Target);
 	private:
 		friend class SceneObject;
 		std::vector<AssetRef> ReferencedAssets;

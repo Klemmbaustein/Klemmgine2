@@ -24,6 +24,7 @@ namespace engine
 
 		/**
 		* @brief
+		* Returns the given string where all characters have been converted to lower case.
 		*/
 		[[nodiscard]]
 		string Lower(string Input);

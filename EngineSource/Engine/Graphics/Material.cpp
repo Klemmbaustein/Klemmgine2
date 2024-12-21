@@ -1,6 +1,5 @@
 #include "Material.h"
 #include "ShaderLoader.h"
-#include <kui/Image.h>
 #include <Engine/Log.h>
 #include <Engine/File/Resource.h>
 #include <Engine/File/TextSerializer.h>
@@ -197,10 +196,17 @@ void engine::graphics::Material::Apply()
 			if (i.Texture.Name && !i.Texture.Value)
 			{
 				// TODO: replace with engine's texture functions
-				i.Texture.Value = kui::image::LoadImage(*i.Texture.Name);
+				i.Texture.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::FromPath(*i.Texture.Name), TextureLoadOptions{});
 			}
 			glActiveTexture(GL_TEXTURE0 + TextureSlot);
-			glBindTexture(GL_TEXTURE_2D, i.Texture.Value);
+			if (i.Texture.Value)
+			{
+				glBindTexture(GL_TEXTURE_2D, i.Texture.Value->TextureObject);
+			}
+			else
+			{
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
 			Shader->SetInt(i.UniformLocation, TextureSlot);
 			TextureSlot++;
 			break;

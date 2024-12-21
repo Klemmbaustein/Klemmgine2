@@ -1,7 +1,7 @@
 #include "AssetSelector.h"
 #include <kui/Window.h>
 #include <Engine/Log.h>
-#include <Engine/Editor/Assets.h>
+#include <Engine/File/Resource.h>
 #include <Engine/Error/EngineAssert.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/File/FileUtil.h>
@@ -143,7 +143,7 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 	std::map<string, string> FilteredAssets;
 	string SearchText = str::Lower(AssetPath->GetText());
 
-	for (const auto& [Name, Path] : assets::LoadedAssets)
+	for (const auto& [Name, Path] : resource::LoadedAssets)
 	{
 		string Ext = Name.substr(Name.find_last_of(".") + 1);
 

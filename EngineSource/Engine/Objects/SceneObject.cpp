@@ -1,6 +1,7 @@
 #include "SceneObject.h"
 #include <iostream>
 #include <Engine/File/ModelData.h>
+#include <Engine/Graphics/Texture.h>
 #include <Engine/Scene.h>
 using namespace engine;
 
@@ -39,18 +40,15 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 
 			for (auto& prop : Properties)
 			{
-				if (prop->Name == Name)
+				if (prop->Name != Name)
 				{
-					prop->DeSerialize(&Value);
-					ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
-					if (Ref)
-					{
-						GraphicsModel::RegisterModel(AssetRef(Ref->Value.FilePath));
-						if (OriginScene)
-						{
-							OriginScene->ReferencedAssets.push_back(Ref->Value);
-						}
-					}
+					continue;
+				}
+				prop->DeSerialize(&Value);
+				ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
+				if (Ref && OriginScene)
+				{
+					OriginScene->PreLoadAsset(Ref->Value);
 				}
 			}
 		}

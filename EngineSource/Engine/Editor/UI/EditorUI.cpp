@@ -4,12 +4,11 @@
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
-#include <Engine/Editor/Assets.h>
+#include <Engine/File/Resource.h>
 #include "DropdownMenu.h"
-#include <kui/Resource.h>
 #include <filesystem>
 #include <fstream>
-
+#include "Windows/IDialogWindow.h"
 #include "Panels/Viewport.h"
 #include "Panels/AssetBrowser.h"
 #include "Panels/ClassBrowser.h"
@@ -17,7 +16,6 @@
 #include "Panels/MessagePanel.h"
 #include "Panels/ObjectListPanel.h"
 #include "Panels/PropertyPanel.h"
-
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 
@@ -82,7 +80,6 @@ engine::editor::EditorUI::EditorUI()
 	using namespace subsystem;
 
 	Instance = this;
-	assets::ScanForAssets();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	VideoSystem->OnResizedCallbacks.insert({ this, [this](kui::Vec2ui NewSize)
@@ -125,7 +122,9 @@ engine::editor::EditorUI::EditorUI()
 				.Name = "Testing",
 				},
 				DropdownMenu::Option{
-					.OnClicked = []() {abort(); },
+					.OnClicked = []() {
+					new IDialogWindow("woa", {}, kui::Vec2ui(300, 400));
+				},
 					.Name = "Testing 2",
 				} }, btn->GetPosition());
 		};
@@ -214,6 +213,7 @@ void engine::editor::EditorUI::Update()
 	if (DraggedBox)
 	{
 		DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize() / 2);
+		kui::Window::GetActiveWindow()->CurrentCursor = kui::Window::Cursor::Default;
 
 		if (!input::IsLMBDown || input::IsRMBDown)
 		{
@@ -223,6 +223,7 @@ void engine::editor::EditorUI::Update()
 	}
 
 	RootPanel->UpdatePanel();
+	EditorPanel::UpdateAllPanels();
 
 	DropdownMenu::UpdateDropdowns();
 }

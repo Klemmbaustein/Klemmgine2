@@ -2,6 +2,7 @@
 #include "ISubsystem.h"
 #include <kui/Window.h>
 #include <Engine/Graphics/ShaderLoader.h>
+#include <Engine/Graphics/Texture.h>
 #include <map>
 
 namespace engine::subsystem
@@ -16,7 +17,8 @@ namespace engine::subsystem
 		virtual void RenderUpdate() override;
 
 		kui::Window* MainWindow = nullptr;
-		graphics::ShaderLoader Loader;
+		graphics::ShaderLoader Shaders;
+		graphics::TextureLoader Textures;
 
 		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
 

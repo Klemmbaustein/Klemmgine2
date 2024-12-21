@@ -43,6 +43,34 @@ element EditorPanelTab
 	}
 }
 
+element DraggedPanelTab
+{
+	var Title;
+
+	child UIBackground mainButton
+	{
+		color = Color_Background;
+		borderColor = Color_BackgroundHighlight;
+		verticalAlign = centered;
+
+		border = 1px;
+		
+		corners = 5px;
+
+		rightPadding = 4px;
+
+		child UIText
+		{
+			padding = 4px;
+			leftPadding = 6px;
+			rightPadding = 6px;
+			size = 12px;
+			color = Color_Text;
+			text = Title;
+		}
+	}
+}
+
 element EditorPanelElement
 {
 	var Size;

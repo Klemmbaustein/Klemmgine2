@@ -218,7 +218,7 @@ std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vect
 			IShellItem* pItem;
 			PWSTR pszFilePath;
 
-			hr = pItems->GetItemAt(i, &pItem);
+			hr = pItems->GetItemAt(DWORD(i), &pItem);
 			pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 			Items.push_back(WstrToStr(pszFilePath));
 		}

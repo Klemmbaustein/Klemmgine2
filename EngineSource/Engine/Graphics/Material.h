@@ -1,5 +1,6 @@
 #pragma once
 #include <Engine/File/SerializedData.h>
+#include "Texture.h"
 
 namespace engine::graphics
 {
@@ -42,7 +43,7 @@ namespace engine::graphics
 				struct
 				{
 					string* Name;
-					uint32 Value;
+					const Texture* Value;
 				} Texture;
 			};
 			Type FieldType = Type::None;

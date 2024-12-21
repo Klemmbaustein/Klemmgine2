@@ -1,14 +1,23 @@
 #ifdef EDITOR
 #include "EditorPanel.h"
 #include <kui/Window.h>
+#include <kui/UI/UIBlurBackground.h>
 #include <Engine/Editor/UI/EditorUI.h>
+#include <cmath>
 #include <Engine/Log.h>
 #include <Engine/Error/EngineError.h>
 using namespace kui;
+using namespace engine::editor;
 
-const float PanelPadding = 3;
-const float TabsSize = 25;
+const float PANEL_PADDING = 3;
+const float TABS_SIZE = 25;
 
+EditorPanel* EditorPanel::DraggedPanel = nullptr;
+bool EditorPanel::DraggingHorizontal = false;
+float EditorPanel::DragStartPosition = 0;
+kui::UIBackground* EditorPanel::PanelMoveHighlight = nullptr;
+EditorPanel* EditorPanel::MovedPanel = nullptr;
+EditorPanel* EditorPanel::MoveEndPanel = nullptr;
 engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 {
 	TypeName = InternalName;
@@ -31,30 +40,7 @@ engine::editor::EditorPanel::~EditorPanel()
 
 	delete PanelElement;
 
-	if (Parent)
-	{
-		for (size_t i = 0; i < Parent->Children.size(); i++)
-		{
-			if (Parent->Children[i] != this)
-			{
-				continue;
-			}
-
-			if (Parent->ChildrenAlign == Align::Tabs && Parent->SelectedTab >= i && Parent->SelectedTab > 0)
-			{
-				Parent->SelectedTab--;
-			}
-
-			Parent->ShouldUpdate = true;
-			Parent->Children.erase(Parent->Children.begin() + i);
-			break;
-		}
-
-		if (Parent->Children.empty())
-		{
-			delete Parent;
-		}
-	}
+	ClearParent();
 }
 
 void engine::editor::EditorPanel::UpdateLayout()
@@ -83,7 +69,7 @@ void engine::editor::EditorPanel::UpdateLayout()
 		size_t it = 0;
 		for (EditorPanel* Child : Children)
 		{
-			float PossibleFraction = Child->WidthFraction;
+			float PossibleFraction = std::max(Child->SizeFraction, 0.1f);
 			float RequiredSize = (Children.size() - (it + 1)) * MinFraction;
 
 			if (1 - CurrentFraction - PossibleFraction < RequiredSize)
@@ -141,15 +127,20 @@ void engine::editor::EditorPanel::UpdatePanel()
 
 	if (PanelElement)
 	{
-		bool IsFocused = EditorUI::FocusedPanel == this;
-		auto HoveredBox = PanelElement->GetParentWindow()->UI.HoveredBox;
-		if (!IsFocused && HoveredBox && PanelElement->GetParentWindow()->Input.IsLMBClicked && HoveredBox->IsChildOf(PanelElement))
+		if (Visible)
 		{
-			SetFocused();
+			bool IsFocused = EditorUI::FocusedPanel == this;
+			auto HoveredBox = PanelElement->GetParentWindow()->UI.HoveredBox;
+			if (!IsFocused && HoveredBox && PanelElement->GetParentWindow()->Input.IsLMBClicked && HoveredBox->IsChildOf(PanelElement))
+			{
+				SetFocused();
+			}
+			UpdatePanelMove();
 		}
 
 		Update();
 	}
+	HandleResizing();
 
 
 	for (EditorPanel* Child : Children)
@@ -169,8 +160,24 @@ void engine::editor::EditorPanel::Update()
 
 engine::editor::EditorPanel* engine::editor::EditorPanel::SetWidth(float NewWidth)
 {
-	WidthFraction = NewWidth;
+	SizeFraction = NewWidth;
 	return this;
+}
+
+void engine::editor::EditorPanel::UpdateAllPanels()
+{
+	if (MoveEndPanel)
+	{
+		if (MoveEndPanel != MovedPanel)
+		{
+			MovedPanel->ClearParent();
+			MoveEndPanel->AddChild(MovedPanel, Align::Tabs, true);
+		}
+		MovedPanel = nullptr;
+		MoveEndPanel = nullptr;
+		delete PanelMoveHighlight;
+		PanelMoveHighlight = nullptr;
+	}
 }
 
 void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select)
@@ -265,6 +272,115 @@ void engine::editor::EditorPanel::SetFocused()
 	UpdateFocusState();
 }
 
+void engine::editor::EditorPanel::ClearParent()
+{
+	if (!Parent)
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < Parent->Children.size(); i++)
+	{
+		if (Parent->Children[i] != this)
+		{
+			continue;
+		}
+
+		if (Parent->ChildrenAlign == Align::Tabs && Parent->SelectedTab >= i && Parent->SelectedTab > 0)
+		{
+			Parent->SelectedTab--;
+		}
+
+		Parent->ShouldUpdate = true;
+		Parent->Children.erase(Parent->Children.begin() + i);
+		break;
+	}
+
+	if (Parent->Children.empty())
+	{
+		delete Parent;
+	}
+	Parent = nullptr;
+}
+
+void engine::editor::EditorPanel::HandleResizing()
+{
+	if (EditorUI::Instance->DraggedBox)
+		return;
+	if (DraggedPanel)
+	{
+		HandleResizeDrag();
+		return;
+	}
+	Window* Win = Window::GetActiveWindow();
+	Vec2f PixelSize = UIBox::PixelSizeToScreenSize(PANEL_PADDING, Win);
+	Vec2f MousePos = Win->Input.MousePosition;
+
+	bool Hovering = false;
+	bool HoverHorizontal = false;
+
+	auto IsBetween = [](float Value, float Min, float Offset)
+		{
+			return Value > Min && Value < Min + Offset;
+		};
+
+	if (std::abs(MousePos.X - (Position.X + UsedSize.X)) < PixelSize.X
+		&& IsBetween(MousePos.Y, Position.Y, UsedSize.Y))
+	{
+		Hovering = true;
+		HoverHorizontal = true;
+	}
+	else if (std::abs(MousePos.Y - (Position.Y + UsedSize.Y)) < PixelSize.Y
+		&& IsBetween(MousePos.X, Position.X, UsedSize.X))
+	{
+		Hovering = true;
+		HoverHorizontal = false;
+	}
+
+	if (!Hovering)
+		return;
+
+	if (!Parent || Parent->ChildrenAlign != (HoverHorizontal ? Align::Horizontal : Align::Vertical))
+		return;
+
+	Win->CurrentCursor = HoverHorizontal ? Window::Cursor::ResizeLeftRight : Window::Cursor::ResizeUpDown;
+
+	if (Hovering && Win->Input.IsLMBClicked)
+	{
+		DraggedPanel = this;
+		DraggingHorizontal = HoverHorizontal;
+		DragStartPosition = HoverHorizontal ? MousePos.X : MousePos.Y;
+	}
+}
+
+void engine::editor::EditorPanel::HandleResizeDrag()
+{
+	if (this != DraggedPanel)
+	{
+		return;
+	}
+
+	Window* Win = Window::GetActiveWindow();
+	Vec2f MousePos = Win->Input.MousePosition;
+
+	if (!Win->Input.IsLMBDown)
+	{
+		float NewPos = DraggingHorizontal ? MousePos.X : MousePos.Y;
+		float ParentSize = DraggingHorizontal ? Parent->UsedSize.X : Parent->UsedSize.Y;
+
+		float NewSizeFraction = SizeFraction * ParentSize;
+		NewSizeFraction += NewPos - DragStartPosition;
+		NewSizeFraction /= ParentSize;
+
+		SizeFraction = NewSizeFraction;
+		Parent->ShouldUpdate = true;
+
+		DraggedPanel = nullptr;
+		return;
+	}
+	Win->CurrentCursor = DraggingHorizontal ? Window::Cursor::ResizeLeftRight : Window::Cursor::ResizeUpDown;
+}
+
 void engine::editor::EditorPanel::UpdateFocusState()
 {
 	bool Focused = this == EditorUI::FocusedPanel;
@@ -283,6 +399,52 @@ void engine::editor::EditorPanel::UpdateFocusState()
 
 	TabElements[Selected]->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
 	TabElements[Selected]->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
+}
+
+void engine::editor::EditorPanel::MovePanel()
+{
+	if (EditorUI::Instance->DraggedBox)
+		return;
+
+	if (PanelMoveHighlight)
+		delete PanelMoveHighlight;
+
+	PanelMoveHighlight = new UIBlurBackground(true, 0, EditorUI::Theme.HighlightDark);
+	PanelMoveHighlight
+		->SetOpacity(0.5f)
+		->SetBorder(1, UIBox::SizeMode::PixelRelative)
+		->SetBorderColor(EditorUI::Theme.Highlight1);
+
+	auto MoveBox = new DraggedPanelTab();
+
+	bool Focused = EditorUI::FocusedPanel == this;
+
+	MoveBox->SetTitle(Name);
+	MovedPanel = this;
+
+	EditorUI::Instance->DraggedBox = MoveBox;
+}
+
+void engine::editor::EditorPanel::UpdatePanelMove()
+{
+	if (!MovedPanel || MoveEndPanel)
+		return;
+
+	if (!PanelElement->IsBeingHovered())
+		return;
+
+	if (!Window::GetActiveWindow()->Input.IsLMBDown)
+	{
+		MoveEndPanel = this;
+		return;
+	}
+	
+	if (PanelMoveHighlight->GetPosition() != PanelPosition)
+	{
+		PanelMoveHighlight->SetPosition(PanelPosition);
+		PanelMoveHighlight->SetMinSize(Size);
+		PanelElement->RedrawElement();
+	}
 }
 
 void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
@@ -309,11 +471,21 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 					}
 				}
 			};
+
+		NewTab->mainButton->OnDragged = [Target](int)
+			{
+				Target->MovePanel();
+			};
 	}
 
 	NewTab->closeButton->OnClicked = [Target]()
 		{
 			delete Target;
+		};
+
+	NewTab->mainButton->OnDragged = [Target](int)
+		{
+			Target->MovePanel();
 		};
 
 	if (Selected)
@@ -340,11 +512,11 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 kui::Vec2f engine::editor::EditorPanel::UsedSizeToPanelSize(kui::Vec2f Used)
 {
-	return Used - UIBox::PixelSizeToScreenSize(Vec2f(PanelPadding * 2, PanelPadding * 2 + TabsSize), Window::GetActiveWindow());
+	return Used - UIBox::PixelSizeToScreenSize(Vec2f(PANEL_PADDING * 2, PANEL_PADDING * 2 + TABS_SIZE), Window::GetActiveWindow());
 }
 
 kui::Vec2f engine::editor::EditorPanel::PositionToPanelPosition(kui::Vec2f Pos)
 {
-	return Pos + UIBox::PixelSizeToScreenSize(Vec2f(PanelPadding, PanelPadding), Window::GetActiveWindow());
+	return Pos + UIBox::PixelSizeToScreenSize(Vec2f(PANEL_PADDING, PANEL_PADDING), Window::GetActiveWindow());
 }
 #endif

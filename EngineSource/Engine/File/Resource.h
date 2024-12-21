@@ -1,17 +1,28 @@
 #include <Engine/Types.h>
+#include <map>
 
 namespace engine::resource
 {
+	[[nodiscard]]
 	string GetTextFile(string EnginePath);
+	[[nodiscard]]
 	string ConvertFilePath(string EnginePath, bool AllowFile = false);
+
+	[[nodiscard]]
+	bool FileExists(string EnginePath);
 
 	struct BinaryFile
 	{
-		uByte* DataPtr = nullptr;
+		const uByte* DataPtr = nullptr;
 		size_t DataSize = 0;
-		bool CanFree = false;
+		bool CanFree = true;
 	};
 
+	[[nodiscard]]
 	BinaryFile GetBinaryFile(string EnginePath);
-	void FreeBinaryFile(BinaryFile Target);
+	void FreeBinaryFile(BinaryFile& Target);
+
+	extern std::map<string, string> LoadedAssets;
+
+	void ScanForAssets();
 }

@@ -231,9 +231,7 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 		To.GetArray().reserve(Length);
 		for (int32 i = 0; i < Length; i++)
 		{
-			To.GetArray().push_back(SerializedData::DataValue());
-			auto& Last = To.GetArray()[To.GetArray().size() - 1];
-			ReadValue(From, Last);
+			ReadValue(From, To.GetArray().emplace_back());
 		}
 		break;
 	}
@@ -246,9 +244,7 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 		auto ArrayType = From.Get<SerializedData::DataType>();
 		for (int32 i = 0; i < Length; i++)
 		{
-			To.GetArray().push_back(SerializedData::DataValue());
-			auto& Last = To.GetArray()[To.GetArray().size() - 1];
-			ReadValue(From, Last, ArrayType);
+			ReadValue(From, To.GetArray().emplace_back(), ArrayType);
 		}
 		break;
 	}
@@ -261,8 +257,7 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 		To.GetObject().reserve(Length);
 		for (int32 i = 0; i < Length; i++)
 		{
-			auto& New =To.GetObject().emplace_back();
-			ReadSerializedData(From, New);
+			ReadSerializedData(From, To.GetObject().emplace_back());
 		}
 		break;
 	}

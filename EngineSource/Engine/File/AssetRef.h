@@ -31,6 +31,14 @@ namespace engine
 
 		string Extension;
 
+		/**
+		* @brief
+		* Gets the display name of this asset.
+		* 
+		* The display name is the name of the file (without the path) without the extension.
+		* 
+		* Example: Assets/Cube.kmdl -> Cube
+		*/
 		string DisplayName() const;
 	};
 

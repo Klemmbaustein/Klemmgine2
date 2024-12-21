@@ -39,7 +39,7 @@ static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context, string
 		}
 		OutMesh.Vertices.push_back(graphics::Vertex{
 			.Position = Vector3(Pos.x, Pos.y, Pos.z) * Context.Options.ImportScale,
-			.UV = Vector2(UV->x, UV->y),
+			.UV = UV ? Vector2(UV->x, UV->y) : 0,
 			.Normal = Normal ? Vector3(Normal->x, Normal->y, Normal->z) : 0,
 			});
 	}
@@ -116,6 +116,7 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 				TextureOutput.write((char*)texture->pcData, texture->mWidth);
 			}
 			TextureOutput.close();
+			TexturePath = str::Format("%s_%i.png", FileName.c_str(), int(i));
 		}
 
 		string MaterialPath = str::Format("%s/%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));
