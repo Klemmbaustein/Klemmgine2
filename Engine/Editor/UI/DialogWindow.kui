@@ -35,12 +35,18 @@ element DialogWindowMainElement
 	position = -1;
 
 	orientation = vertical;
-
-	child UIBackground windowMain
+	
+	child UIBackground
 	{
-		color = Color_Background;
-		size = MainBackgroundSize;
+		orientation = vertical;
 		tryFill = true;
+		size = MainBackgroundSize;
+		color = Color_Background;
+		child UIScrollBox windowMain
+		{
+			size = MainBackgroundSize;
+			tryFill = true;
+		}
 	}
 
 	child UIBackground buttonBox

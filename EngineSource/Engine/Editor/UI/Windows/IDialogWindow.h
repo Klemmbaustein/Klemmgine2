@@ -1,4 +1,5 @@
 #include "IPopupWindow.h"
+#include <kui/UI/UIBackground.h>
 #include <functional>
 
 namespace engine::editor
@@ -10,14 +11,19 @@ namespace engine::editor
 		{
 			string Name;
 			std::function<void()> OnClicked;
+			bool Close = true;
 		};
 
 		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size);
 
-		void Begin();
-		void Update();
-		void Destroy();
+		virtual void Begin() override;
+
+		void SetButtons(std::vector<Option> Options);
+
+		kui::UIBox* Background = nullptr;
+
 	private:
 		std::vector<Option> Options;
+		kui::UIBox* ButtonBackground = nullptr;
 	};
 }

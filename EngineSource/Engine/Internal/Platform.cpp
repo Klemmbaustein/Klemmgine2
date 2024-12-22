@@ -296,24 +296,25 @@ static bool CommandExists(std::string Command)
 
 // Stolen from SystemWM_Win32 and SystemWM_Linux in KlemmUI.
 // SDL also has a message box function but that one looks weird. (It doesn't even seem to use MessageBox() on Windows)
-void engine::internal::platform::ShowMessageBox(string Title, string Message, int Type)
+bool engine::internal::platform::ShowMessageBox(string Title, string Message, int Type)
 {
 	if (Type < 0 || Type > 2)
 	{
-		return;
+		return false;
 	}
 
 #if WINDOWS
 	std::array<UINT, 3> Types = { 0, MB_ICONWARNING, MB_ICONERROR };
 
 	::MessageBoxW(NULL, ToWstring(Message).c_str(), ToWstring(Title).c_str(), Types[Type]);
+	return true;
 #else
 	if (CommandExists("kdialog"))
 	{
 		std::array<const char*, 3> Types = { "msgbox", "sorry", "error" };
 
 		Execute("/usr/bin/env kdialog --title \"" + Title + "\" --" + Types[Type] + " \"" + Message + "\"");
-		return;
+		return true;
 	}
 
 	if (CommandExists("zenity"))
@@ -321,12 +322,11 @@ void engine::internal::platform::ShowMessageBox(string Title, string Message, in
 		std::array<const char*, 3> Types = { "info", "warning", "error" };
 
 		Execute("/usr/bin/env zenity --no-markup --title \"" + Title + "\" --" + Types[Type] + " --text \"" + Message + "\"");
-		return;
+		return true;
 	}
 
 	// If kdialog and zenity don't exist, there's no good way of creating a message box.
-	// TODO: Maybe create a KlemmUI window containing the message?
-	// Making GUI apps for Linux is great!
+	return false;
 #endif
 
 }

@@ -2,6 +2,7 @@
 #include "EditorPanel.h"
 #include <kui/Window.h>
 #include <kui/UI/UIBlurBackground.h>
+#include <kui/UI/UIScrollBox.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <cmath>
 #include <Engine/Log.h>
@@ -15,9 +16,13 @@ const float TABS_SIZE = 25;
 EditorPanel* EditorPanel::DraggedPanel = nullptr;
 bool EditorPanel::DraggingHorizontal = false;
 float EditorPanel::DragStartPosition = 0;
-kui::UIBackground* EditorPanel::PanelMoveHighlight = nullptr;
-EditorPanel* EditorPanel::MovedPanel = nullptr;
-EditorPanel* EditorPanel::MoveEndPanel = nullptr;
+EditorPanel::MoveOperation EditorPanel::Move;
+
+static float IsBetween(float Value, float Min, float Offset)
+{
+	return Value > Min && Value < Min + Offset;
+};
+
 engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 {
 	TypeName = InternalName;
@@ -82,6 +87,8 @@ void engine::editor::EditorPanel::UpdateLayout()
 				PossibleFraction = 1 - CurrentFraction;
 			}
 
+			Child->SizeFraction = PossibleFraction;
+
 			CurrentFraction += PossibleFraction;
 
 			if (ChildrenAlign == Align::Horizontal)
@@ -96,6 +103,9 @@ void engine::editor::EditorPanel::UpdateLayout()
 				Child->Position = Position + Vec2f(0, Pos);
 				Pos += Child->UsedSize.Y;
 			}
+			Child->Visible = true;
+			if (Child->PanelElement)
+				Child->PanelElement->IsVisible = Child->Visible;
 			Child->UpdateLayout();
 			it++;
 		}
@@ -164,44 +174,52 @@ engine::editor::EditorPanel* engine::editor::EditorPanel::SetWidth(float NewWidt
 	return this;
 }
 
-void engine::editor::EditorPanel::UpdateAllPanels()
+void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select, size_t Position)
 {
-	if (MoveEndPanel)
-	{
-		if (MoveEndPanel != MovedPanel)
-		{
-			MovedPanel->ClearParent();
-			MoveEndPanel->AddChild(MovedPanel, Align::Tabs, true);
-		}
-		MovedPanel = nullptr;
-		MoveEndPanel = nullptr;
-		delete PanelMoveHighlight;
-		PanelMoveHighlight = nullptr;
-	}
-}
+	ENGINE_ASSERT(NewChild != this);
 
-void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select)
-{
 	if ((ChildAlign == this->ChildrenAlign || Children.empty()) && TypeName == "panel")
 	{
+		NewChild->ClearParent();
 		NewChild->Parent = this;
-		Children.push_back(NewChild);
 		ShouldUpdate = true;
 		this->ChildrenAlign = ChildAlign;
-		if (Select)
+
+		if (Position >= Children.size())
 		{
-			SelectedTab = Children.size() - 1;
-			NewChild->SetFocused();
+			Children.push_back(NewChild);
+			if (Select)
+			{
+				SelectedTab = Children.size() - 1;
+				NewChild->SetFocused();
+			}
+		}
+		else
+		{
+			Children.insert(Children.begin() + Position, NewChild);
+			if (Select)
+			{
+				SelectedTab = Position;
+				NewChild->SetFocused();
+			}
 		}
 	}
-	else if (TypeName != "panel" && Parent)
+	else if ((TypeName != "panel" || (this->ChildrenAlign == Align::Tabs && ChildAlign != Align::Tabs)) && Parent)
 	{
+		NewChild->ClearParent();
 		if (Parent->ChildrenAlign != ChildAlign)
 		{
 			EditorPanel* New = new EditorPanel("panel");
-			New->Children = { this, NewChild };
+			if (Position > 0)
+				New->Children = { this, NewChild };
+			else
+				New->Children = { NewChild, this };
+
 			New->Parent = this->Parent;
 			New->ChildrenAlign = ChildAlign;
+			New->SizeFraction = SizeFraction;
+			this->SizeFraction = 0.5;
+			NewChild->SizeFraction = 0.5;
 
 			for (EditorPanel*& Child : Parent->Children)
 			{
@@ -222,11 +240,11 @@ void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAli
 		}
 		else
 		{
-			Parent->AddChild(NewChild, ChildAlign, Select);
+			NewChild->SizeFraction = SizeFraction / 2;
+			this->SizeFraction = SizeFraction / 2;
+			Parent->AddChild(NewChild, ChildAlign, Select, Position);
 		}
 	}
-	else
-		ENGINE_UNREACHABLE();
 }
 
 void engine::editor::EditorPanel::GenerateTabs()
@@ -312,17 +330,18 @@ void engine::editor::EditorPanel::HandleResizing()
 		HandleResizeDrag();
 		return;
 	}
+
 	Window* Win = Window::GetActiveWindow();
+
+	if (Win->UI.HoveredBox || UIScrollBox::IsDraggingScrollBox)
+		return;
+
 	Vec2f PixelSize = UIBox::PixelSizeToScreenSize(PANEL_PADDING, Win);
 	Vec2f MousePos = Win->Input.MousePosition;
 
 	bool Hovering = false;
 	bool HoverHorizontal = false;
 
-	auto IsBetween = [](float Value, float Min, float Offset)
-		{
-			return Value > Min && Value < Min + Offset;
-		};
 
 	if (std::abs(MousePos.X - (Position.X + UsedSize.X)) < PixelSize.X
 		&& IsBetween(MousePos.Y, Position.Y, UsedSize.Y))
@@ -368,11 +387,18 @@ void engine::editor::EditorPanel::HandleResizeDrag()
 		float NewPos = DraggingHorizontal ? MousePos.X : MousePos.Y;
 		float ParentSize = DraggingHorizontal ? Parent->UsedSize.X : Parent->UsedSize.Y;
 
-		float NewSizeFraction = SizeFraction * ParentSize;
-		NewSizeFraction += NewPos - DragStartPosition;
-		NewSizeFraction /= ParentSize;
+		float Difference = (NewPos - DragStartPosition) / ParentSize;
+		SizeFraction += Difference;
 
-		SizeFraction = NewSizeFraction;
+		for (int64 i = 0; i < int64(Parent->Children.size() - 1); i++)
+		{
+			if (Parent->Children[i] == this)
+			{
+				Parent->Children[i + 1]->SizeFraction -= Difference;
+				break;
+			}
+		}
+
 		Parent->ShouldUpdate = true;
 
 		DraggedPanel = nullptr;
@@ -403,47 +429,160 @@ void engine::editor::EditorPanel::UpdateFocusState()
 
 void engine::editor::EditorPanel::MovePanel()
 {
-	if (EditorUI::Instance->DraggedBox)
+	if (EditorUI::Instance->DraggedBox || DraggedPanel)
 		return;
 
-	if (PanelMoveHighlight)
-		delete PanelMoveHighlight;
+	if (Move.HighlightBackground)
+		delete Move.HighlightBackground;
 
-	PanelMoveHighlight = new UIBlurBackground(true, 0, EditorUI::Theme.HighlightDark);
-	PanelMoveHighlight
+	Move.HighlightBackground = new UIBlurBackground(true, 0, EditorUI::Theme.HighlightDark);
+	Move.HighlightBackground
 		->SetOpacity(0.5f)
-		->SetBorder(1, UIBox::SizeMode::PixelRelative)
-		->SetBorderColor(EditorUI::Theme.Highlight1);
+		->SetBorder(3, UIBox::SizeMode::PixelRelative)
+		->SetBorderColor(EditorUI::Theme.Highlight1)
+		->SetCorner(5, UIBox::SizeMode::PixelRelative)
+		->SetHorizontalAlign(UIBox::Align::Centered)
+		->SetVerticalAlign(UIBox::Align::Centered);
+
+	Move.HighlightBackground->AddChild((new UIText(11, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative));
 
 	auto MoveBox = new DraggedPanelTab();
 
 	bool Focused = EditorUI::FocusedPanel == this;
 
 	MoveBox->SetTitle(Name);
-	MovedPanel = this;
+	Move.Panel = this;
 
 	EditorUI::Instance->DraggedBox = MoveBox;
 }
 
 void engine::editor::EditorPanel::UpdatePanelMove()
 {
-	if (!MovedPanel || MoveEndPanel)
+	if (!Move.Panel || Move.EndTarget)
 		return;
 
-	if (!PanelElement->IsBeingHovered())
+	if (!PanelElement->panelBackground->IsBeingHovered() && !PanelElement->tabBox->IsBeingHovered())
 		return;
 
+	Window* Win = Window::GetActiveWindow();
+	Vec2f MousePos = Win->Input.MousePosition;
+
+	Move.TabPosition = SIZE_MAX;
+
+	Vec2f PreviewPosition = PanelPosition;
+	Vec2f PreviewSize = Size;
+	if (PanelElement->tabBox->IsBeingHovered())
+	{
+		Move.TabAlign = Align::Tabs;
+		for (size_t i = 0; i < TabElements.size(); i++)
+		{
+			PreviewPosition = TabElements[i]->mainButton->GetPosition();
+			PreviewSize = TabElements[i]->mainButton->GetUsedSize();
+			if (TabElements[i]->GetPosition().X + TabElements[i]->GetUsedSize().X > MousePos.X)
+			{
+				Move.TabPosition = i;
+				break;
+			}
+			PreviewPosition += Vec2f(TabElements[i]->mainButton->GetUsedSize().X, 0);
+		}
+	}
+	else
+	{
+		Vec2f RelativePos = (MousePos - PanelPosition) / Size;
+
+		Move.MoveType = MoveOperation::Center;
+		if (RelativePos.Y < 0.25)
+		{
+			Move.MoveType = MoveOperation::Down;
+		}
+		else if (RelativePos.Y > 0.75)
+		{
+			Move.MoveType = MoveOperation::Up;
+		}
+		else if (RelativePos.X < 0.25)
+		{
+			Move.MoveType = MoveOperation::Left;
+		}
+		else if (RelativePos.X > 0.75)
+		{
+			Move.MoveType = MoveOperation::Right;
+		}
+
+		switch (Move.MoveType)
+		{
+		case MoveOperation::Up:
+			PreviewPosition += Vec2f(0, PreviewSize.Y / 2);
+			PreviewSize = PreviewSize / Vec2f(1, 2);
+			Move.TabAlign = Align::Vertical;
+			Move.TabPosition = SIZE_MAX;
+			break;
+		case MoveOperation::Down:
+			PreviewSize = PreviewSize / Vec2f(1, 2);
+			Move.TabAlign = Align::Vertical;
+			Move.TabPosition = 0;
+			break;
+		case MoveOperation::Left:
+			PreviewSize = PreviewSize / Vec2f(2, 1);
+			Move.TabAlign = Align::Horizontal;
+			Move.TabPosition = 0;
+			break;
+		case MoveOperation::Right:
+			PreviewPosition += Vec2f(PreviewSize.X / 2, 0);
+			PreviewSize = PreviewSize / Vec2f(2, 1);
+			Move.TabAlign = Align::Horizontal;
+			Move.TabPosition = SIZE_MAX;
+			break;
+		case MoveOperation::Center:
+			Move.TabAlign = Align::Tabs;
+			break;
+		default:
+			break;
+		}
+	}
+	Vec2f PixelSize = UIBox::PixelSizeToScreenSize(1, Window::GetActiveWindow());
+
+	Move.HighlightBackground->IsVisible = true;
+	
+	PreviewPosition += PixelSize * Vec2f(2);
+	PreviewSize = PreviewSize - PixelSize * Vec2f(4);
 	if (!Window::GetActiveWindow()->Input.IsLMBDown)
 	{
-		MoveEndPanel = this;
+		if (Move.Panel == this)
+			Move.EndTarget = Parent;
+		else
+			Move.EndTarget = this;
 		return;
 	}
-	
-	if (PanelMoveHighlight->GetPosition() != PanelPosition)
+
+	if (Move.HighlightBackground->GetPosition() != PreviewPosition
+		|| Move.HighlightBackground->GetMinSize() != PreviewSize)
 	{
-		PanelMoveHighlight->SetPosition(PanelPosition);
-		PanelMoveHighlight->SetMinSize(Size);
+		Move.HighlightBackground->SetPosition(PreviewPosition);
+		Move.HighlightBackground->SetMinSize(PreviewSize);
 		PanelElement->RedrawElement();
+	}
+}
+
+void engine::editor::EditorPanel::UpdateAllPanels()
+{
+	if (Move.HighlightBackground)
+	{
+		Move.HighlightBackground->IsVisible = false;
+	}
+	if (Move.EndTarget)
+	{
+		Move.HighlightBackground->IsVisible = true;
+		if (Move.EndTarget != Move.Panel->Parent
+			|| Move.EndTarget->Children.size() != 1
+			|| Move.EndTarget->ChildrenAlign != Align::Tabs)
+		{
+			Move.EndTarget->AddChild(Move.Panel, Move.TabAlign, true, Move.TabPosition);
+		}
+		Move.Panel = nullptr;
+		Move.EndTarget = nullptr;
+		delete Move.HighlightBackground;
+		Move.HighlightBackground = nullptr;
 	}
 }
 

@@ -72,9 +72,9 @@ SerializedValue Material::Serialize()
 			Val = i.Vec3;
 			break;
 		case Field::Type::Texture:
-			if (i.Texture.Name)
+			if (i.TextureValue.Name)
 			{
-				Val = *i.Texture.Name;
+				Val = *i.TextureValue.Name;
 			}
 			else
 			{
@@ -141,8 +141,8 @@ void Material::DeSerialize(SerializedValue* From)
 			NewField.Vec3 = Val.GetVector3();
 			break;
 		case Field::Type::Texture:
-			NewField.Texture.Name = new std::string(Val.GetString());
-			NewField.Texture.Value = 0;
+			NewField.TextureValue.Name = new std::string(Val.GetString());
+			NewField.TextureValue.Value = 0;
 			break;
 		case Field::Type::None:
 		default:
@@ -158,9 +158,9 @@ void Material::Clear()
 {
 	for (const Field& i : Fields)
 	{
-		if (i.FieldType == Field::Type::Texture && i.Texture.Name)
+		if (i.FieldType == Field::Type::Texture && i.TextureValue.Name)
 		{
-			delete i.Texture.Name;
+			delete i.TextureValue.Name;
 		}
 	}
 	Fields.clear();
@@ -193,15 +193,15 @@ void engine::graphics::Material::Apply()
 			break;
 		case Field::Type::Texture:
 		{
-			if (i.Texture.Name && !i.Texture.Value)
+			if (i.TextureValue.Name && !i.TextureValue.Value)
 			{
 				// TODO: replace with engine's texture functions
-				i.Texture.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::FromPath(*i.Texture.Name), TextureLoadOptions{});
+				i.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::FromPath(*i.TextureValue.Name), TextureLoadOptions{});
 			}
 			glActiveTexture(GL_TEXTURE0 + TextureSlot);
-			if (i.Texture.Value)
+			if (i.TextureValue.Value)
 			{
-				glBindTexture(GL_TEXTURE_2D, i.Texture.Value->TextureObject);
+				glBindTexture(GL_TEXTURE_2D, i.TextureValue.Value->TextureObject);
 			}
 			else
 			{
@@ -255,8 +255,8 @@ void engine::graphics::Material::VerifyUniforms()
 		}
 		else if (NewField.FieldType == Field::Type::Texture)
 		{
-			NewField.Texture.Name = nullptr;
-			NewField.Texture.Value = 0;
+			NewField.TextureValue.Name = nullptr;
+			NewField.TextureValue.Value = 0;
 		}
 
 		NewFields.push_back(NewField);

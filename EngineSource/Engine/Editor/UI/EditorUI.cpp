@@ -5,10 +5,11 @@
 #include <Engine/MainThread.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
 #include <Engine/File/Resource.h>
+#include <Engine/Error/StackTrace.h>
 #include "DropdownMenu.h"
 #include <filesystem>
 #include <fstream>
-#include "Windows/IDialogWindow.h"
+#include "Windows/MessageWindow.h"
 #include "Panels/Viewport.h"
 #include "Panels/AssetBrowser.h"
 #include "Panels/ClassBrowser.h"
@@ -18,7 +19,6 @@
 #include "Panels/PropertyPanel.h"
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
-
 using namespace engine::editor;
 
 static const float StatusBarSize = 24;
@@ -59,9 +59,9 @@ void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Ty
 	else
 	{
 		thread::ExecuteOnMainThread([NewMessage, Type]()
-		{
-			SetStatusMainThread(NewMessage, Type);
-		});
+			{
+				SetStatusMainThread(NewMessage, Type);
+			});
 	}
 }
 
@@ -116,18 +116,18 @@ engine::editor::EditorUI::EditorUI()
 		auto* btn = new MenuBarButton();
 		btn->SetName(i);
 		btn->button->OnClicked = [btn]()
-		{
-			new DropdownMenu({ DropdownMenu::Option{
-				.OnClicked = []() {abort(); },
-				.Name = "Testing",
-				},
-				DropdownMenu::Option{
-					.OnClicked = []() {
-					new IDialogWindow("woa", {}, kui::Vec2ui(300, 400));
-				},
+			{
+				new DropdownMenu({ DropdownMenu::Option{
+					.OnClicked = []() {abort(); },
+					.Name = "Testing",
+					},
+					DropdownMenu::Option{
+						.OnClicked = []() {
+						new MessageWindow(error::GetStackTrace(), nullptr);
+					},
 					.Name = "Testing 2",
-				} }, btn->GetPosition());
-		};
+					} }, btn->GetPosition());
+			};
 		MenuBar->AddChild(btn);
 	}
 	Root->AddChild(MenuBar);
@@ -226,8 +226,8 @@ void engine::editor::EditorUI::Update()
 		}
 	}
 
-	RootPanel->UpdatePanel();
 	EditorPanel::UpdateAllPanels();
+	RootPanel->UpdatePanel();
 
 	DropdownMenu::UpdateDropdowns();
 }

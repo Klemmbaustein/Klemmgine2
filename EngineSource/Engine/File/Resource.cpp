@@ -66,7 +66,6 @@ string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)
 
 		if (Prefix == "file:" && !AllowFile)
 		{
-			Log::Warn(str::Format("Unexpected file: prefix while attempting to load asset: %s", EnginePath.c_str()));
 			continue;
 		}
 

@@ -79,6 +79,16 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 				Shaders.ReloadAll();
 			}
 			});
+		ConsoleSys->AddCommand(console::Command{
+			.Name = "ui_scale",
+			.Args = { console::Command::Argument{
+				.Name = "scale",
+				.Required = true,
+			}, },
+			.OnCalled = [this](const console::Command::CallContext& ctx) {
+				MainWindow->DPIMultiplier = std::stof(ctx.ProvidedArguments.at(0));
+			}
+			});
 	}
 }
 

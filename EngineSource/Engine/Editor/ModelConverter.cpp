@@ -84,7 +84,7 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 
 	if (TextureField)
 	{
-		TextureField->Texture.Name = new std::string(Texture);
+		TextureField->TextureValue.Name = new std::string(Texture);
 	}
 
 	NewMaterial->ToFile(Path);

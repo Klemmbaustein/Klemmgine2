@@ -19,16 +19,27 @@ void engine::editor::IDialogWindow::Begin()
 	MainElement->SetMainBackgroundSize(Vec2f(2) - ButtonSize);
 	MainElement->SetButtonBackgroundSize(ButtonSize);
 
-	for (auto& i : Options)
+	Background = MainElement->windowMain;
+	ButtonBackground = MainElement->buttonBox;
+
+	SetButtons(Options);
+}
+
+void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
+{
+	this->Options = Options;
+	ButtonBackground->DeleteChildren();
+
+	for (auto& i : this->Options)
 	{
-		
+		auto NewButton = new DialogWindowButton();
+		NewButton->btn->OnClicked = [this, &i]() {
+			if (i.OnClicked)
+				i.OnClicked();
+			if (i.Close)
+				Close();
+			};
+		NewButton->SetText(i.Name);
+		ButtonBackground->AddChild(NewButton);
 	}
-}
-
-void engine::editor::IDialogWindow::Update()
-{
-}
-
-void engine::editor::IDialogWindow::Destroy()
-{
 }

@@ -44,7 +44,7 @@ namespace engine::graphics
 				{
 					string* Name;
 					const Texture* Value;
-				} Texture;
+				} TextureValue;
 			};
 			Type FieldType = Type::None;
 		};

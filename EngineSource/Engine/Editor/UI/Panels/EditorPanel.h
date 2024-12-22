@@ -55,7 +55,7 @@ namespace engine::editor
 
 		bool Visible = true;
 
-		void AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select = false);
+		void AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select = false, size_t Position = SIZE_MAX);
 
 		void GenerateTabs();
 		size_t SelectedTab = 0;
@@ -68,9 +68,28 @@ namespace engine::editor
 		static EditorPanel* DraggedPanel;
 		static bool DraggingHorizontal;
 		static float DragStartPosition;
-		static kui::UIBackground* PanelMoveHighlight;
-		static EditorPanel* MovedPanel;
-		static EditorPanel* MoveEndPanel;
+		
+		struct MoveOperation
+		{
+			kui::UIBackground* HighlightBackground = nullptr;
+			EditorPanel* Panel = nullptr;
+			EditorPanel* EndTarget = nullptr;
+			size_t TabPosition = 0;
+			Align TabAlign = Align::Tabs;
+
+			enum Type
+			{
+				Up,
+				Down,
+				Left,
+				Right,
+				Center
+			};
+			Type MoveType = Center;
+		};
+
+		static MoveOperation Move;
+
 	private:
 		void ClearParent();
 		void HandleResizing();

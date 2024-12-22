@@ -16,7 +16,7 @@ namespace engine::internal::platform
 	void Execute(string Command);
 	
 
-	void ShowMessageBox(string Title, string Message, int Type);
+	bool ShowMessageBox(string Title, string Message, int Type);
 
 	struct FileDialogFilter
 	{

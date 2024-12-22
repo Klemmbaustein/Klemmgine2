@@ -4,6 +4,7 @@
 #include <ConsolePanel.kui.hpp>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/Engine.h>
+#include <kui/Window.h>
 #include <iostream>
 using namespace engine;
 
@@ -28,6 +29,10 @@ engine::editor::ConsolePanel::ConsolePanel()
 	Element->commandField->field->OnClickedFunction = [this]() {
 		using namespace subsystem;
 		string Command = Element->commandField->field->GetText();
+
+		if (Command.empty() || !Element->GetParentWindow()->Input.IsKeyDown(kui::Key::RETURN))
+			return;
+
 		Log::Info("> " + Command);
 		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
 		Element->commandField->field->SetText("");

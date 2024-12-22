@@ -300,7 +300,10 @@ void kui::systemWM::HideWindow(SysWindow* Target)
 
 void kui::systemWM::MessageBox(std::string Text, std::string Title, int Type)
 {
-	engine::internal::platform::ShowMessageBox(Title, Text, Type);
+	if (!engine::internal::platform::ShowMessageBox(Title, Text, Type))
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT, Title.c_str(), Text.c_str(), nullptr);
+	}
 }
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
