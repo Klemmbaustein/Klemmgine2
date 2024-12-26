@@ -4,55 +4,21 @@
 
 void engine::MeshObject::LoadMesh(AssetRef File)
 {
-	if (DrawnModel)
-	{
-		Destroy();
-	}
-
-	ModelName = File;
-
-	DrawnModel = GraphicsModel::GetModel(ModelName.Value);
-
-	if (DrawnModel)
-	{
-		for (auto& m : DrawnModel->Data->Meshes)
-		{
-			if (m.Material.empty())
-			{
-				Materials.push_back(graphics::Material::MakeDefault());
-				continue;
-			}
-			Materials.push_back(new graphics::Material(m.Material));
-		}
-	}
-}
-
-void engine::MeshObject::Draw(graphics::Camera* From)
-{
-	if (DrawnModel)
-	{
-		DrawnModel->Drawable->Draw(Position, From, Materials);
-	}
+	ModelName.Value = File;
+	Mesh->Load(File);
 }
 
 void engine::MeshObject::Begin()
 {
+	Mesh = new MeshComponent();
+	Attach(Mesh);
+
 	ModelName.OnChanged = [this]() {
 		LoadMesh(ModelName.Value);
 	};
-	HasVisuals = true;
 	ModelName.OnChanged();
 }
 
-void engine::MeshObject::Destroy()
+void engine::MeshObject::OnDestroyed()
 {
-	if (DrawnModel)
-		GraphicsModel::UnloadModel(DrawnModel);
-
-	for (graphics::Material* Mat : Materials)
-	{
-		delete Mat;
-	}
-
-	Materials.clear();
 }

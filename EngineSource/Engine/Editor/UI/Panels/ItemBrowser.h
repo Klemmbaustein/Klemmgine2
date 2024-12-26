@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 #include <ItemBrowser.kui.hpp>
@@ -25,20 +26,25 @@ namespace engine::editor
 			string Image;
 		};
 
+		void Update() override;
+		void OnResized() override;
+		void UpdateItems();
+
+	protected:
+
 		std::vector<std::pair<Item, ItemBrowserButton*>> Buttons;
 		kui::UIScrollBox* ItemsScrollBox = nullptr;
 
-		void Update() override;
-		void OnResized() override;
-
-		void UpdateItems();
 		virtual string GetPathDisplayName() = 0;
 		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
 		virtual std::vector<Item> GetItems() = 0;
 		virtual void Back() = 0;
+		void SetStatusText(string NewText);
 	private:
+		kui::UIText* StatusText;
 		std::pair<Item, ItemBrowserButton*>* GetHoveredButton();
 		std::vector<Item> CurrentItems;
 		void DisplayList();
 	};
 }
+#endif

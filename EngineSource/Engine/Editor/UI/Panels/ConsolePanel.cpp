@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "ConsolePanel.h"
 #include <Engine/Log.h>
 #include <Engine/Editor/UI/EditorUI.h>
@@ -26,7 +27,7 @@ engine::editor::ConsolePanel::ConsolePanel()
 {
 
 	Element = new ConsolePanelElement();
-	Element->commandField->field->OnClickedFunction = [this]() {
+	Element->commandField->field->OnChanged = [this]() {
 		using namespace subsystem;
 		string Command = Element->commandField->field->GetText();
 
@@ -109,3 +110,4 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 	Element->logBox->CurrentScrollObject->Percentage = Element->logBox->CurrentScrollObject->MaxScroll;
 	Element->logBox->RedrawElement();
 }
+#endif

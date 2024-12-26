@@ -4,7 +4,7 @@
 using namespace engine::console;
 
 engine::subsystem::ConsoleSubsystem::ConsoleSubsystem()
-	: ISubsystem("Console", Log::LogColor::White)
+	: Subsystem("Console", Log::LogColor::White)
 {
 	AddCommand({
 		Command{
@@ -62,4 +62,10 @@ void engine::subsystem::ConsoleSubsystem::ExecuteCommand(const string& Command)
 void engine::subsystem::ConsoleSubsystem::AddCommand(const console::Command& NewCommand)
 {
 	Commands.insert({NewCommand.Name, NewCommand});
+}
+
+void engine::subsystem::ConsoleSubsystem::RemoveCommand(const string& CommandName)
+{
+	if (Commands.contains(CommandName))
+		Commands.erase(CommandName);
 }

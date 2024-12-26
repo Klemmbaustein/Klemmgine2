@@ -49,7 +49,7 @@ engine::Scene::~Scene()
 	using namespace subsystem;
 
 	delete Buffer;
-	delete Cam;
+	delete SceneCamera;
 
 	SceneSubsystem* Sys = SceneSubsystem::Current;
 
@@ -90,22 +90,41 @@ engine::Scene::Scene(const char* FilePath)
 
 void engine::Scene::Draw()
 {
-	Cam->Update();
+	SceneCamera->Update();
 
 	Buffer->Bind();
 
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, Buffer->Width, Buffer->Height);
+	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
 	for (SceneObject* i : Objects)
 	{
-		if (i->HasVisuals)
-			i->Draw(Cam);
+		i->Draw(UsedCamera);
 	}
 }
-
 void engine::Scene::Update()
 {
+	for (SceneObject* Obj : Objects)
+	{
+		Obj->UpdateObject();
+	}
+
+	for (SceneObject* Destr : DestroyedObjects)
+	{
+		Destr->OnDestroyed();
+
+		for (auto i = Objects.begin(); i < Objects.end(); i++)
+		{
+			if (*i == Destr)
+			{
+				Log::Info("test");
+				Objects.erase(i);
+				break;
+			}
+		}
+		delete Destr;
+	}
+	DestroyedObjects.clear();
 }
 
 engine::Scene* engine::Scene::GetMain()
@@ -133,13 +152,13 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 		{
 			auto Size = GetEditorSize(NewSize);
 			Buffer->Resize(Size.X, Size.Y);
-			Cam->Aspect = float(Size.X) / float(Size.Y);
+			SceneCamera->Aspect = float(Size.X) / float(Size.Y);
 			return;
 		}
 #endif
 		Buffer->Resize(NewSize.X, NewSize.Y);
 	}
-	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
+	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 }
 
 void engine::Scene::LoadAsync(string SceneFile)
@@ -156,13 +175,15 @@ void engine::Scene::LoadAsyncFinish()
 	{
 		obj->Begin();
 	}
+
+	Update();
 }
 
 void engine::Scene::Save(string FileName)
 {
 	using namespace subsystem;
 
-	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), ISubsystem::LogType::Info);
+	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), Subsystem::LogType::Info);
 
 	std::vector<SerializedValue> SerializedObjects;
 
@@ -178,6 +199,11 @@ void engine::Scene::Save(string FileName)
 		});
 
 	TextSerializer::ToFile(Serialized.GetObject(), FileName);
+}
+
+bool engine::Scene::ObjectDestroyed(SceneObject* Target) const
+{
+	return DestroyedObjects.contains(Target);
 }
 
 void engine::Scene::PreLoadAsset(AssetRef Target)
@@ -201,7 +227,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 	{
 		subsystem::SceneSubsystem::Current->Print(
 			str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
-			subsystem::ISubsystem::LogType::Error
+			subsystem::Subsystem::LogType::Error
 		);
 		return;
 	}
@@ -228,9 +254,14 @@ void engine::Scene::LoadInternal(string File, bool Async)
 		{
 			subsystem::SceneSubsystem::Current->Print(
 				str::Format("Failed to DeSerialize object in scene: '%s'", SerializeErr.what()),
-				subsystem::ISubsystem::LogType::Warning
+				subsystem::Subsystem::LogType::Warning
 			);
 		}
+	}
+
+	if (!Async)
+	{
+		Update();
 	}
 }
 
@@ -250,18 +281,21 @@ void engine::Scene::Init()
 #endif
 	Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
 
-	Cam = new Camera(1);
-	Cam->Position.Z = 2;
-	Cam->Rotation.Y = 3.14f / -2.0f;
+	SceneCamera = new Camera(1);
+	SceneCamera->Position.Z = 2;
+	SceneCamera->Rotation.Y = 3.14f / -2.0f;
 
-	Cam->Aspect = float(Buffer->Width) / float(Buffer->Height);
+	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
+	UsedCamera = SceneCamera;
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
 
 	VideoSystem->OnResizedCallbacks.insert({ this,
 		[this](kui::Vec2ui NewSize)
 		{
-			OnResized(NewSize);
+			if (Resizable)
+				OnResized(NewSize);
 		} });
+
 }
 
 engine::SerializedValue engine::Scene::GetSceneInfo()

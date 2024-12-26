@@ -1,11 +1,11 @@
 #ifdef EDITOR
 #pragma once
-#include "ISubsystem.h"
+#include "Subsystem.h"
 #include <Engine/Editor/UI/EditorUI.h>
 
 namespace engine::subsystem
 {
-	class EditorSubsystem : public ISubsystem
+	class EditorSubsystem : public Subsystem
 	{
 	public:
 		EditorSubsystem();

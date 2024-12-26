@@ -1,10 +1,36 @@
-#include "ISubsystem.h"
+#include "Subsystem.h"
 #include <iostream>
 #include <array>
 #include <Engine/Engine.h>
 using namespace engine::subsystem;
 
-ISubsystem::ISubsystem(const char* Name, engine::Log::LogColor Color)
+std::vector<Subsystem*> Subsystem::ToUnload;
+
+void engine::subsystem::Subsystem::Unload()
+{
+	ToUnload.push_back(this);
+}
+
+void engine::subsystem::Subsystem::UpdateUnloading()
+{
+	for (Subsystem* sys : ToUnload)
+	{
+		for (auto i = Engine::Instance->LoadedSystems.begin();
+			i < Engine::Instance->LoadedSystems.end();
+			i++)
+		{
+			if (*i == sys)
+			{
+				Engine::Instance->LoadedSystems.erase(i);
+				break;
+			}
+		}
+		delete sys;
+	}
+	ToUnload.clear();
+}
+
+Subsystem::Subsystem(const char* Name, engine::Log::LogColor Color)
 {
 	Engine::Instance->LoadedSystems.push_back(this);
 	this->Name = Name;
@@ -12,20 +38,20 @@ ISubsystem::ISubsystem(const char* Name, engine::Log::LogColor Color)
 	Print("Creating subsystem: " + string(Name), LogType::Note);
 }
 
-ISubsystem::~ISubsystem()
+Subsystem::~Subsystem()
 {
 	Print("Destroying subsystem: " + string(Name), LogType::Note);
 }
 
-void ISubsystem::Update()
+void Subsystem::Update()
 {
 }
 
-void ISubsystem::RenderUpdate()
+void Subsystem::RenderUpdate()
 {
 }
 
-void ISubsystem::Print(string Message, LogType Severity)
+void Subsystem::Print(string Message, LogType Severity)
 {
 	static std::array<const char*, 5> SeverityStrings =
 	{
@@ -56,9 +82,9 @@ void ISubsystem::Print(string Message, LogType Severity)
 		});
 }
 
-void ISubsystem::SubsystemDependsOn(const std::type_info& Type, string Name)
+void Subsystem::SubsystemDependsOn(const std::type_info& Type, string Name)
 {
-	for (ISubsystem* i : Engine::Instance->LoadedSystems)
+	for (Subsystem* i : Engine::Instance->LoadedSystems)
 	{
 		if (Type == typeid(*i))
 		{

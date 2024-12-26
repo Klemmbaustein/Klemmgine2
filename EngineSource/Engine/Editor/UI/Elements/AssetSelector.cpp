@@ -1,14 +1,22 @@
+#ifdef EDITOR
 #include "AssetSelector.h"
 #include <kui/Window.h>
 #include <Engine/Log.h>
 #include <Engine/File/Resource.h>
+#include <Engine/Error/EngineError.h>
 #include <Engine/Error/EngineAssert.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/File/FileUtil.h>
 using namespace kui;
 
 engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width, std::function<void()> OnChanged)
-	: DroppableBox(true)
+	: DroppableBox(true, [this](EditorUI::DraggedItem itm)
+		{
+			SelectedAsset = AssetRef::FromPath(itm.Path);
+			this->OnChanged();
+			UpdateSelection();
+
+		})
 {
 	SelectedAsset = InitialValue;
 	IconBackground = new UIBackground(true, 0, 1, 24);
@@ -37,6 +45,18 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetTryFill(true);
 
+	AssetPath->OnChanged = [this]()
+		{
+			auto NewAsset = AssetRef::FromName(AssetPath->GetText(), SelectedAsset.Extension);
+
+			if (NewAsset.FilePath.empty())
+				return;
+
+			SelectedAsset = NewAsset;
+			this->OnChanged();
+			UpdateSelection();
+		};
+
 	RightBox->AddChild(AssetPath);
 
 	PathText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
@@ -47,11 +67,6 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
 	RightBox->AddChild(PathText);
 	UpdateSelection();
-
-	OnDrop = [this](EditorUI::DraggedItem Item)
-		{
-			SelectedAsset = AssetRef::FromPath(Item.Path);
-		};
 	UpdateElement();
 }
 
@@ -111,6 +126,7 @@ void engine::editor::AssetSelector::Tick()
 
 void engine::editor::AssetSelector::UpdateSelection()
 {
+	AssetPath->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath));
 	PathText->SetText(SelectedAsset.FilePath.empty() ? "<no file>" : SelectedAsset.FilePath);
 }
 
@@ -151,7 +167,10 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 			continue;
 
 		string WithoutExt = file::FileNameWithoutExt(Name);
-		if (str::Lower(WithoutExt).find(SearchText) != std::string::npos)
+
+		if (SearchText.empty())
+			FilteredAssets.insert({ WithoutExt, Path });
+		else if (str::Lower(WithoutExt).find(SearchText) != std::string::npos)
 			FilteredAssets.insert({ WithoutExt, Path });
 	}
 
@@ -187,3 +206,4 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)));
 	}
 }
+#endif

@@ -13,7 +13,8 @@ std::unordered_map<engine::string, engine::GraphicsModel> engine::GraphicsModel:
 
 engine::ModelData::ModelData(string FilePath)
 {
-	auto File = BinarySerializer::FromFile(FilePath, FormatName);
+	std::vector<SerializedData> File;
+	BinarySerializer::FromFile(FilePath, FormatName, File);
 	DeSerialize(&File.at(0).Value);
 }
 
@@ -102,6 +103,7 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	bool CheckedUV = false;
 	bool HasUV = false;
 
+	Vertices.reserve(InVertices.GetArray().size());
 	for (auto& i : InVertices.GetArray())
 	{
 		if (!CheckedUV)
@@ -117,6 +119,7 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 		}
 	}
 
+	Indices.reserve(InIndices.GetArray().size());
 	for (auto& i : InIndices.GetArray())
 	{
 		Indices.push_back(i.GetInt());
@@ -211,6 +214,8 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 		{
 			RegisterModel(Asset, false);
 			Found = Models.find(Asset.FilePath);
+			if (Found == Models.end())
+				return nullptr;
 		}
 		else
 			return nullptr;
@@ -241,6 +246,8 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 		{
 			delete i.second.Data;
 			delete i.second.Drawable;
+			Target->Data = nullptr;
+			Target->Drawable = nullptr;
 			Models.erase(i.first);
 		}
 		return;
@@ -261,6 +268,8 @@ void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 		{
 			delete i.second.Data;
 			delete i.second.Drawable;
+			i.second.Data = nullptr;
+			i.second.Drawable = nullptr;
 			Models.erase(i.first);
 		}
 		return;

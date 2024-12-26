@@ -51,11 +51,14 @@ namespace engine::editor
 			string Path;
 			string Icon;
 			kui::Vec3f Color;
+			bool IsAsset = false;
+			bool Centered = true;
 		};
 
 		DraggedItem CurrentDraggedItem;
 
-		void StartDrag(DraggedItem With);
+		void StartAssetDrag(DraggedItem With);
+		void StartDrag(kui::UIBox* bx, bool Centered);
 
 		enum class StatusType
 		{
@@ -75,6 +78,7 @@ namespace engine::editor
 		static void SetStatusMessage(string NewMessage, StatusType Type);
 
 		EditorUI();
+		~EditorUI();
 		static string CreateAsset(string Path, string Name, string Extension);
 		static void UpdateTheme(kui::Window* Target);
 		void Update();

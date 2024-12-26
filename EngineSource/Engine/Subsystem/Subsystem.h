@@ -5,15 +5,19 @@
 
 namespace engine::subsystem
 {
-	class ISubsystem
+	class Subsystem
 	{
 		const char* Name = "";
+		static std::vector<Subsystem*> ToUnload;
 	protected:
 		engine::Log::LogColor SubsystemColor = Log::LogColor::Blue;
 
 	public:
-		ISubsystem(const char* Name, engine::Log::LogColor Color);
-		virtual ~ISubsystem();
+
+		void Unload();
+		static void UpdateUnloading();
+		Subsystem(const char* Name, engine::Log::LogColor Color);
+		virtual ~Subsystem();
 
 		virtual void Update();
 		virtual void RenderUpdate();

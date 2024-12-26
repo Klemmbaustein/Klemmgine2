@@ -46,6 +46,12 @@ engine::editor::EditorPanel::~EditorPanel()
 	delete PanelElement;
 
 	ClearParent();
+
+	for (auto& i : Children)
+	{
+		i->Parent = nullptr;
+		delete i;
+	}
 }
 
 void engine::editor::EditorPanel::UpdateLayout()
@@ -445,7 +451,9 @@ void engine::editor::EditorPanel::MovePanel()
 		->SetVerticalAlign(UIBox::Align::Centered);
 
 	Move.HighlightBackground->AddChild((new UIText(11, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative));
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPadding(2, 2, 10, 10)
+		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative));
 
 	auto MoveBox = new DraggedPanelTab();
 
@@ -455,6 +463,7 @@ void engine::editor::EditorPanel::MovePanel()
 	Move.Panel = this;
 
 	EditorUI::Instance->DraggedBox = MoveBox;
+	EditorUI::Instance->CurrentDraggedItem.Centered = false;
 }
 
 void engine::editor::EditorPanel::UpdatePanelMove()

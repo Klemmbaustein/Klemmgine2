@@ -74,6 +74,26 @@ namespace engine
 		* @throw SerializeReadException
 		*/
 		static std::vector<SerializedData> FromFile(string File, string FormatIdentifier);
+
+		/**
+		* @brief
+		* Loads serialized data from the given file.
+		* 
+		* Identical to std::vector<SerializedData> FromFile(string File, string FormatIdentifier),
+		* but instead of copying the result, the destination vector is passed as a reference.
+		*
+		* @param File
+		* The file from which the binary data should be read.
+		*
+		* @param FormatIdentifier
+		* The format that the file should use. If the format doesn't match, this function will fail.
+		*
+		* @return
+		* A vector of serialized data read from the file.
+		*
+		* @throw SerializeReadException
+		*/
+		static void FromFile(string File, string FormatIdentifier, std::vector<SerializedData>& To);
 	private:
 		struct BinaryStream
 		{
@@ -100,6 +120,6 @@ namespace engine
 		static void WriteString(string Str, std::vector<uByte>& Out);
 		static void CopyTo(void* Data, size_t Size, std::vector<uByte>& Out);
 
-		static string ReadString(BinaryStream& From);
+		static void ReadString(BinaryStream& From, string& Out);
 	};
 }

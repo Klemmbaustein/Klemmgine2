@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "ObjectListPanel.h"
 #include <Engine/Scene.h>
 #include <Engine/File/FileUtil.h>
@@ -24,6 +25,10 @@ void engine::editor::ObjectListPanel::Update()
 		Vec2f(Size.X, 0) + UIBox::PixelSizeToScreenSize(Vec2f(-32, 22), Heading->GetParentWindow())
 	);
 
+	Heading->listBox->SetMinSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 35), Heading->GetParentWindow()));
+	Heading->listBox->SetMaxSize(Heading->listBox->GetMinSize());
+	Heading->listBox->SetSizeMode(UIBox::SizeMode::ScreenRelative);
+
 	Scene* Current = Scene::GetMain();
 
 	if (EditorUI::FocusedPanel == this
@@ -31,6 +36,13 @@ void engine::editor::ObjectListPanel::Update()
 		&& !Viewport::Current->SelectedObjects.empty())
 	{
 		Viewport::Current->SelectedObjects.clear();
+		DisplayList();
+	}
+	if (EditorUI::FocusedPanel == this
+		&& input::IsKeyDown(input::Key::DELETE)
+		&& !Viewport::Current->SelectedObjects.empty())
+	{
+		Viewport::Current->RemoveSelected();
 		DisplayList();
 	}
 
@@ -63,6 +75,8 @@ void engine::editor::ObjectListPanel::DisplayList()
 
 	for (SceneObject* i : Objects)
 	{
+		if (Current->ObjectDestroyed(i))
+			continue;
 		ObjectTree[0].Children.emplace_back(i->Name, i, Viewport::Current->SelectedObjects.contains(i));
 	}
 
@@ -103,3 +117,4 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 		}
 	}
 }
+#endif

@@ -1,5 +1,5 @@
 #pragma once
-#include "ISubsystem.h"
+#include "Subsystem.h"
 #include <kui/Window.h>
 #include <Engine/Graphics/ShaderLoader.h>
 #include <Engine/Graphics/Texture.h>
@@ -7,7 +7,7 @@
 
 namespace engine::subsystem
 {
-	class VideoSubsystem : public ISubsystem
+	class VideoSubsystem : public Subsystem
 	{
 	public:
 		VideoSubsystem();
@@ -22,7 +22,7 @@ namespace engine::subsystem
 
 		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
 
-	private:
 		void OnResized();
+
 	};
 }

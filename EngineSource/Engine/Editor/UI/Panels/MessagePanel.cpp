@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "MessagePanel.h"
 
 engine::editor::MessagePanel::MessagePanel()
@@ -8,3 +9,4 @@ engine::editor::MessagePanel::MessagePanel()
 void engine::editor::MessagePanel::Update()
 {
 }
+#endif

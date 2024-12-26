@@ -1,0 +1,25 @@
+#pragma once
+#include "ObjectComponent.h"
+#include <Engine/File/AssetRef.h>
+#include <Engine/File/ModelData.h>
+#include <Engine/Graphics/Material.h>
+
+namespace engine
+{
+	class MeshComponent : public ObjectComponent
+	{
+	public:
+
+		std::vector<graphics::Material*> Materials;
+		GraphicsModel* DrawnModel = nullptr;
+
+		virtual void Update() override;
+
+		virtual void Draw(graphics::Camera* From) override;
+
+		void Load(AssetRef From);
+		~MeshComponent() override;
+
+		void ClearModel();
+	};
+}

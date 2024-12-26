@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include <kui/UI/UIBox.h>
 #include <kui/UI/UITextField.h>
@@ -25,3 +26,4 @@ namespace engine::editor
 		Vector3 Value;
 	};
 }
+#endif

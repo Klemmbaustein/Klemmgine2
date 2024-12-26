@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 
@@ -11,3 +12,4 @@ namespace engine::editor
 		virtual void Update() override;
 	};
 }
+#endif

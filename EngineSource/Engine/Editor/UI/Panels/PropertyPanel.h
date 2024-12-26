@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 #include <Engine/Objects/SceneObject.h>
@@ -17,3 +18,4 @@ namespace engine::editor
 		SceneObject* SelectedObj = nullptr;
 	};
 }
+#endif

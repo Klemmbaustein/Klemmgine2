@@ -48,7 +48,8 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	ActiveWindows.push_back(OutWindow);
 
 	engine::internal::platform::InitWindow(OutWindow, int(Flags));
-	SDL_ShowWindow(OutWindow->SDLWindow);
+	if (OutWindow->IsMain)
+		SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
 	SDL_StartTextInput(OutWindow->SDLWindow);
@@ -65,6 +66,71 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	return OutWindow;
 }
 
+using namespace kui;
+static std::map<int, kui::Key> Keys =
+{
+	{ SDLK_ESCAPE, Key::ESCAPE },
+	{ SDLK_BACKSPACE, Key::BACKSPACE },
+	{ SDLK_TAB, Key::TAB },
+	{ SDLK_SPACE, Key::SPACE },
+	{ SDLK_DELETE, Key::DELETE },
+	{ SDLK_PLUS, Key::PLUS },
+	{ SDLK_COMMA, Key::COMMA },
+	{ SDLK_PERIOD, Key::PERIOD },
+	{ SDLK_SLASH, Key::SLASH },
+	{ SDLK_0, Key::k0 },
+	{ SDLK_1, Key::k1 },
+	{ SDLK_2, Key::k2 },
+	{ SDLK_3, Key::k3 },
+	{ SDLK_4, Key::k4 },
+	{ SDLK_5, Key::k5 },
+	{ SDLK_6, Key::k6 },
+	{ SDLK_7, Key::k7 },
+	{ SDLK_8, Key::k8 },
+	{ SDLK_9, Key::k9 },
+	{ SDLK_SEMICOLON, Key::SEMICOLON },
+	{ SDLK_LESS, Key::LESS },
+	{ SDLK_RETURN, Key::RETURN },
+	{ SDLK_LEFTBRACKET, Key::LEFTBRACKET },
+	{ SDLK_RIGHTBRACKET, Key::RIGHTBRACKET },
+	{ SDLK_RIGHT, Key::RIGHT },
+	{ SDLK_LEFT, Key::LEFT },
+	{ SDLK_UP, Key::UP },
+	{ SDLK_DOWN, Key::DOWN },
+	{ SDLK_LSHIFT, Key::LSHIFT },
+	{ SDLK_RSHIFT, Key::LSHIFT },
+	{ SDLK_LCTRL, Key::LCTRL },
+	{ SDLK_RCTRL, Key::LCTRL },
+	{ SDLK_LALT, Key::LALT },
+	{ SDLK_RALT, Key::LALT },
+	{ SDLK_A, Key::a },
+	{ SDLK_B, Key::b },
+	{ SDLK_C, Key::c },
+	{ SDLK_D, Key::d },
+	{ SDLK_E, Key::e },
+	{ SDLK_F, Key::f },
+	{ SDLK_G, Key::g },
+	{ SDLK_H, Key::h },
+	{ SDLK_I, Key::i },
+	{ SDLK_J, Key::j },
+	{ SDLK_K, Key::k },
+	{ SDLK_L, Key::l },
+	{ SDLK_M, Key::m },
+	{ SDLK_N, Key::n },
+	{ SDLK_O, Key::o },
+	{ SDLK_P, Key::p },
+	{ SDLK_Q, Key::q },
+	{ SDLK_R, Key::r },
+	{ SDLK_S, Key::s },
+	{ SDLK_T, Key::t },
+	{ SDLK_U, Key::u },
+	{ SDLK_V, Key::v },
+	{ SDLK_W, Key::w },
+	{ SDLK_X, Key::x },
+	{ SDLK_Y, Key::y },
+	{ SDLK_Z, Key::z },
+};
+
 void kui::systemWM::DestroyWindow(SysWindow* Target)
 {
 	std::lock_guard g{ WindowCreateMutex };
@@ -78,6 +144,28 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 		}
 	}
 
+	for (auto& [Key, IsPressed] : Target->Parent->Input.PressedKeys)
+	{
+		if (!IsPressed)
+		{
+			return;
+		}
+
+		SDL_Event KeyReleasedEvent;
+		for (auto& win : ActiveWindows)
+		{
+			KeyReleasedEvent.type = SDL_EVENT_KEY_UP;
+			for (auto& [SDLKey, KuiKey] : Keys)
+			{
+				if (KuiKey == Key)
+				{
+					KeyReleasedEvent.key.key = SDLKey;
+					break;
+				}
+			}
+			win->Events.push_back(KeyReleasedEvent);
+		}
+	}
 
 	for (SDL_Cursor* Cursor : Target->WindowCursors)
 	{
@@ -91,6 +179,7 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 
 void kui::systemWM::SwapWindow(SysWindow* Target)
 {
+	SDL_ShowWindow(Target->SDLWindow);
 	if (!Target->IsMain)
 	{
 		SDL_GL_SetSwapInterval(1);
@@ -121,6 +210,8 @@ void kui::systemWM::SetWindowIcon(SysWindow* Target, uint8_t* Bytes, size_t Widt
 
 void kui::systemWM::UpdateWindow(SysWindow* Target)
 {
+	if (!Target->IsMain)
+		SDL_ShowWindow(Target->SDLWindow);
 	{
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev))
@@ -308,69 +399,6 @@ void kui::systemWM::MessageBox(std::string Text, std::string Title, int Type)
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 {
-	static std::map<int, kui::Key> Keys =
-	{
-		{ SDLK_ESCAPE, Key::ESCAPE },
-		{ SDLK_BACKSPACE, Key::BACKSPACE },
-		{ SDLK_TAB, Key::TAB },
-		{ SDLK_SPACE, Key::SPACE },
-		{ SDLK_DELETE, Key::DELETE },
-		{ SDLK_PLUS, Key::PLUS },
-		{ SDLK_COMMA, Key::COMMA },
-		{ SDLK_PERIOD, Key::PERIOD },
-		{ SDLK_SLASH, Key::SLASH },
-		{ SDLK_0, Key::k0 },
-		{ SDLK_1, Key::k1 },
-		{ SDLK_2, Key::k2 },
-		{ SDLK_3, Key::k3 },
-		{ SDLK_4, Key::k4 },
-		{ SDLK_5, Key::k5 },
-		{ SDLK_6, Key::k6 },
-		{ SDLK_7, Key::k7 },
-		{ SDLK_8, Key::k8 },
-		{ SDLK_9, Key::k9 },
-		{ SDLK_SEMICOLON, Key::SEMICOLON },
-		{ SDLK_LESS, Key::LESS },
-		{ SDLK_RETURN, Key::RETURN },
-		{ SDLK_LEFTBRACKET, Key::LEFTBRACKET },
-		{ SDLK_RIGHTBRACKET, Key::RIGHTBRACKET },
-		{ SDLK_RIGHT, Key::RIGHT },
-		{ SDLK_LEFT, Key::LEFT },
-		{ SDLK_UP, Key::UP },
-		{ SDLK_DOWN, Key::DOWN },
-		{ SDLK_LSHIFT, Key::LSHIFT },
-		{ SDLK_RSHIFT, Key::LSHIFT },
-		{ SDLK_LCTRL, Key::LCTRL },
-		{ SDLK_RCTRL, Key::LCTRL },
-		{ SDLK_LALT, Key::LALT },
-		{ SDLK_RALT, Key::LALT },
-		{ SDLK_A, Key::a },
-		{ SDLK_B, Key::b },
-		{ SDLK_C, Key::c },
-		{ SDLK_D, Key::d },
-		{ SDLK_E, Key::e },
-		{ SDLK_F, Key::f },
-		{ SDLK_G, Key::g },
-		{ SDLK_H, Key::h },
-		{ SDLK_I, Key::i },
-		{ SDLK_J, Key::j },
-		{ SDLK_K, Key::k },
-		{ SDLK_L, Key::l },
-		{ SDLK_M, Key::m },
-		{ SDLK_N, Key::n },
-		{ SDLK_O, Key::o },
-		{ SDLK_P, Key::p },
-		{ SDLK_Q, Key::q },
-		{ SDLK_R, Key::r },
-		{ SDLK_S, Key::s },
-		{ SDLK_T, Key::t },
-		{ SDLK_U, Key::u },
-		{ SDLK_V, Key::v },
-		{ SDLK_W, Key::w },
-		{ SDLK_X, Key::x },
-		{ SDLK_Y, Key::y },
-		{ SDLK_Z, Key::z },
-	};
 	using namespace engine::subsystem;
 	using namespace engine;
 	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();

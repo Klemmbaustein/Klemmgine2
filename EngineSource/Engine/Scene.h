@@ -4,6 +4,7 @@
 #include "Objects/SceneObject.h"
 #include <kui/Vec2.h>
 #include <atomic>
+#include <set>
 
 namespace engine
 {
@@ -27,10 +28,12 @@ namespace engine
 		void Update();
 
 		graphics::Framebuffer* Buffer = nullptr;
-		graphics::Camera* Cam = nullptr;
+		graphics::Camera* SceneCamera = nullptr;
+		graphics::Camera* UsedCamera = nullptr;
 		std::vector<SceneObject*> Objects;
 
 		kui::Vec2ui BufferSize;
+		bool Resizable = true;
 
 		/**
 		* @brief
@@ -72,10 +75,13 @@ namespace engine
 
 		void Save(string FileName);
 
+		bool ObjectDestroyed(SceneObject* Target) const;
+
 		void PreLoadAsset(AssetRef Target);
 	private:
 		friend class SceneObject;
 		std::vector<AssetRef> ReferencedAssets;
+		std::set<SceneObject*> DestroyedObjects;
 		void LoadInternal(string File, bool Async);
 		void Init();
 		SerializedValue GetSceneInfo();

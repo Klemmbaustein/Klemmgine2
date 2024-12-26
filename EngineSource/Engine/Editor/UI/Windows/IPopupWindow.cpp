@@ -1,6 +1,13 @@
+#ifdef EDITOR
 #include "IPopupWindow.h"
 #include <Engine/Editor/UI/EditorUI.h>
 #include <thread>
+
+void engine::editor::IPopupWindow::Open()
+{
+	std::thread ThreadObject = std::thread(&IPopupWindow::WindowThread, this, Name, Size);
+	ThreadObject.detach();
+}
 
 void engine::editor::IPopupWindow::SetTitle(string NewTitle)
 {
@@ -9,11 +16,10 @@ void engine::editor::IPopupWindow::SetTitle(string NewTitle)
 
 engine::editor::IPopupWindow::IPopupWindow(string Name, kui::Vec2ui Size, bool Resizable, bool Closable)
 {
+	this->Name = Name;
+	this->Size = Size;
 	this->Resizable = Resizable;
 	this->CanClose = Closable;
-
-	std::thread ThreadObject = std::thread(&IPopupWindow::WindowThread, this, Name, Size);
-	ThreadObject.detach();
 }
 
 void engine::editor::IPopupWindow::Close()
@@ -62,3 +68,4 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	delete Popup;
 	delete this;
 }
+#endif

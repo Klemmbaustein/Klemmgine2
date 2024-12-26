@@ -7,8 +7,10 @@
 #include <kui/UI/UISpinner.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/Stats.h>
+#include <Engine/Editor/UI/Elements/DroppableBox.h>
 #include <Engine/Log.h>
 #include <Toolbar.kui.hpp>
+#include <Engine/Objects/MeshObject.h>
 using namespace engine::subsystem;
 using namespace kui;
 
@@ -70,7 +72,7 @@ engine::editor::Viewport::Viewport()
 	ViewportToolbar->AddChild(TestButton);
 	ViewportToolbar->AddChild(TestButton2);
 
-	ViewportStatusText = new UIText(12, 0.8f, "", EditorUI::EditorFont);
+	ViewportStatusText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	ViewportStatusText
 		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
 		->SetPadding(4)
@@ -97,10 +99,23 @@ engine::editor::Viewport::Viewport()
 			->SetPadding(5, 5, 5, 15)
 			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative));
 
+	auto ViewportDropBox = new DroppableBox(false, [](EditorUI::DraggedItem Item)
+		{
+			AssetRef Dropped = AssetRef::FromPath(Item.Path);
+			if (Dropped.Extension != "kmdl")
+			{
+				return;
+			}
+
+			auto obj = Scene::GetMain()->CreateObject<MeshObject>();
+			obj->LoadMesh(Dropped);
+		});
+
 	Background
 		->AddChild(ViewportToolbar)
-		->AddChild(ViewportBackground
-			->AddChild(LoadingScreenBox))
+		->AddChild(ViewportDropBox
+			->AddChild(ViewportBackground
+				->AddChild(LoadingScreenBox)))
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
 
@@ -124,6 +139,16 @@ void engine::editor::Viewport::OnResized()
 
 	if (SceneSystem->Main)
 		SceneSystem->Main->OnResized(VideoSystem->MainWindow->GetSize());
+}
+
+void engine::editor::Viewport::RemoveSelected()
+{
+	for (auto& i : SelectedObjects)
+	{
+		i->Destroy();
+	}
+
+	SelectedObjects.clear();
 }
 
 void engine::editor::Viewport::Update()
@@ -174,22 +199,22 @@ void engine::editor::Viewport::Update()
 	{
 		if (input::IsKeyDown(input::Key::w))
 		{
-			Current->Cam->Position += Vector3::Forward(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position += Vector3::Forward(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
 		}
 		if (input::IsKeyDown(input::Key::s))
 		{
-			Current->Cam->Position -= Vector3::Forward(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position -= Vector3::Forward(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
 		}
 		if (input::IsKeyDown(input::Key::d))
 		{
-			Current->Cam->Position += Vector3::Right(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position += Vector3::Right(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
 		}
 		if (input::IsKeyDown(input::Key::a))
 		{
-			Current->Cam->Position -= Vector3::Right(Current->Cam->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position -= Vector3::Right(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
 		}
 
-		Current->Cam->Rotation = Current->Cam->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
+		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
 }
 #endif

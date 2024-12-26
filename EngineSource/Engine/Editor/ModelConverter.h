@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include <Engine/Types.h>
 #include <functional>
@@ -18,3 +19,4 @@ namespace engine::editor::modelConverter
 
 	string ConvertModel(string ModelPath, string OutDir, ConvertOptions Options);
 }
+#endif

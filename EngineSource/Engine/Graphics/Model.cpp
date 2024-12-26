@@ -21,20 +21,17 @@ engine::graphics::Model::~Model()
 	}
 }
 
-void engine::graphics::Model::Draw(Vector3 At, graphics::Camera* With, std::vector<Material*>& UsedMaterials)
+void engine::graphics::Model::Draw(const Transform& At, graphics::Camera* With, std::vector<Material*>& UsedMaterials)
 {
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
 		UsedMaterials[i]->Apply();
-		glm::mat4 ModelMatrix = glm::mat4(1);
-		ModelMatrix = glm::translate(ModelMatrix, glm::vec3(At.X, At.Y, At.Z));
-
 		ShaderObject* Used = UsedMaterials[i]->Shader;
 
 		if (Used == nullptr)
 			continue;
 
-		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_model"), 1, false, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_model"), 1, false, &At.Matrix[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_view"), 1, false, &With->View[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_projection"), 1, false, &With->Projection[0][0]);
 		

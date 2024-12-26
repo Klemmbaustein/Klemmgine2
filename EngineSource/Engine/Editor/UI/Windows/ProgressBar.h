@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "IPopupWindow.h"
 #include <LoadingBar.kui.hpp>
@@ -27,3 +28,4 @@ namespace engine::editor
 		std::mutex ProgressMessageMutex;
 	};
 }
+#endif

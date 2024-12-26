@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "ClassBrowser.h"
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 
@@ -32,3 +33,4 @@ engine::string engine::editor::ClassBrowser::GetPathDisplayName()
 {
 	return "Classes::" + str::ReplaceChar(Path, '/', '.');
 }
+#endif

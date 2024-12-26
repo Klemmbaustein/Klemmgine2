@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "ModelEditor.h"
 #include <Engine/MainThread.h>
 #include <Engine/Editor/UI/EditorUI.h>
@@ -16,8 +17,9 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	EditedModel = ModelFile;
 	EditorScene = new Scene();
-	EditorScene->Cam->Rotation = Vector3(-0.7f, -2.4f, 0);
-	EditorScene->Cam->Position = Vector3(3, 3, 3);
+	EditorScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
+	EditorScene->SceneCamera->Position = Vector3(3, 3, 3);
+	EditorScene->Resizable = false;
 
 	CurrentObj = EditorScene->CreateObject<MeshObject>();
 
@@ -106,7 +108,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		->AddChild((new UIText(14, 1, "Materials", EditorUI::EditorFont))
 			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)));
 
-	GraphicsModel* Data = CurrentObj->DrawnModel;
+	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 
 	if (!Data)
 	{
@@ -152,7 +154,7 @@ void engine::editor::ModelEditor::Update()
 
 void engine::editor::ModelEditor::Save()
 {
-	GraphicsModel* Data = CurrentObj->DrawnModel;
+	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 	Data->Data->ToFile(EditedModel.FilePath);
 }
 
@@ -171,3 +173,4 @@ void engine::editor::ModelEditor::OnResized()
 	SceneBackground->SetMaxSize(PixelSize);
 	OnModelLoaded();
 }
+#endif

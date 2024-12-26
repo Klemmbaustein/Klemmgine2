@@ -1,7 +1,6 @@
 [submodule "Dependencies/KlemmUI"]
 	path = Dependencies/KlemmUI
 	url = https://github.com/Klemmbaustein/KlemmUI.git
-	branch = KlemmUI3
 [submodule "Dependencies/SDL"]
 	path = Dependencies/SDL
 	url = https://github.com/libSDL-org/SDL

@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include <Engine/Types.h>
 #include <kui/Window.h>
@@ -12,6 +13,8 @@ namespace engine::editor
 		virtual void Destroy() = 0;
 		kui::Window* Popup = nullptr;
 
+		void Open();
+
 		void SetTitle(string NewTitle);
 
 	public:
@@ -21,9 +24,12 @@ namespace engine::editor
 		kui::Font* DefaultFont = nullptr;
 
 	private:
+		string Name;
+		kui::Vec2ui Size;
 		bool Resizable = false;
 		bool ShouldClose = false;
 		bool CanClose = false;
 		void WindowThread(string Name, kui::Vec2ui Size);
 	};
 }
+#endif

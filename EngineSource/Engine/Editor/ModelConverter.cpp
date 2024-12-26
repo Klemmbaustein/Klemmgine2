@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "ModelConverter.h"
 #include <Engine/File/ModelData.h>
 #include <assimp/Importer.hpp>
@@ -56,7 +57,7 @@ static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context, string
 		}
 	}
 
-	string MaterialPath = str::Format("%s/%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(TargetMesh->mMaterialIndex));
+	string MaterialPath = str::Format("%s%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(TargetMesh->mMaterialIndex));
 	OutMesh.Material = MaterialPath;
 }
 
@@ -79,12 +80,18 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 
 	Material* NewMaterial = Material::MakeDefault();
 
-	NewMaterial->FindField("u_useTexture", Material::Field::Type::Int)->Int = 1;
 	auto TextureField = NewMaterial->FindField("u_texture", Material::Field::Type::Texture);
 
 	if (TextureField)
 	{
 		TextureField->TextureValue.Name = new std::string(Texture);
+	}
+
+	auto UseTextureField = NewMaterial->FindField("u_useTexture", Material::Field::Type::Int);
+
+	if (UseTextureField)
+	{
+		UseTextureField->Int = Texture.empty() ? 0 : 1;
 	}
 
 	NewMaterial->ToFile(Path);
@@ -98,17 +105,17 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 		aiMaterial* material = Scene->mMaterials[i];
 		aiString texture_file;
 		material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
-		string TexturePath = "";
+		string TexturePath;
 		if (auto texture = Scene->GetEmbeddedTexture(texture_file.C_Str()))
 		{
-			string FileName = "";
+			string FileName;
 			FileName = texture->mFilename.C_Str();
 			if (FileName.empty())
 			{
 				FileName = Context.SceneName;
 			}
 
-			TexturePath = str::Format("%s/%s_%i.png", OutDir.c_str(), FileName.c_str(), int(i));
+			TexturePath = str::Format("%s%s_%i.png", OutDir.c_str(), FileName.c_str(), int(i));
 
 			std::ofstream TextureOutput = std::ofstream(TexturePath, std::ios::binary);
 			if (!texture->mHeight)
@@ -119,23 +126,45 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 			TexturePath = str::Format("%s_%i.png", FileName.c_str(), int(i));
 		}
 
-		string MaterialPath = str::Format("%s/%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));
+		string MaterialPath = str::Format("%s%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));
 		WriteMaterial(MaterialPath, Context, TexturePath);
 	}
 }
+
+static void ImportPrint(string Message)
+{
+	Log::Info(Message, { Log::LogPrefix{ .Text = "Import ", .Color = Log::LogColor::Gray } });
+}
+
 static void AssimpLogCallback(const char* msg, char* userData)
 {
-	Log::Info(msg);
+	ImportPrint(msg);
 }
 
 string engine::editor::modelConverter::ConvertModel(string ModelPath, string OutDir, ConvertOptions Options)
 {
+	if (OutDir.empty())
+	{
+		OutDir = "./";
+	}
+
+	if (OutDir[OutDir.size() - 1] != '/')
+	{
+		OutDir.push_back('/');
+	}
+
 	ConvertContext ctx;
 	ctx.SceneName = file::FileNameWithoutExt(ModelPath);
 
 	aiLogStream stream;
 	stream.callback = AssimpLogCallback;
 	aiAttachLogStream(&stream);
+
+	ImportPrint("--- Starting import process ---");
+	ImportPrint(
+		str::Format("Optimize: %i, Generate UV: %i, Import Materials %i, Import Textures: %i, Import Scale: %f",
+		int(Options.Optimize), int(Options.GenerateUV), int(Options.ImportMaterials), int(Options.ImportTextures), Options.ImportScale)
+	);
 
 	uint32 Flags = aiProcess_Triangulate
 		| aiProcess_GenSmoothNormals
@@ -188,10 +217,12 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	}
 
 	string OutFileName = file::FileNameWithoutExt(ModelPath) + ".kmdl";
-
+	ImportPrint("Saving to file...");
 	ctx.Data->ToFile(OutDir + OutFileName);
 	aiDetachLogStream(&stream);
+	ImportPrint("--- Import complete ---");
 
 	delete ctx.Data;
 	return OutDir + OutFileName;
 }
+#endif

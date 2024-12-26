@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <fstream>
 #include "Windows/MessageWindow.h"
+#include "Elements/DroppableBox.h"
 #include "Panels/Viewport.h"
 #include "Panels/AssetBrowser.h"
 #include "Panels/ClassBrowser.h"
@@ -33,13 +34,13 @@ EditorPanel* EditorUI::FocusedPanel = nullptr;
 
 std::vector<engine::string> MenuBarEntries = { "File", "Edit", "Scene", "Window", "Help" };
 
-void engine::editor::EditorUI::StartDrag(DraggedItem With)
+void engine::editor::EditorUI::StartAssetDrag(DraggedItem With)
 {
 	if (DraggedBox)
 		return;
 
 	CurrentDraggedItem = With;
-
+	CurrentDraggedItem.IsAsset = true;
 	auto* NewDragElement = new ItemBrowserButton();
 	NewDragElement->UpdateElement();
 	NewDragElement->SetBackgroundColor(EditorUI::Theme.DarkBackground2);
@@ -48,6 +49,16 @@ void engine::editor::EditorUI::StartDrag(DraggedItem With)
 	NewDragElement->SetName(With.Name);
 
 	DraggedBox = NewDragElement;
+}
+
+void engine::editor::EditorUI::StartDrag(kui::UIBox* bx, bool Centered)
+{
+	if (DraggedBox)
+		return;
+	CurrentDraggedItem = DraggedItem();
+	CurrentDraggedItem.Centered = Centered;
+	CurrentDraggedItem.IsAsset = false;
+	DraggedBox = bx;
 }
 
 void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Type)
@@ -174,6 +185,21 @@ engine::editor::EditorUI::EditorUI()
 	SetStatusMainThread("Ready", StatusType::Info);
 }
 
+engine::editor::EditorUI::~EditorUI()
+{
+	using namespace subsystem;
+
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+	
+	VideoSystem->OnResizedCallbacks.erase(this);
+	delete RootPanel;
+	delete MainBackground->GetAbsoluteParent();
+	delete EditorFont;
+	delete MonospaceFont;
+
+	VideoSystem->OnResized();
+}
+
 engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)
 {
 	string FileName = Path + "/" + Name;
@@ -210,17 +236,30 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
 
 void engine::editor::EditorUI::Update()
 {
+	using namespace kui;
+
 	if (DraggedBox)
 	{
-		DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize() / 2);
-		kui::Window::GetActiveWindow()->CurrentCursor = kui::Window::Cursor::Default;
+		if (CurrentDraggedItem.Centered)
+			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize() / 2);
+		else
+			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - Vec2f(0, DraggedBox->GetUsedSize().Y));
+		Window::GetActiveWindow()->CurrentCursor = Window::Cursor::Default;
 
 		// Don't hover anything new when dragging something.
-		kui::Window::GetActiveWindow()->UI.HoveredBox = nullptr;
-		kui::Window::GetActiveWindow()->UI.NewHoveredBox = nullptr;
+		Window::GetActiveWindow()->UI.HoveredBox = nullptr;
+		Window::GetActiveWindow()->UI.NewHoveredBox = nullptr;
 
 		if (!input::IsLMBDown || input::IsRMBDown)
 		{
+			if (CurrentDraggedItem.IsAsset)
+			{
+				DroppableBox* DropTo = DroppableBox::GetBoxAtCursor();
+				if (DropTo && DropTo->OnDrop)
+				{
+					DropTo->OnDrop(CurrentDraggedItem);
+				}
+			}
 			delete DraggedBox;
 			DraggedBox = nullptr;
 		}

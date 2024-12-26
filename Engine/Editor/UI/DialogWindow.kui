@@ -61,3 +61,41 @@ element DialogWindowMainElement
 		verticalAlign = centered;
 	}
 }
+
+element RenameWindowElement
+{
+	var FromString = "From:";
+
+	padding = 10px;
+	orientation = vertical;
+
+	child UIText
+	{
+		color = Color_Text;
+		size = 12px;
+		text = FromString;
+		wrap = 250px;
+	}
+
+	child UIBox
+	{
+		upPadding = 10px;
+		verticalAlign = centered;
+		minSize = (300, 35)px;
+		child UIText
+		{
+			text = "To: ";
+			size = 12px;
+			rightPadding = 12px;
+			color = Color_Text;
+		}
+
+		child EditorTextField field
+		{
+			Size = (200, 22);
+			HintText = "Rename";
+			Image = "Engine/Editor/Assets/Search.png";
+			padding = 5px;
+		}
+	}
+}

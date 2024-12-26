@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "MessageWindow.h"
 #include <kui/UI/UIText.h>
 #include <Engine/MainThread.h>
@@ -23,6 +24,7 @@ engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::
 	: IDialogWindow(Title, Options, kui::Vec2i(400, 220))
 {
 	this->Message = Message;
+	Open();
 }
 
 void engine::editor::MessageWindow::Begin()
@@ -42,3 +44,4 @@ void engine::editor::MessageWindow::Update()
 void engine::editor::MessageWindow::Destroy()
 {
 }
+#endif

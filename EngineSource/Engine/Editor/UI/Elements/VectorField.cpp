@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "VectorField.h"
 #include <kui/UI/UIBackground.h>
 #include <Engine/Editor/UI/EditorUI.h>
@@ -98,3 +99,4 @@ void engine::editor::VectorField::UpdateValues()
 		TextFields[i]->SetText(FloatToString(Value[i]));
 	}
 }
+#endif

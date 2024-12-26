@@ -47,11 +47,29 @@ element DraggedPanelTab
 {
 	var Title;
 
+	child UIBackground DropIcon
+	{
+		border = 1px;
+		borderColor = Color_BackgroundHighlight;
+		color = Color_Background;
+
+		corners = 5px;
+
+		child UIBackground
+		{
+			color = Color_Text;
+			image = "file:Engine/Editor/Assets/TabDrag.png";
+			size = 20px;
+			padding = 5px
+		}
+	}
+
 	child UIBackground mainButton
 	{
 		color = Color_Background;
 		borderColor = Color_BackgroundHighlight;
 		verticalAlign = centered;
+		leftPadding = 5px;
 
 		border = 1px;
 		

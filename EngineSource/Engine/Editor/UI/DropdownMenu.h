@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include <Engine/Types.h>
 #include <functional>
@@ -26,3 +27,4 @@ namespace engine::editor
 		static thread_local DropdownMenu* Current;
 	};
 }
+#endif

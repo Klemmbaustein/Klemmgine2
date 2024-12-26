@@ -133,7 +133,13 @@ void engine::graphics::ShaderObject::SetVec3(uint32 UniformLocation, Vector3 Val
 	glUniform3f(UniformLocation, Value.X, Value.Y, Value.Z);
 }
 
+void engine::graphics::ShaderObject::SetTransform(uint32 UniformLocation, const Transform& Value)
+{
+	glUniformMatrix4fv(UniformLocation, 1, false, &Value.Matrix[0][0]);
+}
+
 void engine::graphics::ShaderObject::Clear()
 {
 	glDeleteProgram(ShaderID);
+	ShaderID = 0;
 }

@@ -26,7 +26,7 @@ static void GLAPIENTRY MessageCallback(
 		|| type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR
 		|| type == GL_DEBUG_TYPE_PORTABILITY)
 	{
-		((engine::subsystem::VideoSubsystem*)userParam)->Print(std::string(message), engine::subsystem::ISubsystem::LogType::Error);
+		((engine::subsystem::VideoSubsystem*)userParam)->Print(std::string(message), engine::subsystem::Subsystem::LogType::Error);
 	}
 }
 
@@ -36,7 +36,7 @@ static systemWM::SysWindow* GetSysWindow(kui::Window* From)
 }
 
 engine::subsystem::VideoSubsystem::VideoSubsystem()
-	: ISubsystem("Video", Log::LogColor::Cyan)
+	: Subsystem("Video", Log::LogColor::Cyan)
 {
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 		{
@@ -125,7 +125,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 		{
 			scn->Draw();
 		}
-		glViewport(0, 0, MainWindow->GetSize().X, MainWindow->GetSize().Y);
+		glViewport(0, 0, GLsizei(MainWindow->GetSize().X), GLsizei(MainWindow->GetSize().Y));
 		glEnable(GL_BLEND);
 		glDisable(GL_DEPTH_TEST);
 	}

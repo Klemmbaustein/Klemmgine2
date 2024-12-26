@@ -53,8 +53,9 @@ const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t B
 {
 	int w, h, ch;
 	stbi_uc* Loaded = stbi_load_from_memory(Buffer, int(BufferSize), &w, &h, &ch, 4);
-
-	return LoadTexture(Loaded, w, h, LoadInfo);
+	const Texture* Out = LoadTexture(Loaded, w, h, LoadInfo);
+	stbi_image_free(Loaded);
+	return Out;
 }
 
 const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo)

@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "IDialogWindow.h"
 #include <Engine/Log.h>
 #include <DialogWindow.kui.hpp>
@@ -43,3 +44,4 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 		ButtonBackground->AddChild(NewButton);
 	}
 }
+#endif

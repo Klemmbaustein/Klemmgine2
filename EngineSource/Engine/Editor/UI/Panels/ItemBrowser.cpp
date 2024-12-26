@@ -14,8 +14,16 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	ItemsScrollBox = new UIScrollBox(false, 0, true);
 	Background->AddChild(ItemsScrollBox);
 
+	StatusText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
+
+	StatusText
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetPadding(5)
+		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+	Background->AddChild(StatusText);
+
 	Heading->backButton->OnClicked = [this]() { Back(); };
-	Heading->searchBox->field->OnClickedFunction = [this]()
+	Heading->searchBox->field->OnChanged = [this]()
 	{
 		Filter = Heading->searchBox->field->GetText();
 		UpdateItems();
@@ -77,6 +85,12 @@ void engine::editor::ItemBrowser::UpdateItems()
 	DisplayList();
 
 }
+
+void engine::editor::ItemBrowser::SetStatusText(string NewText)
+{
+	StatusText->SetText(NewText);
+}
+
 std::pair<engine::editor::ItemBrowser::Item, ItemBrowserButton*>* engine::editor::ItemBrowser::GetHoveredButton()
 {
 	for (auto& i : Buttons)
@@ -119,7 +133,7 @@ void engine::editor::ItemBrowser::DisplayList()
 		btn->SetImage(NewItem.Image);
 		btn->button->OnDragged = [NewItem](int)
 		{
-			EditorUI::Instance->StartDrag(EditorUI::DraggedItem{
+			EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
 				.Name = NewItem.Name,
 				.Type = "asset",
 				.Path = NewItem.Path,

@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "PropertyPanel.h"
 #include <Engine/Editor/UI/EditorUI.h>
 #include <kui/UI/UITextField.h>
@@ -52,6 +53,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 {
 	Background->DeleteChildren();
 
+	UIScrollBox* ContentBox = new UIScrollBox(false, 0, true);
+	ContentBox->SetMinSize(Background->GetMinSize());
+	ContentBox->SetMaxSize(Background->GetMinSize());
+	Background->AddChild(ContentBox);
+
 	if (!Object)
 		return;
 
@@ -63,44 +69,68 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	bool Compact = PixelSize < 220;
 	float Size = UIBox::PixelSizeToScreenSize(kui::Vec2f(float(PixelSize - (Compact ? 10 : 90))), Background->GetParentWindow()).X;
 
-	auto CreateNewHeading = [this](string Title) -> PropertyHeaderElement*
-	{
-		auto* New = new PropertyHeaderElement();
-
-		New->SetTitle(Title);
-		Background->AddChild(New);
-
-		return New;
-	};
-
-	auto CreateNewEntry = [this, Compact](string Name) -> PropertyEntryElement*
-	{
-		auto* New = new PropertyEntryElement();
-		New->SetPropertyName(Name);
-
-		if (Compact)
+	auto CreateNewHeading = [this, ContentBox](string Title, bool HasPadding = true) -> PropertyHeaderElement*
 		{
-			New->SetHorizontal(false);
-			New->SetVerticalAlign(UIBox::Align::Reverse);
-			New->textBox->SetHorizontalAlign(UIBox::Align::Default);
-			New->SetCompactTextPadding(0);
-			delete New->separator;
-		}
+			auto* New = new PropertyHeaderElement();
 
-		Background->AddChild(New);
-		return New;
-	};
+			New->SetTitle(Title);
+			ContentBox->AddChild(New);
+			if (!HasPadding)
+				New->SetUpPadding(5);
 
-	CreateNewHeading("Object: " + Object->Name + "\nClass: " + Reflection::ObjectTypes[Object->TypeID].Name + "");
+			return New;
+		};
+
+	auto CreateNewEntry = [this, Compact, ContentBox](string Name) -> PropertyEntryElement*
+		{
+			auto* New = new PropertyEntryElement();
+			New->SetPropertyName(Name);
+
+			if (Compact)
+			{
+				New->SetHorizontal(false);
+				New->SetVerticalAlign(UIBox::Align::Reverse);
+				New->textBox->SetHorizontalAlign(UIBox::Align::Default);
+				New->SetCompactTextPadding(0);
+				delete New->separator;
+			}
+
+			ContentBox->AddChild(New);
+			return New;
+		};
+
+	CreateNewHeading("Object: " + Object->Name + "\nClass: " + Reflection::ObjectTypes[Object->TypeID].Name + "", false);
+
+	CreateNewHeading("Transform");
 
 	auto* Position = CreateNewEntry("Position");
 
 	auto* PosField = new VectorField(Object->Position, Size, nullptr);
 	PosField->OnChanged = [Object, PosField]()
-	{
-		Object->Position = PosField->GetValue();
-	};
+		{
+			Object->Position = PosField->GetValue();
+		};
 	Position->valueBox->AddChild(PosField);
+
+	auto* Rotation = CreateNewEntry("Rotation");
+
+	auto* RotField = new VectorField(Object->Rotation.EulerVector(), Size, nullptr);
+	RotField->OnChanged = [Object, RotField]()
+		{
+			Object->Rotation = RotField->GetValue();
+		};
+	Rotation->valueBox->AddChild(RotField);
+
+	auto* Scale = CreateNewEntry("Scale");
+
+	auto* ScaleField = new VectorField(Object->Scale, Size, nullptr);
+	ScaleField->OnChanged = [Object, ScaleField]()
+		{
+			Object->Scale = ScaleField->GetValue();
+		};
+	Scale->valueBox->AddChild(ScaleField);
+
+	CreateNewHeading(Reflection::ObjectTypes[Object->TypeID].Name);
 
 	for (ObjPropertyBase* i : Object->Properties)
 	{
@@ -117,11 +147,13 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			auto* Selector = new AssetSelector(Ref->Value, Size, nullptr);
 
 			Selector->OnChanged = [Selector, Ref]()
-			{
-				Ref->Value = Selector->SelectedAsset;
-				if (Ref->OnChanged)
-					Ref->OnChanged();
-			};
+				{
+					if (Selector->SelectedAsset.Extension != Ref->Value.Extension)
+						return;
+					Ref->Value = Selector->SelectedAsset;
+					if (Ref->OnChanged)
+						Ref->OnChanged();
+				};
 
 			New->valueBox->AddChild(Selector);
 			break;
@@ -142,3 +174,4 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	}
 	Background->RedrawElement();
 }
+#endif

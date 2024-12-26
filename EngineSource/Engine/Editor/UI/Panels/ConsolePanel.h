@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 
@@ -21,3 +22,4 @@ namespace engine::editor
 		void UpdateLog(bool Full);
 	};
 }
+#endif

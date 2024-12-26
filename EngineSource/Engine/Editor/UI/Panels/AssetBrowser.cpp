@@ -7,6 +7,7 @@
 #include <Engine/Editor/UI/DropdownMenu.h>
 #include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/Editor/UI/Windows/ProgressBar.h>
+#include <Engine/Editor/UI/Windows/RenameWindow.h>
 #include <Engine/File/FileUtil.h>
 #include <Engine/Internal/Platform.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
@@ -98,13 +99,24 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			Image = FileNameIcons[""];
 		}
 
-
 		auto OnRightClick = [this, OnClick, FilePath]()
 			{
 				new DropdownMenu({
 					DropdownMenu::Option{
 						.OnClicked = OnClick,
 						.Name = "Open",
+					},
+					DropdownMenu::Option{
+						.OnClicked = [this, FilePath]()
+					{
+						new RenameWindow(FilePath, [this, FilePath](string NewPath)
+							{
+								std::filesystem::rename(FilePath, NewPath);
+								resource::ScanForAssets();
+								UpdateItems();
+							});
+					},
+					.Name = "Rename",
 					},
 					DropdownMenu::Option{
 						.OnClicked = [this, FilePath]()
@@ -121,7 +133,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 		Out.push_back(Item{
 			.Name = file::FileNameWithoutExt(i.path().filename().string()),
-			.Path = i.path().filename().string(),
+			.Path = i.path().string(),
 			.IsDirectory = bool(i.is_directory()),
 			.Color = FileNameColors[i.is_directory() ? "/dir/" : Extension],
 			.OnRightClick = OnRightClick,
@@ -139,6 +151,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			return str::Lower(a.Name) < str::Lower(b.Name);
 		});
 
+	SetStatusText(str::Format("%i Items", int(Out.size())));
 
 	return Out;
 }
@@ -245,6 +258,11 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			DropdownMenu::Option{ .OnClicked = [this]() { Import(GetPathDisplayName()); }, .Name = "Import...", .Separator = true },
 			DropdownMenu::Option{ .OnClicked = [this]()
 		{
+			std::filesystem::create_directories(GetPathDisplayName() + "/Folder");
+			UpdateItems();
+		}, .Name = "New folder" },
+		DropdownMenu::Option{ .OnClicked = [this]()
+		{
 			EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
 			resource::ScanForAssets();
 			UpdateItems();
@@ -265,8 +283,8 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
 #endif
 		}, .Name = "Open in file explorer" },
-},
-Position);
+		},
+		Position);
 }
 engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 {

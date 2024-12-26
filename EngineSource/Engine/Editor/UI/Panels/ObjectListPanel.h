@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 #include <Engine/Objects/SceneObject.h>
@@ -30,3 +31,4 @@ namespace engine::editor
 		void AddListObjects(const std::vector<ListObject>& Objects, size_t Depth);
 	};
 }
+#endif

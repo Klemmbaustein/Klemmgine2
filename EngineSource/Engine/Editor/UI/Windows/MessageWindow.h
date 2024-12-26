@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "IDialogWindow.h"
 
@@ -17,3 +18,4 @@ namespace engine::editor
 		string Message;
 	};
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #include "ProgressBar.h"
 #include <cmath>
 #include <algorithm>
@@ -5,6 +6,7 @@
 engine::editor::ProgressBar::ProgressBar(string Title)
 	: IPopupWindow(Title, kui::Vec2ui(350, 70), false, false)
 {
+	Open();
 }
 
 void engine::editor::ProgressBar::Begin()
@@ -54,3 +56,4 @@ void engine::editor::ProgressBar::SetMessage(string NewMessage)
 		this->ProgressMessage = NewMessage;
 	}
 }
+#endif

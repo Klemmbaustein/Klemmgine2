@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include <Engine/Editor/UI/Panels/EditorPanel.h>
 #include <Engine/File/AssetRef.h>
@@ -13,3 +14,4 @@ namespace engine::editor
 		graphics::Material LoadedMaterial;
 	};
 }
+#endif

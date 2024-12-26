@@ -1,3 +1,4 @@
+#ifdef EDITOR
 #pragma once
 #include "ItemBrowser.h"
 
@@ -13,3 +14,4 @@ namespace engine::editor
 		string GetPathDisplayName() override;
 	};
 }
+#endif

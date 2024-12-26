@@ -148,6 +148,13 @@ void BinarySerializer::ToFile(const std::vector<SerializedData>& Target, string 
 
 std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, string FormatIdentifier)
 {
+	std::vector<SerializedData> Out;
+	FromFile(File, FormatIdentifier, Out);
+	return Out;
+}
+
+void engine::BinarySerializer::FromFile(string File, string FormatIdentifier, std::vector<SerializedData>& To)
+{
 	std::streampos FileSize = 0;
 	std::ifstream In = std::ifstream(File, std::ios::binary);
 
@@ -161,7 +168,8 @@ std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, stri
 	In.read((char*)Stream.Bytes.data(), FileSize);
 	In.close();
 
-	string FormatName = ReadString(Stream);
+	string FormatName;
+	ReadString(Stream, FormatName);
 	string ExpectedFormat = FormatIdentifier + "/" + FORMAT_VERSION;
 	if (FormatName != ExpectedFormat)
 	{
@@ -171,21 +179,19 @@ std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, stri
 
 	int32 Length = Stream.Get<int32>();
 
-	std::vector<SerializedData> Out;
-
+	To.clear();
+	To.reserve(Length);
 	for (int32 i = 0; i < Length; i++)
 	{
-		auto& New = Out.emplace_back();
+		auto& New = To.emplace_back();
 		ReadSerializedData(Stream, New);
 	}
 
-	return Out;
 }
 
 void engine::BinarySerializer::ReadSerializedData(BinaryStream& From, SerializedData& Out)
 {
-	Out.Name = ReadString(From);
-
+	ReadString(From, Out.Name);
 	ReadValue(From, Out.Value);
 }
 
@@ -221,9 +227,12 @@ void engine::BinarySerializer::ReadValue(BinaryStream& From, SerializedValue& To
 		break;
 
 	case SerializedData::DataType::String:
-		To = ReadString(From);
+	{
+		string String;
+		ReadString(From, String);
+		To = String;
 		break;
-
+	}
 	case SerializedData::DataType::Array:
 	{
 		To = std::vector<SerializedValue>();
@@ -299,14 +308,13 @@ bool engine::BinarySerializer::BinaryStream::Empty() const
 	return Bytes.size() <= StreamPos;
 }
 
-string engine::BinarySerializer::ReadString(BinaryStream& From)
+void engine::BinarySerializer::ReadString(BinaryStream& From, string& Out)
 {
-	string Out;
 	uByte Char;
 	while (!From.Empty() && (Char = From.GetByte()))
 	{
 		Out.push_back(char(Char));
 	}
 
-	return Out;
+	return;
 }

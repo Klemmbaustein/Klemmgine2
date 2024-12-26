@@ -1,6 +1,6 @@
 #pragma once
 #include "Types.h"
-#include "Subsystem/ISubsystem.h"
+#include "Subsystem/Subsystem.h"
 #include <typeinfo>
 
 namespace engine
@@ -10,7 +10,7 @@ namespace engine
 		Engine();
 
 	protected:
-		std::vector<subsystem::ISubsystem*> LoadedSystems;
+		std::vector<subsystem::Subsystem*> LoadedSystems;
 
 	public:
 
@@ -20,14 +20,14 @@ namespace engine
 
 		void Run();
 
-		void LoadSubsystem(subsystem::ISubsystem* NewSubsystem);
+		void LoadSubsystem(subsystem::Subsystem* NewSubsystem);
 
 		static Engine* Instance;
 
 		template<typename T>
 		static T* GetSubsystem()
 		{
-			for (subsystem::ISubsystem* i : Instance->LoadedSystems)
+			for (subsystem::Subsystem* i : Instance->LoadedSystems)
 			{
 				if (typeid(*i) == typeid(T))
 				{
@@ -37,6 +37,6 @@ namespace engine
 			return nullptr;
 		}
 
-		friend class engine::subsystem::ISubsystem;
+		friend class engine::subsystem::Subsystem;
 	};
 }

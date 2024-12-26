@@ -1,4 +1,5 @@
 #include "AssetRef.h"
+#include "Resource.h"
 #include "FileUtil.h"
 
 engine::AssetRef operator""_asset(const char* Name, std::size_t Size)
@@ -12,8 +13,15 @@ engine::AssetRef operator""_asset(const char* Name, std::size_t Size)
 
 engine::AssetRef engine::AssetRef::FromName(string Name, string Extension)
 {
+	string FullName = Name + "." + Extension;
+
+	auto Found = resource::LoadedAssets.find(FullName);
+
+	if (Found == resource::LoadedAssets.end())
+		return AssetRef();
+
 	return AssetRef{
-		.FilePath = Name,
+		.FilePath = Found->second,
 		.Extension = Extension,
 	};
 }

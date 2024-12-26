@@ -5,7 +5,7 @@
 engine::subsystem::SceneSubsystem* engine::subsystem::SceneSubsystem::Current = nullptr;
 
 engine::subsystem::SceneSubsystem::SceneSubsystem()
-	: ISubsystem("Scene", Log::LogColor::Green)
+	: Subsystem("Scene", Log::LogColor::Green)
 {
 	Current = this;
 }

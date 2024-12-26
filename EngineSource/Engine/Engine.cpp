@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Editor/Editor.h"
 #include "Subsystem/VideoSubsystem.h"
 #include "Subsystem/EditorSubsystem.h"
 #include "Subsystem/InputSubsystem.h"
@@ -49,12 +50,18 @@ void Engine::Run()
 {
 	while (!ShouldQuit)
 	{
-		for (ISubsystem* System : LoadedSystems)
+		if (input::IsRMBClicked && !editor::IsActive())
+		{
+			LoadSubsystem(new EditorSubsystem());
+		}
+
+		for (Subsystem* System : LoadedSystems)
 		{
 			System->Update();
 		}
+		Subsystem::UpdateUnloading();
 		thread::MainThreadUpdate();
-		for (ISubsystem* System : LoadedSystems)
+		for (Subsystem* System : LoadedSystems)
 		{
 			System->RenderUpdate();
 		}
@@ -71,6 +78,6 @@ void Engine::Run()
 	delete this;
 }
 
-void Engine::LoadSubsystem(ISubsystem* NewSubsystem)
+void Engine::LoadSubsystem(Subsystem* NewSubsystem)
 {
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Engine/Types.h>
-#include <vector>
 #include <Engine/Vector.h>
+#include <Engine/Transform.h>
 
 namespace engine::graphics
 {
@@ -26,6 +26,7 @@ namespace engine::graphics
 		void SetInt(uint32 UniformLocation, uint32 Value);
 		void SetFloat(uint32 UniformLocation, float Value);
 		void SetVec3(uint32 UniformLocation, Vector3 Value);
+		void SetTransform(uint32 UniformLocation, const Transform& Value);
 	private:
 		string VertexFile, FragmentFile;
 		void Clear();

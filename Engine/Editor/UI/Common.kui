@@ -4,7 +4,6 @@ element EditorTextField
 	var HintText;
 	var Image;
 
-	tryFill = true;
 	verticalAlign = centered;
 
 	child UITextField field
@@ -25,7 +24,7 @@ element EditorTextField
 		topRightCorner = false;
 		bottomRightCorner = false;
 	}
-	
+
 	child UIBackground
 	{
 		size = 22px;
