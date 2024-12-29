@@ -74,7 +74,8 @@ engine::Scene::~Scene()
 
 	for (auto& i : Objects)
 	{
-		i->Destroy();
+		i->OnDestroyed();
+		i->ClearComponents();
 		delete i;
 	}
 
@@ -96,11 +97,13 @@ void engine::Scene::Draw()
 
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_CULL_FACE);
 	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
 	for (SceneObject* i : Objects)
 	{
 		i->Draw(UsedCamera);
 	}
+	glDisable(GL_CULL_FACE);
 }
 void engine::Scene::Update()
 {
@@ -112,12 +115,12 @@ void engine::Scene::Update()
 	for (SceneObject* Destr : DestroyedObjects)
 	{
 		Destr->OnDestroyed();
+		Destr->ClearComponents();
 
 		for (auto i = Objects.begin(); i < Objects.end(); i++)
 		{
 			if (*i == Destr)
 			{
-				Log::Info("test");
 				Objects.erase(i);
 				break;
 			}
@@ -161,6 +164,55 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 }
 
+void engine::Scene::CreateObjectFromID(uint32 ID, Vector3 Position, Rotation3 Rotation, Vector3 Scale)
+{
+	const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
+	SceneObject* Object = Type.CreateInstance();
+	Object->OriginScene = this;
+	Object->InitObj(this, true, Type.TypeID);
+	Object->Position = Position;
+	Object->Rotation = Rotation;
+	Object->Scale = Scale;
+	this->Objects.push_back(Object);
+}
+
+void engine::Scene::ReloadObjects(SerializedValue* FromState)
+{
+	if (FromState)
+	{
+		for (SceneObject* i : Objects)
+		{
+			i->OnDestroyed();
+			i->ClearComponents();
+			delete i;
+		}
+		Objects.clear();
+
+		std::vector<AssetRef> OldReferenced = ReferencedAssets;
+		ReferencedAssets.clear();
+
+		DeSerializeInternal(FromState, false);
+
+		for (auto& i : OldReferenced)
+		{
+			GraphicsModel::UnloadModel(i);
+		}
+	}
+	else
+	{
+		for (SceneObject* i : Objects)
+		{
+			i->OnDestroyed();
+			i->ClearComponents();
+		}
+
+		for (SceneObject* i : Objects)
+		{
+			i->Begin();
+		}
+	}
+}
+
 void engine::Scene::LoadAsync(string SceneFile)
 {
 	AsyncLoads++;
@@ -179,12 +231,8 @@ void engine::Scene::LoadAsyncFinish()
 	Update();
 }
 
-void engine::Scene::Save(string FileName)
+engine::SerializedValue engine::Scene::Serialize()
 {
-	using namespace subsystem;
-
-	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), Subsystem::LogType::Info);
-
 	std::vector<SerializedValue> SerializedObjects;
 
 	for (SceneObject* Object : this->Objects)
@@ -198,7 +246,22 @@ void engine::Scene::Save(string FileName)
 			SerializedData("objects", SerializedObjects),
 		});
 
-	TextSerializer::ToFile(Serialized.GetObject(), FileName);
+	
+	return Serialized;
+}
+
+void engine::Scene::DeSerialize(SerializedValue* From)
+{
+	DeSerializeInternal(From, false);
+}
+
+void engine::Scene::Save(string FileName)
+{
+	using namespace subsystem;
+
+	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), Subsystem::LogType::Info);
+
+	TextSerializer::ToFile(Serialize().GetObject(), FileName);
 }
 
 bool engine::Scene::ObjectDestroyed(SceneObject* Target) const
@@ -215,28 +278,12 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 	ReferencedAssets.push_back(Target);
 }
 
-void engine::Scene::LoadInternal(string File, bool Async)
+void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 {
-	SerializedValue SceneData;
-	Name = File;
-	try
-	{
-		SceneData = TextSerializer::FromFile(File);
-	}
-	catch (SerializeReadException& ReadErr)
-	{
-		subsystem::SceneSubsystem::Current->Print(
-			str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
-			subsystem::Subsystem::LogType::Error
-		);
-		return;
-	}
-
-
-	if (SceneData.GetType() != SerializedData::DataType::Object || SceneData.GetObject().empty())
+	if (From->GetType() != SerializedData::DataType::Object || From->GetObject().empty())
 		return;
 
-	for (auto& i : SceneData.At("objects").GetArray())
+	for (auto& i : From->At("objects").GetArray())
 	{
 		try
 		{
@@ -258,6 +305,26 @@ void engine::Scene::LoadInternal(string File, bool Async)
 			);
 		}
 	}
+}
+
+void engine::Scene::LoadInternal(string File, bool Async)
+{
+	SerializedValue SceneData;
+	Name = File;
+	try
+	{
+		SceneData = TextSerializer::FromFile(File);
+	}
+	catch (SerializeReadException& ReadErr)
+	{
+		subsystem::SceneSubsystem::Current->Print(
+			str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
+			subsystem::Subsystem::LogType::Error
+		);
+		return;
+	}
+
+	DeSerializeInternal(&SceneData, Async);
 
 	if (!Async)
 	{

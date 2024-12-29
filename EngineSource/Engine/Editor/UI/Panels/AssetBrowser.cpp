@@ -71,6 +71,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 						return;
 					delete Scene::GetMain();
 					subsystem::SceneSubsystem::Current->LoadSceneAsync(FilePath);
+					EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
 				};
 		}
 		else if (Extension == "kmdl")

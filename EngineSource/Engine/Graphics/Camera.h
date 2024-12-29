@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <Engine/Vector.h>
+#include <Engine/Transform.h>
 
 namespace engine::graphics
 {
@@ -8,12 +9,16 @@ namespace engine::graphics
 	{
 	public:
 		float Aspect = 16.0f / 9.0f;
+		float FOV = 1.5f;
 
 		Camera(float FOV);
 		glm::mat4 View = glm::mat4(1);
 		glm::mat4 Projection = glm::mat4(1);
+
+		bool UseTransform = false;
 		Vector3 Position;
 		Vector3 Rotation;
+		Transform CameraTransform;
 
 		void Update();
 	};

@@ -1,5 +1,6 @@
 #pragma once
 #include "SceneObject.h"
+#include "Components/CameraComponent.h"
 
 namespace engine
 {
@@ -7,8 +8,11 @@ namespace engine
 	{
 	public:
 
+		CameraComponent* Cam = nullptr;
+
 		ENGINE_OBJECT(PlayerObject, "Game");
 
 		void Begin() override;
+		void Update() override;
 	};
 }

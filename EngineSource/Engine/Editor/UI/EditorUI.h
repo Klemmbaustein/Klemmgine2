@@ -2,6 +2,7 @@
 #pragma once
 #include <kui/UI/UIBackground.h>
 #include "Panels/EditorPanel.h"
+#include <Engine/Objects/Reflection/ObjectReflection.h>
 #include "StatusBar.kui.hpp"
 
 namespace engine::editor
@@ -53,6 +54,7 @@ namespace engine::editor
 			kui::Vec3f Color;
 			bool IsAsset = false;
 			bool Centered = true;
+			ObjectTypeID ObjectType = 0;
 		};
 
 		DraggedItem CurrentDraggedItem;

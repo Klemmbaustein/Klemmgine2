@@ -13,6 +13,8 @@ namespace engine::subsystem
 
 		virtual void Update() override;
 		
+		void StartProject();
+
 		editor::EditorUI* UI;
 
 		static bool Active;

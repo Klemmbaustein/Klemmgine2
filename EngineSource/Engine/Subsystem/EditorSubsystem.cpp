@@ -2,12 +2,23 @@
 #include "EditorSubsystem.h"
 #include "ConsoleSubsystem.h"
 #include <Engine/Engine.h>
+#include <Engine/Scene.h>
 
 bool engine::subsystem::EditorSubsystem::Active = false;
+
+static engine::SerializedValue LastScene;
 
 engine::subsystem::EditorSubsystem::EditorSubsystem()
 	: Subsystem("Editor", Log::LogColor::Yellow)
 {
+	if (Scene::GetMain())
+	{
+		if (LastScene.GetType() != SerializedData::DataType::Null)
+		{
+			Scene::GetMain()->ReloadObjects(&LastScene);
+		}
+
+	}
 	UI = new editor::EditorUI();
 	Active = true;
 
@@ -15,7 +26,7 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 		.Name = "unload_editor",
 		.Args = {},
 		.OnCalled = [this](const console::Command::CallContext& ctx) {
-			Unload();
+			StartProject();
 		}
 		});
 }
@@ -30,5 +41,20 @@ engine::subsystem::EditorSubsystem::~EditorSubsystem()
 void engine::subsystem::EditorSubsystem::Update()
 {
 	UI->Update();
+}
+
+void engine::subsystem::EditorSubsystem::StartProject()
+{
+	if (!Scene::GetMain())
+	{
+		editor::EditorUI::SetStatusMessage("Cannot start project, no scene loaded!", editor::EditorUI::StatusType::Error);
+		return;
+	}
+
+	Active = false;
+	Unload();
+	
+	LastScene = Scene::GetMain()->Serialize();
+	Scene::GetMain()->ReloadObjects(nullptr);
 }
 #endif

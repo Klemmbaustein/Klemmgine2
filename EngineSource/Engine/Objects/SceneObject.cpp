@@ -1,9 +1,7 @@
 #include "SceneObject.h"
-#include <iostream>
-#include <Engine/File/ModelData.h>
-#include <Engine/Graphics/Texture.h>
 #include <Engine/Scene.h>
 #include <Engine/Error/EngineAssert.h>
+#include <Engine/Log.h>
 using namespace engine;
 
 SerializedValue engine::SceneObject::Serialize()
@@ -77,13 +75,12 @@ void engine::SceneObject::Attach(ObjectComponent* Component)
 
 void engine::SceneObject::Detach(ObjectComponent* Component)
 {
-
 	for (auto i = ChildComponents.begin(); i < ChildComponents.end(); i++)
 	{
 		if (*i == Component)
 		{
 			ChildComponents.erase(i);
-			Component->OnDetached();
+			Component->DetachThis();
 			delete Component;
 			return;
 		}
@@ -121,6 +118,10 @@ void engine::SceneObject::OnDestroyed()
 {
 }
 
+void engine::SceneObject::Update()
+{
+}
+
 void engine::SceneObject::CheckTransform()
 {
 	if (Position != OldPosition
@@ -145,11 +146,15 @@ void engine::SceneObject::InitObj(Scene* Scn, bool CallBegin, int32 TypeID)
 	OriginScene = Scn;
 	this->TypeID = TypeID;
 	if (CallBegin)
+	{
+		this->Name = Reflection::ObjectTypes[TypeID].Name;
 		Begin();
+	}
 }
 
 void engine::SceneObject::UpdateObject()
 {
+	Update();
 	CheckTransform();
 	
 	for (ObjectComponent* c : ChildComponents)

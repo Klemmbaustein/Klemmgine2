@@ -252,7 +252,7 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 		}
 		return;
 	}
-	Log::Warn("Failed to unload model.");
+	Log::Warn("Failed to unload model");
 }
 
 void engine::GraphicsModel::UnloadModel(AssetRef Asset)
@@ -274,5 +274,5 @@ void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 		}
 		return;
 	}
-	Log::Warn("Failed to unload model.");
+	Log::Warn("Failed to unload model");
 }

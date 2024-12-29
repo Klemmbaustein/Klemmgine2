@@ -3,6 +3,7 @@
 #include "EditorPanel.h"
 #include <ItemBrowser.kui.hpp>
 #include <kui/UI/UIScrollBox.h>
+#include <Engine/Objects/Reflection/ObjectReflection.h>
 
 namespace engine::editor
 {
@@ -24,6 +25,7 @@ namespace engine::editor
 			std::function<void()> OnRightClick;
 			std::function<void()> OnClick;
 			string Image;
+			ObjectTypeID Type = 0;
 		};
 
 		void Update() override;

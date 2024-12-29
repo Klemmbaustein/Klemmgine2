@@ -19,6 +19,7 @@ std::vector<engine::editor::ItemBrowser::Item> engine::editor::ClassBrowser::Get
 	{
 		Out.push_back(Item{
 			.Name = i.second.Name,
+			.Type = i.second.TypeID,
 			});
 	}
 

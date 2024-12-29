@@ -3,6 +3,7 @@
 #include <Engine/Engine.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Input.h>
 #include <kui/UI/UISpinner.h>
 #include <Engine/Editor/UI/EditorUI.h>
@@ -58,19 +59,31 @@ engine::editor::Viewport::Viewport()
 	TestButton->SetIcon("file:Engine/Editor/Assets/Save.png");
 	TestButton->SetName("Save");
 	TestButton->btn->OnClicked = [this]()
-	{
-		Scene* Current = Scene::GetMain();
-		if (Current)
-			Current->Save(Current->Name);
-	};
+		{
+			Scene* Current = Scene::GetMain();
+			if (Current)
+				Current->Save(Current->Name);
+		};
 	delete TestButton->dropdownButton;
 
 	auto TestButton2 = new ToolBarButton();
 	TestButton2->SetIcon("file:Engine/Editor/Assets/Options.png");
 	TestButton2->SetName("View");
 
+	auto RunButton = new ToolBarButton();
+	//RunButton->SetIcon("file:Engine/Editor/Assets/Options.png");
+	RunButton->btn->OnClicked = []()
+		{
+			using namespace subsystem;
+
+			Engine::GetSubsystem<EditorSubsystem>()->StartProject();
+		};
+	RunButton->SetName("Run");
+	delete RunButton->dropdownButton;
+
 	ViewportToolbar->AddChild(TestButton);
 	ViewportToolbar->AddChild(TestButton2);
+	ViewportToolbar->AddChild(RunButton);
 
 	ViewportStatusText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	ViewportStatusText
@@ -101,13 +114,20 @@ engine::editor::Viewport::Viewport()
 
 	auto ViewportDropBox = new DroppableBox(false, [](EditorUI::DraggedItem Item)
 		{
+			if (Item.ObjectType != 0)
+			{
+				Scene::GetMain()->CreateObjectFromID(Item.ObjectType);
+			}
+
 			AssetRef Dropped = AssetRef::FromPath(Item.Path);
+
 			if (Dropped.Extension != "kmdl")
 			{
 				return;
 			}
 
 			auto obj = Scene::GetMain()->CreateObject<MeshObject>();
+			obj->Name = Dropped.DisplayName();
 			obj->LoadMesh(Dropped);
 		});
 
@@ -115,7 +135,7 @@ engine::editor::Viewport::Viewport()
 		->AddChild(ViewportToolbar)
 		->AddChild(ViewportDropBox
 			->AddChild(ViewportBackground
-				->AddChild(LoadingScreenBox)))
+			->AddChild(LoadingScreenBox)))
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
 
@@ -123,6 +143,8 @@ engine::editor::Viewport::Viewport()
 	RedrawStats = true;
 	CanClose = false;
 	Current = this;
+	if (Scene::GetMain())
+		Scene::GetMain()->UsedCamera = Scene::GetMain()->SceneCamera;
 }
 
 engine::editor::Viewport::~Viewport()

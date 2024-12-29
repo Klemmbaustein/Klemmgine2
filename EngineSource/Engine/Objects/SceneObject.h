@@ -45,6 +45,8 @@ namespace engine
 		
 		virtual void Begin();
 		virtual void OnDestroyed();
+		virtual void Update();
+
 
 	private:
 

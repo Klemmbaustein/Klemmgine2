@@ -14,7 +14,7 @@ namespace engine
 	* 
 	* Each scene can have one graphics::Camera
 	*/
-	class Scene
+	class Scene : ISerializable
 	{
 	public:
 		Scene(bool DoLoadAsync = false);
@@ -48,12 +48,25 @@ namespace engine
 		* @brief
 		*/
 		template<typename T>
-		T* CreateObject()
+		T* CreateObject(Vector3 Position = 0, Rotation3 Rotation = 0, Vector3 Scale = 1)
 		{
 			T* New = SceneObject::New<T>(this, true);
+			New->Position = Position;
+			New->Rotation = Rotation;
+			New->Scale = Scale;
 			this->Objects.push_back(New);
 			return New;
 		}
+
+		void CreateObjectFromID(uint32 ID, Vector3 Position = 0, Rotation3 Rotation = 0, Vector3 Scale = 1);
+
+		/**
+		* @brief
+		* Reloads all objects in this scene.
+		* 
+		* This is used to transition from the editor to the game when built with the KLEMMGINE_EDITOR argument.
+		*/
+		void ReloadObjects(SerializedValue* FromState);
 
 		/// The number of async scene loading operations in progress.
 		static std::atomic<int32> AsyncLoads;
@@ -73,12 +86,16 @@ namespace engine
 		void LoadAsync(string SceneFile);
 		void LoadAsyncFinish();
 
+		virtual SerializedValue Serialize() override;
+		virtual void DeSerialize(SerializedValue* From) override;
+
 		void Save(string FileName);
 
 		bool ObjectDestroyed(SceneObject* Target) const;
 
 		void PreLoadAsset(AssetRef Target);
 	private:
+		void DeSerializeInternal(SerializedValue* From, bool Async);
 		friend class SceneObject;
 		std::vector<AssetRef> ReferencedAssets;
 		std::set<SceneObject*> DestroyedObjects;

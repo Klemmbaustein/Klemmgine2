@@ -9,16 +9,6 @@ else()
 endif()
 set(CMAKE_C_STANDARD 17)
 
-# Enable Hot Reload for MSVC compilers if supported.
-if(POLICY CMP0141)
-	cmake_policy(SET CMP0141 NEW)
-	set(
-		CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
-		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug>:EditAndContinue>,$<$<CONFIG:Debug>:ProgramDatabase>>"
-	)
-endif()
-
-
 option(USE_ENGINEMAIN "Use EngineMain() function as a replacement for main() or WinMain()" ON)
 option(USE_WINDOWS_SUBSYSTEM "Use the Windows subsystem on windows. When this is off, a console will be allocated for the program." ON)
 option(ENGINE_DYNAMIC_SYMBOLS "Link with -rdynamic on linux for more descriptive stack traces" OFF)
@@ -63,6 +53,11 @@ add_subdirectory("Dependencies/KlemmUI")
 add_subdirectory("Dependencies/SDL")
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory("Dependencies/glm")
+set(ENABLE_ALL_WARNINGS OFF)
+set(GENERATE_DEBUG_SYMBOLS OFF)
+set(CPP_RTTI_ENABLED ON)
+set(OVERRIDE_CXX_FLAGS OFF)
+add_subdirectory("Dependencies/JoltPhysics/Build")
 
 if(WIN32)
 	target_compile_definitions(Klemmgine PUBLIC WINDOWS=1)
@@ -79,7 +74,6 @@ if(ENGINE_SERVER)
 elseif(ENGINE_EDITOR)
 	set(ASSIMP_INSTALL OFF)
 	set(ASSIMP_WARNINGS_AS_ERRORS OFF)
-	set(ENABLE_ALL_WARNINGS OFF)
 	set(BUILD_SHARED_LIBS ON)
 	set(ASSIMP_BUILD_TESTS OFF)
 	set(ASSIMP_NO_EXPORT ON)
@@ -114,12 +108,23 @@ elseif(ENGINE_EDITOR)
 	klemmui_markup(Klemmgine "Engine/Editor/UI")
 endif()
 
+# Enable Hot Reload for MSVC compilers if supported.
+if(POLICY CMP0141)
+	cmake_policy(SET CMP0141 NEW)
+	set(
+		CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
+		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug>:EditAndContinue>,$<$<CONFIG:Debug>:ProgramDatabase>>"
+	)
+endif()
+
+
 # KlemmUI SystemWM declarations
 target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/SystemWM")
 # KlemmUI stb headers
 target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/Util")
 target_include_directories(Klemmgine PRIVATE "EngineSource")
 target_link_libraries(Klemmgine PUBLIC SDL3::SDL3)
+target_link_libraries(Klemmgine PUBLIC Jolt)
 target_link_libraries(Klemmgine PUBLIC KlemmUI)
 target_link_libraries(Klemmgine PUBLIC libglew_static)
 target_link_libraries(Klemmgine PUBLIC glm)

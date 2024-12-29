@@ -9,6 +9,7 @@ namespace engine
 		static float DegreeToRadian(float Degree);
 		static float RadianToDegree(float Degree);
 
+		Rotation3(float PYR, bool Radians = false);
 		Rotation3(float P, float Y, float R, bool Radians = false);
 		Rotation3(Vector3 Euler, bool Radians = false);
 		Rotation3();
@@ -31,10 +32,15 @@ namespace engine
 
 		void Translate(Vector3 Offset);
 		void Rotate(Rotation3 Rotation);
-		void RotateAround(Vector3 Axis, float Amount);
+		void RotateAround(Vector3 Axis, float Amount, bool Radians = false);
 		void Scale(Vector3 NewScale);
 
-		Vector3 ApplyTo(Vector3 Vec);
+		Vector3 Forward() const;
+		Vector3 Right() const;
+		Vector3 Up() const;
+
+		Vector3 ApplyTo(Vector3 Vec) const;
+		Vector3 ApplyRotationTo(Vector3 Vec) const;
 
 		Transform Combine(const Transform& Other) const;
 

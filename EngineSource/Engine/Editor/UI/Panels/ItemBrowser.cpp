@@ -139,6 +139,7 @@ void engine::editor::ItemBrowser::DisplayList()
 				.Path = NewItem.Path,
 				.Icon = NewItem.Image,
 				.Color = NewItem.Color,
+				.ObjectType = NewItem.Type,
 				});
 		};
 

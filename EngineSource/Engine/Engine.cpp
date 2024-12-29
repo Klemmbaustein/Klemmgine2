@@ -50,10 +50,12 @@ void Engine::Run()
 {
 	while (!ShouldQuit)
 	{
+#ifdef EDITOR
 		if (input::IsRMBClicked && !editor::IsActive())
 		{
 			LoadSubsystem(new EditorSubsystem());
 		}
+#endif
 
 		for (Subsystem* System : LoadedSystems)
 		{

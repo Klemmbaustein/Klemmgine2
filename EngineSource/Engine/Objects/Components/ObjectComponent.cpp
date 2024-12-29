@@ -21,12 +21,8 @@ void engine::ObjectComponent::Update()
 
 void engine::ObjectComponent::UpdateAll()
 {
-	for (ObjectComponent* i : Children)
-	{
-		i->UpdateAll();
-	}
-	WorldTransform = GetWorldTransform();
-	Update();
+	UpdateTransform();
+	UpdateLogic();
 }
 
 void engine::ObjectComponent::Draw(graphics::Camera* From)
@@ -35,6 +31,31 @@ void engine::ObjectComponent::Draw(graphics::Camera* From)
 
 void engine::ObjectComponent::OnDetached()
 {
+}
+
+void engine::ObjectComponent::DetachThis()
+{
+	OnDetached();
+
+	while (Children.size())
+	{
+		Detach(Children[0]);
+	}
+}
+
+void engine::ObjectComponent::Detach(ObjectComponent* c)
+{
+	for (auto i = Children.begin(); i < Children.end(); i++)
+	{
+		if (*i == c)
+		{
+			Children.erase(i);
+			c->OnDetached();
+			delete c;
+			return;
+		}
+	}
+	ENGINE_UNREACHABLE();
 }
 
 void engine::ObjectComponent::DrawAll(graphics::Camera* From)
@@ -46,8 +67,17 @@ void engine::ObjectComponent::DrawAll(graphics::Camera* From)
 	}
 }
 
+SceneObject* engine::ObjectComponent::GetRootObject()
+{
+	if (ParentObject)
+		return ParentObject;
+	return ParentComponent->GetRootObject();
+}
+
 void engine::ObjectComponent::Attach(ObjectComponent* Child)
 {
+	Child->ParentComponent = this;
+	Child->OnAttached();
 	Children.push_back(Child);
 }
 
@@ -56,7 +86,7 @@ Transform engine::ObjectComponent::GetWorldTransform()
 	return GetParentTransform().Combine(Transform(Position, Rotation, Scale));
 }
 
-Transform engine::ObjectComponent::GetParentTransform()
+Transform engine::ObjectComponent::GetParentTransform() const
 {
 	if (ParentObject)
 		return ParentObject->ObjectTransform;
@@ -64,4 +94,22 @@ Transform engine::ObjectComponent::GetParentTransform()
 		return ParentComponent->WorldTransform;
 	ENGINE_UNREACHABLE();
 	return WorldTransform;
+}
+
+void engine::ObjectComponent::UpdateLogic()
+{
+	Update();
+	for (ObjectComponent* i : Children)
+	{
+		i->UpdateLogic();
+	}
+}
+
+void engine::ObjectComponent::UpdateTransform()
+{
+	WorldTransform = GetWorldTransform();
+	for (ObjectComponent* i : Children)
+	{
+		i->UpdateTransform();
+	}
 }

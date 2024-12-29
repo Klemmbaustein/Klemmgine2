@@ -83,6 +83,7 @@ void engine::editor::EditorUI::SetStatusMainThread(string NewMessage, StatusType
 	Instance->CurrentStatus = NewMessage;
 	Instance->StatsBarElement->SetText(NewMessage);
 	Instance->StatsBarElement->SetIcon("Engine/Editor/Assets/" + IconTypes[int(Type)]);
+	Instance->StatsBarElement->RedrawElement();
 }
 
 engine::editor::EditorUI::EditorUI()
@@ -182,7 +183,8 @@ engine::editor::EditorUI::EditorUI()
 
 	FocusedPanel = vp;
 
-	SetStatusMainThread("Ready", StatusType::Info);
+	SetStatusMainThread("Editor loaded", StatusType::Info);
+	input::ShowMouseCursor = true;
 }
 
 engine::editor::EditorUI::~EditorUI()
@@ -198,6 +200,7 @@ engine::editor::EditorUI::~EditorUI()
 	delete MonospaceFont;
 
 	VideoSystem->OnResized();
+	input::ShowMouseCursor = false;
 }
 
 engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)

@@ -10,3 +10,6 @@
 [submodule "Dependencies/assimp"]
 	path = Dependencies/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "Dependencies/JoltPhysics"]
+	path = Dependencies/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics.git

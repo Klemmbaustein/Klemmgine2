@@ -1,6 +1,4 @@
 #include "MeshObject.h"
-#include <kui/Resource.h>
-#include <Engine/Log.h>
 
 void engine::MeshObject::LoadMesh(AssetRef File)
 {

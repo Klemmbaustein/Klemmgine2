@@ -101,7 +101,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	CreateNewHeading("Object: " + Object->Name + "\nClass: " + Reflection::ObjectTypes[Object->TypeID].Name + "", false);
 
-	CreateNewHeading("Transform");
+	CreateNewHeading("Object");
 
 	auto* Position = CreateNewEntry("Position");
 
@@ -129,6 +129,21 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			Object->Scale = ScaleField->GetValue();
 		};
 	Scale->valueBox->AddChild(ScaleField);
+
+	auto* Name = CreateNewEntry("Name");
+
+	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+
+	NameField->OnChanged = [Object, NameField]()
+		{
+			Object->Name = NameField->GetText();
+		};
+
+	Name->valueBox->AddChild(NameField
+		->SetText(Object->Name)
+		->SetTextSize(11)
+		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetMinSize(kui::Vec2f(Size, 0)));
 
 	CreateNewHeading(Reflection::ObjectTypes[Object->TypeID].Name);
 
@@ -172,6 +187,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			break;
 		}
 	}
+	Background->UpdateElement();
 	Background->RedrawElement();
 }
 #endif

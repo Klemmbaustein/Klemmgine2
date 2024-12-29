@@ -18,12 +18,18 @@ namespace engine
 		virtual void Draw(graphics::Camera* From);
 		virtual void OnDetached();
 
+		void DetachThis();
+
+		void Detach(ObjectComponent* c);
+
 		void DrawAll(graphics::Camera* From);
 
 		Vector3 Position;
 		Rotation3 Rotation;
 		Vector3 Scale = 1;
 		std::vector<ObjectComponent*> Children;
+
+		SceneObject* GetRootObject();
 
 		SceneObject* ParentObject = nullptr;
 		ObjectComponent* ParentComponent = nullptr;
@@ -33,8 +39,11 @@ namespace engine
 		Transform GetWorldTransform();
 
 	protected:
-		Transform GetParentTransform();
+		Transform GetParentTransform() const;
 
 		Transform WorldTransform;
+	private:
+		void UpdateLogic();
+		void UpdateTransform();
 	};
 }
