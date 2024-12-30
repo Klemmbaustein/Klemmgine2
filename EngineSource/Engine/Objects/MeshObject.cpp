@@ -4,12 +4,16 @@ void engine::MeshObject::LoadMesh(AssetRef File)
 {
 	ModelName.Value = File;
 	Mesh->Load(File);
+	Collider->Load(File);
 }
 
 void engine::MeshObject::Begin()
 {
 	Mesh = new MeshComponent();
 	Attach(Mesh);
+
+	Collider = new CollisionComponent();
+	Attach(Collider);
 
 	ModelName.OnChanged = [this]() {
 		LoadMesh(ModelName.Value);

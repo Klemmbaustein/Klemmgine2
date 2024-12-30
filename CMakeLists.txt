@@ -9,6 +9,15 @@ else()
 endif()
 set(CMAKE_C_STANDARD 17)
 
+# Enable Hot Reload for MSVC compilers if supported.
+if(POLICY CMP0141)
+	cmake_policy(SET CMP0141 NEW)
+	set(
+		CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
+		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug>:EditAndContinue>,$<$<CONFIG:Debug>:ProgramDatabase>>"
+	)
+endif()
+
 option(USE_ENGINEMAIN "Use EngineMain() function as a replacement for main() or WinMain()" ON)
 option(USE_WINDOWS_SUBSYSTEM "Use the Windows subsystem on windows. When this is off, a console will be allocated for the program." ON)
 option(ENGINE_DYNAMIC_SYMBOLS "Link with -rdynamic on linux for more descriptive stack traces" OFF)
@@ -58,6 +67,9 @@ set(GENERATE_DEBUG_SYMBOLS OFF)
 set(CPP_RTTI_ENABLED ON)
 set(OVERRIDE_CXX_FLAGS OFF)
 add_subdirectory("Dependencies/JoltPhysics/Build")
+set(GENERATE_DEBUG_SYMBOLS ON)
+
+target_compile_definitions(Klemmgine PRIVATE BUILD_LIBRARY=1)
 
 if(WIN32)
 	target_compile_definitions(Klemmgine PUBLIC WINDOWS=1)
@@ -107,16 +119,6 @@ elseif(ENGINE_EDITOR)
 	set(BUILD_SHARED_LIBS OFF)
 	klemmui_markup(Klemmgine "Engine/Editor/UI")
 endif()
-
-# Enable Hot Reload for MSVC compilers if supported.
-if(POLICY CMP0141)
-	cmake_policy(SET CMP0141 NEW)
-	set(
-		CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
-		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug>:EditAndContinue>,$<$<CONFIG:Debug>:ProgramDatabase>>"
-	)
-endif()
-
 
 # KlemmUI SystemWM declarations
 target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/SystemWM")

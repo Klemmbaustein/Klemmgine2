@@ -169,10 +169,10 @@ void engine::Scene::CreateObjectFromID(uint32 ID, Vector3 Position, Rotation3 Ro
 	const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
 	SceneObject* Object = Type.CreateInstance();
 	Object->OriginScene = this;
-	Object->InitObj(this, true, Type.TypeID);
 	Object->Position = Position;
 	Object->Rotation = Rotation;
 	Object->Scale = Scale;
+	Object->InitObj(this, true, Type.TypeID);
 	this->Objects.push_back(Object);
 }
 
@@ -362,7 +362,7 @@ void engine::Scene::Init()
 			if (Resizable)
 				OnResized(NewSize);
 		} });
-
+	Physics.Init();
 }
 
 engine::SerializedValue engine::Scene::GetSceneInfo()

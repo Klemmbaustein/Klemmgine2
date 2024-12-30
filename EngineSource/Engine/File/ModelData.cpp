@@ -233,6 +233,20 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 	return &Found->second;
 }
 
+void engine::GraphicsModel::ReferenceModel(GraphicsModel* Target)
+{
+	for (auto& i : Models)
+	{
+		if (&i.second != Target)
+		{
+			continue;
+		}
+		i.second.References++;
+		return;
+	}
+	Log::Warn("Failed to reference model");
+}
+
 void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 {
 	for (auto& i : Models)

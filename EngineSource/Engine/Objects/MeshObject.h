@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneObject.h"
 #include "Components/MeshComponent.h"
+#include "Components/CollisionComponent.h"
 
 namespace engine
 {
@@ -13,6 +14,7 @@ namespace engine
 		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", ".kmdl"_asset, this);
 
 		MeshComponent* Mesh = nullptr;
+		CollisionComponent* Collider = nullptr;
 
 		void LoadMesh(AssetRef File);
 

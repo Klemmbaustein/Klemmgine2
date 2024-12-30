@@ -5,6 +5,7 @@
 #include <kui/Vec2.h>
 #include <atomic>
 #include <set>
+#include <Engine/Physics/Physics.h>
 
 namespace engine
 {
@@ -44,16 +45,15 @@ namespace engine
 
 		void OnResized(kui::Vec2ui NewSize);
 
+		physics::PhysicsManager Physics = physics::PhysicsManager(this);
+
 		/**
 		* @brief
 		*/
 		template<typename T>
 		T* CreateObject(Vector3 Position = 0, Rotation3 Rotation = 0, Vector3 Scale = 1)
 		{
-			T* New = SceneObject::New<T>(this, true);
-			New->Position = Position;
-			New->Rotation = Rotation;
-			New->Scale = Scale;
+			T* New = SceneObject::New<T>(this, Position, Rotation, Scale, true);
 			this->Objects.push_back(New);
 			return New;
 		}

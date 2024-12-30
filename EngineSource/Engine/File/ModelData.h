@@ -45,6 +45,7 @@ namespace engine
 		static void RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
 		static void RegisterModel(AssetRef Asset, bool Lock = true);
 		static GraphicsModel* GetModel(AssetRef Asset);
+		static void ReferenceModel(GraphicsModel* Target);
 		static void UnloadModel(GraphicsModel* Target);
 		static void UnloadModel(AssetRef Asset);
 	private:

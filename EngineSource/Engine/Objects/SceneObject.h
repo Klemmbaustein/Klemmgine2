@@ -35,6 +35,7 @@ namespace engine
 		void Detach(ObjectComponent* Component);
 		void ClearComponents();
 		void Destroy();
+		void CheckTransform();
 
 	protected:
 		void Draw(graphics::Camera* From);
@@ -50,7 +51,6 @@ namespace engine
 
 	private:
 
-		void CheckTransform();
 
 		std::vector<ObjectComponent*> ChildComponents;
 		Vector3 OldPosition;
@@ -58,9 +58,12 @@ namespace engine
 		Vector3 OldScale = 1;
 
 		template<typename T>
-		static T* New(Scene* Scn, bool CallBegin)
+		static T* New(Scene* Scn, Vector3 Pos, Rotation3 Rot, Vector3 Scl, bool CallBegin)
 		{
 			T* Object = new T();
+			Object->Position = Pos;
+			Object->Rotation = Rot;
+			Object->Scale = Scl;
 			Object->InitObj(Scn, CallBegin, T::ObjectType);
 			return Object;
 		}

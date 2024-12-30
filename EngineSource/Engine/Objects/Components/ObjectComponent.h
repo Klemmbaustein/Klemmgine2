@@ -30,6 +30,7 @@ namespace engine
 		std::vector<ObjectComponent*> Children;
 
 		SceneObject* GetRootObject();
+		ObjectComponent* GetRootComponent();
 
 		SceneObject* ParentObject = nullptr;
 		ObjectComponent* ParentComponent = nullptr;
@@ -37,6 +38,9 @@ namespace engine
 		void Attach(ObjectComponent* Child);
 
 		Transform GetWorldTransform();
+		void UpdateTransform();
+
+		SceneObject* RootObject = nullptr;
 
 	protected:
 		Transform GetParentTransform() const;
@@ -44,6 +48,5 @@ namespace engine
 		Transform WorldTransform;
 	private:
 		void UpdateLogic();
-		void UpdateTransform();
 	};
 }

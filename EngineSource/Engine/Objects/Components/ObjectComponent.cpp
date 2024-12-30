@@ -21,6 +21,7 @@ void engine::ObjectComponent::Update()
 
 void engine::ObjectComponent::UpdateAll()
 {
+	RootObject = GetRootObject();
 	UpdateTransform();
 	UpdateLogic();
 }
@@ -72,6 +73,13 @@ SceneObject* engine::ObjectComponent::GetRootObject()
 	if (ParentObject)
 		return ParentObject;
 	return ParentComponent->GetRootObject();
+}
+
+ObjectComponent* engine::ObjectComponent::GetRootComponent()
+{
+	if (ParentObject)
+		return this;
+	return ParentComponent->GetRootComponent();
 }
 
 void engine::ObjectComponent::Attach(ObjectComponent* Child)

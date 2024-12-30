@@ -1,5 +1,7 @@
 #include "Transform.h"
 #include <glm/ext/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
 
 using namespace engine;
 
@@ -78,6 +80,20 @@ Vector3 engine::Transform::ApplyRotationTo(Vector3 InVec) const
 Transform engine::Transform::Combine(const Transform& Other) const
 {
 	return Transform(Matrix * Other.Matrix);
+}
+
+void engine::Transform::Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale)
+{
+	glm::vec3 scale;
+	glm::quat rotation;
+	glm::vec3 translation;
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(Matrix, scale, rotation, translation, skew, perspective);
+	glm::vec3 EulerRotation = glm::eulerAngles(rotation);
+	Position = Vector3(translation.x, translation.y, translation.z);
+	Rotation = Rotation3(Vector3(EulerRotation.x, EulerRotation.y, EulerRotation.z), true);
+	Scale = Vector3(scale.x, scale.y, scale.z);
 }
 
 float engine::Rotation3::DegreeToRadian(float Degree)

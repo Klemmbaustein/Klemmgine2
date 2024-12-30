@@ -173,7 +173,7 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 	using namespace engine;
 	using namespace engine::editor;
 
-	string Extension = File.substr(File.find_last_of(".") + 1);
+	string Extension = str::Lower(File.substr(File.find_last_of(".") + 1));
 
 	auto Contains = [](string Value, const std::vector<string>& Values) -> bool
 		{

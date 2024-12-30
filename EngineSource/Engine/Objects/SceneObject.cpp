@@ -69,6 +69,7 @@ Scene* engine::SceneObject::GetScene()
 void engine::SceneObject::Attach(ObjectComponent* Component)
 {
 	Component->ParentObject = this;
+	Component->UpdateTransform();
 	Component->OnAttached();
 	ChildComponents.push_back(Component);
 }
@@ -148,6 +149,7 @@ void engine::SceneObject::InitObj(Scene* Scn, bool CallBegin, int32 TypeID)
 	if (CallBegin)
 	{
 		this->Name = Reflection::ObjectTypes[TypeID].Name;
+		CheckTransform();
 		Begin();
 	}
 }

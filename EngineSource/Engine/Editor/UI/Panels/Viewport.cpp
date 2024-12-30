@@ -131,11 +131,12 @@ engine::editor::Viewport::Viewport()
 			obj->LoadMesh(Dropped);
 		});
 
+
 	Background
 		->AddChild(ViewportToolbar)
 		->AddChild(ViewportDropBox
 			->AddChild(ViewportBackground
-			->AddChild(LoadingScreenBox)))
+				->AddChild(LoadingScreenBox)))
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
 
@@ -237,6 +238,20 @@ void engine::editor::Viewport::Update()
 		}
 
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
+
+		auto h = Current->Physics.RayCast(
+			Current->SceneCamera->Position,
+			Current->SceneCamera->Position + Vector3::Forward(Current->SceneCamera->Rotation) * 1000,
+			physics::Layer::Dynamic);
+
+		LoadingScreenBox->IsVisible = h.Hit;
+
+		UIText* txt = dynamic_cast<UIText*>(LoadingScreenBox->GetChildren()[2]);
+
+		if (txt && h.Hit)
+		{
+			txt->SetText(h.HitComponent->GetRootObject()->Name);
+		}
 	}
 }
 #endif

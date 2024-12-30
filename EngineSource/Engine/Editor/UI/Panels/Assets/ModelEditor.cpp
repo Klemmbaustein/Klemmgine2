@@ -17,6 +17,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	EditedModel = ModelFile;
 	EditorScene = new Scene();
+	EditorScene->Physics.Active = false;
 	EditorScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
 	EditorScene->SceneCamera->Position = Vector3(3, 3, 3);
 	EditorScene->Resizable = false;
