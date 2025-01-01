@@ -24,36 +24,45 @@ namespace engine::internal
 	class JoltInstance
 	{
 	public:
+		static bool IsInitialized;
 		static void InitJolt();
 
 		JoltInstance();
+		~JoltInstance();
 
 		void Update();
 
-		void AddBody(engine::physics::PhysicsBody* Body, bool StartActive, bool StartCollisionEnabled);
-		void RemoveBody(engine::physics::PhysicsBody* Body);
-		void CreateShape(engine::physics::PhysicsBody* Body);
-		void SetBodyPosition(engine::physics::PhysicsBody* Body, Vector3 NewPosition);
-		void SetBodyRotation(engine::physics::PhysicsBody* Body, Vector3 NewRotation);
-		void SetBodyPositionAndRotation(engine::physics::PhysicsBody* Body, Vector3 NewPosition, Rotation3 NewRotation);
-		void ScaleBody(engine::physics::PhysicsBody* Body, Vector3 ScaleFactor);
-		void SetBodyActive(engine::physics::PhysicsBody* Body, bool IsActive);
-		void SetBodyCollisionEnabled(engine::physics::PhysicsBody* Body, bool IsCollisionEnabled);
+		void AddBody(physics::PhysicsBody* Body, bool StartActive, bool StartCollisionEnabled);
+		void RemoveBody(physics::PhysicsBody* Body);
+		void CreateShape(physics::PhysicsBody* Body);
+		void SetBodyPosition(physics::PhysicsBody* Body, Vector3 NewPosition);
+		void SetBodyRotation(physics::PhysicsBody* Body, Vector3 NewRotation);
+		void SetBodyPositionAndRotation(physics::PhysicsBody* Body, Vector3 NewPosition, Rotation3 NewRotation);
+		void ScaleBody(physics::PhysicsBody* Body, Vector3 ScaleFactor);
+		void SetBodyActive(physics::PhysicsBody* Body, bool IsActive);
+		void SetBodyCollisionEnabled(physics::PhysicsBody* Body, bool IsCollisionEnabled);
 
-		engine::physics::HitResult LineCast(Vector3 Start, Vector3 End, engine::physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
+		std::vector<physics::HitResult> CollisionTest(physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
+		std::vector<physics::HitResult> ShapeCastBody(physics::PhysicsBody* Body, Transform StartPos, Vector3 EndPos, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
+		physics::HitResult LineCast(Vector3 Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
 
 		struct PhysicsBodyInfo
 		{
 			JPH::BodyID ID;
 			JPH::Shape* BodyShape = nullptr;
-			engine::physics::PhysicsBody* Body = nullptr;
+			physics::PhysicsBody* Body = nullptr;
 			GraphicsModel* ReferencedModel = nullptr;
 		};
 		
 		std::unordered_map<JPH::BodyID, PhysicsBodyInfo> Bodies;
+		JPH::BodyInterface* JoltBodyInterface = nullptr;
 
 	private:
-		JPH::BodyCreationSettings CreateJoltShapeFromBody(engine::physics::PhysicsBody* Body);
+
+		JPH::MeshShape* CreateNewMeshShape(physics::MeshBody* From);
+
+		void UnloadMesh(GraphicsModel* Mesh);
+		JPH::BodyCreationSettings CreateJoltShapeFromBody(physics::PhysicsBody* Body);
 		struct PhysicsMesh
 		{
 			JPH::MeshShape* Shape = nullptr;
@@ -63,8 +72,7 @@ namespace engine::internal
 		std::unordered_map<GraphicsModel*, PhysicsMesh> LoadedMeshes;
 
 		JPH::PhysicsSystem* System = nullptr;
-		JPH::BodyInterface* JoltBodyInterface = nullptr;
-		JPH::TempAllocatorImpl* TempAllocator = nullptr;
-		JPH::JobSystemThreadPool* JobSystem = nullptr;
+		static JPH::TempAllocatorImpl* TempAllocator;
+		static JPH::JobSystemThreadPool* JobSystem;
 	};
 }

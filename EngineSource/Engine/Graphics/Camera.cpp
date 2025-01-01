@@ -17,7 +17,6 @@ void engine::graphics::Camera::Update()
 	}
 	else
 	{
-
 		Vector3 Forward = Vector3::Forward(Rotation * Vector3(1, 1, 0));
 		Vector3 Up = Vector3::Up(Rotation);
 		View = glm::lookAt(glm::vec3(0), glm::vec3(Forward.X, Forward.Y, Forward.Z), glm::vec3(Up.X, Up.Y, Up.Z));

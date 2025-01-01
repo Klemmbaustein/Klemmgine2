@@ -1,13 +1,15 @@
 #include "Scene.h"
-#include <GL/glew.h>
-#include "Engine/Subsystem/VideoSubsystem.h"
-#include <Engine/Subsystem/SceneSubsystem.h>
-#include "Engine/Engine.h"
+#include "Internal/OpenGL.h"
+#include "Subsystem/VideoSubsystem.h"
+#include "Subsystem/SceneSubsystem.h"
+#include "ThreadPool.h"
+#include "Engine.h"
 #include <Engine/File/ModelData.h>
 #include <Engine/File/TextSerializer.h>
 #include <Engine/File/BinarySerializer.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Editor/UI/Panels/Viewport.h>
+#include <algorithm>
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
@@ -98,13 +100,22 @@ void engine::Scene::Draw()
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
 	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
-	for (SceneObject* i : Objects)
+
 	{
-		i->Draw(UsedCamera);
+		std::unique_lock g{ DrawSortMutex };
+
+		for (DrawableComponent* i : DrawnComponents)
+		{
+			i->Draw(UsedCamera);
+		}
 	}
+
 	glDisable(GL_CULL_FACE);
+	StartSorting();
 }
+
 void engine::Scene::Update()
 {
 	for (SceneObject* Obj : Objects)
@@ -246,7 +257,7 @@ engine::SerializedValue engine::Scene::Serialize()
 			SerializedData("objects", SerializedObjects),
 		});
 
-	
+
 	return Serialized;
 }
 
@@ -267,6 +278,36 @@ void engine::Scene::Save(string FileName)
 bool engine::Scene::ObjectDestroyed(SceneObject* Target) const
 {
 	return DestroyedObjects.contains(Target);
+}
+
+void engine::Scene::AddDrawnComponent(DrawableComponent* New)
+{
+	std::unique_lock g{ DrawSortMutex };
+	DrawnComponents.push_back(New);
+	SortedComponents.push_back({ { New->GetWorldTransform().ApplyTo(0), New->DrawBoundingBox }, New });
+}
+
+void engine::Scene::RemoveDrawnComponent(DrawableComponent* Removed)
+{
+	std::unique_lock g{ DrawSortMutex };
+
+	for (auto i = DrawnComponents.begin(); i < DrawnComponents.end(); i++)
+	{
+		if (*i == Removed)
+		{
+			DrawnComponents.erase(i);
+			break;
+		}
+	}
+
+	for (auto i = SortedComponents.begin(); i < SortedComponents.end(); i++)
+	{
+		if (i->second == Removed)
+		{
+			SortedComponents.erase(i);
+			break;
+		}
+	}
 }
 
 void engine::Scene::PreLoadAsset(AssetRef Target)
@@ -368,4 +409,46 @@ void engine::Scene::Init()
 engine::SerializedValue engine::Scene::GetSceneInfo()
 {
 	return SerializedValue();
+}
+
+void engine::Scene::StartSorting()
+{
+	if (IsSorting)
+		return;
+
+	SortedComponents.resize(DrawnComponents.size());
+	for (size_t i = 0; i < DrawnComponents.size(); i++)
+	{
+		SortedComponents[i] = {
+			{ DrawnComponents[i]->GetWorldTransform().ApplyTo(0), DrawnComponents[i]->DrawBoundingBox },
+			DrawnComponents[i]
+		};
+	}
+
+	Vector3 CameraPosition = SceneCamera->Position;
+	IsSorting = true;
+
+	ThreadPool::Main()->AddJob([this, CameraPosition]()
+		{
+			using Entry = std::pair<SortingInfo, ObjectComponent*>;
+
+			std::unique_lock g{ DrawSortMutex };
+			for (auto& i : SortedComponents)
+			{
+				Vector3 BoundsPosition = i.first.Position + i.first.Bounds.Position;
+				i.first.Position.X = Vector3::Distance(BoundsPosition, CameraPosition) - i.first.Bounds.Extents.Length();
+			}
+
+			std::sort(SortedComponents.begin(), SortedComponents.end(), [](const Entry& a, const Entry& b) -> bool
+				{
+					return a.first.Position.X < b.first.Position.X;
+				});
+			IsSorting = false;
+
+			
+			for (size_t i = 0; i < DrawnComponents.size(); i++)
+			{
+				DrawnComponents[i] = SortedComponents[i].second;
+			}
+		});
 }

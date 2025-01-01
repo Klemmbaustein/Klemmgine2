@@ -10,6 +10,10 @@ uniform vec3 u_color = vec3(1, 1, 1);
 
 void main()
 {
-	vec3 pixelColor = u_useTexture ? texture(u_texture, v_texCoord).xyz : vec3(1);
-	f_color = vec4(getLightStrength() * pixelColor * u_color, 1);
+	vec4 pixelColor = u_useTexture ? texture(u_texture, v_texCoord) : vec4(1);
+
+	if (pixelColor.w < 0.5)
+		discard;
+
+	f_color = vec4(getLightStrength() * pixelColor.xyz * u_color, 1);
 }

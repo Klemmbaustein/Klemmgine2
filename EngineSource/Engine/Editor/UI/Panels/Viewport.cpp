@@ -9,7 +9,6 @@
 #include <Engine/Editor/UI/EditorUI.h>
 #include <Engine/Stats.h>
 #include <Engine/Editor/UI/Elements/DroppableBox.h>
-#include <Engine/Log.h>
 #include <Toolbar.kui.hpp>
 #include <Engine/Objects/MeshObject.h>
 using namespace engine::subsystem;
@@ -238,20 +237,6 @@ void engine::editor::Viewport::Update()
 		}
 
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
-
-		auto h = Current->Physics.RayCast(
-			Current->SceneCamera->Position,
-			Current->SceneCamera->Position + Vector3::Forward(Current->SceneCamera->Rotation) * 1000,
-			physics::Layer::Dynamic);
-
-		LoadingScreenBox->IsVisible = h.Hit;
-
-		UIText* txt = dynamic_cast<UIText*>(LoadingScreenBox->GetChildren()[2]);
-
-		if (txt && h.Hit)
-		{
-			txt->SetText(h.HitComponent->GetRootObject()->Name);
-		}
 	}
 }
 #endif

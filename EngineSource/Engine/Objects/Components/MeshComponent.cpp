@@ -1,4 +1,5 @@
 #include "MeshComponent.h"
+#include <Engine/Scene.h>
 
 void engine::MeshComponent::Update()
 {
@@ -6,6 +7,8 @@ void engine::MeshComponent::Update()
 
 void engine::MeshComponent::Draw(graphics::Camera* From)
 {
+	DrawBoundingBox.Extents = GetRootObject()->Scale;
+
 	if (DrawnModel)
 	{
 		DrawnModel->Drawable->Draw(WorldTransform, From, Materials);
@@ -16,7 +19,11 @@ void engine::MeshComponent::Load(AssetRef From)
 {
 	if (DrawnModel)
 	{
-		ClearModel();
+		ClearModel(false);
+	}
+	else
+	{
+		GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
 
 	DrawnModel = GraphicsModel::GetModel(From);
@@ -33,14 +40,15 @@ void engine::MeshComponent::Load(AssetRef From)
 			Materials.push_back(new graphics::Material(m.Material));
 		}
 	}
+	DrawBoundingBox.Position = 0;
 }
 
 engine::MeshComponent::~MeshComponent()
 {
-	ClearModel();
+	ClearModel(true);
 }
 
-void engine::MeshComponent::ClearModel()
+void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 {
 	if (DrawnModel)
 		GraphicsModel::UnloadModel(DrawnModel);
@@ -52,4 +60,9 @@ void engine::MeshComponent::ClearModel()
 	}
 
 	Materials.clear();
+
+	if (RemoveDrawnComponent)
+	{
+		GetRootObject()->GetScene()->RemoveDrawnComponent(this);
+	}
 }

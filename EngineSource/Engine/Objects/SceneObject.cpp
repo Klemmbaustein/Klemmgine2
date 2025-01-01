@@ -98,14 +98,6 @@ void engine::SceneObject::ClearComponents()
 	ChildComponents.clear();
 }
 
-void engine::SceneObject::Draw(graphics::Camera* Cam)
-{
-	for (auto& i : ChildComponents)
-	{
-		i->DrawAll(Cam);
-	}
-}
-
 engine::SceneObject::~SceneObject()
 {
 	ClearComponents();

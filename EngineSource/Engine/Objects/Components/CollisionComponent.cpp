@@ -23,8 +23,6 @@ engine::CollisionComponent::~CollisionComponent()
 
 void engine::CollisionComponent::Update()
 {
-	SetCollisionEnabled(input::IsKeyDown(input::Key::LSHIFT));
-
 	if (!Body || OldTransform.Matrix == WorldTransform.Matrix)
 		return;
 
@@ -55,26 +53,6 @@ void engine::CollisionComponent::Update()
 	OldTransform = WorldTransform;
 }
 
-void engine::CollisionComponent::SetActive(bool NewActive)
-{
-	if (!Body)
-		return;
-
-	if (NewActive != IsActive)
-	{
-		if (NewActive)
-			Body->Activate();
-		else
-			Body->Deactivate();
-		IsActive = NewActive;
-	}
-}
-
-bool engine::CollisionComponent::GetActive() const
-{
-	return IsActive;
-}
-
 void engine::CollisionComponent::SetCollisionEnabled(bool NewEnabled)
 {
 	if (!Body)
@@ -95,7 +73,7 @@ bool engine::CollisionComponent::GetCollisionEnabled() const
 	return IsCollisionEnabled;
 }
 
-void engine::CollisionComponent::Load(AssetRef File, bool StartActive, bool StartCollisionEnabled)
+void engine::CollisionComponent::Load(AssetRef File, bool StartCollisionEnabled)
 {
 	GetRootObject()->CheckTransform();
 	GetRootComponent()->UpdateTransform();
@@ -109,8 +87,7 @@ void engine::CollisionComponent::Load(AssetRef File, bool StartActive, bool Star
 		return;
 
 	Body = new MeshBody(LoadedModel, WorldTransform, physics::MotionType::Static, physics::Layer::Static, this);
-	GetRootObject()->GetScene()->Physics.AddBody(Body, StartActive, StartCollisionEnabled);
+	GetRootObject()->GetScene()->Physics.AddBody(Body, true, StartCollisionEnabled);
 	OldTransform = WorldTransform;
-	IsActive = StartActive;
 	IsCollisionEnabled = StartCollisionEnabled;
 }

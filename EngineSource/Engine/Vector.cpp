@@ -1,6 +1,8 @@
 #include "Vector.h"
 #include <cmath>
 #include <iostream>
+#include <glm/geometric.hpp>
+#include <glm/vec3.hpp>
 using namespace engine;
 
 Vector3::Vector3()
@@ -65,6 +67,16 @@ Vector3 engine::Vector3::Cross(Vector3 a, Vector3 b)
 	);
 }
 
+float engine::Vector3::Dot(Vector3 a, Vector3 b)
+{
+	float Result = 0;
+	for (size_t i = 0; i < 3; i++)
+	{
+		Result += a[i] * b[i];
+	}
+	return Result;
+}
+
 typedef Vector3 Axes[3];
 static void copy(const Axes& from, Axes& to)
 {
@@ -127,7 +139,7 @@ Vector3 Vector3::GetScaledAxis(Vector3 Rot, uint32 Dir)
 }
 
 
-Vector3 engine::Vector3::operator+(const Vector3& Other)
+Vector3 engine::Vector3::operator+(const Vector3& Other) const
 {
 	return Vector3(X + Other.X, Y + Other.Y, Z + Other.Z);
 }
@@ -140,12 +152,12 @@ Vector3& engine::Vector3::operator+=(const Vector3& Other)
 	return *this;
 }
 
-Vector3 engine::Vector3::operator-(const Vector3& Other)
+Vector3 engine::Vector3::operator-(const Vector3& Other) const
 {
 	return Vector3(X - Other.X, Y - Other.Y, Z - Other.Z);
 }
 
-Vector3 engine::Vector3::operator-()
+Vector3 engine::Vector3::operator-() const
 {
 	return Vector3(-X, -Y, -Z);
 }
@@ -158,14 +170,19 @@ Vector3& engine::Vector3::operator-=(const Vector3& Other)
 	return *this;
 }
 
-Vector3 engine::Vector3::operator*(const Vector3& Other)
+Vector3 engine::Vector3::operator*(const Vector3& Other) const
 {
 	return Vector3(X * Other.X, Y * Other.Y, Z * Other.Z);
 }
 
-Vector3 engine::Vector3::operator/(const Vector3& Other)
+Vector3 engine::Vector3::operator/(const Vector3& Other) const
 {
 	return Vector3(X / Other.X, Y / Other.Y, Z / Other.Z);
+}
+
+float engine::Vector3::Distance(const Vector3& a, const Vector3& b)
+{
+	return (a - b).Length();
 }
 
 bool engine::Vector3::operator==(const Vector3& Other) const

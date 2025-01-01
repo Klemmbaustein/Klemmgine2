@@ -15,14 +15,11 @@ namespace engine
 		virtual void OnAttached();
 		virtual void Update();
 		void UpdateAll();
-		virtual void Draw(graphics::Camera* From);
 		virtual void OnDetached();
 
 		void DetachThis();
 
 		void Detach(ObjectComponent* c);
-
-		void DrawAll(graphics::Camera* From);
 
 		Vector3 Position;
 		Rotation3 Rotation;

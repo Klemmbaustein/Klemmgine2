@@ -7,6 +7,7 @@
 #include "Subsystem/SceneSubsystem.h"
 #include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
+#include "ThreadPool.h"
 #include "File/Resource.h"
 #include "Error/EngineError.h"
 using namespace engine;
@@ -31,6 +32,7 @@ Engine* Engine::Init()
 	
 	error::InitForThread("Main");
 	thread::IsMainThread = true;
+	ThreadPool::AllocateDefaultThreadPool();
 	Reflection::Init();
 	resource::ScanForAssets();
 

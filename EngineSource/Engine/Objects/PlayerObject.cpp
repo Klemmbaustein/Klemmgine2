@@ -6,10 +6,15 @@
 
 void engine::PlayerObject::Begin()
 {
+
+	Collider = new PhysicsComponent();
+	Attach(Collider);
+	Collider->Scale = 0.5f;
+	Collider->CreateSphere(physics::MotionType::Static, physics::Layer::Static, false);
+
 	Cam = new CameraComponent();
-	Attach(Cam);
+	Collider->Attach(Cam);
 	Cam->Use();
-	Cam->Position = Vector3(0, 0, 0);
 }
 
 void engine::PlayerObject::Update()
@@ -25,18 +30,29 @@ void engine::PlayerObject::Update()
 
 	if (input::IsKeyDown(input::Key::w))
 	{
-		Position += CameraTransform.Forward() * Speed;
+		Move(CameraTransform.Forward() * Speed);
 	}
 	if (input::IsKeyDown(input::Key::s))
 	{
-		Position -= CameraTransform.Forward() * Speed;
+		Move(-CameraTransform.Forward() * Speed);
 	}
 	if (input::IsKeyDown(input::Key::d))
 	{
-		Position += CameraTransform.Right() * Speed;
+		Move(CameraTransform.Right() * Speed);
 	}
 	if (input::IsKeyDown(input::Key::a))
 	{
-		Position -= CameraTransform.Right() * Speed;
+		Move(-CameraTransform.Right() * Speed);
 	}
+}
+
+void engine::PlayerObject::Move(Vector3 Direction)
+{
+	auto hit = Collider->ShapeCast(ObjectTransform, Position + Direction, physics::Layer::Static);
+
+	if (hit.Hit)
+	{
+		Position += hit.Normal * Vector3::Dot(hit.Normal, -Direction.Normalize()) * Direction.Length();
+	}
+	Position += Direction;
 }

@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include <Engine/Error/EngineAssert.h>
 #include <Engine/Stats.h>
+#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 using namespace engine;
 using namespace engine::physics;
 
@@ -126,7 +127,7 @@ public:
 	}
 };
 
-namespace engine::internal::physics
+namespace engine::internal
 {
 	BPLayerInterfaceImpl BroadPhaseLayers;
 	ObjectVsBroadPhaseLayerFilterImpl ObjectVsBroadPhaseFilter;
@@ -147,9 +148,14 @@ static void JoltPhysicsTrace(const char* inFMT, ...)
 
 	Log::Error(error::GetStackTrace());
 }
-
+bool internal::JoltInstance::IsInitialized = false;
+JPH::TempAllocatorImpl* internal::JoltInstance::TempAllocator = nullptr;
+JPH::JobSystemThreadPool* internal::JoltInstance::JobSystem = nullptr;
 void engine::internal::JoltInstance::InitJolt()
 {
+	if (IsInitialized)
+		return;
+
 	JPH::RegisterDefaultAllocator();
 
 	JPH::Trace = &JoltPhysicsTrace;
@@ -159,13 +165,80 @@ void engine::internal::JoltInstance::InitJolt()
 	JPH::Factory::sInstance = new JPH::Factory();
 	JPH::RegisterTypes();
 
-	auto* TempAllocator = new JPH::TempAllocatorImpl(1024 * 1024);
-	auto* JobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+	TempAllocator = new JPH::TempAllocatorImpl(1024 * 1024);
+	JobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
 	// We need a job system that will execute physics jobs on multiple threads. Typically
 	// you would implement the JobSystem interface yourself and let Jolt Physics run on top
 	// of your own job scheduler. JobSystemThreadPool is an example implementation.
+	IsInitialized = true;
+}
 
+JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(MeshBody* From)
+{
+	JPH::VertexList Vertices;
+	JPH::IndexedTriangleList Indices;
+
+	auto& Meshes = From->Model->Data->Meshes;
+
+	uint32 IndicesPosition = 0;
+	for (auto& m : Meshes)
+	{
+		for (auto& i : m.Vertices)
+		{
+			Vertices.push_back(JPH::Float3(i.Position.X, i.Position.Y, i.Position.Z));
+		}
+
+		for (size_t i = 0; i < m.Indices.size(); i += 3)
+		{
+			JPH::IndexedTriangle Tri = JPH::IndexedTriangle(
+				m.Indices[i] + IndicesPosition,
+				m.Indices[i + 1] + IndicesPosition,
+				m.Indices[i + 2] + IndicesPosition
+			);
+			Indices.push_back(Tri);
+		}
+		IndicesPosition += uint32(m.Vertices.size());
+	}
+
+	JPH::MeshShapeSettings Settings = JPH::MeshShapeSettings(Vertices, Indices);
+	JPH::ShapeSettings::ShapeResult MeshResult;
+	JPH::MeshShape* Shape = new JPH::MeshShape(Settings, MeshResult);
+	if (!MeshResult.IsValid())
+	{
+		Log::Error("Error creating collision shape: " + std::string(MeshResult.GetError()));
+		return nullptr;
+	}
+
+	auto BodyModel = From->Model;
+	// Unload the Jolt Mesh Shape when the model data is unloaded.
+	// It will also be unloaded when the physics body itself is destroyed.
+	BodyModel->OnDereferenced.push_back([this, BodyModel]()
+		{
+			UnloadMesh(BodyModel);
+		});
+	Shape->AddRef();
+
+	LoadedMeshes.insert({ BodyModel, PhysicsMesh{
+		.Shape = Shape,
+		// One reference for the body, one for the mesh itself.
+		.References = 2,
+		} });
+	return Shape;
+}
+
+void engine::internal::JoltInstance::UnloadMesh(GraphicsModel* Mesh)
+{
+	auto Found = LoadedMeshes.find(Mesh);
+	if (Found != LoadedMeshes.end())
+	{
+		Found->second.References--;
+		if (Found->second.References == 0)
+		{
+			Found->second.Shape->Release();
+			LoadedMeshes.erase(Found);
+		}
+	}
 }
 
 JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBody(PhysicsBody* Body)
@@ -211,54 +284,27 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 
 		auto Found = LoadedMeshes.find(MeshPtr->Model);
 
+		JPH::MeshShape* UsedShape = nullptr;
+
+		// Don't create duplicate mesh shapes, reference existing ones instead.
 		if (Found != LoadedMeshes.end())
 		{
 			Found->second.References++;
-			return JPH::BodyCreationSettings(Found->second.Shape,
-				ToJPHVec3(Position),
-				ToJPHQuat(Rotation),
-				JPH::EMotionType::Static,
-				JPH::ObjectLayer(MeshPtr->CollisionLayers));
+			UsedShape = Found->second.Shape;
 		}
-
-		JPH::VertexList Vertices;
-		JPH::IndexedTriangleList Indices;
-
-		auto& Meshes = MeshPtr->Model->Data->Meshes;
-
-		uint32 IndicesPosition = 0;
-		for (auto& m : Meshes)
+		else
 		{
-			for (auto& i : m.Vertices)
-			{
-				Vertices.push_back(JPH::Float3(i.Position.X * Scale.X, i.Position.Y * Scale.Y, i.Position.Z * Scale.Z));
-			}
-
-			for (size_t i = 0; i < m.Indices.size(); i += 3)
-			{
-				JPH::IndexedTriangle Tri = JPH::IndexedTriangle(
-					m.Indices[i] + IndicesPosition,
-					m.Indices[i + 1] + IndicesPosition,
-					m.Indices[i + 2] + IndicesPosition
-				);
-				Indices.push_back(Tri);
-			}
-			IndicesPosition += uint32(m.Vertices.size());
+			UsedShape = CreateNewMeshShape(MeshPtr);
 		}
 
-		JPH::MeshShapeSettings Settings = JPH::MeshShapeSettings(Vertices, Indices);
-		JPH::ShapeSettings::ShapeResult MeshResult;
-		JPH::MeshShape* Shape = new JPH::MeshShape(Settings, MeshResult);
-		if (!MeshResult.IsValid())
+		JPH::ScaledShapeSettings Settings = JPH::ScaledShapeSettings(UsedShape, ToJPHVec3(Scale));
+		JPH::ShapeSettings::ShapeResult r;
+		JPH::ScaledShape* Shape = new JPH::ScaledShape(Settings, r);
+
+		if (r.HasError())
 		{
-			Log::Error("Error creating collision shape: " + std::string(MeshResult.GetError()));
-			return JPH::BodyCreationSettings();
+			Log::Error(string(r.GetError()));
 		}
-
-		LoadedMeshes.insert({ MeshPtr->Model, PhysicsMesh{
-			.Shape = Shape,
-			.References = 1,
-			} });
 
 		return JPH::BodyCreationSettings(Shape,
 			ToJPHVec3(Position),
@@ -273,8 +319,6 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 
 engine::internal::JoltInstance::JoltInstance()
 {
-	using namespace engine::internal::physics;
-
 	const uint32 cMaxBodies = 65536;
 
 	const uint32 cNumBodyMutexes = 0;
@@ -293,6 +337,11 @@ engine::internal::JoltInstance::JoltInstance()
 	System->SetGravity(System->GetGravity() * 4);
 
 	JoltBodyInterface = &System->GetBodyInterface();
+}
+
+engine::internal::JoltInstance::~JoltInstance()
+{
+	delete System;
 }
 
 void engine::internal::JoltInstance::Update()
@@ -326,6 +375,7 @@ void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive
 	Body->PhysicsSystemBody = &Bodies.emplace(info.ID, info).first->second;
 	JoltBodyInterface->SetUserData(info.ID, uint64(Body->PhysicsSystemBody));
 	Body->IsActive = StartActive;
+	Body->IsCollisionEnabled = StartCollisionEnabled;
 }
 
 void engine::internal::JoltInstance::RemoveBody(engine::physics::PhysicsBody* Body)
@@ -338,16 +388,7 @@ void engine::internal::JoltInstance::RemoveBody(engine::physics::PhysicsBody* Bo
 	if (Body->Type == PhysicsBody::BodyType::Mesh)
 	{
 		MeshBody* MeshPtr = static_cast<MeshBody*>(Body);
-		auto Found = LoadedMeshes.find(MeshPtr->Model);
-		if (Found != LoadedMeshes.end())
-		{
-			Found->second.References--;
-			if (Found->second.References == 0)
-			{
-				Log::Info("Unload mesh");
-				LoadedMeshes.erase(Found);
-			}
-		}
+		UnloadMesh(MeshPtr->Model);
 	}
 
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
@@ -356,7 +397,8 @@ void engine::internal::JoltInstance::RemoveBody(engine::physics::PhysicsBody* Bo
 	JoltBodyInterface->DestroyBody(Info->ID);
 	Bodies.erase(Info->ID);
 	Body->PhysicsSystemBody = nullptr;
-	delete Body->ShapeInfo;
+	auto JoltShape = static_cast<JPH::BodyCreationSettings*>(Body->ShapeInfo);
+	delete JoltShape;
 	Body->ShapeInfo = nullptr;
 	Info->ID = JPH::BodyID();
 }
@@ -407,7 +449,7 @@ void engine::internal::JoltInstance::ScaleBody(engine::physics::PhysicsBody* Bod
 	}
 
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
-	auto ShapeInfo = JoltBodyInterface->GetShape(Info->ID).GetPtr()->ScaleShape(ToJPHVec3(ScaleFactor));
+	auto ShapeInfo = JoltBodyInterface->GetShape(Info->ID)->ScaleShape(ToJPHVec3(ScaleFactor));
 	JoltBodyInterface->SetShape(Info->ID, ShapeInfo.Get(), true, JPH::EActivation::Activate);
 }
 
@@ -445,6 +487,33 @@ public:
 	}
 };
 
+class CastShapeCollectorImpl : public JPH::CastShapeCollector
+{
+public:
+	CastShapeCollectorImpl()
+	{
+
+	}
+
+	std::vector<HitResult> Hits;
+	internal::JoltInstance* Instance = nullptr;
+
+	virtual void AddHit(const ResultType& inResult) override
+	{
+		HitResult r;
+		r.Hit = true;
+		r.Depth = inResult.mPenetrationDepth;
+		r.Normal = -Vector3(inResult.mPenetrationAxis.GetX(), inResult.mPenetrationAxis.GetY(), inResult.mPenetrationAxis.GetZ()).Normalize();
+		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(), inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
+		r.Distance = inResult.mFraction;
+
+		auto val = Instance->JoltBodyInterface->GetUserData(inResult.mBodyID2);
+		PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
+		r.HitComponent = BodyInfo->Parent;
+		Hits.push_back(r);
+	}
+};
+
 class BodyFilterImpl : public JPH::BodyFilter
 {
 public:
@@ -453,18 +522,61 @@ public:
 
 	virtual bool ShouldCollide(const JPH::BodyID& inObject) const override
 	{
-		auto body = Instance->Bodies.find(inObject);
-		if (body != Instance->Bodies.end()
-			&& body->second.Body->Parent
-			&& body->second.Body->Parent->RootObject)
-		{
-			return ObjectsToIgnore->find(body->second.Body->Parent->RootObject) == ObjectsToIgnore->end();
-		}
-		return true;
+		auto val = Instance->JoltBodyInterface->GetUserData(inObject);
+		PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
+		return ObjectsToIgnore->find(BodyInfo->Parent->RootObject) == ObjectsToIgnore->end();
 	}
 };
 
-engine::physics::HitResult engine::internal::JoltInstance::LineCast(Vector3 Start, Vector3 End, engine::physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+std::vector<HitResult> internal::JoltInstance::ShapeCastBody(
+	physics::PhysicsBody* Body,
+	Transform StartPos, Vector3 EndPos,
+	physics::Layer Layers,
+	std::set<SceneObject*> ObjectsToIgnore
+)
+{
+	if (!Body->ShapeInfo)
+	{
+		CreateShape(Body);
+		if (!Body->ShapeInfo)
+		{
+			return {};
+		}
+	}
+
+	auto JoltShape = static_cast<JPH::BodyCreationSettings*>(Body->ShapeInfo);
+
+	glm::mat4 mat = StartPos.Matrix;
+
+	Vector3 Position, Scale;
+	Rotation3 Rotation;
+	StartPos.Decompose(Position, Rotation, Scale);
+
+	Vector3 Direction = EndPos - Position;
+
+	JPH::Mat44 ResultMat = JPH::Mat44(ToJPHVec4(mat[0]), ToJPHVec4(mat[1]), ToJPHVec4(mat[2]), ToJPHVec4(mat[3]));
+
+	CastShapeCollectorImpl cl;
+	cl.Instance = this;
+	JPH::ShapeCastSettings s;
+
+	JPH::BroadPhaseLayerFilter BplF;
+	ObjectLayerFilterImpl LayerF;
+	LayerF.ObjLayer = Layers;
+	BodyFilterImpl ObjF;
+	ObjF.Instance = this;
+	ObjF.ObjectsToIgnore = &ObjectsToIgnore;
+
+	JPH::RShapeCast c = JPH::RShapeCast(JoltShape->GetShape(), ToJPHVec3(Scale), ResultMat, ToJPHVec3(Direction));
+	System->GetNarrowPhaseQuery().CastShape(c, s, JPH::Vec3(0, 0, 0), cl, BplF, LayerF, ObjF);
+	return cl.Hits;
+}
+
+engine::physics::HitResult engine::internal::JoltInstance::LineCast(
+	Vector3 Start, Vector3 End,
+	engine::physics::Layer Layers,
+	std::set<SceneObject*> ObjectsToIgnore
+)
 {
 	JPH::RRayCast Cast = JPH::RRayCast(ToJPHVec3(Start), ToJPHVec3(End - Start));
 	JPH::RayCastResult HitInfo;
@@ -489,7 +601,8 @@ engine::physics::HitResult engine::internal::JoltInstance::LineCast(Vector3 Star
 			JPH::Vec3 ImpactPos = Cast.GetPointOnRay(HitInfo.mFraction);
 			r.ImpactPoint = Vector3(ImpactPos.GetX(), ImpactPos.GetY(), ImpactPos.GetZ());
 
-			JPH::Vec3 Normal = JoltBodyInterface->GetTransformedShape(BodyInfo.ID).GetWorldSpaceSurfaceNormal(HitInfo.mSubShapeID2, ImpactPos);
+			JPH::Vec3 Normal = JoltBodyInterface->GetTransformedShape(BodyInfo.ID)
+				.GetWorldSpaceSurfaceNormal(HitInfo.mSubShapeID2, ImpactPos);
 			r.Distance = HitInfo.mFraction;
 			r.Normal = Vector3(Normal.GetX(), Normal.GetY(), Normal.GetZ());
 		}

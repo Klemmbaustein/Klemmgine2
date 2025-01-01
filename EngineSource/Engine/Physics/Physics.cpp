@@ -3,7 +3,7 @@
 #include <Engine/Internal/JoltPhysics.h>
 using namespace engine::physics;
 
-engine::physics::PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
+PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
 {
 	this->Type = NativeType;
 	this->BodyTransform = BodyTransform;
@@ -15,6 +15,10 @@ engine::physics::PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTra
 }
 
 void engine::physics::PhysicsBody::SetPosition(Vector3 NewPosition)
+{
+}
+
+void engine::physics::PhysicsBody::SetRotation(Rotation3 NewRotation)
 {
 }
 
@@ -51,6 +55,11 @@ void engine::physics::PhysicsBody::Scale(Vector3 ScaleMultiplier)
 engine::physics::PhysicsManager::PhysicsManager(Scene* From)
 {
 	this->ParentScene = From;
+}
+
+engine::physics::PhysicsManager::~PhysicsManager()
+{
+	delete this->PhysicsSystem;
 }
 
 void engine::physics::PhysicsManager::Init()
@@ -123,8 +132,28 @@ HitResult engine::physics::HitResult::GetAverageHit(std::vector<HitResult> Hits)
 	return h;
 }
 
-engine::physics::MeshBody::MeshBody(GraphicsModel* Mesh, Transform MeshTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
+MeshBody::MeshBody(GraphicsModel* Mesh, Transform MeshTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
 	: PhysicsBody(BodyType::Mesh, MeshTransform, ColliderMovability, CollisionLayers, Parent)
 {
 	this->Model = Mesh;
+}
+
+std::vector<HitResult> PhysicsBody::ShapeCast(Transform StartTransform, Vector3 EndPos, Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+{
+	return Manager->PhysicsSystem->ShapeCastBody(this, StartTransform, EndPos, Layers, ObjectsToIgnore);
+}
+
+SphereBody::SphereBody(Vector3 Position, Rotation3 Rotation, float Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
+	: PhysicsBody(BodyType::Sphere, Transform(Position, Rotation, Scale), ColliderMovability, CollisionLayers, Parent)
+{
+}
+
+engine::physics::BoxBody::BoxBody(Vector3 Position, Rotation3 Rotation, Vector3 Extents, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
+	: PhysicsBody(BodyType::Box, Transform(Position, Rotation, Extents), ColliderMovability, CollisionLayers, Parent)
+{
+}
+
+engine::physics::CapsuleBody::CapsuleBody(Vector3 Position, Rotation3 Rotation, Vector2 Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
+	: PhysicsBody(BodyType::Sphere, Transform(Position, Rotation, Vector3(Scale.X, Scale.Y, 1)), ColliderMovability, CollisionLayers, Parent)
+{
 }

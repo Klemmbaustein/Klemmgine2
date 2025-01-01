@@ -13,17 +13,13 @@ namespace engine
 		~CollisionComponent() override;
 		void Update() override;
 
-		void Load(AssetRef File, bool StartActive = true, bool StartCollisionEnabled = true);
+		void Load(AssetRef File, bool StartCollisionEnabled = true);
 		physics::MeshBody* Body = nullptr;
-
-		void SetActive(bool NewActive);
-		bool GetActive() const;
 
 		void SetCollisionEnabled(bool NewEnabled);
 		bool GetCollisionEnabled() const;
 
 	private:
-		bool IsActive = true;
 		bool IsCollisionEnabled = true;
 		Transform OldTransform;
 		GraphicsModel* LoadedModel = nullptr;

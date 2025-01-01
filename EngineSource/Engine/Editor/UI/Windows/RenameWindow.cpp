@@ -57,7 +57,7 @@ void engine::editor::RenameWindow::Confirm()
 	string OldPath = File.substr(0, File.find_last_of("/") + 1);
 	string OldExtension = File.substr(File.find_last_of(".") + 1);
 
-	if (!File.contains("."))
+	if (File.find(".") == std::string::npos)
 		OutFile = OldPath + OutFile;
 	else
 		OutFile = OldPath + OutFile + "." + OldExtension;

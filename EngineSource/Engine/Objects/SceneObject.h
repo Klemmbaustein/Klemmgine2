@@ -38,7 +38,6 @@ namespace engine
 		void CheckTransform();
 
 	protected:
-		void Draw(graphics::Camera* From);
 		virtual ~SceneObject();
 		SceneObject()
 		{

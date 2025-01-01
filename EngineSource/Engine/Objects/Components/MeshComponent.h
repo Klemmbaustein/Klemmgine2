@@ -1,12 +1,12 @@
 #pragma once
-#include "ObjectComponent.h"
+#include "DrawableComponent.h"
 #include <Engine/File/AssetRef.h>
 #include <Engine/File/ModelData.h>
 #include <Engine/Graphics/Material.h>
 
 namespace engine
 {
-	class MeshComponent : public ObjectComponent
+	class MeshComponent : public DrawableComponent
 	{
 	public:
 
@@ -20,6 +20,6 @@ namespace engine
 		void Load(AssetRef From);
 		~MeshComponent() override;
 
-		void ClearModel();
+		void ClearModel(bool RemoveDrawnComponent);
 	};
 }

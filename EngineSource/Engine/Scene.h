@@ -5,7 +5,9 @@
 #include <kui/Vec2.h>
 #include <atomic>
 #include <set>
+#include <mutex>
 #include <Engine/Physics/Physics.h>
+#include "Objects/Components/DrawableComponent.h"
 
 namespace engine
 {
@@ -93,6 +95,9 @@ namespace engine
 
 		bool ObjectDestroyed(SceneObject* Target) const;
 
+		void AddDrawnComponent(DrawableComponent* New);
+		void RemoveDrawnComponent(DrawableComponent* Removed);
+
 		void PreLoadAsset(AssetRef Target);
 	private:
 		void DeSerializeInternal(SerializedValue* From, bool Async);
@@ -102,5 +107,17 @@ namespace engine
 		void LoadInternal(string File, bool Async);
 		void Init();
 		SerializedValue GetSceneInfo();
+
+		struct SortingInfo
+		{
+			Vector3 Position;
+			graphics::BoundingBox Bounds;
+		};
+		std::vector<std::pair<SortingInfo, DrawableComponent*>> SortedComponents;
+		std::vector<DrawableComponent*> DrawnComponents;
+		std::mutex DrawSortMutex;
+		bool IsSorting = false;
+
+		void StartSorting();
 	};
 }

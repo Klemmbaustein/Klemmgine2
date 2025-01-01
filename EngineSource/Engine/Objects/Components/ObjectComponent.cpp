@@ -26,10 +26,6 @@ void engine::ObjectComponent::UpdateAll()
 	UpdateLogic();
 }
 
-void engine::ObjectComponent::Draw(graphics::Camera* From)
-{
-}
-
 void engine::ObjectComponent::OnDetached()
 {
 }
@@ -57,15 +53,6 @@ void engine::ObjectComponent::Detach(ObjectComponent* c)
 		}
 	}
 	ENGINE_UNREACHABLE();
-}
-
-void engine::ObjectComponent::DrawAll(graphics::Camera* From)
-{
-	Draw(From);
-	for (ObjectComponent* i : Children)
-	{
-		i->DrawAll(From);
-	}
 }
 
 SceneObject* engine::ObjectComponent::GetRootObject()

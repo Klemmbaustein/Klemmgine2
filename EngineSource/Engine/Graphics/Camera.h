@@ -9,7 +9,7 @@ namespace engine::graphics
 	{
 	public:
 		float Aspect = 16.0f / 9.0f;
-		float FOV = 1.5f;
+		float FOV = 2.0f;
 
 		Camera(float FOV);
 		glm::mat4 View = glm::mat4(1);

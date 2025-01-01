@@ -223,7 +223,7 @@ namespace engine::physics
 		* The component this collider belongs to. Can be nullptr.
 		*/
 
-		SphereBody(Vector3 Position, Vector3 Rotation, float Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
+		SphereBody(Vector3 Position, Rotation3 Rotation, float Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
 	};
 
 	/**
@@ -251,7 +251,7 @@ namespace engine::physics
 		* @param Parent
 		* The component this collider belongs to. Can be nullptr.
 		*/
-		CapsuleBody(Vector3 Position, Vector3 Rotation, Vector2 Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
+		CapsuleBody(Vector3 Position, Rotation3 Rotation, Vector2 Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
 	};
 
 	/**
@@ -279,7 +279,7 @@ namespace engine::physics
 		* @param Parent
 		* The component this collider belongs to. Can be nullptr.
 		*/
-		BoxBody(Vector3 Position, Vector3 Rotation, Vector3 Extents, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
+		BoxBody(Vector3 Position, Rotation3 Rotation, Vector3 Extents, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
 
 		Vector3 Extents;
 	};
@@ -319,6 +319,7 @@ namespace engine::physics
 	public:
 		bool Active = true;
 		PhysicsManager(Scene* From);
+		~PhysicsManager();
 
 		void Init();
 		void Update();
