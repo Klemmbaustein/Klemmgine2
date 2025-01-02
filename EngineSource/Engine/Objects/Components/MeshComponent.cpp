@@ -21,10 +21,6 @@ void engine::MeshComponent::Load(AssetRef From)
 	{
 		ClearModel(false);
 	}
-	else
-	{
-		GetRootObject()->GetScene()->AddDrawnComponent(this);
-	}
 
 	DrawnModel = GraphicsModel::GetModel(From);
 
@@ -39,6 +35,7 @@ void engine::MeshComponent::Load(AssetRef From)
 			}
 			Materials.push_back(new graphics::Material(m.Material));
 		}
+		GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
 	DrawBoundingBox.Position = 0;
 }
