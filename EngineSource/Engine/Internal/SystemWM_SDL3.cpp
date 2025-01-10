@@ -192,6 +192,11 @@ void kui::systemWM::WaitFrame(SysWindow* Target, float RemainingTime)
 {
 }
 
+void* kui::systemWM::GetPlatformHandle(SysWindow* Target)
+{
+	return Target->SDLWindow;
+}
+
 void kui::systemWM::ActivateContext(SysWindow* Target)
 {
 	SDL_GL_MakeCurrent(Target->SDLWindow, Target->GLContext);

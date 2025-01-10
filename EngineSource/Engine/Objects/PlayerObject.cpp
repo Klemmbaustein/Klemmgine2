@@ -19,6 +19,7 @@ void engine::PlayerObject::Begin()
 
 	auto Mesh = new MeshComponent();
 	Attach(Mesh);
+	Mesh->Scale = 0.5f;
 	Mesh->Load(PlayerModel.Value);
 }
 
