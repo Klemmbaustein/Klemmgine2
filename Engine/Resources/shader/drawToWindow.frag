@@ -7,6 +7,7 @@ uniform sampler2D u_ui;
 uniform sampler2D u_alpha;
 uniform vec2 u_pos;
 uniform vec2 u_size;
+uniform sampler2DArray u_shadowMap;
 
 void main()
 {

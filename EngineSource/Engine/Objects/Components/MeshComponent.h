@@ -16,6 +16,7 @@ namespace engine
 		virtual void Update() override;
 
 		virtual void Draw(graphics::Camera* From) override;
+		virtual void SimpleDraw(graphics::ShaderObject* With) override;
 
 		void Load(AssetRef From);
 		~MeshComponent() override;

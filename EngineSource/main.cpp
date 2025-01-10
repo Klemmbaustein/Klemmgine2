@@ -1,5 +1,6 @@
 #include "Engine/Engine.h"
 #include <Engine/Subsystem/SceneSubsystem.h>
+#include <iostream>
 
 int32 EngineMain(int argc, char** argv)
 {

@@ -53,6 +53,9 @@ void Subsystem::RenderUpdate()
 
 void Subsystem::Print(string Message, LogType Severity)
 {
+	if (Severity == LogType::Note)
+		return;
+
 	static std::array<const char*, 5> SeverityStrings =
 	{
 		"Note",

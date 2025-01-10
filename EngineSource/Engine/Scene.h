@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
+#include "Graphics/Effects/CascadedShadows.h"
 #include "Objects/SceneObject.h"
 #include <kui/Vec2.h>
 #include <atomic>
@@ -48,6 +49,7 @@ namespace engine
 		void OnResized(kui::Vec2ui NewSize);
 
 		physics::PhysicsManager Physics = physics::PhysicsManager(this);
+		graphics::CascadedShadows Shadows;
 
 		/**
 		* @brief

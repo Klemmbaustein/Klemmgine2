@@ -9,12 +9,12 @@ namespace engine::graphics
 	{
 	public:
 		static bool CheckCompileErrors(uint32 ShaderID, string Type);
-		ShaderObject(string VertexFile, string FragmentFile);
+		ShaderObject(string VertexFile, string FragmentFile, string GeometryFile = "");
 		~ShaderObject();
 
 
 		void ReCompile();
-		void Compile(string VertexFile, string FragmentFile);
+		void Compile(string VertexFile, string FragmentFile, string GeometryFile = "");
 
 		void Bind();
 
@@ -28,7 +28,7 @@ namespace engine::graphics
 		void SetVec3(uint32 UniformLocation, Vector3 Value);
 		void SetTransform(uint32 UniformLocation, const Transform& Value);
 	private:
-		string VertexFile, FragmentFile;
+		string VertexFile, FragmentFile, GeometryFile;
 		void Clear();
 	};
 }

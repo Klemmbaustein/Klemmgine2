@@ -93,14 +93,20 @@ engine::Scene::Scene(const char* FilePath)
 
 void engine::Scene::Draw()
 {
-	SceneCamera->Update();
+	UsedCamera->Update();
+
+	Shadows.Update(UsedCamera);
+
+	{
+		std::unique_lock g{ DrawSortMutex };
+
+		Shadows.Draw(DrawnComponents);
+	}
 
 	Buffer->Bind();
-
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
 	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
 
 	{
@@ -123,20 +129,20 @@ void engine::Scene::Update()
 		Obj->UpdateObject();
 	}
 
-	for (SceneObject* Destr : DestroyedObjects)
+	for (SceneObject* Destroyed : DestroyedObjects)
 	{
-		Destr->OnDestroyed();
-		Destr->ClearComponents();
+		Destroyed->OnDestroyed();
+		Destroyed->ClearComponents();
 
 		for (auto i = Objects.begin(); i < Objects.end(); i++)
 		{
-			if (*i == Destr)
+			if (*i == Destroyed)
 			{
 				Objects.erase(i);
 				break;
 			}
 		}
-		delete Destr;
+		delete Destroyed;
 	}
 	DestroyedObjects.clear();
 }
@@ -256,7 +262,6 @@ engine::SerializedValue engine::Scene::Serialize()
 			SerializedData("scene", GetSceneInfo()),
 			SerializedData("objects", SerializedObjects),
 		});
-
 
 	return Serialized;
 }
@@ -403,6 +408,8 @@ void engine::Scene::Init()
 			if (Resizable)
 				OnResized(NewSize);
 		} });
+
+	Shadows.Init();
 	Physics.Init();
 }
 

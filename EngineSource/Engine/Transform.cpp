@@ -82,7 +82,7 @@ Transform engine::Transform::Combine(const Transform& Other) const
 	return Transform(Matrix * Other.Matrix);
 }
 
-void engine::Transform::Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale)
+void engine::Transform::Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale) const
 {
 	glm::vec3 scale;
 	glm::quat rotation;

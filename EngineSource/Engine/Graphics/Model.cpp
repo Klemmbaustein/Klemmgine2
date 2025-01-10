@@ -1,9 +1,7 @@
 #include "Model.h"
 #include <Engine/Internal/OpenGL.h>
-#include <kui/Resource.h>
 #include <Engine/File/ModelData.h>
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/ext/matrix_transform.hpp>
+#include <Engine/Scene.h>
 
 engine::graphics::Model::Model(const ModelData* From)
 {
@@ -28,6 +26,8 @@ void engine::graphics::Model::Draw(const Transform& At, graphics::Camera* With, 
 		UsedMaterials[i]->Apply();
 		ShaderObject* Used = UsedMaterials[i]->Shader;
 
+		Scene::GetMain()->Shadows.BindUniforms(Used);
+
 		if (Used == nullptr)
 			continue;
 
@@ -35,6 +35,15 @@ void engine::graphics::Model::Draw(const Transform& At, graphics::Camera* With, 
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_view"), 1, false, &With->View[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(Used->ShaderID, "u_projection"), 1, false, &With->Projection[0][0]);
 		
+		ModelVertexBuffers[i]->Draw();
+	}
+}
+
+void engine::graphics::Model::SimpleDraw(const Transform& At, ShaderObject* Shader)
+{
+	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
+	{
+		glUniformMatrix4fv(glGetUniformLocation(Shader->ShaderID, "u_model"), 1, false, &At.Matrix[0][0]);
 		ModelVertexBuffers[i]->Draw();
 	}
 }

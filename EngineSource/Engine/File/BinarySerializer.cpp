@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+#include <filesystem>
 using namespace engine;
 
 const string engine::BinarySerializer::FORMAT_VERSION = "0";
@@ -155,6 +156,12 @@ std::vector<SerializedData> engine::BinarySerializer::FromFile(string File, stri
 
 void engine::BinarySerializer::FromFile(string File, string FormatIdentifier, std::vector<SerializedData>& To)
 {
+	if (!std::filesystem::exists(File) || !std::filesystem::is_regular_file(File))
+	{
+		throw SerializeReadException(str::Format("Failed reading '%s'. File does not exist or is not a regular file.",
+			File.c_str()));
+	}
+
 	std::streampos FileSize = 0;
 	std::ifstream In = std::ifstream(File, std::ios::binary);
 

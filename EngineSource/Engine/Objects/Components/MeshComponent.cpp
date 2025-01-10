@@ -15,15 +15,19 @@ void engine::MeshComponent::Draw(graphics::Camera* From)
 	}
 }
 
+void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
+{
+	if (DrawnModel)
+	{
+		DrawnModel->Drawable->SimpleDraw(WorldTransform, With);
+	}
+}
+
 void engine::MeshComponent::Load(AssetRef From)
 {
 	if (DrawnModel)
 	{
 		ClearModel(false);
-	}
-	else
-	{
-		GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
 
 	DrawnModel = GraphicsModel::GetModel(From);
@@ -39,6 +43,7 @@ void engine::MeshComponent::Load(AssetRef From)
 			}
 			Materials.push_back(new graphics::Material(m.Material));
 		}
+		GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
 	DrawBoundingBox.Position = 0;
 }

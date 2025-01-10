@@ -36,6 +36,7 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 	Name = From->At("name").GetString();
 	TypeID = ObjectTypeID(From->At("typeId").GetInt());
 
+	std::set<string> PreLoaded;
 	if (From->Contains("properties"))
 	{
 		auto& Array = From->At("properties").GetObject();
@@ -54,8 +55,22 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 				ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
 				if (Ref && OriginScene)
 				{
+					PreLoaded.insert(Name);
 					OriginScene->PreLoadAsset(Ref->Value);
 				}
+			}
+		}
+	}
+
+	if (OriginScene)
+	{
+		for (auto& prop : Properties)
+		{
+			ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
+
+			if (!PreLoaded.contains(prop->Name))
+			{
+				OriginScene->PreLoadAsset(Ref->Value);
 			}
 		}
 	}
@@ -68,6 +83,7 @@ Scene* engine::SceneObject::GetScene()
 
 void engine::SceneObject::Attach(ObjectComponent* Component)
 {
+	ENGINE_ASSERT(!Component->ParentComponent && !Component->ParentObject);
 	Component->ParentObject = this;
 	Component->UpdateTransform();
 	Component->OnAttached();

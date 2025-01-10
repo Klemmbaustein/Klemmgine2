@@ -53,7 +53,8 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 				return;
 
 			SelectedAsset = NewAsset;
-			this->OnChanged();
+			if (this->OnChanged)
+				this->OnChanged();
 			UpdateSelection();
 		};
 
@@ -190,7 +191,8 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 				AssetPath->SetText(Name);
 				RemoveSearchResults();
 				SelectedAsset = AssetRef::FromPath(Path);
-				OnChanged();
+				if (this->OnChanged)
+					OnChanged();
 				UpdateSelection();
 			}))
 			->SetTryFill(true)

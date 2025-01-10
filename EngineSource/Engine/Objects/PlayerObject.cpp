@@ -3,6 +3,7 @@
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
 #include <Engine/Editor/Editor.h>
+#include "Components/MeshComponent.h"
 
 void engine::PlayerObject::Begin()
 {
@@ -15,6 +16,10 @@ void engine::PlayerObject::Begin()
 	Cam = new CameraComponent();
 	Collider->Attach(Cam);
 	Cam->Use();
+
+	auto Mesh = new MeshComponent();
+	Attach(Mesh);
+	Mesh->Load(PlayerModel.Value);
 }
 
 void engine::PlayerObject::Update()

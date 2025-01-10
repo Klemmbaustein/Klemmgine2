@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjectComponent.h"
 #include <Engine/Graphics/BoundingBox.h>
+#include <Engine/Graphics/ShaderObject.h>
 
 namespace engine
 {
@@ -10,5 +11,6 @@ namespace engine
 		graphics::BoundingBox DrawBoundingBox;
 		bool IsVisible = true;
 		virtual void Draw(graphics::Camera* From) = 0;
+		virtual void SimpleDraw(graphics::ShaderObject* With) {};
 	};
 }

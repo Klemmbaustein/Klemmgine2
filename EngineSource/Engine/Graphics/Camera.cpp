@@ -7,6 +7,15 @@ engine::graphics::Camera::Camera(float FOV)
 	this->FOV = FOV;
 }
 
+engine::Vector3 engine::graphics::Camera::GetForward() const
+{
+	if (UseTransform)
+	{
+		return CameraTransform.Forward();
+	}
+	return Vector3::Forward(Rotation * Vector3(1, 1, 0));
+}
+
 void engine::graphics::Camera::Update()
 {
 	Projection = glm::perspective(FOV, Aspect, 0.1f, 1000.0f);

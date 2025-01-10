@@ -219,21 +219,28 @@ void engine::editor::Viewport::Update()
 	Scene* Current = Scene::GetMain();
 	if (MouseGrabbed && Current)
 	{
+		float Speed = stats::DeltaTime * 5;
+
+		if (input::IsKeyDown(input::Key::LSHIFT))
+		{
+			Speed *= 5;
+		}
+
 		if (input::IsKeyDown(input::Key::w))
 		{
-			Current->SceneCamera->Position += Vector3::Forward(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position += Vector3::Forward(Current->SceneCamera->Rotation) * Speed;
 		}
 		if (input::IsKeyDown(input::Key::s))
 		{
-			Current->SceneCamera->Position -= Vector3::Forward(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position -= Vector3::Forward(Current->SceneCamera->Rotation) * Speed;
 		}
 		if (input::IsKeyDown(input::Key::d))
 		{
-			Current->SceneCamera->Position += Vector3::Right(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position += Vector3::Right(Current->SceneCamera->Rotation) * Speed;
 		}
 		if (input::IsKeyDown(input::Key::a))
 		{
-			Current->SceneCamera->Position -= Vector3::Right(Current->SceneCamera->Rotation) * Vector3(stats::DeltaTime * 5);
+			Current->SceneCamera->Position -= Vector3::Right(Current->SceneCamera->Rotation) * Speed;
 		}
 
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);

@@ -25,6 +25,8 @@ namespace engine
 		[[nodiscard]]
 		static AssetRef FromPath(string Path);
 
+		[[nodiscard]]
+		bool IsValid() const;
 
 		/// The path to the referenced file.
 		string FilePath;
@@ -39,6 +41,7 @@ namespace engine
 		* 
 		* Example: Assets/Cube.kmdl -> Cube
 		*/
+		[[nodiscard]]
 		string DisplayName() const;
 	};
 

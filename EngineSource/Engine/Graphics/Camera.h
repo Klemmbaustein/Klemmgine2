@@ -20,6 +20,8 @@ namespace engine::graphics
 		Vector3 Rotation;
 		Transform CameraTransform;
 
+		Vector3 GetForward() const;
+
 		void Update();
 	};
 }

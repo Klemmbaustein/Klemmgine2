@@ -44,7 +44,7 @@ namespace engine
 
 		Transform Combine(const Transform& Other) const;
 
-		void Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale);
+		void Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale) const;
 
 		glm::mat4 Matrix;
 	};

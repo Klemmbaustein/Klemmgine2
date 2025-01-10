@@ -110,6 +110,7 @@ void engine::subsystem::VideoSubsystem::Update()
 
 	stats::DeltaTime = MainWindow->GetDeltaTime();
 	stats::Time += stats::DeltaTime;
+
 }
 
 void engine::subsystem::VideoSubsystem::RenderUpdate()
@@ -144,9 +145,16 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[1]);
 
+	if (SceneSystem && SceneSystem->Main)
+	{
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, graphics::CascadedShadows::LightDepthMaps);
+	}
+
 	PostProcess->SetInt("u_texture", 0);
 	PostProcess->SetInt("u_ui", 1);
 	PostProcess->SetInt("u_alpha", 2);
+	PostProcess->SetInt("u_shadowMap", 3);
 
 #if EDITOR
 	if (EditorSubsystem::Active)

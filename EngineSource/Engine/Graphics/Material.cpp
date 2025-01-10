@@ -198,7 +198,7 @@ void engine::graphics::Material::Apply()
 				// TODO: replace with engine's texture functions
 				i.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::FromPath(*i.TextureValue.Name), TextureLoadOptions{});
 			}
-			glActiveTexture(GL_TEXTURE0 + TextureSlot);
+			glActiveTexture(GL_TEXTURE1 + TextureSlot);
 			if (i.TextureValue.Value)
 			{
 				glBindTexture(GL_TEXTURE_2D, i.TextureValue.Value->TextureObject);
@@ -207,7 +207,7 @@ void engine::graphics::Material::Apply()
 			{
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
-			Shader->SetInt(i.UniformLocation, TextureSlot);
+			Shader->SetInt(i.UniformLocation, TextureSlot + 1);
 			TextureSlot++;
 			break;
 		}
