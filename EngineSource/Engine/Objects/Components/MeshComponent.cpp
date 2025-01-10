@@ -25,7 +25,8 @@ void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 
 void engine::MeshComponent::Load(AssetRef From)
 {
-	if (DrawnModel)
+	bool AlreadyRegistered = DrawnModel;
+	if (AlreadyRegistered)
 	{
 		ClearModel(false);
 	}
@@ -43,7 +44,9 @@ void engine::MeshComponent::Load(AssetRef From)
 			}
 			Materials.push_back(new graphics::Material(m.Material));
 		}
-		GetRootObject()->GetScene()->AddDrawnComponent(this);
+
+		if (!AlreadyRegistered)
+			GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
 	DrawBoundingBox.Position = 0;
 }
