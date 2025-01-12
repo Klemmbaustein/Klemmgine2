@@ -26,8 +26,8 @@ element LoadingBarElement
 
 		child UIBackground bar
 		{
-			tryFill = true;
-			size = 25px;
+			width = 1pn;
+			height = 25px;
 			padding = 10px;
 			upPadding = 0;
 			color = Color_DarkBackground;
@@ -43,8 +43,7 @@ element LoadingBarElement
 				borderColor = Color_HighlightDark;
 				color = Color_Highlight1;
 				corners = 5px;
-				tryFill = true;
-				size = 25px;
+				size = 1pn;
 				leftPadding = BarLeftPadding;
 				rightPadding = BarRightPadding;
 			}

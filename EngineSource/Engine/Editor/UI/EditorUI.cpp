@@ -117,11 +117,9 @@ engine::editor::EditorUI::EditorUI()
 		->SetMinSize(2)
 		->SetMaxSize(2);
 
-	MenuBar = new UIBackground(true, 0, Theme.LightBackground, MenuBarSize);
+	MenuBar = new UIBackground(true, 0, Theme.LightBackground, SizeVec(UISize::Parent(1), UISize::Pixels(MenuBarSize)));
 	MenuBar
-		->SetVerticalAlign(UIBox::Align::Centered)
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetTryFill(true);
+		->SetVerticalAlign(UIBox::Align::Centered);
 
 	for (auto& i : MenuBarEntries)
 	{
@@ -149,10 +147,8 @@ engine::editor::EditorUI::EditorUI()
 	Root->AddChild(MainBackground);
 
 	StatsBarElement = new StatusBarElement();
-	StatusBar = new UIBackground(true, 0, Theme.DarkBackground, StatusBarSize);
-	StatusBar
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetTryFill(true);
+	StatusBar = new UIBackground(true, 0, Theme.DarkBackground, SizeVec(UISize::Parent(1), UISize::Pixels(StatusBarSize)));
+
 	Root->AddChild(StatusBar
 		->AddChild(StatsBarElement));
 
@@ -244,9 +240,9 @@ void engine::editor::EditorUI::Update()
 	if (DraggedBox)
 	{
 		if (CurrentDraggedItem.Centered)
-			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize() / 2);
+			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize().GetScreen() / 2);
 		else
-			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - Vec2f(0, DraggedBox->GetUsedSize().Y));
+			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - Vec2f(0, DraggedBox->GetUsedSize().GetScreen().Y));
 		Window::GetActiveWindow()->CurrentCursor = Window::Cursor::Default;
 
 		// Don't hover anything new when dragging something.

@@ -2,7 +2,7 @@ element ConsolePanelElement
 {
 	var LogSize;
 
-	tryFill = true;
+	width = 1pn;
 	orientation = vertical;
 	padding = 1px;
 	rightPadding = 1.1px;
@@ -11,12 +11,12 @@ element ConsolePanelElement
 	{
 		color = Color_DarkBackground2;
 		orientation = vertical;
-		tryFill = true;
+		width = 1pn;
 		size = LogSize;
 
 		child UIScrollBox logBox
 		{
-			tryFill = true;
+			width = 1pn;
 			size = LogSize;
 			orientation = vertical;
 		}
@@ -24,16 +24,16 @@ element ConsolePanelElement
 
 	child UIBackground
 	{
-		size = 1px;
-		tryFill = true;
+		width = 1px;
+		height = 1pn;
 		color = Color_BackgroundHighlight;
 	}
 
 	child UIBox
 	{
 		verticalAlign = centered;
-		size = 32px;
-		tryFill = true;
+		width = 32px;
+		height = 1pn;
 
 		child EditorTextField commandField
 		{

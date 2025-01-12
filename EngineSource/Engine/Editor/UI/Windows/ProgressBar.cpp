@@ -25,7 +25,7 @@ void engine::editor::ProgressBar::Update()
 		}
 	}
 
-	float Size = Elem->bar->GetUsedSize().X;
+	float Size = Elem->bar->GetUsedSize().GetScreen().X;
 	if (Progress < 0)
 	{
 		Time += Popup->GetDeltaTime();

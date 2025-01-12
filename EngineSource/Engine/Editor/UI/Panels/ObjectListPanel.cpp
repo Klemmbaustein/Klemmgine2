@@ -12,7 +12,7 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 	: EditorPanel("Objects", "object_list")
 {
 	Heading = new ObjectListHeader();
-	Heading->search->field->SetSizeMode(UIBox::SizeMode::ScreenRelative);
+	//Heading->search->field->Siz;
 	Background->AddChild(Heading);
 
 	DisplayList();
@@ -27,7 +27,6 @@ void engine::editor::ObjectListPanel::Update()
 
 	Heading->listBox->SetMinSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 35), Heading->GetParentWindow()));
 	Heading->listBox->SetMaxSize(Heading->listBox->GetMinSize());
-	Heading->listBox->SetSizeMode(UIBox::SizeMode::ScreenRelative);
 
 	Scene* Current = Scene::GetMain();
 

@@ -3,11 +3,11 @@ element ItemBrowserHeading
 	var PathText;
 	var PathWrapping = 0;
 
-	tryFill = true;
+	width = 1pn;
 	orientation = vertical;
 	child UIBox
 	{
-		tryFill = true;
+		width = 1pn;
 		orientation = horizontal;
 		verticalAlign = centered;
 		child UIButton backButton
@@ -36,7 +36,7 @@ element ItemBrowserHeading
 
 	child UIBackground
 	{
-		tryFill = true;
+		width = 1pn;
 		size = 1px;
 		padding = 1px;
 		color = Color_BackgroundHighlight;

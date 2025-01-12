@@ -13,7 +13,6 @@ element EditorPanelTab
 		verticalAlign = centered;
 
 		border = BorderSize;
-		borderSizeMode = px;
 		bottomBorder = false;
 		
 		corners = 5px;
@@ -117,10 +116,9 @@ element EditorPanelElement
 		corners = 5px;
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
-		minSize = (0, 24)px;
-		maxSize = (99999999, 24)px;
+		height = 24px;
+		width = 1pn;
 
-		tryFill = true;
 		color = Color_DarkBackground2;
 	}
 }

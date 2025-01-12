@@ -58,7 +58,7 @@ void engine::editor::EditorPanel::UpdateLayout()
 {
 	if (!Parent)
 	{
-		UsedSize = EditorUI::Instance->MainBackground->GetMinSize();
+		UsedSize = EditorUI::Instance->MainBackground->GetMinSize().GetScreen();
 		Position = EditorUI::Instance->MainBackground->GetPosition();
 	}
 
@@ -444,16 +444,13 @@ void engine::editor::EditorPanel::MovePanel()
 	Move.HighlightBackground = new UIBlurBackground(true, 0, EditorUI::Theme.HighlightDark);
 	Move.HighlightBackground
 		->SetOpacity(0.5f)
-		->SetBorder(3, UIBox::SizeMode::PixelRelative)
-		->SetBorderColor(EditorUI::Theme.Highlight1)
-		->SetCorner(5, UIBox::SizeMode::PixelRelative)
+		->SetBorder(UISize::Pixels(3), EditorUI::Theme.Highlight1)
+		->SetCorner(UISize::Pixels(5))
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetVerticalAlign(UIBox::Align::Centered);
 
-	Move.HighlightBackground->AddChild((new UIText(11, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetPadding(2, 2, 10, 10)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative));
+	Move.HighlightBackground->AddChild((new UIText(11_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
+		->SetPadding(2_px, 2_px, 10_px, 10_px));
 
 	auto MoveBox = new DraggedPanelTab();
 
@@ -487,13 +484,13 @@ void engine::editor::EditorPanel::UpdatePanelMove()
 		for (size_t i = 0; i < TabElements.size(); i++)
 		{
 			PreviewPosition = TabElements[i]->mainButton->GetPosition();
-			PreviewSize = TabElements[i]->mainButton->GetUsedSize();
-			if (TabElements[i]->GetPosition().X + TabElements[i]->GetUsedSize().X > MousePos.X)
+			PreviewSize = TabElements[i]->mainButton->GetUsedSize().GetScreen();
+			if (TabElements[i]->GetPosition().X + TabElements[i]->GetUsedSize().GetScreen().X > MousePos.X)
 			{
 				Move.TabPosition = i;
 				break;
 			}
-			PreviewPosition += Vec2f(TabElements[i]->mainButton->GetUsedSize().X, 0);
+			PreviewPosition += Vec2f(TabElements[i]->mainButton->GetUsedSize().GetScreen().X, 0);
 		}
 	}
 	else

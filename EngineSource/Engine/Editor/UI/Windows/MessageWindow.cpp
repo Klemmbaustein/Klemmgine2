@@ -30,11 +30,9 @@ engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::
 void engine::editor::MessageWindow::Begin()
 {
 	IDialogWindow::Begin();
-	Background->AddChild((new UIText(11, EditorUI::Theme.Text, Message, DefaultFont))
-		->SetWrapEnabled(true, 370, UIBox::SizeMode::PixelRelative)
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetPadding(10)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative));
+	Background->AddChild((new UIText(11_px, EditorUI::Theme.Text, Message, DefaultFont))
+		->SetWrapEnabled(true, 370_px)
+		->SetPadding(10_px));
 }
 
 void engine::editor::MessageWindow::Update()

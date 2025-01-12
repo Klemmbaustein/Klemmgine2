@@ -29,29 +29,23 @@ engine::editor::Viewport::Viewport()
 	ViewportBackground
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->SetHorizontalAlign(UIBox::Align::Centered)
-		->SetPadding(0, 1, 1, 1)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+		->SetPadding(UISize::Pixels(1))
+		->SetDownPadding(UISize(0));
 	ViewportBackground->HasMouseCollision = true;
 
 	StatusBarBox = new UIBox(true, 0);
 	StatusBarBox
-		->SetMinSize(23)
-		->SetMaxSize(23)
-		->SetTryFill(true)
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetMinSize(SizeVec(UISize::Parent(1), UISize::Pixels(23)))
+		->SetMaxSize(SizeVec(UISize::Parent(1), UISize::Pixels(23)))
 		->SetVerticalAlign(UIBox::Align::Centered);
 
 	ViewportToolbar = new UIBackground(true, 0, EditorUI::Theme.Background);
 	ViewportToolbar
-		->SetBorder(1, UIBox::SizeMode::PixelRelative)
+		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
 		->SetBorderEdges(false, true, false, false)
-		->SetBorderColor(EditorUI::Theme.BackgroundHighlight)
 		->SetMinSize(TOOLBAR_SIZE)
 		->SetMaxSize(TOOLBAR_SIZE)
-		->SetTryFill(true)
-		->SetPadding(1, 0, 1, 1.1f)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetSizeMode(UIBox::SizeMode::PixelRelative);
+		->SetPadding(1_px, 0_px, 1_px, 1.1_px);
 
 	auto TestButton = new ToolBarButton();
 
@@ -84,32 +78,23 @@ engine::editor::Viewport::Viewport()
 	ViewportToolbar->AddChild(TestButton2);
 	ViewportToolbar->AddChild(RunButton);
 
-	ViewportStatusText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
+	ViewportStatusText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	ViewportStatusText
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetPadding(4)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+		->SetPadding(UISize::Pixels(4));
 
 	LoadingScreenBox = new UIBackground(true, 0, EditorUI::Theme.Background);
 
 	LoadingScreenBox
-		->SetBorder(1, UIBox::SizeMode::PixelRelative)
-		->SetBorderColor(EditorUI::Theme.BackgroundHighlight)
-		->SetCorner(5, UIBox::SizeMode::PixelRelative)
+		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
+		->SetCorner(5_px)
 		->SetVerticalAlign(UIBox::Align::Centered)
-		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32))
+		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
 			->SetBackgroundColor(EditorUI::Theme.HighlightDark)
-			->SetPadding(15, 15, 15, 5)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative))
-		->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, 1))
-			->SetPadding(10)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetTryFill(true))
-		->AddChild((new UIText(12, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
-			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPadding(5, 5, 5, 15)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative));
+			->SetPadding(15_px, 15_px, 15_px, 5_px))
+		->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
+			->SetPadding(10_px))
+		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
+			->SetPadding(5_px, 5_px, 5_px, 15_px));
 
 	auto ViewportDropBox = new DroppableBox(false, [](EditorUI::DraggedItem Item)
 		{
@@ -153,7 +138,7 @@ engine::editor::Viewport::~Viewport()
 
 void engine::editor::Viewport::OnResized()
 {
-	ViewportBackground->SetMinSize(Background->GetMinSize() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + TOOLBAR_SIZE + 2), ViewportBackground->GetParentWindow()));
+	ViewportBackground->SetMinSize(Background->GetMinSize().GetScreen() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + TOOLBAR_SIZE + 2), ViewportBackground->GetParentWindow()));
 	PanelElement->UpdateElement();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();

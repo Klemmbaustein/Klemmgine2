@@ -27,10 +27,10 @@ element PropertyEntryElement
 
 	child UIBackground separator
 	{
-		size = 1px;
+		width = 1px;
 
 		color = Color_BackgroundHighlight;
-		tryFill = true;
+		height = 1pn;
 	}
 
 	child UIBox valueBox
@@ -47,7 +47,7 @@ element PropertyHeaderElement
 	var UpPadding = 15;
 
 	orientation = vertical;
-	tryFill = true;
+	width = 1pn;
 
 	child UIText
 	{
@@ -56,7 +56,6 @@ element PropertyHeaderElement
 		leftPadding = 10px;
 		
 		upPadding = UpPadding;
-		paddingSizeMode = px;
 		color = Color_Text;
 		text = Title;
 		size = 12px;
@@ -67,7 +66,7 @@ element PropertyHeaderElement
 		padding = 1px;
 		downPadding = 0;
 		color = Color_BackgroundHighlight;
-		tryFill = true;
-		size = 1px;
+		width = 1pn;
+		height = 1px;
 	}
 }

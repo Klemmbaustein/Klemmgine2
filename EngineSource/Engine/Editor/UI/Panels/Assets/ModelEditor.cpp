@@ -27,15 +27,13 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 	Background->SetHorizontal(true);
 
 	SceneBackground = new UIBackground(false, 0, 1, 0);
-	SceneBackground->SetCorner(5, UIBox::SizeMode::PixelRelative);
+	SceneBackground->SetCorner(5_px);
 	SceneBackground->SetCorners(false, false, true, false);
 
 	MainBox = new UIScrollBox(false, 0, true);
 
 	Background->AddChild(MainBox
-		->SetPadding(0, 5, 1, 5)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-	);
+		->SetPadding(0_px, 5_px, 1_px, 5_px));
 
 	auto SaveButton = new ToolBarButton();
 	SaveButton->SetIcon("Engine/Editor/Assets/Save.png");
@@ -46,15 +44,11 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 	delete SaveButton->dropdownButton;
 
 	MainBox->AddChild((new UIBox(true))
-		->SetTryFill(true)
-		->SetMinSize(38)
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetMinSize(SizeVec(UISize::Parent(1), 38_px))
 		->AddChild(SaveButton));
 
 	MainBox->AddChild(SceneBackground
-		->SetBorder(1, UIBox::SizeMode::PixelRelative)
-		->SetBorderColor(EditorUI::Theme.BackgroundHighlight)
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->AddChild(new UISpinner(0, EditorUI::Theme.Highlight1)));
@@ -62,12 +56,9 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 	SidebarBox = new UIScrollBox(false, 0, true);
 
 	Background->AddChild(SidebarBox
-		->SetMinSize(280)
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetMinSize(SizeVec(280_px, UISize::Parent(1)))
 		->SetHorizontalAlign(UIBox::Align::Centered)
-		->SetPadding(5)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetTryFill(true));
+		->SetPadding(5_px));
 
 	LoadModelThread = std::thread([this, ModelFile, CancelLoadShared]()
 		{
@@ -105,9 +96,8 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	SidebarBox->DeleteChildren();
 
 	SidebarBox->AddChild((new UIBox(true))
-		->SetTryFill(true)
-		->AddChild((new UIText(14, 1, "Materials", EditorUI::EditorFont))
-			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)));
+		->SetMinWidth(UISize::Parent(1))
+		->AddChild(new UIText(14_px, 1, "Materials", EditorUI::EditorFont)));
 
 	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 
@@ -129,8 +119,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 				OnModelChanged();
 			};
 
-		NewSelector->SetPadding(10, 10, 20, 20);
-		NewSelector->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+		NewSelector->SetPadding(10_px, 10_px, 20_px, 20_px);
 
 		SidebarBox->AddChild(NewSelector);
 	}
@@ -164,14 +153,14 @@ void engine::editor::ModelEditor::OnResized()
 	Vec2i PixelSize = Vec2f(Size
 		* Vec2f(Background->GetParentWindow()->GetSize())
 		/ Vec2f(Background->GetParentWindow()->GetDPI())
-		/ Vec2f(2.0));
+		/ Vec2f(2.0f));
 
 	PixelSize = Vec2i::Max(PixelSize - Vec2i(300, 39), Vec2i(10));
 
 	EditorScene->BufferSize = PixelSize * Background->GetParentWindow()->GetDPI();
 	EditorScene->OnResized(EditorScene->BufferSize);
-	SceneBackground->SetMinSize(PixelSize);
-	SceneBackground->SetMaxSize(PixelSize);
+	SceneBackground->SetMinSize(SizeVec(PixelSize));
+	SceneBackground->SetMaxSize(SizeVec(PixelSize));
 	OnModelLoaded();
 }
 #endif

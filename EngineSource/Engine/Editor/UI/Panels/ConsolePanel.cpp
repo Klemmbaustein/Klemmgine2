@@ -74,7 +74,7 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 	if (LastLogSize > 0)
 	{
-		Element->logBox->GetChildren()[LastLogSize - 1]->SetPadding(0, 0, 5, 0);
+		Element->logBox->GetChildren()[LastLogSize - 1]->SetPadding(0_px, 0_px, 5_px, 0_px);
 	}
 
 	for (size_t i = LastLogSize; i < LogMessages.size(); i++)
@@ -90,19 +90,17 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 		Segments.push_back(TextSegment(LogMessages[i].Message, LogColorValues[LogMessages[i].Color]));
 
-		UIText* txt = new UIText(10, Segments, EditorUI::MonospaceFont);
+		UIText* txt = new UIText(10_px, Segments, EditorUI::MonospaceFont);
 
 		txt
-			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetPadding(0, 0, 5, 0)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+			->SetPadding(0_px, 0_px, 5_px, 0_px);
 
 		Element->logBox->AddChild(txt);
 	}
 
 	if (LastLogSize > 0)
 	{
-		Element->logBox->GetChildren()[LogMessages.size() - 1]->SetPadding(0, 15, 5, 0);
+		Element->logBox->GetChildren()[LogMessages.size() - 1]->SetPadding(0_px, 15_px, 5_px, 0_px);
 	}
 
 	LastLogSize = LogMessages.size();

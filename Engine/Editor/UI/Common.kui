@@ -10,7 +10,6 @@ element EditorTextField
 	{
 		hintText = HintText;
 		size = Size;
-		sizeMode = px;
 		textSize = 11px;
 		color = Color_DarkBackground;
 		textColor = Color_Text;
@@ -28,7 +27,6 @@ element EditorTextField
 	child UIBackground
 	{
 		size = 22px;
-		tryFill = true;
 		color = Color_DarkBackground;
 		corners = 5px;
 		topLeftCorner = false;

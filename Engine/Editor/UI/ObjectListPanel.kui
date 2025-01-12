@@ -1,7 +1,8 @@
 element ObjectListHeader
 {
 	orientation = vertical;
-	tryFill = true;
+
+	width = 1pn;
 
 	padding = 1px;
 
@@ -16,7 +17,7 @@ element ObjectListHeader
 	child UIScrollBox listBox
 	{
 		orientation = vertical;
-		tryFill = true;
+		width = 1pn;
 		size = 100px;
 	}
 }
@@ -29,25 +30,24 @@ element ObjectEntryElement
 	var TextColor = 1;
 	var LeftPadding = 5;
 
-	tryFill = true;
+	width = 1pn;
 	orientation = vertical;
 
 	child UIButton button
 	{
-		size = 24px;
+		width = 1pn;
+		height = 24px;
 
 		color = Color;
 
 		padding = 1px;
 		upPadding = 0;
 		downPadding = 0;
-		tryFill = true;
 
 		verticalAlign = centered;
 		child UIBox
 		{
 			leftPadding = LeftPadding;
-			paddingSizeMode = px;
 		}
 		child UIBackground arrow
 		{

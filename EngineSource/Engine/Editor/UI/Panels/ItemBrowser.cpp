@@ -14,12 +14,10 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	ItemsScrollBox = new UIScrollBox(false, 0, true);
 	Background->AddChild(ItemsScrollBox);
 
-	StatusText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
+	StatusText = new UIText(11_px, EditorUI::Theme.Text, "", EditorUI::EditorFont);
 
 	StatusText
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetPadding(5)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+		->SetPadding(5_px);
 	Background->AddChild(StatusText);
 
 	Heading->backButton->OnClicked = [this]() { Back(); };
@@ -35,10 +33,10 @@ void engine::editor::ItemBrowser::Update()
 	if (!Visible)
 		return;
 
-	ItemsScrollBox->SetMinSize(Background->GetUsedSize() - Vec2f(0, Heading->GetUsedSize().Y)
+	ItemsScrollBox->SetMinSize(Background->GetUsedSize().GetScreen() - Vec2f(0, Heading->GetUsedSize().GetScreen().Y)
 		- UIBox::PixelSizeToScreenSize(Vec2f(1, 25), ItemsScrollBox->GetParentWindow()));
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
-	Heading->SetPathWrapping(Background->GetUsedSize().X - UIBox::PixelSizeToScreenSize(60, Background->GetParentWindow()).X);
+	Heading->SetPathWrapping(Background->GetUsedSize().GetScreen().X - UIBox::PixelSizeToScreenSize(60, Background->GetParentWindow()).X);
 
 	bool ScrollBoxHovered = ItemsScrollBox->IsBeingHovered();
 
@@ -69,13 +67,14 @@ void engine::editor::ItemBrowser::Update()
 		}
 	}
 }
+
 void engine::editor::ItemBrowser::OnResized()
 {
 	Background->UpdateElement();
-	Heading->searchBox->field->SetSizeMode(UIBox::SizeMode::ScreenRelative);
 	Heading->searchBox->SetSize(Vec2f(Size.X, 0) + UIBox::PixelSizeToScreenSize(Vec2f(-33, 22), Heading->GetParentWindow()));
 	UpdateItems();
 }
+
 void engine::editor::ItemBrowser::UpdateItems()
 {
 	Heading->SetPathText(GetPathDisplayName());
@@ -110,7 +109,7 @@ void engine::editor::ItemBrowser::DisplayList()
 	ItemsScrollBox->AddChild(CurrentBox);
 
 	size_t ItemsPerRow = size_t(
-		Background->GetUsedSize().X
+		Background->GetUsedSize().GetScreen().X
 		/ UIBox::PixelSizeToScreenSize(90, Background->GetParentWindow()).X);
 
 	if (ItemsPerRow == 0)

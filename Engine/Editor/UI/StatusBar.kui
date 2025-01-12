@@ -3,8 +3,8 @@ element StatusBarElement
 	var Icon = "file:Engine/Editor/Assets/Info.png";
 	var Text = "";
 
-	tryFill = true;
-	size = 24px;
+	width = 1pn;
+	height = 24px;
 
 	verticalAlign = centered;
 

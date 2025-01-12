@@ -141,8 +141,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	Name->valueBox->AddChild(NameField
 		->SetText(Object->Name)
-		->SetTextSize(11)
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+		->SetTextSize(11_px)
 		->SetMinSize(kui::Vec2f(Size, 0)));
 
 	CreateNewHeading(Reflection::ObjectTypes[Object->TypeID].Name);
@@ -178,8 +177,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			auto* Ref = static_cast<ObjProperty<string>*>(i);
 			New->valueBox->AddChild((new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr))
 				->SetText(Ref->Value)
-				->SetTextSize(11)
-				->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
+				->SetTextSize(11_px)
 				->SetMinSize(kui::Vec2f(Size, 0)));
 			break;
 		}

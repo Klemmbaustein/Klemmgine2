@@ -162,7 +162,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 		editor::Viewport* View = editor::Viewport::Current;
 
 		PostProcess->SetVec2("u_pos", View->ViewportBackground->GetScreenPosition() / 2 + 0.5);
-		PostProcess->SetVec2("u_size", View->ViewportBackground->GetUsedSize() / 2);
+		PostProcess->SetVec2("u_size", View->ViewportBackground->GetUsedSize().GetScreen() / 2);
 	}
 	else
 #endif

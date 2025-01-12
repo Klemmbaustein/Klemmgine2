@@ -19,18 +19,16 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 		})
 {
 	SelectedAsset = InitialValue;
-	IconBackground = new UIBackground(true, 0, 1, 24);
+	IconBackground = new UIBackground(true, 0, 1, UISize::Pixels(24));
 
 	AddChild(IconBackground
-		->SetSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetPadding(0, 0, 0, 5)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative));
+		->SetPadding(UISize(), UISize(), UISize(), UISize::Pixels(5)));
 
 	IconBackground->UpdateElement();
 
 	float PaddingSize = PixelSizeToScreenSize(5, ParentWindow).X;
 
-	float BoxSize = Width - IconBackground->GetUsedSize().X - PaddingSize;
+	float BoxSize = Width - IconBackground->GetUsedSize().GetScreen().X - PaddingSize;
 
 	UIBox* RightBox = new UIBox(false);
 	RightBox->SetMinSize(kui::Vec2f(BoxSize, 0));
@@ -41,9 +39,7 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 		->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath))
 		->SetHintText(SelectedAsset.Extension + " file")
 		->SetTextColor(EditorUI::Theme.Text)
-		->SetTextSize(11)
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetTryFill(true);
+		->SetTextSize(UISize::Pixels(11));
 
 	AssetPath->OnChanged = [this]()
 		{
@@ -60,12 +56,10 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 
 	RightBox->AddChild(AssetPath);
 
-	PathText = new UIText(11, EditorUI::Theme.Text, "", EditorUI::EditorFont);
+	PathText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	PathText
-		->SetWrapEnabled(true, BoxSize - PaddingSize * 2, UIBox::SizeMode::ScreenRelative)
-		->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-		->SetPadding(5, 0, 5, 0)
-		->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative);
+		->SetWrapEnabled(true, UISize::Screen(BoxSize - PaddingSize * 2))
+		->SetPadding(UISize::Pixels(5), UISize::Pixels(0), UISize::Pixels(5), UISize::Pixels(0));
 	RightBox->AddChild(PathText);
 	UpdateSelection();
 	UpdateElement();
@@ -141,8 +135,8 @@ void engine::editor::AssetSelector::UpdateSearchSize()
 	}
 
 	float VerticalSize = PixelSizeToScreenSize(200, ParentWindow).Y;
-	SearchBackground->SetMinSize(Vec2f(AssetPath->GetUsedSize().X, VerticalSize));
-	SearchBackground->SetMaxSize(Vec2f(AssetPath->GetUsedSize().X, VerticalSize));
+	SearchBackground->SetMinSize(SizeVec(AssetPath->GetUsedSize().X, UISize::Pixels(200)));
+	SearchBackground->SetMaxSize(SizeVec(AssetPath->GetUsedSize().X, UISize::Pixels(200)));
 	SearchBackground->SetPosition(AssetPath->GetScreenPosition() - Vec2f(0, VerticalSize - Offset));
 }
 
@@ -195,17 +189,14 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 					OnChanged();
 				UpdateSelection();
 			}))
-			->SetTryFill(true)
-			->AddChild((new UIText(11,
+			->AddChild((new UIText(UISize::Pixels(11),
 			{
 				TextSegment(First, EditorUI::Theme.Text),
 				TextSegment(Second, Vec3f(1, 0.5f, 0.0f)),
 				TextSegment(Third, EditorUI::Theme.Text),
 			}, EditorUI::EditorFont))
-			->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-			->SetWrapEnabled(true, AssetPath->GetUsedSize().X - PixelSizeToScreenSize(10, ParentWindow).X, UIBox::SizeMode::ScreenRelative)
-			->SetPadding(4, 4, 3, 3)
-			->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)));
+			->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - PixelSizeToScreenSize(10, ParentWindow).X))
+			->SetPadding(UISize::Pixels(4), UISize::Pixels(4), UISize::Pixels(3), UISize::Pixels(3))));
 	}
 }
 #endif

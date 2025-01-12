@@ -35,24 +35,20 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 						OnClicked();
 					Clear();
 				}))
-				->SetBorder(1, UIBox::SizeMode::PixelRelative)
-				->SetBorderColor(EditorUI::Theme.DarkBackground)
+				->SetBorder(UISize::Pixels(1), EditorUI::Theme.DarkBackground)
 				->SetBorderEdges(i == Options.begin(), i == Options.end() - 1 || i->Separator, true, true)
-				->SetMinSize(Vec2f(150, 24))
+				->SetMinSize(SizeVec::Pixels(150, 24))
 				->SetVerticalAlign(UIBox::Align::Centered)
-				->SetSizeMode(UIBox::SizeMode::PixelRelative)
-				->AddChild((new UIText(12, EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
-					->SetTextSizeMode(UIBox::SizeMode::PixelRelative)
-					->SetPadding(5)
-					->SetPaddingSizeMode(UIBox::SizeMode::PixelRelative)));
+				->AddChild((new UIText(UISize::Pixels(12), EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
+					->SetPadding(UISize::Pixels(5))));
 	}
 
 	Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = Box;
 
 	Box->UpdateElement();
 
-	Box->SetPosition((Box->GetPosition() - Vec2f(0, Box->GetUsedSize().Y))
-		.Clamp(-1, Vec2f(1) - Box->GetUsedSize()));
+	Box->SetPosition((Box->GetPosition() - Vec2f(0, Box->GetUsedSize().GetScreen().Y))
+		.Clamp(-1, Vec2f(1) - Box->GetUsedSize().GetScreen()));
 
 	Current = this;
 }
