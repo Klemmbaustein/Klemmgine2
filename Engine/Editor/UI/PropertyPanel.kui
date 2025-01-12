@@ -44,7 +44,7 @@ element PropertyEntryElement
 element PropertyHeaderElement
 {
 	var Title;
-	var UpPadding = 15;
+	var UpPadding = 15px;
 
 	orientation = vertical;
 	width = 1pn;

@@ -5,11 +5,13 @@ element EditorTextField
 	var Image;
 
 	verticalAlign = centered;
+	height = 22px;
 
 	child UITextField field
 	{
 		hintText = HintText;
-		size = Size;
+		width = Size;
+		height = 22px;
 		textSize = 11px;
 		color = Color_DarkBackground;
 		textColor = Color_Text;

@@ -57,6 +57,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	Background->AddChild(SidebarBox
 		->SetMinSize(SizeVec(280_px, UISize::Parent(1)))
+		->SetMaxSize(SizeVec(280_px, UISize::Parent(1)))
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetPadding(5_px));
 
@@ -103,7 +104,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 
 	if (!Data)
 	{
-		SidebarBox->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30))
+		SidebarBox->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
 			->SetBackgroundColor(EditorUI::Theme.HighlightDark));
 		return;
 	}
@@ -159,8 +160,8 @@ void engine::editor::ModelEditor::OnResized()
 
 	EditorScene->BufferSize = PixelSize * Background->GetParentWindow()->GetDPI();
 	EditorScene->OnResized(EditorScene->BufferSize);
-	SceneBackground->SetMinSize(SizeVec(PixelSize));
-	SceneBackground->SetMaxSize(SizeVec(PixelSize));
+	SceneBackground->SetMinSize(SizeVec(PixelSize, SizeMode::PixelRelative));
+	SceneBackground->SetMaxSize(SizeVec(PixelSize, SizeMode::PixelRelative));
 	OnModelLoaded();
 }
 #endif

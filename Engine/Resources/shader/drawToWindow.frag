@@ -1,4 +1,4 @@
-#version 330
+//! #version 330
 
 layout(location = 0) out vec4 f_color;
 in vec2 v_texcoords;

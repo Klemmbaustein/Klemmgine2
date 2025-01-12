@@ -35,16 +35,17 @@ engine::editor::Viewport::Viewport()
 
 	StatusBarBox = new UIBox(true, 0);
 	StatusBarBox
-		->SetMinSize(SizeVec(UISize::Parent(1), UISize::Pixels(23)))
-		->SetMaxSize(SizeVec(UISize::Parent(1), UISize::Pixels(23)))
+		->SetMinSize(SizeVec(UISize::Parent(1), 23_px))
+		->SetMaxSize(SizeVec(UISize::Parent(1), 23_px))
 		->SetVerticalAlign(UIBox::Align::Centered);
 
 	ViewportToolbar = new UIBackground(true, 0, EditorUI::Theme.Background);
 	ViewportToolbar
 		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
 		->SetBorderEdges(false, true, false, false)
-		->SetMinSize(TOOLBAR_SIZE)
-		->SetMaxSize(TOOLBAR_SIZE)
+		->SetMinWidth(UISize::Parent(1))
+		->SetMinHeight(UISize::Pixels(TOOLBAR_SIZE))
+		->SetMaxHeight(UISize::Pixels(TOOLBAR_SIZE))
 		->SetPadding(1_px, 0_px, 1_px, 1.1_px);
 
 	auto TestButton = new ToolBarButton();

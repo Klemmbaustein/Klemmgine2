@@ -57,7 +57,7 @@ void engine::editor::ConsolePanel::OnResized()
 {
 	using namespace kui;
 
-	Element->SetLogSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(0, 34), Element->GetParentWindow()));
+	Element->SetLogSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 34), Element->GetParentWindow()));
 	UpdateLog(false);
 }
 

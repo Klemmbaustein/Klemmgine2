@@ -12,7 +12,6 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 	: EditorPanel("Objects", "object_list")
 {
 	Heading = new ObjectListHeader();
-	//Heading->search->field->Siz;
 	Background->AddChild(Heading);
 
 	DisplayList();
@@ -21,9 +20,7 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 void engine::editor::ObjectListPanel::Update()
 {
 	Heading->SetMinSize(Size - UIBox::PixelSizeToScreenSize(2, Heading->GetParentWindow()));
-	Heading->search->field->SetMinSize(
-		Vec2f(Size.X, 0) + UIBox::PixelSizeToScreenSize(Vec2f(-32, 22), Heading->GetParentWindow())
-	);
+	Heading->search->SetSize(UISize::Pixels(Heading->GetMinSize().GetPixels().X - 30));
 
 	Heading->listBox->SetMinSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 35), Heading->GetParentWindow()));
 	Heading->listBox->SetMaxSize(Heading->listBox->GetMinSize());
@@ -91,7 +88,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 		auto* Elem = new ObjectEntryElement();
 
 		Elem->SetName(Obj.Name);
-		Elem->SetLeftPadding(float(16 * Depth + (Obj.Children.empty() ? 21 : 5)));
+		Elem->SetLeftPadding(UISize::Pixels(16 * Depth + (Obj.Children.empty() ? 21 : 5)));
 		Elem->SetColor(Obj.Selected
 			? EditorUI::Theme.Highlight1
 			: (Heading->listBox->GetChildren().size() % 2 == 0

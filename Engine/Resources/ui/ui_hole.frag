@@ -1,5 +1,3 @@
-#version 330
-
 in vec2 v_texcoords;
 in vec2 v_position;
 in float v_cornerIndex;

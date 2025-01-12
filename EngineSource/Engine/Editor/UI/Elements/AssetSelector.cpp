@@ -39,7 +39,8 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 		->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath))
 		->SetHintText(SelectedAsset.Extension + " file")
 		->SetTextColor(EditorUI::Theme.Text)
-		->SetTextSize(UISize::Pixels(11));
+		->SetTextSize(UISize::Pixels(11))
+		->SetMinWidth(UISize::Parent(1));
 
 	AssetPath->OnChanged = [this]()
 		{
@@ -109,8 +110,8 @@ void engine::editor::AssetSelector::Tick()
 	}
 	else if (SearchBackground
 		&& (!ParentWindow->UI.HoveredBox
-		|| (!ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground)
-		&& !ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground->GetScrollBarBackground()))))
+			|| (!ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground)
+				&& !ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground->GetScrollBarBackground()))))
 	{
 		ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
 			{
@@ -189,14 +190,15 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 					OnChanged();
 				UpdateSelection();
 			}))
+			->SetMinWidth(UISize::Parent(1))
 			->AddChild((new UIText(UISize::Pixels(11),
-			{
-				TextSegment(First, EditorUI::Theme.Text),
-				TextSegment(Second, Vec3f(1, 0.5f, 0.0f)),
-				TextSegment(Third, EditorUI::Theme.Text),
-			}, EditorUI::EditorFont))
-			->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - PixelSizeToScreenSize(10, ParentWindow).X))
-			->SetPadding(UISize::Pixels(4), UISize::Pixels(4), UISize::Pixels(3), UISize::Pixels(3))));
+				{
+					TextSegment(First, EditorUI::Theme.Text),
+					TextSegment(Second, Vec3f(1, 0.5f, 0.0f)),
+					TextSegment(Third, EditorUI::Theme.Text),
+				}, EditorUI::EditorFont))
+				->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - PixelSizeToScreenSize(10, ParentWindow).X))
+				->SetPadding(UISize::Pixels(4), UISize::Pixels(4), UISize::Pixels(3), UISize::Pixels(3))));
 	}
 }
 #endif

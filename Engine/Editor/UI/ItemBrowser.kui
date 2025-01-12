@@ -30,14 +30,14 @@ element ItemBrowserHeading
 	{
 		HintText = "Search";
 		Image = "Engine/Editor/Assets/Search.png";
-		Size = (200, 22)px;
+		Size = 200px;
 		padding = 5px;
 	}
 
 	child UIBackground
 	{
 		width = 1pn;
-		size = 1px;
+		height = 1px;
 		padding = 1px;
 		color = Color_BackgroundHighlight;
 	}
@@ -66,7 +66,7 @@ element ItemBrowserButton
 			color = Color;
 			size = 72px;
 			padding = 4px;
-			downPadding = 2;
+			downPadding = 2px;
 			allAlign = centered;
 
 			child UIBackground

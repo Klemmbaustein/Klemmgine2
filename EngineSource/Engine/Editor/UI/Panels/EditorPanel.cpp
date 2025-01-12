@@ -67,7 +67,7 @@ void engine::editor::EditorPanel::UpdateLayout()
 		UpdateFocusState();
 		GenerateTabs();
 		Size = UsedSizeToPanelSize(UsedSize);
-		PanelElement->SetSize(Size);
+		PanelElement->SetSize(SizeVec(Size));
 		PanelPosition = PositionToPanelPosition(Position);
 		PanelElement->SetPosition(PanelPosition);
 	}
@@ -639,14 +639,14 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 		NewTab->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
 		NewTab->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
-		NewTab->SetBorderSize(1);
-		NewTab->SetPaddingSize(-1);
+		NewTab->SetBorderSize(1_px);
+		NewTab->SetPaddingSize(UISize::Pixels(-1));
 	}
 	else
 	{
 		NewTab->SetColor(EditorUI::Theme.DarkBackground2);
-		NewTab->SetBorderSize(0);
-		NewTab->SetPaddingSize(0);
+		NewTab->SetBorderSize(0_px);
+		NewTab->SetPaddingSize(0_px);
 	}
 
 	if (!Target->CanClose)

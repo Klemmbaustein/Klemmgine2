@@ -76,7 +76,9 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			New->SetTitle(Title);
 			ContentBox->AddChild(New);
 			if (!HasPadding)
-				New->SetUpPadding(5);
+				New->SetUpPadding(5_px);
+			else
+				New->SetUpPadding(15_px);
 
 			return New;
 		};
@@ -91,7 +93,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 				New->SetHorizontal(false);
 				New->SetVerticalAlign(UIBox::Align::Reverse);
 				New->textBox->SetHorizontalAlign(UIBox::Align::Default);
-				New->SetCompactTextPadding(0);
+				New->SetCompactTextPadding(0_px);
 				delete New->separator;
 			}
 

@@ -10,7 +10,7 @@ element ObjectListHeader
 	{
 		HintText = "Search objects";
 		Image = "Engine/Editor/Assets/Search.png";
-		Size = (100, 22);
+		Size = 100px;
 		padding = 5px;
 	}
 

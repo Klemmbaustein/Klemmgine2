@@ -36,7 +36,7 @@ element ToolBarButton
 			image = "Engine/Editor/Assets/DownArrow.png";
 			size = 14px;
 			color = Color_Text;
-			leftPadding = -3;
+			leftPadding = -3px;
 			padding = 5px;
 		}
 	}

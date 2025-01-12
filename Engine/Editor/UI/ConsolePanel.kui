@@ -11,7 +11,6 @@ element ConsolePanelElement
 	{
 		color = Color_DarkBackground2;
 		orientation = vertical;
-		width = 1pn;
 		size = LogSize;
 
 		child UIScrollBox logBox
@@ -24,31 +23,31 @@ element ConsolePanelElement
 
 	child UIBackground
 	{
-		width = 1px;
-		height = 1pn;
+		width = 1pn;
+		height = 1px;
 		color = Color_BackgroundHighlight;
 	}
 
 	child UIBox
 	{
 		verticalAlign = centered;
-		width = 32px;
-		height = 1pn;
-
+		width = 1pn;
+		height = 32px;
+		
 		child EditorTextField commandField
 		{
 			HintText = "Execute command";
-			Size = (400, 22);
+			Size = 400px;
 			Image = "Engine/Editor/Assets/Command.png";
 			padding = 5px;
 		}
 
 		child EditorTextField searchField
 		{
-			Size = (200, 22);
+			Size = 200px;
 			HintText = "Search log";
 			Image = "Engine/Editor/Assets/Search.png";
-			padding = 5px;
+			//padding = 5px;
 		}
 	}
 }

@@ -147,7 +147,8 @@ engine::editor::EditorUI::EditorUI()
 	Root->AddChild(MainBackground);
 
 	StatsBarElement = new StatusBarElement();
-	StatusBar = new UIBackground(true, 0, Theme.DarkBackground, SizeVec(UISize::Parent(1), UISize::Pixels(StatusBarSize)));
+	StatusBar = new UIBackground(true, 0, Theme.DarkBackground,
+		SizeVec(UISize::Parent(1), UISize::Pixels(StatusBarSize)));
 
 	Root->AddChild(StatusBar
 		->AddChild(StatsBarElement));

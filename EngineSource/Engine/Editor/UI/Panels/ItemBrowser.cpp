@@ -36,7 +36,7 @@ void engine::editor::ItemBrowser::Update()
 	ItemsScrollBox->SetMinSize(Background->GetUsedSize().GetScreen() - Vec2f(0, Heading->GetUsedSize().GetScreen().Y)
 		- UIBox::PixelSizeToScreenSize(Vec2f(1, 25), ItemsScrollBox->GetParentWindow()));
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
-	Heading->SetPathWrapping(Background->GetUsedSize().GetScreen().X - UIBox::PixelSizeToScreenSize(60, Background->GetParentWindow()).X);
+	Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 60));
 
 	bool ScrollBoxHovered = ItemsScrollBox->IsBeingHovered();
 
@@ -71,7 +71,8 @@ void engine::editor::ItemBrowser::Update()
 void engine::editor::ItemBrowser::OnResized()
 {
 	Background->UpdateElement();
-	Heading->searchBox->SetSize(Vec2f(Size.X, 0) + UIBox::PixelSizeToScreenSize(Vec2f(-33, 22), Heading->GetParentWindow()));
+	Heading->searchBox->SetSize(UISize::Screen(Size.X -
+		UIBox::PixelSizeToScreenSize(33, Heading->GetParentWindow()).X));
 	UpdateItems();
 }
 

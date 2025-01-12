@@ -43,6 +43,7 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, float Size, std::
 	{
 		auto* CoordBackground = new UIBackground(0, 1, Colors[i], kui::Vec2f(LabelSize, 0));
 		CoordBackground
+			->SetMinHeight(UISize::Parent(1))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetHorizontalAlign(UIBox::Align::Centered)
 			->AddChild((new UIText(UISize::Pixels(11), 1, string({ char('X' + i) }), EditorUI::EditorFont)));
