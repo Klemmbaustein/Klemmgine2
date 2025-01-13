@@ -15,10 +15,8 @@ void engine::editor::IDialogWindow::Begin()
 {
 	auto MainElement = new DialogWindowMainElement();
 
-	Vec2f ButtonSize = UIBox::PixelSizeToScreenSize(40, Popup);
-
-	MainElement->SetMainBackgroundSize(Vec2f(2) - ButtonSize);
-	MainElement->SetButtonBackgroundSize(ButtonSize);
+	MainElement->SetMainBackgroundSize(UISize::Screen(UISize::Screen(2).GetScreen().Y - (40_px).GetScreen().Y));
+	MainElement->SetButtonBackgroundSize(40_px);
 
 	Background = MainElement->windowMain;
 	ButtonBackground = MainElement->buttonBox;

@@ -39,14 +39,12 @@ element DialogWindowMainElement
 	child UIBackground
 	{
 		orientation = vertical;
-		width = 1pn;
-		size = MainBackgroundSize;
+		width = 100%;
+		height = MainBackgroundSize;
 		color = Color_Background;
 		child UIScrollBox windowMain
 		{
-			size = MainBackgroundSize;
-			width = 1pn;
-			height = 1pn;
+			size = 100%;
 		}
 	}
 
@@ -54,9 +52,9 @@ element DialogWindowMainElement
 	{
 		border = 1px;
 		borderColor = Color_DarkBackground2;
-		size = ButtonBackgroundSize;
+		height = ButtonBackgroundSize;
 		color = Color_DarkBackground;
-		width = 1pn;
+		width = 100%;
 
 		horizontalAlign = reverse;
 		verticalAlign = centered;

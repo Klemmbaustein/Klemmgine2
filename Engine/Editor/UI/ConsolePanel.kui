@@ -15,7 +15,7 @@ element ConsolePanelElement
 
 		child UIScrollBox logBox
 		{
-			width = 1pn;
+			width = 100%;
 			size = LogSize;
 			orientation = vertical;
 		}
@@ -23,7 +23,7 @@ element ConsolePanelElement
 
 	child UIBackground
 	{
-		width = 1pn;
+		width = 100%;
 		height = 1px;
 		color = Color_BackgroundHighlight;
 	}
@@ -31,7 +31,7 @@ element ConsolePanelElement
 	child UIBox
 	{
 		verticalAlign = centered;
-		width = 1pn;
+		width = 100%;
 		height = 32px;
 		
 		child EditorTextField commandField
