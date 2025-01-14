@@ -148,7 +148,7 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 	{
 		if (!IsPressed)
 		{
-			return;
+			break;
 		}
 
 		SDL_Event KeyReleasedEvent;
