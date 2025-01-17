@@ -26,5 +26,10 @@ namespace engine::internal::platform
 
 	void SetConsoleColor(Log::LogColor NewColor);
 	
+	struct SharedLibrary;
+
+	SharedLibrary* LoadSharedLibrary(string Path);
+	void* GetLibraryFunction(SharedLibrary* Library, string Name);
+
 	std::vector<string> OpenFileDialog(std::vector<FileDialogFilter> Filters);
 }

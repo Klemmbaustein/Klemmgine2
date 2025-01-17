@@ -108,7 +108,7 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 	return LightDepthMaps;
 }
 
-void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Target)
+void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Target) const
 {
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{

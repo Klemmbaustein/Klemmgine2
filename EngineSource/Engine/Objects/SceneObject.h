@@ -1,21 +1,25 @@
 #pragma once
 #include <Engine/File/SerializedData.h>
-#include <Engine/Graphics/Camera.h>
 #include <Engine/Transform.h>
 #include "Reflection/ObjectReflection.h"
 #include "Reflection/ObjectPropery.h"
 #include "Components/ObjectComponent.h"
 
+#ifdef ENGINE_PLUGIN
+#define PLUGIN_INTERFACE_FN2(x) {x;}
+#define PLUGIN_INTERFACE_FN {}
+#else
+#define PLUGIN_INTERFACE_FN2(...)
+#define PLUGIN_INTERFACE_FN
+#endif
+
 namespace engine
 {
 	class Scene;
 
-	class SceneObject : public ISerializable
+	class SceneObject
 	{
 	public:
-
-		virtual SerializedValue Serialize() override;
-		virtual void DeSerialize(SerializedValue* From) override;
 
 		Vector3 Position;
 		Rotation3 Rotation;
@@ -27,29 +31,35 @@ namespace engine
 		friend struct ObjPropertyBase;
 		friend class Scene;
 
-		Scene* GetScene();
+		Scene* GetScene()
+		{
+			return OriginScene;
+		}
 
 		std::vector<ObjPropertyBase*> Properties;
 
+#ifndef ENGINE_PLUGIN
+
+		SerializedValue Serialize();
+		void DeSerialize(SerializedValue* From);
 		void Attach(ObjectComponent* Component);
 		void Detach(ObjectComponent* Component);
 		void ClearComponents();
 		void Destroy();
 		void CheckTransform();
+#endif
 
 	protected:
-		virtual ~SceneObject();
+		virtual ~SceneObject() PLUGIN_INTERFACE_FN;
 		SceneObject()
 		{
 		}
 		
-		virtual void Begin();
-		virtual void OnDestroyed();
-		virtual void Update();
-
+		virtual void Begin() PLUGIN_INTERFACE_FN;
+		virtual void OnDestroyed() PLUGIN_INTERFACE_FN;
+		virtual void Update() PLUGIN_INTERFACE_FN;
 
 	private:
-
 
 		std::vector<ObjectComponent*> ChildComponents;
 		Vector3 OldPosition;

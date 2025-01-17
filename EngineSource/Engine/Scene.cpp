@@ -10,6 +10,7 @@
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Editor/UI/Panels/Viewport.h>
 #include <algorithm>
+#include <Engine/Plugins/PluginLoader.h>
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
@@ -181,7 +182,7 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 }
 
-void engine::Scene::CreateObjectFromID(uint32 ID, Vector3 Position, Rotation3 Rotation, Vector3 Scale)
+engine::SceneObject* engine::Scene::CreateObjectFromID(int32 ID, Vector3 Position, Rotation3 Rotation, Vector3 Scale)
 {
 	const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
 	SceneObject* Object = Type.CreateInstance();
@@ -191,6 +192,7 @@ void engine::Scene::CreateObjectFromID(uint32 ID, Vector3 Position, Rotation3 Ro
 	Object->Scale = Scale;
 	Object->InitObj(this, true, Type.TypeID);
 	this->Objects.push_back(Object);
+	return Object;
 }
 
 void engine::Scene::ReloadObjects(SerializedValue* FromState)
@@ -335,7 +337,7 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		{
 			ObjectTypeID ID = i.At("typeId").GetInt();
 
-			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
+			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes.at(ID);
 			SceneObject* Object = Type.CreateInstance();
 			Object->OriginScene = this;
 			Object->DeSerialize(&i);
@@ -347,6 +349,13 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		{
 			subsystem::SceneSubsystem::Current->Print(
 				str::Format("Failed to DeSerialize object in scene: '%s'", SerializeErr.what()),
+				subsystem::Subsystem::LogType::Warning
+			);
+		}
+		catch (std::out_of_range& RangeError)
+		{
+			subsystem::SceneSubsystem::Current->Print(
+				str::Format("Failed to DeSerialize object in scene: '%s'. Object likely had an invalid ID.", RangeError.what()),
 				subsystem::Subsystem::LogType::Warning
 			);
 		}
@@ -411,6 +420,7 @@ void engine::Scene::Init()
 
 	Shadows.Init();
 	Physics.Init();
+	plugin::OnNewSceneLoaded(this);
 }
 
 engine::SerializedValue engine::Scene::GetSceneInfo()

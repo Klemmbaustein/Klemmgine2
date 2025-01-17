@@ -5,6 +5,7 @@
 #include "Subsystem/InputSubsystem.h"
 #include "Subsystem/ConsoleSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
+#include "Subsystem/PluginSubsystem.h"
 #include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
 #include "ThreadPool.h"
@@ -37,6 +38,7 @@ Engine* Engine::Init()
 	resource::ScanForAssets();
 
 	Instance->LoadSubsystem(new ConsoleSubsystem());
+	Instance->LoadSubsystem(new PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());

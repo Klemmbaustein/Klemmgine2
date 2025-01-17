@@ -97,6 +97,16 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	SetConsoleTextAttribute(hConsole, WindowsColors[NewColor]);
 }
 
+engine::internal::platform::SharedLibrary* engine::internal::platform::LoadSharedLibrary(string Path)
+{
+	return reinterpret_cast<SharedLibrary*>(LoadLibraryW(StrToWstr(Path).c_str()));
+}
+
+void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
+{
+	return GetProcAddress(HMODULE(Library), Name.c_str());
+}
+
 std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -236,6 +246,9 @@ std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vect
 #else
 #include <map>
 #include <iostream>
+#include <dlfcn.h>
+#include <cstring>
+#include <errno.h>
 
 void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 {
@@ -253,6 +266,16 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	};
 
 	printf("%s", ColorCodes[NewColor]);
+}
+
+engine::internal::platform::SharedLibrary* engine::internal::platform::LoadSharedLibrary(string Path)
+{
+	return reinterpret_cast<SharedLibrary*>(dlopen(Path.c_str(), RTLD_LAZY | RTLD_LOCAL));
+}
+
+void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
+{
+	return dlsym(Library, Name.c_str());
 }
 
 void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)

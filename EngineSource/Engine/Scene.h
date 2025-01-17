@@ -1,3 +1,4 @@
+#ifndef ENGINE_PLUGIN
 #pragma once
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
@@ -62,7 +63,7 @@ namespace engine
 			return New;
 		}
 
-		void CreateObjectFromID(uint32 ID, Vector3 Position = 0, Rotation3 Rotation = 0, Vector3 Scale = 1);
+		engine::SceneObject* CreateObjectFromID(int32 ID, Vector3 Position = 0, Rotation3 Rotation = 0, Vector3 Scale = 1);
 
 		/**
 		* @brief
@@ -123,3 +124,4 @@ namespace engine
 		void StartSorting();
 	};
 }
+#endif

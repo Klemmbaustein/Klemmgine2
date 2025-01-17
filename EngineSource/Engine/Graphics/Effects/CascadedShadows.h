@@ -21,7 +21,7 @@ namespace engine::graphics
 
 		static uint32 LightDepthMaps;
 
-		void BindUniforms(graphics::ShaderObject* Target);
+		void BindUniforms(graphics::ShaderObject* Target) const;
 
 	private:
 		float BiasModifier = 0;

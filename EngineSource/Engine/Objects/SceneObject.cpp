@@ -76,11 +76,6 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 	}
 }
 
-Scene* engine::SceneObject::GetScene()
-{
-	return OriginScene;
-}
-
 void engine::SceneObject::Attach(ObjectComponent* Component)
 {
 	ENGINE_ASSERT(!Component->ParentComponent && !Component->ParentObject);

@@ -3,7 +3,7 @@
 #
 cmake_minimum_required(VERSION 3.12)
 if(WIN32)
-	set(CMAKE_CXX_STANDARD 23)#
+	set(CMAKE_CXX_STANDARD 23)
 else()
 	set(CMAKE_CXX_STANDARD 20)
 endif()
@@ -23,6 +23,8 @@ option(USE_WINDOWS_SUBSYSTEM "Use the Windows subsystem on windows. When this is
 option(ENGINE_DYNAMIC_SYMBOLS "Link with -rdynamic on linux for more descriptive stack traces" OFF)
 option(ENGINE_SERVER "Is a server" OFF)
 option(ENGINE_EDITOR "Compile the editor" OFF)
+option(ENGINE_CSHARP "Do not include the C# plugin" ON)
+
 project("Klemmgine")
 
 set(SRC_DIR "EngineSource")
@@ -58,17 +60,18 @@ if(UNIX)
 	endif()
 endif()
 
-add_subdirectory("Dependencies/KlemmUI")
-add_subdirectory("Dependencies/SDL")
+add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
+add_subdirectory("Dependencies/SDL" EXCLUDE_FROM_ALL)
 set(BUILD_SHARED_LIBS OFF)
-add_subdirectory("Dependencies/glm")
+add_subdirectory("Dependencies/glm" EXCLUDE_FROM_ALL)
 set(ENABLE_ALL_WARNINGS OFF)
 set(GENERATE_DEBUG_SYMBOLS OFF)
 set(CPP_RTTI_ENABLED ON)
 set(OVERRIDE_CXX_FLAGS OFF)
-add_subdirectory("Dependencies/JoltPhysics/Build")
+add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
 set(GENERATE_DEBUG_SYMBOLS ON)
 
+target_include_directories(Klemmgine PRIVATE "Plugins/PluginInterface/Include/internal")
 target_compile_definitions(Klemmgine PRIVATE BUILD_LIBRARY=1)
 
 if(WIN32)
@@ -107,7 +110,7 @@ elseif(ENGINE_EDITOR)
 		add_compile_definitions("_CRT_SECURE_NO_WARNINGS" "_CRT_NONSTDC_NO_WARNINGS")
 		add_compile_options(/wd4244)
 	endif()
-	add_subdirectory("Dependencies/assimp")
+	add_subdirectory("Dependencies/assimp" EXCLUDE_FROM_ALL)
 
 	if (WIN32 AND USING_MSVC)
 		set(MSVC ON)
@@ -131,6 +134,14 @@ target_link_libraries(Klemmgine PUBLIC KlemmUI)
 target_link_libraries(Klemmgine PUBLIC libglew_static)
 target_link_libraries(Klemmgine PUBLIC glm)
 
+if(UNIX)
+	target_link_options(Klemmgine PRIVATE "-Wl,-rpath,$ORIGIN")
+endif()
+
 klemmui_resources(Klemmgine "Engine/Resources")
+
+if(ENGINE_CSHARP)
+	add_subdirectory("Plugins/CSharp")
+endif()
 
 # TODO: Add tests and install targets if needed.

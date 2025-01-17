@@ -1,3 +1,4 @@
+#ifndef ENGINE_PLUGIN
 #pragma once
 #include <Engine/Types.h>
 #include <mutex>
@@ -46,3 +47,4 @@ namespace engine
 		static std::mutex LogMutex;
 	};
 }
+#endif

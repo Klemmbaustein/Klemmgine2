@@ -10,7 +10,7 @@ namespace engine
 	return reinterpret_cast<::engine::SceneObject*>(new name());\
 }\
 public: static inline const ObjectTypeID ObjectType\
-	 = ::engine::Reflection::RegisterObject(# name, Internal_Reflect_CreateNewInst, path)
+	 = ::engine::Reflection::RegisterObjectMacro(# name, Internal_Reflect_CreateNewInst, path)
 
 	using ObjectTypeID = int32;
 
@@ -18,6 +18,7 @@ public: static inline const ObjectTypeID ObjectType\
 	{
 	public:
 		
+		static ObjectTypeID RegisterObjectMacro(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
 		static ObjectTypeID RegisterObject(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
 
 		struct ObjectInfo

@@ -2,7 +2,11 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
+.vs
 /out
 /Assets
 /Docs
+# For my sanity
+/Dependencies/SDL
+bin
+obj
