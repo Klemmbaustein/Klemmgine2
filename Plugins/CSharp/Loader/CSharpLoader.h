@@ -7,5 +7,6 @@ namespace engine::cSharp
 	{
 	public:
 		virtual size_t CreateObjectInstance(size_t TypeId) = 0;
+		virtual void RemoveObjectInstance(size_t ObjId) = 0;
 	};
 }

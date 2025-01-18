@@ -12,15 +12,16 @@ class CSharpObject : public engine::SceneObject
 public:
 
 	size_t CSharpTypeId;
+	size_t CSharpObjectId = 0;
 
 	CSharpObject(size_t CSharpTypeId)
 	{
 		this->CSharpTypeId = CSharpTypeId;
-		Current->CreateObjectInstance(CSharpTypeId);
 	}
 
 	void Begin() override
 	{
+		CSharpObjectId = Current->CreateObjectInstance(CSharpTypeId);
 	}
 
 	void Update() override
@@ -29,6 +30,7 @@ public:
 
 	void OnDestroyed() override
 	{
+		Current->RemoveObjectInstance(CSharpObjectId);
 	}
 };
 
@@ -46,8 +48,9 @@ static void LoadRuntime()
 
 #undef STRUCT_MEMBER
 #undef STRUCT_MEMBER_CALL_DIRECT
-#define STRUCT_MEMBER(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = Interface->name},
-#define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = Interface->name},
+	// (void*)(size_t) cast to prevent GCC from complaining about casting function pointers to void*
+#define STRUCT_MEMBER(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(size_t)Interface->name},
+#define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(size_t)Interface->name},
 
 	std::vector<NativeFunction> Functions = {
 #include "../internal/InterfaceDefines.hpp"
@@ -55,7 +58,7 @@ static void LoadRuntime()
 
 	Functions.push_back(NativeFunction{
 		.Name = "RegisterCSharpObject",
-		.FunctionPointer = &RegisterObject
+		.FunctionPointer = (void*)&RegisterObject
 		});
 
 	Current = new CSharpLoaderRuntime(Functions);

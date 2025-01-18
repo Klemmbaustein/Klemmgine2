@@ -2,8 +2,11 @@
 
 namespace Engine;
 
-public class SceneObject
+public abstract class SceneObject
 {
-	GCHandle ObjectHandle;
 	IntPtr CSharpType;
+
+	public abstract void Begin();
+	public abstract void Update();
+	public abstract void OnDestroyed();
 }

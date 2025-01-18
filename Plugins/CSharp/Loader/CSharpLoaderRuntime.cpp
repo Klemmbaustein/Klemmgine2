@@ -41,6 +41,11 @@ engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<Nativ
 		"CreateObjectInstance",
 		"Engine.Core.ObjectTypes",
 		"Engine.Core.ObjectTypes+CreateObjectInstanceDelegate");
+
+	DestroyObjectFunction = LoadCSharpFunction(
+		"RemoveObjectInstance",
+		"Engine.Core.ObjectTypes",
+		"Engine.Core.ObjectTypes+RemoveObjectInstanceDelegate");
 }
 
 load_assembly_and_get_function_pointer_fn engine::cSharp::CSharpLoaderRuntime::LoadDotNetAssembly(netString config_path)
@@ -122,7 +127,12 @@ void* engine::cSharp::CSharpLoaderRuntime::LoadCSharpFunction(string Function, s
 
 size_t engine::cSharp::CSharpLoaderRuntime::CreateObjectInstance(size_t TypeId)
 {
-	return size_t();
+	return StaticCall<size_t, size_t>(CreateObjectFunction, TypeId);
+}
+
+void engine::cSharp::CSharpLoaderRuntime::RemoveObjectInstance(size_t ObjId)
+{
+	StaticCall<void, size_t>(DestroyObjectFunction, ObjId);
 }
 
 void engine::cSharp::CSharpLoaderRuntime::LoadFunctions(const std::vector<NativeFunction>& Functions)

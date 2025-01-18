@@ -18,6 +18,8 @@ file(
 	"${SRC_DIR}/**.h"
 )
 
+klemmgine_plugin_dirs()
+
 add_library(${PLUGIN_NAME} SHARED ${INCLUDES} ${SRCS})
 target_link_libraries(${PLUGIN_NAME} PRIVATE KlemmginePlugin)
 target_include_directories(${PLUGIN_NAME} PRIVATE ${NET_SDK_BINARY_DIR})

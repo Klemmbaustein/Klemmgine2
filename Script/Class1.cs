@@ -1,20 +1,21 @@
 ﻿using Engine;
 
-namespace Project;
+namespace Game;
 
 public class CoolObject : SceneObject
 {
-	public void Begin()
+
+	public override void Begin()
 	{
-		Console.WriteLine("hi!");
+		Log.Info("Hai!");
 	}
 
-	public void Update()
+	public override void Update()
 	{
 	}
 
-	public void OnDestroyed()
+	public override void OnDestroyed()
 	{
-		Console.WriteLine("bye!");
+		Log.Info("Bye!");
 	}
 }

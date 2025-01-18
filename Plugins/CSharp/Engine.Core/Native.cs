@@ -4,13 +4,11 @@ namespace Engine.Core;
 
 public class Native
 {
-	readonly static Dictionary<string, IntPtr> LoadedFunctions = [];
-
 	public delegate void RegisterFunctionDelegate([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] Target, int _);
-
 	public delegate void LogFunction([MarshalAs(UnmanagedType.LPUTF8Str)] string Text);
 
 	public static LogFunction? Log;
+	readonly static Dictionary<string, IntPtr> LoadedFunctions = [];
 
 	private delegate void ObjectFunction();
 
@@ -35,6 +33,29 @@ public class Native
 		return Marshal.GetDelegateForFunctionPointer<T>(LoadedFunctions[Name]) as Delegate;
 	}
 
+	static void NativeFunctionsToEngine(Assembly Target)
+	{
+		Type? ArrayType = Target.GetType("Engine.Native.NativeFunction");
+
+		Array NativeArray = Array.CreateInstance(ArrayType!, LoadedFunctions.Count);
+		var NameField = ArrayType!.GetField("Name", BindingFlags.Instance | BindingFlags.Public)!;
+		var PointerField = ArrayType!.GetField("FunctionPointer", BindingFlags.Instance | BindingFlags.Public)!;
+
+		int i = 0;
+		foreach (var fn in LoadedFunctions)
+		{
+			var NewElement = Activator.CreateInstance(ArrayType);
+			NameField.SetValue(NewElement, fn.Key);
+			PointerField.SetValue(NewElement, fn.Value);
+
+			NativeArray.SetValue(NewElement, i++);
+		}
+
+		Target.GetType("Engine.Native.NativeFunctions")!
+			.GetMethod("RegisterFunctions", BindingFlags.Static | BindingFlags.Public)!
+			.Invoke(null, [NativeArray, 0]);
+	}
+
 	[UnmanagedCallersOnly]
 	public static void LoadEngine()
 	{
@@ -43,6 +64,14 @@ public class Native
 		Assembly Engine = Assembly.LoadFrom(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/Klemmgine.CSharp.dll"); ;
 		Assembly ProjectAssembly = Assembly.LoadFile(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/CSharpAssembly.dll");
 
-		ObjectTypes.LoadObjects(ProjectAssembly, Engine);
+		try
+		{
+			ObjectTypes.LoadObjects(ProjectAssembly, Engine);
+			NativeFunctionsToEngine(Engine);
+		}
+		catch (Exception e)
+		{
+			Log!(e.ToString());
+		}
 	}
 }

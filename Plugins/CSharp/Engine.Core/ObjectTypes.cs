@@ -7,17 +7,21 @@ namespace Engine.Core;
 
 internal static class ObjectTypes
 {
+	public delegate void RegisterObject([MarshalAs(UnmanagedType.LPUTF8Str)] string Name, IntPtr Type);
+	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr Type);
+	public delegate void RemoveObjectInstanceDelegate(IntPtr Type);
+
 	struct ObjectTypeInfo
 	{
 		public Type ObjectType;
 		public string Name;
-		public MethodInfo Begin;
-		public MethodInfo Update;
-		public MethodInfo OnDestroyed;
 	}
 
 	static FieldInfo? SceneObjectTypeID;
 	static Type? SceneObjectType;
+	static MethodInfo? SceneObjectBegin = null;
+	static MethodInfo? SceneObjectUpdate = null;
+	static MethodInfo? SceneObjectOnDestroyed = null;
 
 	static IntPtr TypeIdIndex = 0;
 	static IntPtr ObjectIdIndex = 1;
@@ -49,17 +53,6 @@ internal static class ObjectTypes
 		return Delegate.CreateDelegate(GetType([.. Types]), target, methodInfo.Name);
 	}
 
-	//static IntPtr ToPointer(MethodInfo Method)
-	//{
-	//	foreach (var p in Method.GetParameters())
-	//	{
-	//		Console.WriteLine(p.Name);
-	//	}
-	//	return Marshal.GetFunctionPointerForDelegate(Method.CreateDelegate<ObjectFunction>());
-	//}
-
-	public delegate void RegisterObject([MarshalAs(UnmanagedType.LPUTF8Str)] string Name, IntPtr Type);
-
 	public static void LoadObjects(Assembly TargetAssembly, Assembly EngineAssembly)
 	{
 		SceneObjectType = EngineAssembly.GetType("Engine.SceneObject");
@@ -67,10 +60,9 @@ internal static class ObjectTypes
 		if (SceneObjectType == null)
 			return;
 
-		foreach (var i in SceneObjectType.GetFields())
-		{
-			Console.WriteLine(i.Name);
-		}
+		SceneObjectBegin = SceneObjectType.GetMethod("Begin")!;
+		SceneObjectUpdate = SceneObjectType.GetMethod("Update")!;
+		SceneObjectOnDestroyed = SceneObjectType.GetMethod("OnDestroyed")!;
 
 		SceneObjectTypeID = SceneObjectType.GetField("CSharpType", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -81,19 +73,10 @@ internal static class ObjectTypes
 			if (!Exported.IsSubclassOf(SceneObjectType))
 				return;
 
-			MethodInfo[] Methods = [
-				Exported.GetMethod("Begin")!,
-				Exported.GetMethod("Update")!,
-				Exported.GetMethod("OnDestroyed")!
-			];
-
 			LoadedTypes.Add(TypeIdIndex, new ObjectTypeInfo
 			{
 				ObjectType = Exported,
 				Name = Exported.ToString(),
-				Begin = Methods[0],
-				Update = Methods[1],
-				OnDestroyed = Methods[2]
 			});
 
 			RegisterObject.DynamicInvoke(Exported.ToString(), TypeIdIndex);
@@ -108,9 +91,21 @@ internal static class ObjectTypes
 		Console.WriteLine(LoadedObjects[Target]);
 	}
 
+	public static void RemoveObjectInstance(IntPtr ObjectID)
+	{
+		try
+		{
+			object DestroyedObject = LoadedObjects[ObjectID]!;
 
-	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr Type);
-	[return: MarshalAs(UnmanagedType.U8)]
+			SceneObjectOnDestroyed!.Invoke(DestroyedObject, []);
+			LoadedObjects.Remove(ObjectID);
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.ToString());
+		}
+	}
+
 	public static IntPtr CreateObjectInstance(IntPtr Type)
 	{
 		ObjectTypeInfo Loaded = LoadedTypes[Type];
@@ -127,8 +122,9 @@ internal static class ObjectTypes
 		if (New == null)
 			return IntPtr.Zero;
 
+		SceneObjectBegin!.Invoke(New, []);
+
 		LoadedObjects.Add(ObjectIdIndex, New);
-		GCHandle.Alloc(New);
 		return ObjectIdIndex++;
 	}
 }

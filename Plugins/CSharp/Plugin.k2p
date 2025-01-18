@@ -1,0 +1,4 @@
+{
+	"name": str = "CSharp";
+	"binary": str = "Klemmgine.CSharp.Loader";
+}

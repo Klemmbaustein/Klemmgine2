@@ -109,23 +109,6 @@ void engine::SceneObject::ClearComponents()
 	ChildComponents.clear();
 }
 
-engine::SceneObject::~SceneObject()
-{
-	ClearComponents();
-}
-
-void engine::SceneObject::Begin()
-{
-}
-
-void engine::SceneObject::OnDestroyed()
-{
-}
-
-void engine::SceneObject::Update()
-{
-}
-
 void engine::SceneObject::CheckTransform()
 {
 	if (Position != OldPosition

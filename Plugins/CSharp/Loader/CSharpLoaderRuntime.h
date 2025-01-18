@@ -40,6 +40,7 @@ namespace engine::cSharp
 		}
 
 		size_t CreateObjectInstance(size_t TypeId) override;
+		void RemoveObjectInstance(size_t ObjId) override;
 
 		void LoadFunctions(const std::vector<NativeFunction>& Functions);
 
@@ -52,5 +53,6 @@ namespace engine::cSharp
 		void* HostFxrLibrary = nullptr;
 
 		void* CreateObjectFunction = nullptr;
+		void* DestroyObjectFunction = nullptr;
 	};
 }

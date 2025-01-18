@@ -4,15 +4,6 @@
 #include "Reflection/ObjectReflection.h"
 #include "Reflection/ObjectPropery.h"
 #include "Components/ObjectComponent.h"
-
-#ifdef ENGINE_PLUGIN
-#define PLUGIN_INTERFACE_FN2(x) {x;}
-#define PLUGIN_INTERFACE_FN {}
-#else
-#define PLUGIN_INTERFACE_FN2(...)
-#define PLUGIN_INTERFACE_FN
-#endif
-
 namespace engine
 {
 	class Scene;
@@ -50,14 +41,14 @@ namespace engine
 #endif
 
 	protected:
-		virtual ~SceneObject() PLUGIN_INTERFACE_FN;
+		virtual ~SceneObject() {};
 		SceneObject()
 		{
 		}
 		
-		virtual void Begin() PLUGIN_INTERFACE_FN;
-		virtual void OnDestroyed() PLUGIN_INTERFACE_FN;
-		virtual void Update() PLUGIN_INTERFACE_FN;
+		virtual void Begin() {}
+		virtual void OnDestroyed() {}
+		virtual void Update() {}
 
 	private:
 

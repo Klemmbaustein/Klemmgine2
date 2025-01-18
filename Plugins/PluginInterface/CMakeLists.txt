@@ -24,3 +24,8 @@ if(PLUGIN_INTERFACE_CPP)
 else()
 	target_include_directories(KlemmginePlugin PUBLIC "Include/c")
 endif()
+
+macro(klemmgine_plugin_dirs)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins")
+endmacro()

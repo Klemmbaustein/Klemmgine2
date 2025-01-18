@@ -2,12 +2,12 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<EnableDynamicLoading>true</EnableDynamicLoading>
 		<AssemblyName>Klemmgine.CSharp.Core</AssemblyName>
 		<OutputPath>../bin/</OutputPath>
-		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 </Project>

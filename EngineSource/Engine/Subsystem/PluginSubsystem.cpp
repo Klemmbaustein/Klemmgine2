@@ -3,7 +3,7 @@
 engine::subsystem::PluginSubsystem::PluginSubsystem()
 	: Subsystem("Plugin", Log::LogColor::Gray)
 {
-	plugin::Load();
+	plugin::Load(this);
 }
 
 engine::subsystem::PluginSubsystem::~PluginSubsystem()
