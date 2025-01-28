@@ -3,7 +3,9 @@
 #include <Engine/Editor/UI/EditorUI.h>
 #include <kui/Window.h>
 #include <Engine/Input.h>
+#include <Engine/Editor/UI/Elements/DroppableBox.h>
 #include <Engine/Log.h>
+#include <filesystem>
 using namespace kui;
 
 engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
@@ -12,7 +14,36 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	Heading = new ItemBrowserHeading();
 	Background->AddChild(Heading);
 	ItemsScrollBox = new UIScrollBox(false, 0, true);
-	Background->AddChild(ItemsScrollBox);
+	Background->AddChild((new DroppableBox(false, [this](EditorUI::DraggedItem Item)
+		{
+			auto* btn = GetHoveredButton();
+
+			if (!btn)
+				return;
+
+			if (!std::filesystem::exists(btn->first.Path))
+				return;
+
+			if (Item.Name == btn->first.Name)
+				return;
+
+			if (btn->first.IsDirectory && std::filesystem::exists(btn->first.Path))
+			{
+				try
+				{
+					std::string FileName = Item.Path.substr(Item.Path.find_last_of("/\\") + 1);
+					std::filesystem::rename(Item.Path, btn->first.Path + "/" + FileName);
+				}
+				catch (std::filesystem::filesystem_error e)
+				{
+					Log::Error(e.what());
+				}
+			}
+			UpdateItems();
+		}))
+		->SetMinSize(SizeVec(UISize(1, SizeMode::ParentRelative)))
+		->SetMaxSize(SizeVec(UISize(1, SizeMode::ParentRelative)))
+		->AddChild(ItemsScrollBox));
 
 	StatusText = new UIText(11_px, EditorUI::Theme.Text, "", EditorUI::EditorFont);
 
@@ -33,8 +64,10 @@ void engine::editor::ItemBrowser::Update()
 	if (!Visible)
 		return;
 
+	auto Win = Background->GetParentWindow();
+
 	ItemsScrollBox->SetMinSize(Background->GetUsedSize().GetScreen() - Vec2f(0, Heading->GetUsedSize().GetScreen().Y)
-		- UIBox::PixelSizeToScreenSize(Vec2f(1, 25), ItemsScrollBox->GetParentWindow()));
+		- SizeVec(1_px, 25_px).GetScreen());
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
 	Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 60));
 
@@ -63,7 +96,7 @@ void engine::editor::ItemBrowser::Update()
 		}
 		else
 		{
-			this->OnBackgroundRightClick(ItemsScrollBox->GetParentWindow()->Input.MousePosition);
+			this->OnBackgroundRightClick(Win->Input.MousePosition);
 		}
 	}
 }

@@ -10,6 +10,7 @@
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
 #include <Engine/Editor/UI/Panels/Viewport.h>
+#include <Engine/LaunchArgs.h>
 using namespace kui;
 
 static void GLAPIENTRY MessageCallback(
@@ -54,7 +55,22 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 
 	UIManager::UseAlphaBuffer = true;
 
-	MainWindow = new Window("Klemmgine 2", Window::WindowFlag::Resizable);
+	Vec2ui WindowSize = Window::SIZE_DEFAULT;
+
+	auto SizeArg = launchArgs::GetArg("size");
+	if (SizeArg && SizeArg->size() == 2)
+	{
+		WindowSize = Vec2ui(SizeArg->at(0).AsInt(), SizeArg->at(1).AsInt());
+
+		if (WindowSize.X < 600 || WindowSize.Y < 400)
+		{
+			Print("Invalid window size, setting to default: " + WindowSize.ToString(), LogType::Warning);
+			Vec2ui WindowSize = Window::SIZE_DEFAULT;
+		}
+	}
+
+	MainWindow = new Window("Klemmgine 2", Window::WindowFlag::Resizable, Window::POSITION_CENTERED, WindowSize);
+	MainWindow->SetMinSize(Vec2ui(600, 400));
 
 	MainWindow->OnResizedCallback = [this](Window*)
 		{

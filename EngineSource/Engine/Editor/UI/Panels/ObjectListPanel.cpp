@@ -93,9 +93,22 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 			? EditorUI::Theme.Highlight1
 			: (Heading->listBox->GetChildren().size() % 2 == 0
 			? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
+
 		Elem->SetTextColor(Obj.Selected ? EditorUI::Theme.HighlightText : EditorUI::Theme.Text);
+		Elem->SetIcon(!Obj.From ? "Engine/Editor/Assets/Folder.png" : "");
+
+		bool HasChildren = Obj.Children.size();
+		bool IsCollapsed = false;
+
+		if (HasChildren)
+		{
+			IsCollapsed = Collapsed.contains(Obj.Name);
+			Elem->SetArrowImage(IsCollapsed ? "Engine/Editor/Assets/LeftArrow.png" : "Engine/Editor/Assets/DownArrow.png");
+		}
+
 		if (Obj.Children.empty())
 			delete Elem->arrow;
+
 		Elem->button->OnClicked = [this, Obj]()
 		{
 			if (!input::IsKeyDown(input::Key::LSHIFT))
@@ -103,11 +116,22 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 
 			if (Obj.From)
 				Viewport::Current->SelectedObjects.insert(Obj.From);
+			else
+			{
+				if (Collapsed.contains(Obj.Name))
+				{
+					Collapsed.erase(Obj.Name);
+				}
+				else
+				{
+					Collapsed.insert(Obj.Name);
+				}
+			}
 			DisplayList();
 		};
 		Heading->listBox->AddChild(Elem);
 
-		if (!Obj.Children.empty())
+		if (HasChildren && !IsCollapsed)
 		{
 			AddListObjects(Obj.Children, Depth + 1);
 		}

@@ -1,4 +1,5 @@
 #include "Engine/Types.h"
+#include <Engine/LaunchArgs.h>
 
 #ifdef USE_ENGINEMAIN
 
@@ -14,6 +15,7 @@ int WinMain(
 	_In_ int nShowCmd
 )
 {
+	engine::launchArgs::SetArgs(argc, argv);
 	return EngineMain(__argc, __argv);
 }
 
@@ -21,6 +23,7 @@ int WinMain(
 
 int main(int argc, char** argv)
 {
+	engine::launchArgs::SetArgs(argc, argv);
 	return EngineMain(argc, argv);
 }
 

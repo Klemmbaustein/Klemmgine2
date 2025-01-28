@@ -40,6 +40,7 @@ namespace engine::editor
 		virtual string GetPathDisplayName() = 0;
 		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
 		virtual std::vector<Item> GetItems() = 0;
+		//virtual void OnItemDopped(EditorUI::Item);
 		virtual void Back() = 0;
 		void SetStatusText(string NewText);
 	private:

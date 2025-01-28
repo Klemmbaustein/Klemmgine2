@@ -18,6 +18,8 @@ namespace engine::editor
 
 	private:
 
+		std::set<std::string> Collapsed;
+
 		struct ListObject
 		{
 			string Name;

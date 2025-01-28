@@ -25,10 +25,11 @@ element ObjectListHeader
 element ObjectEntryElement
 {
 	var Icon;
-	var Name;
-	var Color;
+	var Name = "Object";
+	var Color = 0.1;
 	var TextColor = 1;
-	var LeftPadding = 5;
+	var LeftPadding = 5px;
+	var ArrowImage = "Engine/Editor/Assets/DownArrow.png";
 
 	width = 1pn;
 	orientation = vertical;
@@ -56,7 +57,7 @@ element ObjectEntryElement
 			leftPadding = 0;
 			rightPadding = 0;
 			color = TextColor;
-			image = "Engine/Editor/Assets/DownArrow.png";
+			image = ArrowImage;
 		}
 
 		child UIBackground
