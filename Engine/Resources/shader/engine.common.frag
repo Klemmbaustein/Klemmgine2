@@ -1,4 +1,3 @@
-#version 430 //!
 //? #version 430
 #module "engine.common" //!
 
@@ -13,9 +12,9 @@ in vec3 v_normal;
 #export //!
 out vec4 f_color;
 
-uniform sampler2DArray u_shadowMaps;
-uniform float u_shadowBiasModifier = 0;
+uniform vec3 u_lightDirection = vec3(0, 1, 0);
 
+#if ENGINE_GL_430
 layout (std140, binding = 0) uniform LightSpaceMatrices
 {
 	mat4 lightSpaceMatrices[16];
@@ -23,6 +22,8 @@ layout (std140, binding = 0) uniform LightSpaceMatrices
 
 uniform float cascadePlaneDistances[16];
 uniform int u_shadowCascadeCount = 4;
+uniform sampler2DArray u_shadowMaps;
+uniform float u_shadowBiasModifier = 0;
 
 #define PCF_SIZE 4
 #define PCF_HALF_SIZE 2
@@ -33,8 +34,6 @@ float rand(vec2 n)
 { 
 	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
-
-uniform vec3 u_lightDirection = vec3(0, 1, 0);
 
 float SampleFromShadowMap(vec2 distances)
 {
@@ -126,6 +125,12 @@ float getShadowStrength()
 	vec2 distances = vec2(mod(projCoords.x, texelSize.x), mod(projCoords.y, texelSize.y)) * vec2(textureSize(u_shadowMaps, 0));
 	return SampleFromShadowMap(distances);
 }
+#else
+float getShadowStrength()
+{
+	return 1.0;
+}
+#endif
 
 #export //!
 float getLightStrength()

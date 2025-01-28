@@ -28,13 +28,18 @@ string engine::Vector3::ToString() const
 	return std::to_string(X) + " " + std::to_string(Y) + " " + std::to_string(Z);
 }
 
-Vector3 engine::Vector3::Normalize()
+Vector3 engine::Vector3::Normalize() const
 {
 	float Len = Length();
 	if (Len > 0)
 	{
 		return *this / Len;
 	}
+	return Vector3();
+}
+
+Vector3 engine::Vector3::SnapToyGrid() const
+{
 	return Vector3();
 }
 

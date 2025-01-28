@@ -27,7 +27,7 @@ DroppableBox* engine::editor::DroppableBox::GetBoxAtCursor()
 	DroppableBox* Found = nullptr;
 	for (DroppableBox* i : CurrentBoxes)
 	{
-		if (i->IsBeingHovered())
+		if (i->IsBeingHovered() && i->IsVisibleInHierarchy())
 		{
 			Found = i;
 		}

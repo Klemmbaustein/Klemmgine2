@@ -2,6 +2,7 @@
 #include "VectorField.h"
 #include <kui/UI/UIBackground.h>
 #include <Engine/Editor/UI/EditorUI.h>
+#include <stdexcept>
 using namespace kui;
 
 static std::array<Vec3f, 3> Colors = {
@@ -54,9 +55,13 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, float Size, std::
 			{
 				try
 				{
-					Value[i] = std::stof(TextFields[i]->GetText());
+					Value[i] = stoi(TextFields[i]->GetText());
 				}
-				catch (std::exception)
+				catch (std::invalid_argument)
+				{
+					TextFields[i]->SetText(FloatToString(Value[i]));
+				}
+				catch (std::out_of_range)
 				{
 					TextFields[i]->SetText(FloatToString(Value[i]));
 				}

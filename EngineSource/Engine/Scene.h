@@ -1,4 +1,4 @@
-#ifndef ENGINE_PLUGIN
+#if !defined(ENGINE_PLUGIN) && !defined(ENGINE_UTILS_LIB)
 #pragma once
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"

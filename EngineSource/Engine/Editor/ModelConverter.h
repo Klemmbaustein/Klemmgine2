@@ -12,7 +12,7 @@ namespace engine::editor::modelConverter
 		bool ImportTextures : 1 = true;
 		bool ImportMaterials : 1 = true;
 
-		float ImportScale = 0.01f;
+		float ImportScale = 1;
 
 		std::function<void(string)> OnLoadStatusChanged;
 	};

@@ -153,6 +153,12 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 		OutDir.push_back('/');
 	}
 
+	string Extension = ModelPath.substr(ModelPath.find_last_of(".") + 1);
+	if (Extension == "fbx")
+	{
+		Options.ImportScale /= 100.0f;
+	}
+
 	ConvertContext ctx;
 	ctx.SceneName = file::FileNameWithoutExt(ModelPath);
 

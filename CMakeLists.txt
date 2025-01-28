@@ -23,7 +23,8 @@ option(USE_WINDOWS_SUBSYSTEM "Use the Windows subsystem on windows. When this is
 option(ENGINE_DYNAMIC_SYMBOLS "Link with -rdynamic on linux for more descriptive stack traces" OFF)
 option(ENGINE_SERVER "Is a server" OFF)
 option(ENGINE_EDITOR "Compile the editor" OFF)
-option(ENGINE_CSHARP "Do not include the C# plugin" ON)
+option(ENGINE_CSHARP "Include the C# plugin" ON)
+option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 
 project("Klemmgine")
 
@@ -143,6 +144,10 @@ if(UNIX)
 endif()
 
 klemmui_resources(Klemmgine "Engine/Resources")
+
+if (ENGINE_BUILD_TOOLS)
+	add_subdirectory("Tools/ProjCompiler")
+endif()
 
 if(ENGINE_CSHARP)
 	add_subdirectory("Plugins/CSharp")
