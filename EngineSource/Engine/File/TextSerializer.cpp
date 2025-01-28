@@ -96,7 +96,7 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 		Stream << Target.GetByte();
 		break;
 	case SerializedData::DataType::Boolean:
-		Stream << (Target.GetBool() ? "true" : "false");
+		Stream << Target.GetBool();
 		break;
 	case SerializedData::DataType::Float:
 		Stream << Target.GetFloat();
@@ -179,7 +179,8 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 
 		if (!TryReadChar(Stream, ':'))
 		{
-			throw SerializeReadException(str::Format("Expected a ':' after \"%s\", got '%c'", Name.c_str(), GetNextChar(Stream)));
+			char c = GetNextChar(Stream);
+			throw SerializeReadException(str::Format("Expected a ':' after \"%s\", got '%c' (hex 0x%x)", Name.c_str(), c, c));
 		}
 		std::string Type = ReadWord(Stream);
 		SerializedValue Value;
@@ -210,7 +211,7 @@ engine::SerializedValue engine::TextSerializer::ReadValue(std::istream& Stream, 
 		return uByte(std::stoi(ReadWord(Stream)));
 
 	case engine::SerializedData::DataType::Boolean:
-		return uByte(std::stoi(ReadWord(Stream)));
+		return bool(std::stoi(ReadWord(Stream)));
 
 	case engine::SerializedData::DataType::Float:
 		return std::stof(ReadWord(Stream));
@@ -263,6 +264,7 @@ engine::string engine::TextSerializer::ReadString(std::istream& Stream)
 {
 	while (true)
 	{
+		int fail = Stream.fail();
 		int New = Stream.get();
 		if (New == EOF)
 			return "";
@@ -385,7 +387,7 @@ bool engine::TextSerializer::TryReadChar(std::istream& Stream, char c)
 		if (New == EOF)
 			break;
 
-		if (New == '\n' || New == '\t' || New == ' ' || New == '\r')
+		if (New == '\n' || New == '\r' || New == '\t' || New == ' ')
 			continue;
 		if (New == c)
 			return true;

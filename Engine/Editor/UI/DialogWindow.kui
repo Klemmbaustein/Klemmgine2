@@ -1,6 +1,6 @@
 element DialogWindowButton
 {
-	var Text;
+	var Text = "Ok";
 
 	child UIButton btn
 	{
@@ -9,7 +9,7 @@ element DialogWindowButton
 		borderColor = Color_HighlightDark;
 
 		minSize = (50, 24)px;
-		maxSize = (400, 24)px;
+		maxSize = (100, 24)px;
 
 		allAlign = centered;
 
@@ -28,8 +28,8 @@ element DialogWindowButton
 
 element DialogWindowMainElement
 {
-	var MainBackgroundSize;
-	var ButtonBackgroundSize;
+	var MainBackgroundSize = 1;
+	var ButtonBackgroundSize = 1;
 
 	size = 2sr;
 	position = -1;
@@ -42,6 +42,7 @@ element DialogWindowMainElement
 		width = 100%;
 		height = MainBackgroundSize;
 		color = Color_Background;
+		
 		child UIScrollBox windowMain
 		{
 			size = 100%;
@@ -63,11 +64,11 @@ element DialogWindowMainElement
 
 element RenameWindowElement
 {
-	var FromString = "From:";
+	var FromString = "From: <some file>";
 
 	padding = 10px;
 	orientation = vertical;
-
+	
 	child UIText
 	{
 		color = Color_Text;

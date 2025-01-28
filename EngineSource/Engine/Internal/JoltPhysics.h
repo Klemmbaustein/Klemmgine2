@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine/Physics/Physics.h>
 #include <unordered_map>
+#include <utility>
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -19,6 +20,8 @@
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 
+class JoltJobSystemImpl;
+
 namespace engine::internal
 {
 	class JoltInstance
@@ -36,6 +39,8 @@ namespace engine::internal
 		void RemoveBody(physics::PhysicsBody* Body);
 		void CreateShape(physics::PhysicsBody* Body);
 		void SetBodyPosition(physics::PhysicsBody* Body, Vector3 NewPosition);
+		Vector3 GetBodyPosition(physics::PhysicsBody* Body);
+		std::pair<Vector3, Rotation3> GetBodyPositionAndRotation(physics::PhysicsBody* Body);
 		void SetBodyRotation(physics::PhysicsBody* Body, Vector3 NewRotation);
 		void SetBodyPositionAndRotation(physics::PhysicsBody* Body, Vector3 NewPosition, Rotation3 NewRotation);
 		void ScaleBody(physics::PhysicsBody* Body, Vector3 ScaleFactor);
@@ -73,6 +78,6 @@ namespace engine::internal
 
 		JPH::PhysicsSystem* System = nullptr;
 		static JPH::TempAllocatorImpl* TempAllocator;
-		static JPH::JobSystemThreadPool* JobSystem;
+		static JoltJobSystemImpl* JobSystem;
 	};
 }

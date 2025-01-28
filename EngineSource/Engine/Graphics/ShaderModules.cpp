@@ -214,7 +214,7 @@ ShaderUniform engine::graphics::ShaderModuleLoader::ReadUniformDefinition(string
 		{ "float", Material::Field::Type::Int },
 		{ "sampler2D", Material::Field::Type::Texture },
 		{ "vec3", Material::Field::Type::Vec3 },
-		{ "bool", Material::Field::Type::Int },
+		{ "bool", Material::Field::Type::Bool },
 	};
 	string ValueString;
 	if (SplitValue.size() >= 4 && SplitValue[3] == "=")

@@ -1,8 +1,8 @@
 
 element PropertyEntryElement
 {
-	var PropertyName;
-	var CompactTextPadding = 5;
+	var PropertyName = "Value";
+	var CompactTextPadding = 5px;
 
 	orientation = horizontal;
 	verticalAlign = centered;
@@ -43,7 +43,7 @@ element PropertyEntryElement
 
 element PropertyHeaderElement
 {
-	var Title;
+	var Title = "title";
 	var UpPadding = 15px;
 
 	orientation = vertical;

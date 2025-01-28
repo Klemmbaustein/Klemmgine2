@@ -11,15 +11,14 @@ void engine::PlayerObject::Begin()
 	Collider = new PhysicsComponent();
 	Attach(Collider);
 	Collider->Scale = 0.5f;
-	Collider->CreateSphere(physics::MotionType::Static, physics::Layer::Static, false);
+	Collider->CreateSphere(physics::MotionType::Static, physics::Layer::Static, true);
 
 	Cam = new CameraComponent();
 	Collider->Attach(Cam);
 	Cam->Use();
 
 	auto Mesh = new MeshComponent();
-	Attach(Mesh);
-	Mesh->Scale = 0.5f;
+	Collider->Attach(Mesh);
 	Mesh->Load(PlayerModel.Value);
 }
 

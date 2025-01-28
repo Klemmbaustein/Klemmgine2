@@ -1,6 +1,6 @@
 element MenuBarButton
 {
-	var Name;
+	var Name = "File";
 	leftPadding = 4px;
 
 	child UIButton button

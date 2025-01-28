@@ -110,6 +110,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	auto* PosField = new VectorField(Object->Position, Size, nullptr);
 	PosField->OnChanged = [Object, PosField]()
 		{
+			Viewport::Current->OnObjectChanged(Object);
 			Object->Position = PosField->GetValue();
 		};
 	Position->valueBox->AddChild(PosField);
@@ -119,6 +120,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	auto* RotField = new VectorField(Object->Rotation.EulerVector(), Size, nullptr);
 	RotField->OnChanged = [Object, RotField]()
 		{
+			Viewport::Current->OnObjectChanged(Object);
 			Object->Rotation = RotField->GetValue();
 		};
 	Rotation->valueBox->AddChild(RotField);
@@ -128,6 +130,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	auto* ScaleField = new VectorField(Object->Scale, Size, nullptr);
 	ScaleField->OnChanged = [Object, ScaleField]()
 		{
+			Viewport::Current->OnObjectChanged(Object);
 			Object->Scale = ScaleField->GetValue();
 		};
 	Scale->valueBox->AddChild(ScaleField);
@@ -138,6 +141,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	NameField->OnChanged = [Object, NameField]()
 		{
+			Viewport::Current->OnObjectChanged(Object);
 			Object->Name = NameField->GetText();
 		};
 
@@ -162,10 +166,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			auto* Ref = static_cast<ObjProperty<AssetRef>*>(i);
 			auto* Selector = new AssetSelector(Ref->Value, Size, nullptr);
 
-			Selector->OnChanged = [Selector, Ref]()
+			Selector->OnChanged = [Object, Selector, Ref]()
 				{
 					if (Selector->SelectedAsset.Extension != Ref->Value.Extension)
 						return;
+					Viewport::Current->OnObjectChanged(Object);
 					Ref->Value = Selector->SelectedAsset;
 					if (Ref->OnChanged)
 						Ref->OnChanged();

@@ -1,5 +1,6 @@
 #include "PhysicsComponent.h"
 #include <Engine/Scene.h>
+#include <Engine/Log.h>
 using namespace engine;
 
 engine::PhysicsComponent::PhysicsComponent()
@@ -160,6 +161,10 @@ void engine::PhysicsComponent::SetActive(bool NewActive)
 bool engine::PhysicsComponent::GetActive() const
 {
 	return Body->IsActive;
+}
+
+void engine::PhysicsComponent::Update()
+{
 }
 
 void engine::PhysicsComponent::Clear()

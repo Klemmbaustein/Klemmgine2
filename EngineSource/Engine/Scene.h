@@ -39,6 +39,8 @@ namespace engine
 
 		kui::Vec2ui BufferSize;
 		bool Resizable = true;
+		bool AlwaysRedraw = true;
+		bool Redraw = false;
 
 		/**
 		* @brief

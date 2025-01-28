@@ -1,11 +1,10 @@
 element EditorTextField
 {
-	var Size = 22;
-	var HintText;
-	var Image;
+	var Size = 250px;
+	var HintText = "Search";
+	var Image = "Engine/Editor/Assets/Search.png";
 
 	verticalAlign = centered;
-	height = 22px;
 
 	child UITextField field
 	{
@@ -36,6 +35,8 @@ element EditorTextField
 
 		border = 1px;
 		borderColor = Color_LightBackground;
+
+		allAlign = centered;
 
 		child UIBackground
 		{

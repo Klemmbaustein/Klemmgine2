@@ -32,8 +32,6 @@ EditorTheme EditorUI::Theme;
 engine::string EditorUI::DefaultFontName = "res:DefaultFont.ttf";
 EditorPanel* EditorUI::FocusedPanel = nullptr;
 
-std::vector<engine::string> MenuBarEntries = { "File", "Edit", "Scene", "Window", "Help" };
-
 void engine::editor::EditorUI::StartAssetDrag(DraggedItem With)
 {
 	if (DraggedBox)
@@ -118,29 +116,15 @@ engine::editor::EditorUI::EditorUI()
 		->SetMaxSize(2);
 
 	MenuBar = new UIBackground(true, 0, Theme.LightBackground, SizeVec(UISize::Parent(1), UISize::Pixels(MenuBarSize)));
-	MenuBar
+	MenuBar 
 		->SetVerticalAlign(UIBox::Align::Centered);
-
-	for (auto& i : MenuBarEntries)
-	{
-		auto* btn = new MenuBarButton();
-		btn->SetName(i);
-		btn->button->OnClicked = [btn]()
-			{
-				new DropdownMenu({ DropdownMenu::Option{
-					.OnClicked = []() {abort(); },
-					.Name = "Testing",
-					},
-					DropdownMenu::Option{
-						.OnClicked = []() {
-						new MessageWindow(error::GetStackTrace(), nullptr);
-					},
-					.Name = "Testing 2",
-					} }, btn->GetPosition());
-			};
-		MenuBar->AddChild(btn);
-	}
 	Root->AddChild(MenuBar);
+
+	AddMenuBarItem("File", { "New", "Open Project", "Exit" });
+	AddMenuBarItem("Edit", { "Undo", "Settings", "Project settings" });
+	AddMenuBarItem("Scene", { "Save", "Open", "Show collision view" });
+	AddMenuBarItem("Window", { "Save layout", "Load layout" });
+	AddMenuBarItem("Help", { "About", "Source code" });
 
 	MainBackground = new UIBox(true, 0);
 
@@ -182,6 +166,8 @@ engine::editor::EditorUI::EditorUI()
 
 	SetStatusMainThread("Editor loaded", StatusType::Info);
 	input::ShowMouseCursor = true;
+
+	Update();
 }
 
 engine::editor::EditorUI::~EditorUI()
@@ -189,7 +175,7 @@ engine::editor::EditorUI::~EditorUI()
 	using namespace subsystem;
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	
+
 	VideoSystem->OnResizedCallbacks.erase(this);
 	delete RootPanel;
 	delete MainBackground->GetAbsoluteParent();
@@ -279,6 +265,27 @@ void engine::editor::EditorUI::UpdateBackgrounds()
 		2 - UIBox::PixelSizeToScreenSize(Vec2f(0, StatusBarSize + MenuBarSize), MainBackground->GetParentWindow()).Y)
 	);
 	MainBackground->GetParent()->UpdateElement();
+}
+
+void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<std::string> Options)
+{
+	auto* btn = new MenuBarButton();
+	btn->SetName(Name);
+
+	std::vector<DropdownMenu::Option> DropdownOptions;
+
+	for (auto& i : Options)
+	{
+		DropdownOptions.push_back(DropdownMenu::Option{
+			.Name = i,
+			});
+	}
+
+	btn->button->OnClicked = [btn, DropdownOptions]()
+		{
+			new DropdownMenu(DropdownOptions, btn->GetPosition());
+		};
+	MenuBar->AddChild(btn);
 }
 
 #endif

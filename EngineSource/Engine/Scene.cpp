@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include <Engine/File/ModelData.h>
 #include <Engine/File/TextSerializer.h>
+#include <Engine/Error/EngineError.h>
 #include <Engine/File/BinarySerializer.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Editor/UI/Panels/Viewport.h>
@@ -94,6 +95,11 @@ engine::Scene::Scene(const char* FilePath)
 
 void engine::Scene::Draw()
 {
+	if (!AlwaysRedraw && !Redraw)
+		return;
+
+	Redraw = false;
+
 	UsedCamera->Update();
 
 	Shadows.Update(UsedCamera);
@@ -125,6 +131,9 @@ void engine::Scene::Draw()
 
 void engine::Scene::Update()
 {
+	if (Physics.Active)
+		Physics.Update();
+
 	for (SceneObject* Obj : Objects)
 	{
 		Obj->UpdateObject();
@@ -179,6 +188,7 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 #endif
 		Buffer->Resize(NewSize.X, NewSize.Y);
 	}
+
 	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 }
 
@@ -222,12 +232,14 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 		for (SceneObject* i : Objects)
 		{
 			i->OnDestroyed();
+			i->BeginCalled = false;
 			i->ClearComponents();
 		}
 
 		for (SceneObject* i : Objects)
 		{
 			i->Begin();
+			i->BeginCalled = true;
 		}
 	}
 }
@@ -245,6 +257,7 @@ void engine::Scene::LoadAsyncFinish()
 	for (SceneObject* obj : Objects)
 	{
 		obj->Begin();
+		obj->BeginCalled = true;
 	}
 
 	Update();
@@ -462,7 +475,6 @@ void engine::Scene::StartSorting()
 				});
 			IsSorting = false;
 
-			
 			for (size_t i = 0; i < DrawnComponents.size(); i++)
 			{
 				DrawnComponents[i] = SortedComponents[i].second;

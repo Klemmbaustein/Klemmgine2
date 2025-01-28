@@ -97,6 +97,19 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	SetConsoleTextAttribute(hConsole, WindowsColors[NewColor]);
 }
 
+void engine::internal::platform::SetThreadName(string Name)
+{
+	SetThreadDescription(GetCurrentThread(), StrToWstr(Name).c_str());
+}
+
+engine::string engine::internal::platform::GetThreadName()
+{
+	PWSTR OutString;
+	GetThreadDescription(GetCurrentThread(), &OutString);
+
+	return WstrToStr(OutString);
+}
+
 engine::internal::platform::SharedLibrary* engine::internal::platform::LoadSharedLibrary(string Path)
 {
 	return reinterpret_cast<SharedLibrary*>(LoadLibraryW(StrToWstr(Path).c_str()));
@@ -289,6 +302,15 @@ void engine::internal::platform::Init()
 void engine::internal::platform::Execute(string Command)
 {
 	system(Command.c_str());
+}
+
+void engine::internal::platform::SetThreadName(string Name)
+{
+
+}
+engine::string engine::internal::platform::GetThreadName()
+{
+	return "<Unknown thread>";
 }
 
 std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)

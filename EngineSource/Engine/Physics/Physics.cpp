@@ -14,6 +14,16 @@ PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform, MotionTyp
 		this->Manager = &Parent->GetRootObject()->GetScene()->Physics;
 }
 
+engine::Vector3 engine::physics::PhysicsBody::GetPosition()
+{
+	return Manager->PhysicsSystem->GetBodyPosition(this);
+}
+
+std::pair<engine::Vector3, engine::Rotation3> engine::physics::PhysicsBody::GetPositionAndRotation()
+{
+	return Manager->PhysicsSystem->GetBodyPositionAndRotation(this);
+}
+
 void engine::physics::PhysicsBody::SetPosition(Vector3 NewPosition)
 {
 }

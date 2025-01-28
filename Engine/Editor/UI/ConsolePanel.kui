@@ -1,6 +1,6 @@
 element ConsolePanelElement
 {
-	var LogSize;
+	var LogSize = 100px;
 
 	width = 1pn;
 	orientation = vertical;

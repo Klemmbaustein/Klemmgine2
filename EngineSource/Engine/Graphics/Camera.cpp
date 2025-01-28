@@ -32,3 +32,11 @@ void engine::graphics::Camera::Update()
 		View = glm::translate(View, -glm::vec3(Position.X, Position.Y, Position.Z));
 	}
 }
+
+engine::Vector3 engine::graphics::Camera::ScreenToWorld(Vector2 Screen) const
+{
+	glm::mat4 InvProjectionView = glm::inverse(Projection * View);
+	glm::vec4 Translated = InvProjectionView * glm::vec4(Screen.X, Screen.Y, 1, 1);
+
+	return Vector3(Translated.x, Translated.y, Translated.z);
+}

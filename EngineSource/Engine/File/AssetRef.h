@@ -26,6 +26,9 @@ namespace engine
 		static AssetRef FromPath(string Path);
 
 		[[nodiscard]]
+		static AssetRef Convert(std::string PathOrName);
+
+		[[nodiscard]]
 		bool IsValid() const;
 
 		/// The path to the referenced file.

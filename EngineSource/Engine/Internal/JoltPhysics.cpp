@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include <Engine/Error/EngineAssert.h>
 #include <Engine/Stats.h>
+#include <Engine/ThreadPool.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 using namespace engine;
 using namespace engine::physics;
@@ -53,6 +54,55 @@ public:
 	virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
 	{
 		return ShouldLayersCollide(inObject1, inObject2);
+	}
+};
+
+class JoltJobSystemImpl final : public JPH::JobSystemWithBarrier
+{
+public:
+
+	ThreadPool* Pool = nullptr;
+
+	std::map<Job*, JobFunction> Jobs;
+
+	JoltJobSystemImpl(ThreadPool* Pool)
+	{
+		Init(JPH::cMaxPhysicsBarriers);
+		this->Pool = Pool;
+	}
+
+	int GetMaxConcurrency() const override
+	{
+		return ThreadPool::Main()->NumJobs();
+	}
+
+	JobHandle CreateJob(const char* inName, JPH::ColorArg inColor, const JobFunction& inJobFunction, uint32 inNumDependencies = 0) override
+	{
+		auto j = new Job(inName, inColor, this, inJobFunction, inNumDependencies);
+		Jobs.emplace(j, inJobFunction);
+
+		if (inNumDependencies == 0)
+			QueueJob(j);
+
+		return JobHandle(j);
+	}
+
+	void QueueJob(Job* inJob)
+	{
+		Pool->AddJob(std::bind(&Job::Execute, inJob));
+	}
+
+	void QueueJobs(Job** inJobs, JPH::uint inNumJobs)
+	{
+		for (JPH::uint i = 0; i < inNumJobs; i++)
+		{
+			QueueJob(inJobs[i]);
+		}
+	}
+
+	void FreeJob(Job* inJob)
+	{
+		Jobs.erase(inJob);
 	}
 };
 
@@ -150,7 +200,7 @@ static void JoltPhysicsTrace(const char* inFMT, ...)
 }
 bool internal::JoltInstance::IsInitialized = false;
 JPH::TempAllocatorImpl* internal::JoltInstance::TempAllocator = nullptr;
-JPH::JobSystemThreadPool* internal::JoltInstance::JobSystem = nullptr;
+JoltJobSystemImpl* internal::JoltInstance::JobSystem = nullptr;
 void engine::internal::JoltInstance::InitJolt()
 {
 	if (IsInitialized)
@@ -166,7 +216,8 @@ void engine::internal::JoltInstance::InitJolt()
 	JPH::RegisterTypes();
 
 	TempAllocator = new JPH::TempAllocatorImpl(1024 * 1024);
-	JobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+	//JobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+	JobSystem = new JoltJobSystemImpl(ThreadPool::Main());
 
 	// We need a job system that will execute physics jobs on multiple threads. Typically
 	// you would implement the JobSystem interface yourself and let Jolt Physics run on top
@@ -213,10 +264,10 @@ JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(MeshBody* Fro
 	auto BodyModel = From->Model;
 	// Unload the Jolt Mesh Shape when the model data is unloaded.
 	// It will also be unloaded when the physics body itself is destroyed.
-	BodyModel->OnDereferenced.push_back([this, BodyModel]()
+	BodyModel->OnDereferenced.insert({ this, [this, BodyModel]()
 		{
 			UnloadMesh(BodyModel);
-		});
+		} });
 	Shape->AddRef();
 
 	LoadedMeshes.insert({ BodyModel, PhysicsMesh{
@@ -341,12 +392,20 @@ engine::internal::JoltInstance::JoltInstance()
 
 engine::internal::JoltInstance::~JoltInstance()
 {
+	auto MeshCopy = LoadedMeshes;
+	for (auto& i : MeshCopy)
+	{
+		if (i.first->OnDereferenced.contains(this))
+			i.first->OnDereferenced.erase(this);
+		UnloadMesh(i.first);
+	}
+
 	delete System;
 }
 
 void engine::internal::JoltInstance::Update()
 {
-	System->Update(stats::DeltaTime, 1, TempAllocator, JobSystem);
+	System->Update(std::min(stats::DeltaTime, 0.1f), 1, TempAllocator, JobSystem);
 }
 
 void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive, bool StartCollisionEnabled)
@@ -417,6 +476,33 @@ void engine::internal::JoltInstance::SetBodyPosition(engine::physics::PhysicsBod
 
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
 	JoltBodyInterface->SetPosition(Info->ID, ToJPHVec3(NewPosition), JPH::EActivation::Activate);
+}
+
+Vector3 engine::internal::JoltInstance::GetBodyPosition(physics::PhysicsBody* Body)
+{
+	if (!Body->PhysicsSystemBody)
+	{
+		return 0;
+	}
+
+	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
+	auto Pos = JoltBodyInterface->GetPosition(Info->ID);
+	return Vector3(Pos.GetX(), Pos.GetY(), Pos.GetZ());
+}
+
+std::pair<Vector3, Rotation3> engine::internal::JoltInstance::GetBodyPositionAndRotation(physics::PhysicsBody* Body)
+{
+	if (!Body->PhysicsSystemBody)
+	{
+		return {};
+	}
+
+	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
+	JPH::Vec3 Pos;
+	JPH::Quat Rot;
+	JoltBodyInterface->GetPositionAndRotation(Info->ID, Pos, Rot);
+	JPH::Vec3 RotEuler = Rot.GetEulerAngles();
+	return { Vector3(Pos.GetX(), Pos.GetY(), Pos.GetZ()), Rotation3(RotEuler.GetX(), RotEuler.GetY(), RotEuler.GetZ(), true) };
 }
 
 void engine::internal::JoltInstance::SetBodyRotation(engine::physics::PhysicsBody* Body, Vector3 NewRotation)

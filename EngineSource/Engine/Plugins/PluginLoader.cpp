@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <Engine/File/TextSerializer.h>
 #include <Engine/Subsystem/PluginSubsystem.h>
+#include <cstring>
 
 #include "InterfaceStruct.hpp"
 

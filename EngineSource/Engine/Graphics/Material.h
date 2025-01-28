@@ -9,12 +9,15 @@ namespace engine::graphics
 	{
 	public:
 
-		Material(string FilePath);
+		Material(AssetRef File);
 
 		static Material* MakeDefault();
 
 		Material();
+		Material(const Material&) = delete;
 		~Material();
+
+		Material& operator=(const Material&) = delete;
 
 		struct Field
 		{
@@ -29,7 +32,7 @@ namespace engine::graphics
 				Float,
 				Vec3,
 				Texture,
-
+				Bool,
 			};
 
 			string Name;

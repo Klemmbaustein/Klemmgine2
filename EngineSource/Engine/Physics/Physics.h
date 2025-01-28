@@ -4,6 +4,7 @@
 #include <Engine/Objects/Components/ObjectComponent.h>
 #include <Engine/File/ModelData.h>
 #include <set>
+#include <utility>
 
 namespace engine
 {
@@ -138,12 +139,13 @@ namespace engine::physics
 
 		/**
 		* @brief
-		* Gets the bodies position in the physics simulation.
+		* Gets the body's position in the physics simulation.
 		*/
 		Vector3 GetPosition();
+		std::pair<Vector3, Rotation3> GetPositionAndRotation();
 		/**
 		* @brief
-		* Gets the bodies rotation in the physics simulation
+		* Gets the body's rotation in the physics simulation
 		*/
 		Rotation3 GetRotation();
 

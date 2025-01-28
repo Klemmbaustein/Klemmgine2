@@ -15,19 +15,23 @@ namespace engine
 
 		static void AllocateDefaultThreadPool();
 
-		ThreadPool(size_t MaxJobs);
+		ThreadPool(size_t MaxJobs, string PoolName);
 		~ThreadPool();
 		void AddJob(const ThreadFunction& Job);
 		
 		static ThreadPool* Main();
 
+		uint32 NumJobs() const;
+
+		string GetName() const;
+
 	private:
 
-		void ThreadMain();
+		void ThreadMain(size_t ThreadId);
 		ThreadFunction FindFunction();
 
 		static ThreadPool* MainPool;
-
+		string Name;
 		bool ShouldQuit = false;
 		std::mutex JobQueueMutex;
 		std::vector<std::thread> Threads;

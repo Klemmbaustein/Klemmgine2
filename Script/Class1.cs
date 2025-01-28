@@ -7,7 +7,7 @@ public class CoolObject : SceneObject
 
 	public override void Begin()
 	{
-		Log.Info("Hai!");
+		Log.Info("Hi!");
 	}
 
 	public override void Update()

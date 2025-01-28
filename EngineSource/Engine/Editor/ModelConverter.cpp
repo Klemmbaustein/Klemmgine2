@@ -87,7 +87,7 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 		TextureField->TextureValue.Name = new std::string(Texture);
 	}
 
-	auto UseTextureField = NewMaterial->FindField("u_useTexture", Material::Field::Type::Int);
+	auto UseTextureField = NewMaterial->FindField("u_useTexture", Material::Field::Type::Bool);
 
 	if (UseTextureField)
 	{

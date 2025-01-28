@@ -52,6 +52,8 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 					continue;
 				}
 				prop->DeSerialize(&Value);
+				if (BeginCalled && prop->OnChanged)
+					prop->OnChanged();
 				ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
 				if (Ref && OriginScene)
 				{
@@ -123,6 +125,14 @@ void engine::SceneObject::CheckTransform()
 	}
 }
 
+void engine::SceneObject::CheckComponentTransform()
+{
+	for (auto& i : ChildComponents)
+	{
+		i->UpdateTransform();
+	}
+}
+
 void engine::SceneObject::Destroy()
 {
 	OriginScene->DestroyedObjects.insert(this);
@@ -137,6 +147,7 @@ void engine::SceneObject::InitObj(Scene* Scn, bool CallBegin, int32 TypeID)
 		this->Name = Reflection::ObjectTypes[TypeID].Name;
 		CheckTransform();
 		Begin();
+		BeginCalled = true;
 	}
 }
 

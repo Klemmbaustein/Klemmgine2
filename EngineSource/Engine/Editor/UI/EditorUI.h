@@ -85,6 +85,9 @@ namespace engine::editor
 		static void UpdateTheme(kui::Window* Target);
 		void Update();
 		void UpdateBackgrounds();
+
+		void AddMenuBarItem(std::string Name, std::vector<std::string> Options);
+
 	private:
 		string CurrentStatus;
 		static void SetStatusMainThread(string NewMessage, StatusType Type);

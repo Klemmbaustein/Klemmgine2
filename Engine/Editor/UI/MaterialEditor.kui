@@ -1,0 +1,70 @@
+element MaterialPropertyElement
+{
+	var Name = "Uniform name";
+	var Description = "Uniform description";
+
+	child UIBox
+	{
+		orientation = vertical;
+		child UIText
+		{
+			text = Name;
+			size = 12px;
+			color = Color_Text;
+			wrap = 125px;
+		}
+		child UIText
+		{
+			text = Description;
+			size = 10px;
+			color = Color_BackgroundHighlight;
+			wrap = 125px;
+		}
+		width = 125px;
+		padding = 5px;
+	}
+
+	child UIBackground
+	{
+		height = 100%;
+		width = 1px;
+		leftPadding = 0;
+		rightPadding = 0;
+		color = Color_BackgroundHighlight;
+	}
+
+	child UIBox contentBox
+	{
+		padding = 5px;
+	}
+	rightPadding = 16px;
+}
+
+element MaterialTextureElement
+{
+	child UIBackground
+	{
+		color = 0;
+		child UIBackground texturePreview
+		{
+			size = 64px;
+			image = "Assets/Bricks.png";
+		}
+	}
+
+	child UIBox controlsBox
+	{
+		leftPadding = 10px;
+		orientation = vertical;
+	}
+}
+
+element MaterialValueElement
+{
+	child EditorTextField field
+	{
+		HintText = "Value";
+		Image = "Engine/Editor/Assets/Search.png";
+		Size = 200px;
+	}
+}

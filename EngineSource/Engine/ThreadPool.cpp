@@ -1,19 +1,21 @@
 #include "ThreadPool.h"
 #include <Engine/Log.h>
+#include <Engine/Internal/Platform.h>
 using namespace engine;
 
 ThreadPool* ThreadPool::MainPool = nullptr;
 
 void engine::ThreadPool::AllocateDefaultThreadPool()
 {
-	MainPool = new ThreadPool(std::min(std::thread::hardware_concurrency() - 1, uint32(8)));
+	MainPool = new ThreadPool(std::min(std::thread::hardware_concurrency() - 1, uint32(16)), "Engine thread pool");
 }
 
-engine::ThreadPool::ThreadPool(size_t MaxJobs)
+engine::ThreadPool::ThreadPool(size_t MaxJobs, string PoolName)
 {
+	this->Name = PoolName;
 	for (size_t i = 0; i < MaxJobs; i++)
 	{
-		Threads.emplace_back(&ThreadPool::ThreadMain, this);
+		Threads.emplace_back(&ThreadPool::ThreadMain, this, i);
 	}
 }
 
@@ -44,10 +46,22 @@ ThreadPool* engine::ThreadPool::Main()
 	return MainPool;
 }
 
+uint32 engine::ThreadPool::NumJobs() const
+{
+	return uint32(Threads.size());
+}
+
+string engine::ThreadPool::GetName() const
+{
+	return Name;
+}
+
 ThreadPool::ThreadFunction engine::ThreadPool::FindFunction()
 {
 	std::unique_lock g{ JobQueueMutex };
-	ThreadCondition.wait(g);
+
+	while (Jobs.empty())
+		ThreadCondition.wait(g);
 
 	if (ShouldQuit)
 		return nullptr;
@@ -57,15 +71,19 @@ ThreadPool::ThreadFunction engine::ThreadPool::FindFunction()
 	return Found;
 }
 
-void engine::ThreadPool::ThreadMain()
+void engine::ThreadPool::ThreadMain(size_t ThreadId)
 {
+	internal::platform::SetThreadName(str::Format("%s - %i", Name.c_str(), int(ThreadId)));
+	bool ShouldQuitThread = false;
 	while (true)
 	{
 		const ThreadFunction& Found = FindFunction();
-		if (!Found)
+		if (ShouldQuit)
 		{
 			break;
 		}
+		if (!Found)
+			continue;
 		Found();
 	}
 }

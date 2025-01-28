@@ -23,5 +23,6 @@ namespace engine::graphics
 		Vector3 GetForward() const;
 
 		void Update();
+		Vector3 ScreenToWorld(Vector2 Screen) const;
 	};
 }

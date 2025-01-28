@@ -38,6 +38,7 @@ namespace engine
 		void ClearComponents();
 		void Destroy();
 		void CheckTransform();
+		void CheckComponentTransform();
 #endif
 
 	protected:
@@ -52,6 +53,7 @@ namespace engine
 
 	private:
 
+		bool BeginCalled = false;
 		std::vector<ObjectComponent*> ChildComponents;
 		Vector3 OldPosition;
 		Rotation3 OldRotation;

@@ -2,6 +2,7 @@
 #include "Resource.h"
 #include "FileUtil.h"
 #include <Engine/Log.h>
+#include <filesystem>
 
 engine::AssetRef operator""_asset(const char* Name, std::size_t Size)
 {
@@ -40,6 +41,17 @@ engine::AssetRef engine::AssetRef::FromPath(string Path)
 		.FilePath = Path,
 		.Extension = Path.substr(Dot + 1),
 	};
+}
+
+engine::AssetRef engine::AssetRef::Convert(std::string PathOrName)
+{
+	if (std::filesystem::exists(PathOrName))
+	{
+		return AssetRef::FromPath(PathOrName);
+	}
+	size_t Dot = PathOrName.find_last_of(".");
+
+	return engine::AssetRef::FromName(PathOrName.substr(0, Dot), PathOrName.substr(Dot + 1));
 }
 
 bool engine::AssetRef::IsValid() const

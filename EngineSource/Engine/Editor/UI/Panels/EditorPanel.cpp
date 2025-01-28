@@ -130,6 +130,7 @@ void engine::editor::EditorPanel::UpdateLayout()
 			Child->UpdateLayout();
 		}
 	}
+
 	OnResized();
 }
 
@@ -294,6 +295,27 @@ void engine::editor::EditorPanel::SetFocused()
 	}
 	PanelElement->RedrawElement();
 	UpdateFocusState();
+}
+
+void engine::editor::EditorPanel::SetName(string NewName)
+{
+	if (this->Name != NewName)
+	{
+		this->Name = NewName;
+		if (Parent)
+		{
+			Parent->ShouldUpdate = true;
+		}
+		else
+		{
+			ShouldUpdate = true;
+		}
+	}
+}
+
+bool engine::editor::EditorPanel::OnClosed()
+{
+	return true;
 }
 
 void engine::editor::EditorPanel::ClearParent()
@@ -625,7 +647,8 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 	NewTab->closeButton->OnClicked = [Target]()
 		{
-			delete Target;
+			if (Target->OnClosed())
+				delete Target;
 		};
 
 	NewTab->mainButton->OnDragged = [Target](int)

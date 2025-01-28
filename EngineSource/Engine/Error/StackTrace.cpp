@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <Engine/Log.h>
+#include <Engine/Internal/Platform.h>
 #include <Engine/File/FileUtil.h>
 #if __cpp_lib_stacktrace >= 202011L && !LINUX
 #define HAS_CPP_STACKTRACE 1
@@ -119,11 +120,16 @@ engine::string engine::error::GetStackTrace()
 	free(messages);
 #endif
 
+	OutStream << "    Thread: " << internal::platform::GetThreadName() << std::endl;
 	for (auto& i : Stack)
 	{
 		if (HasDebugInfo && i.Name.empty())
 			continue;
 		OutStream << ("    at: " + (i.Name.empty() ? i.Address : i.Name)) << std::endl;
 	}
-	return OutStream.str();
+
+	string str = OutStream.str();
+	// Remove last newline
+	str.pop_back();
+	return str;
 }

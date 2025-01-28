@@ -54,9 +54,7 @@ engine::editor::Viewport::Viewport()
 	TestButton->SetName("Save");
 	TestButton->btn->OnClicked = [this]()
 		{
-			Scene* Current = Scene::GetMain();
-			if (Current)
-				Current->Save(Current->Name);
+			SaveCurrentScene();
 		};
 	delete TestButton->dropdownButton;
 
@@ -65,7 +63,7 @@ engine::editor::Viewport::Viewport()
 	TestButton2->SetName("View");
 
 	auto RunButton = new ToolBarButton();
-	//RunButton->SetIcon("file:Engine/Editor/Assets/Options.png");
+	RunButton->SetIcon("file:Engine/Editor/Assets/Run.png");
 	RunButton->btn->OnClicked = []()
 		{
 			using namespace subsystem;
@@ -97,11 +95,29 @@ engine::editor::Viewport::Viewport()
 		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
 			->SetPadding(5_px, 5_px, 5_px, 15_px));
 
-	auto ViewportDropBox = new DroppableBox(false, [](EditorUI::DraggedItem Item)
+	auto ViewportDropBox = new DroppableBox(false, [this](EditorUI::DraggedItem Item)
 		{
+			if (!Scene::GetMain())
+				return;
+
+			Window* Win = Window::GetActiveWindow();
+			graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
+
+			kui::Vec2f MousePos = ((Win->Input.MousePosition - PanelPosition) / Size) * 2 - 1;
+
+			Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
+			Vector3 EndPosition = Cam->Position + Direction * 10;
+
+			auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic);
+
+			if (hit.Hit)
+			{
+				EndPosition = hit.ImpactPoint;
+			}
+
 			if (Item.ObjectType != 0)
 			{
-				Scene::GetMain()->CreateObjectFromID(Item.ObjectType);
+				OnObjectCreated(Scene::GetMain()->CreateObjectFromID(Item.ObjectType, EndPosition));
 			}
 
 			AssetRef Dropped = AssetRef::FromPath(Item.Path);
@@ -111,9 +127,10 @@ engine::editor::Viewport::Viewport()
 				return;
 			}
 
-			auto obj = Scene::GetMain()->CreateObject<MeshObject>();
+			auto obj = Scene::GetMain()->CreateObject<MeshObject>(EndPosition);
 			obj->Name = Dropped.DisplayName();
 			obj->LoadMesh(Dropped);
+			OnObjectCreated(obj);
 		});
 
 
@@ -121,7 +138,7 @@ engine::editor::Viewport::Viewport()
 		->AddChild(ViewportToolbar)
 		->AddChild(ViewportDropBox
 			->AddChild(ViewportBackground
-				->AddChild(LoadingScreenBox)))
+			->AddChild(LoadingScreenBox)))
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
 
@@ -151,6 +168,13 @@ void engine::editor::Viewport::OnResized()
 
 void engine::editor::Viewport::RemoveSelected()
 {
+	std::vector<SceneObject*> Changed;
+	for (auto& i : SelectedObjects)
+	{
+		Changed.push_back(i);
+	}
+
+	OnObjectsChanged(Changed);
 	for (auto& i : SelectedObjects)
 	{
 		i->Destroy();
@@ -186,8 +210,11 @@ void engine::editor::Viewport::Update()
 		StatsRedrawTimer.Reset();
 		RedrawStats = false;
 	}
+	Scene* Current = Scene::GetMain();
 
-	if (ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)
+	bool HasFocus = EditorUI::FocusedPanel == this;
+
+	if (Current && ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)
 	{
 		SetFocused();
 		MouseGrabbed = true;
@@ -195,14 +222,33 @@ void engine::editor::Viewport::Update()
 		input::ShowMouseCursor = false;
 	}
 
-	if (MouseGrabbed && !Win->Input.IsRMBDown)
+	if (!Current || (MouseGrabbed && !Win->Input.IsRMBDown))
 	{
 		input::ShowMouseCursor = true;
 		Win->Input.KeyboardFocusInput = true;
 		MouseGrabbed = false;
 	}
 
-	Scene* Current = Scene::GetMain();
+	UpdateSelection();
+
+	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s) && UnsavedChanges && HasFocus)
+	{
+		SaveCurrentScene();
+	}
+
+	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::z) && HasFocus)
+	{
+		if (!Undoing)
+		{
+			UndoLast();
+			Undoing = true;
+		}
+	}
+	else
+	{
+		Undoing = false;
+	}
+
 	if (MouseGrabbed && Current)
 	{
 		float Speed = stats::DeltaTime * 5;
@@ -228,8 +274,152 @@ void engine::editor::Viewport::Update()
 		{
 			Current->SceneCamera->Position -= Vector3::Right(Current->SceneCamera->Rotation) * Speed;
 		}
-
+		Win->Input.PollForText = false;
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
+}
+void engine::editor::Viewport::SceneChanged()
+{
+	if (!UnsavedChanges)
+	{
+		SetName("Viewport*");
+	}
+	UnsavedChanges = true;
+}
+
+void engine::editor::Viewport::SaveCurrentScene()
+{
+	Scene* Current = Scene::GetMain();
+
+	if (!Current)
+		return;
+
+	Current->Save(Current->Name);
+	UnsavedChanges = false;
+	SetName("Viewport");
+}
+
+void engine::editor::Viewport::OnObjectChanged(SceneObject* Target)
+{
+	OnObjectsChanged({ Target });
+}
+
+void engine::editor::Viewport::OnObjectsChanged(std::vector<SceneObject*> Targets)
+{
+	Changes NewChanges;
+
+	for (SceneObject* i : Targets)
+	{
+		NewChanges.ChangeList.push_back(Change{
+			.Object = i,
+			.ObjectData = i->Serialize()
+			});
+	}
+
+	ObjectChanges.push(NewChanges);
+
+	SceneChanged();
+
+}
+void engine::editor::Viewport::OnObjectCreated(SceneObject* Target)
+{
+	ObjectChanges.push(Changes{
+		.ChangeList = {
+			Change{
+			.Object = Target,
+		}
+		} });
+
+	SceneChanged();
+}
+void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)
+{
+	bool Found = false;
+	SceneObject* Obj = nullptr;
+	for (SceneObject* i : Current->Objects)
+	{
+		if (i != Target.Object)
+		{
+			continue;
+		}
+		Obj = i;
+		Found = true;
+	}
+
+	try
+	{
+		if (!Found)
+		{
+			Obj = Current->CreateObjectFromID(Target.ObjectData.At("typeId").GetInt());
+			Obj->DeSerialize(&Target.ObjectData);
+			Obj->CheckTransform();
+			Obj->CheckComponentTransform();
+
+			EditorUI::SetStatusMessage(str::Format("Undo: Remove %s", Obj->Name.c_str()), EditorUI::StatusType::Info);
+		}
+		else
+		{
+			if (Target.ObjectData.IsNull())
+			{
+				Obj->Destroy();
+				EditorUI::SetStatusMessage(str::Format("Undo: Create %s", Obj->Name.c_str()), EditorUI::StatusType::Info);
+			}
+			else
+			{
+				Obj->DeSerialize(&Target.ObjectData);
+				EditorUI::SetStatusMessage(str::Format("Undo: Modify %s", Obj->Name.c_str()), EditorUI::StatusType::Info);
+			}
+		}
+	}
+	catch (SerializeException e)
+	{
+		Log::Warn(str::Format("Failed to undo change: serialize error: %s", e.what()));
+		EditorUI::SetStatusMessage("Undo failed", EditorUI::StatusType::Error);
+	}
+}
+
+void engine::editor::Viewport::UpdateSelection()
+{
+	Scene* Current = Scene::GetMain();
+
+	if (!Current)
+		return;
+
+	for (SceneObject* i : SelectedObjects)
+	{
+		bool Found = false;
+		for (SceneObject* obj : Current->Objects)
+		{
+			if (i == obj)
+			{
+				Found = true;
+				break;
+			}
+		}
+		if (Found)
+			continue;
+		
+		SelectedObjects.clear();
+		return;
+	}
+}
+
+void engine::editor::Viewport::UndoLast()
+{
+	if (ObjectChanges.empty())
+	{
+		EditorUI::SetStatusMessage("Nothing to undo", EditorUI::StatusType::Warning);
+		return;
+	}
+
+	Scene* Current = Scene::GetMain();
+
+	auto LastChanges = ObjectChanges.top();
+
+	for (Change& i : LastChanges.ChangeList)
+	{
+		UndoChange(i, Current);
+	}
+	ObjectChanges.pop();
 }
 #endif

@@ -90,8 +90,8 @@ element DraggedPanelTab
 
 element EditorPanelElement
 {
-	var Size;
-	var BorderColor;
+	var Size = 1;
+	var BorderColor = (0.5, 0.5, 1);
 
 	orientation = vertical;
 	verticalAlign = default;
@@ -117,7 +117,7 @@ element EditorPanelElement
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
 		height = 24px;
-		width = 1pn;
+		width = 100%;
 
 		color = Color_DarkBackground2;
 	}

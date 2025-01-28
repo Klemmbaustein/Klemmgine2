@@ -61,6 +61,7 @@ namespace engine::editor
 		size_t SelectedTab = 0;
 
 		void SetFocused();
+		void SetName(string NewName);
 
 	protected:
 		bool CanClose = true;
@@ -69,6 +70,8 @@ namespace engine::editor
 		static bool DraggingHorizontal;
 		static float DragStartPosition;
 		
+		virtual bool OnClosed();
+
 		struct MoveOperation
 		{
 			kui::UIBackground* HighlightBackground = nullptr;

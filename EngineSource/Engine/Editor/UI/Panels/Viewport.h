@@ -5,6 +5,7 @@
 #include <kui/UI/UIText.h>
 #include <Engine/Objects/SceneObject.h>
 #include <set>
+#include <stack>
 
 namespace engine::editor
 {
@@ -14,6 +15,7 @@ namespace engine::editor
 		Viewport();
 		~Viewport();
 		bool MouseGrabbed = false;
+		bool UnsavedChanges = false;
 
 		kui::Timer StatsRedrawTimer;
 		bool RedrawStats = false;
@@ -27,7 +29,33 @@ namespace engine::editor
 		kui::UIBackground* ViewportBackground = nullptr;
 		std::set<SceneObject*> SelectedObjects;
 
+		void SceneChanged();
+		void SaveCurrentScene();
+
+		void OnObjectChanged(SceneObject* Target);
+		void OnObjectsChanged(std::vector<SceneObject*> Targets);
+		void OnObjectCreated(SceneObject* Target);
+
+		struct Change
+		{
+			SceneObject* Object = nullptr;
+			SerializedValue ObjectData;
+		};
+
+		struct Changes
+		{
+			std::vector<Change> ChangeList;
+		};
+
+		std::stack<Changes> ObjectChanges;
+
+		void UndoLast();
+
 	private:
+		void UndoChange(Change& Target, Scene* Current);
+		void UpdateSelection();
+
+		bool Undoing = false;
 
 		kui::UIBackground* ViewportToolbar = nullptr;
 		kui::UIText* ViewportStatusText = nullptr;

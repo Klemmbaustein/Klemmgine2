@@ -21,7 +21,7 @@ engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::
 }
 
 engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::vector<Option> Options)
-	: IDialogWindow(Title, Options, kui::Vec2i(400, 220))
+	: IDialogWindow(Title, Options, kui::Vec2i(350, 200))
 {
 	this->Message = Message;
 	Open();

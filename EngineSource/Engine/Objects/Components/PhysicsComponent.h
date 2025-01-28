@@ -21,6 +21,7 @@ namespace engine
 
 		void SetActive(bool NewActive);
 		bool GetActive() const;
+		void Update() override;
 
 	private:
 		bool Added = false;

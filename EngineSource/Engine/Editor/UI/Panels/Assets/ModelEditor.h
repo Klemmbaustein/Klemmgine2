@@ -21,11 +21,18 @@ namespace engine::editor
 
 		void OnResized() override;
 
+	protected:
+
+		bool OnClosed() override;
+
 	private:
 		void OnModelLoaded();
+		string GetDisplayName(string Asset);
 
 		void OnModelChanged();
+		void OnChanged();
 
+		bool Unsaved = false;
 		bool ModelLoaded = false;
 		AssetRef EditedModel;
 		kui::UIBackground* SceneBackground = nullptr;

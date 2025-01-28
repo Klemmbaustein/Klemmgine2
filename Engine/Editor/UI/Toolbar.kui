@@ -2,7 +2,7 @@
 element ToolBarButton
 {
 	var Icon;
-	var Name;
+	var Name = "Some name";
 
 	allAlign = centered;
 	height = 1pn;

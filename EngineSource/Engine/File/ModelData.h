@@ -41,7 +41,7 @@ namespace engine
 		ModelData* Data = nullptr;
 		graphics::Model* Drawable = nullptr;
 		size_t References;
-		std::vector<std::function<void()>> OnDereferenced;
+		std::map<void*, std::function<void()>> OnDereferenced;
 
 		static void RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
 		static void RegisterModel(AssetRef Asset, bool Lock = true);

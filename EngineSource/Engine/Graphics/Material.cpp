@@ -8,11 +8,11 @@
 using namespace engine;
 using namespace engine::graphics;
 
-engine::graphics::Material::Material(string FilePath)
+engine::graphics::Material::Material(AssetRef File)
 {
 	try
 	{
-		SerializedValue FileData = TextSerializer::FromFile(FilePath);
+		SerializedValue FileData = TextSerializer::FromFile(File.FilePath);
 		if (!FileData.GetObject().empty())
 		{
 			DeSerialize(&FileData);
@@ -64,6 +64,9 @@ SerializedValue Material::Serialize()
 		{
 		case Field::Type::Int:
 			Val = i.Int;
+			break;
+		case Field::Type::Bool:
+			Val = SerializedValue(bool(i.Int));
 			break;
 		case Field::Type::Float:
 			Val = i.Float;
@@ -131,6 +134,9 @@ void Material::DeSerialize(SerializedValue* From)
 		NewField.FieldType = Type;
 		switch (Type)
 		{
+		case Field::Type::Bool:
+			NewField.Int = Val.GetBool();
+			break;
 		case Field::Type::Int:
 			NewField.Int = Val.GetInt();
 			break;
@@ -182,6 +188,9 @@ void engine::graphics::Material::Apply()
 		}
 		switch (i.FieldType)
 		{
+		case Field::Type::Bool:
+			Shader->SetInt(i.UniformLocation, i.Int);
+			break;
 		case Field::Type::Int:
 			Shader->SetInt(i.UniformLocation, i.Int);
 			break;
@@ -239,6 +248,9 @@ void engine::graphics::Material::VerifyUniforms()
 		{
 			switch (NewField.FieldType)
 			{
+			case Field::Type::Bool:
+				NewField.Int = i.DefaultValue == "true" ? 1 : 0;
+				break;
 			case Field::Type::Int:
 				NewField.Int = std::stoi(i.DefaultValue);
 				break;
@@ -284,7 +296,7 @@ void engine::graphics::Material::SetToDefault()
 	Field UseTextureField;
 
 	UseTextureField.Name = "u_useTexture";
-	UseTextureField.FieldType = Field::Type::Int;
+	UseTextureField.FieldType = Field::Type::Bool;
 	UseTextureField.Int = 0;
 
 	Field ColorField;
@@ -312,6 +324,7 @@ void engine::graphics::Material::UpdateShader()
 	// Don't try to use an invalid shader.
 	if (!Shader->Valid)
 	{
+		Log::Error("Shader is not valid!");
 		// Default shader isn't valid, oh no!
 		if (IsDefault)
 		{

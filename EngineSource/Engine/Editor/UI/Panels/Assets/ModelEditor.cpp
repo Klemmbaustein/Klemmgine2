@@ -6,11 +6,13 @@
 #include <kui/UI/UISpinner.h>
 #include <kui/Window.h>
 #include <Toolbar.kui.hpp>
+#include <Engine/Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Log.h>
+#include <Engine/Input.h>
 using namespace kui;
 
 engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
-	: EditorPanel("Model: " + ModelFile.DisplayName(), "")
+	: EditorPanel(GetDisplayName(ModelFile.DisplayName()), "")
 {
 	auto CancelLoadShared = std::make_shared<bool>(false);
 	CancelLoad = CancelLoadShared;
@@ -92,6 +94,39 @@ engine::editor::ModelEditor::~ModelEditor()
 	delete EditorScene;
 }
 
+bool engine::editor::ModelEditor::OnClosed()
+{
+	if (Unsaved)
+	{
+		new MessageWindow(str::Format("Save changes to model '%s'?", EditedModel.DisplayName().c_str()), "Unsaved changes", {
+			IDialogWindow::Option
+			{
+				.Name = "Yes",
+				.OnClicked = [this]()
+			{
+				Save();
+				delete this;
+			}
+			},
+			IDialogWindow::Option
+			{
+				.Name = "No",
+				.OnClicked = [this]()
+			{
+				delete this;
+			}
+			},
+			IDialogWindow::Option
+			{
+				.Name = "Cancel",
+			},
+			});
+		return false;
+	}
+
+	return true;
+}
+
 void engine::editor::ModelEditor::OnModelLoaded()
 {
 	SidebarBox->DeleteChildren();
@@ -117,6 +152,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		NewSelector->OnChanged = [this, &m, NewSelector]()
 			{
 				m.Material = NewSelector->SelectedAsset.FilePath;
+				OnChanged();
 				OnModelChanged();
 			};
 
@@ -126,10 +162,21 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	}
 }
 
+engine::string engine::editor::ModelEditor::GetDisplayName(string Asset)
+{
+	return "Model: " + Asset;
+}
+
 void engine::editor::ModelEditor::OnModelChanged()
 {
 	CurrentObj->LoadMesh(EditedModel);
 	SceneBackground->RedrawElement();
+}
+
+void engine::editor::ModelEditor::OnChanged()
+{
+	Unsaved = true;
+	SetName(GetDisplayName(EditedModel.DisplayName()) + "*");
 }
 
 void engine::editor::ModelEditor::Update()
@@ -141,11 +188,19 @@ void engine::editor::ModelEditor::Update()
 	}
 	if (EditorUI::FocusedPanel == this)
 		SceneBackground->SetUseTexture(true, EditorScene->Buffer->Textures[0]);
+
+	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s) && Unsaved && EditorUI::FocusedPanel == this)
+	{
+		Save();
+	}
 }
 
 void engine::editor::ModelEditor::Save()
 {
+	Unsaved = false;
+	SetName(GetDisplayName(EditedModel.DisplayName()));
 	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
+	Log::Info("Writing model data to file: " + EditedModel.FilePath);
 	Data->Data->ToFile(EditedModel.FilePath);
 }
 

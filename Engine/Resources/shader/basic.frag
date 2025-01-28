@@ -1,10 +1,10 @@
-#version 330
+#version 430
 #using "engine.common" //! #include "engine.common.glsl"
 
 #param //!
 uniform sampler2D u_texture;
 #param //!
-uniform bool u_useTexture;
+uniform bool u_useTexture = false;
 #param //!
 uniform vec3 u_color = vec3(1, 1, 1);
 

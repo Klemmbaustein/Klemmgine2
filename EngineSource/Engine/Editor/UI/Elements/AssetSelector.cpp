@@ -200,5 +200,7 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 				->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - PixelSizeToScreenSize(10, ParentWindow).X))
 				->SetPadding(UISize::Pixels(4), UISize::Pixels(4), UISize::Pixels(3), UISize::Pixels(3))));
 	}
+	SearchBackground->UpdateElement();
+	SearchBackground->RedrawElement();
 }
 #endif

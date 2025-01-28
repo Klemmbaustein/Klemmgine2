@@ -307,6 +307,9 @@ namespace engine
 			DataValue& At(string Name);
 			/// Gets the SerializedData with the given index if this is an object or array.
 			DataValue& At(size_t Index);
+
+			bool IsNull() const;
+
 			/**
 			* @brief
 			* Checks if this value contains a key with the given value.

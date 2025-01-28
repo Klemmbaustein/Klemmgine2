@@ -25,6 +25,9 @@ namespace engine::internal::platform
 	};
 
 	void SetConsoleColor(Log::LogColor NewColor);
+
+	void SetThreadName(string Name);
+	string GetThreadName();
 	
 	struct SharedLibrary;
 

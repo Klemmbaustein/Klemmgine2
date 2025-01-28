@@ -42,7 +42,7 @@ void engine::MeshComponent::Load(AssetRef From)
 				Materials.push_back(graphics::Material::MakeDefault());
 				continue;
 			}
-			Materials.push_back(new graphics::Material(m.Material));
+			Materials.push_back(new graphics::Material(AssetRef::Convert(m.Material)));
 		}
 
 		if (!AlreadyRegistered)

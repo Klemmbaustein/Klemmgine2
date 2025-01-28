@@ -126,6 +126,9 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	{
 		glDeleteShader(geometry);
 	}
+
+	ModelUniform = glGetUniformLocation(ShaderID, "u_model");
+	Uniforms.clear();
 }
 
 void engine::graphics::ShaderObject::Bind()
@@ -136,7 +139,15 @@ void engine::graphics::ShaderObject::Bind()
 
 uint32 engine::graphics::ShaderObject::GetUniformLocation(string Name) const
 {
-	return glGetUniformLocation(ShaderID, Name.c_str());
+	auto Found = Uniforms.find(Name);
+	if (Found != Uniforms.end())
+		return Found->second;
+	
+	uint32 Location = glGetUniformLocation(ShaderID, Name.c_str());
+
+	Uniforms.insert({Name, Location});
+
+	return Location;
 }
 
 void engine::graphics::ShaderObject::SetInt(uint32 UniformLocation, uint32 Value)

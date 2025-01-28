@@ -77,6 +77,8 @@ void CascadedShadows::Init()
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, MatricesBuffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	ShadowShader->Bind();
+	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), uint32(ShadowCascadeLevels.size() + 1));
 }
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
@@ -99,7 +101,6 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	ShadowShader->Bind();
-	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), uint32(ShadowCascadeLevels.size() + 1));
 	for (DrawableComponent* i : Components)
 	{
 		i->SimpleDraw(ShadowShader);

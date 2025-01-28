@@ -236,6 +236,11 @@ engine::SerializedData::DataValue& engine::SerializedData::DataValue::At(size_t 
 	throw SerializeException("Invalid type for SerializedValue::At(size_t Index). Has to be array or object.");
 }
 
+bool engine::SerializedData::DataValue::IsNull() const
+{
+	return Type == DataType::Null;
+}
+
 bool engine::SerializedData::DataValue::Contains(string Name)
 {
 	auto& Obj = GetObject();
