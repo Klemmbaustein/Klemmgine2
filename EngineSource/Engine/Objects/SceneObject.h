@@ -22,6 +22,10 @@ namespace engine
 		friend struct ObjPropertyBase;
 		friend class Scene;
 
+		/**
+		* @brief
+		* Returns the scene this object belongs to.
+		*/
 		Scene* GetScene()
 		{
 			return OriginScene;
