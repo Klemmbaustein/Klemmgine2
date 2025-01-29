@@ -7,11 +7,13 @@ void engine::MeshComponent::Update()
 
 void engine::MeshComponent::Draw(graphics::Camera* From)
 {
-	DrawBoundingBox.Extents = GetRootObject()->Scale;
+	auto Root = GetRootObject();
+
+	DrawBoundingBox.Extents = Root->Scale;
 
 	if (DrawnModel)
 	{
-		DrawnModel->Drawable->Draw(WorldTransform, From, Materials);
+		DrawnModel->Drawable->Draw(Root->GetScene(), WorldTransform, From, Materials);
 	}
 }
 

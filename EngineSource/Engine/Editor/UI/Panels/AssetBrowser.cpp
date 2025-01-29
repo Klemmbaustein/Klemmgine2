@@ -18,21 +18,6 @@
 #include <thread>
 #include <algorithm>
 
-static std::map<engine::string, kui::Vec3f> FileNameColors =
-{
-	{ "kts", kui::Vec3f(0.6f, 0.1f, 0.3f) },
-	{ "kmdl", kui::Vec3f(0.2f, 0.4f, 0.8f) },
-	{ "", kui::Vec3f(0.5f) },
-	{ "/dir/", kui::Vec3f(0.8f, 0.5f, 0) },
-};
-static std::map<engine::string, engine::string> FileNameIcons =
-{
-	{ "kts", "" },
-	{ "", "Engine/Editor/Assets/Document.png" },
-	{ "kmdl", "Engine/Editor/Assets/Model.png" },
-	{ "/dir/", "Engine/Editor/Assets/Folder.png" },
-};
-
 engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
@@ -89,16 +74,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				};
 		}
 
-		string Image = "";
-
-		if (FileNameIcons.contains(Extension))
-		{
-			Image = FileNameIcons[Extension];
-		}
-		else
-		{
-			Image = FileNameIcons[""];
-		}
+		auto IconAndColor = EditorUI::GetExtIconAndColor(i.is_directory() ? "dir/" : Extension);
 
 		auto OnRightClick = [this, OnClick, FilePath]()
 			{
@@ -136,10 +112,10 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			.Name = file::FileNameWithoutExt(i.path().filename().string()),
 			.Path = i.path().string(),
 			.IsDirectory = bool(i.is_directory()),
-			.Color = FileNameColors[i.is_directory() ? "/dir/" : Extension],
+			.Color = IconAndColor.second,
 			.OnRightClick = OnRightClick,
 			.OnClick = OnClick,
-			.Image = Image,
+			.Image = IconAndColor.first,
 			});
 	}
 

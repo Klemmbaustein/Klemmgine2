@@ -21,6 +21,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	PreviewScene->Resizable = false;
 	PreviewScene->AlwaysRedraw = true;
 	PreviewScene->Redraw = true;
+	PreviewScene->BufferSize = 400;
 	PreviewScene->OnResized(400);
 
 	auto CurrentObj = PreviewScene->CreateObject<MeshObject>();
@@ -51,13 +52,15 @@ void engine::editor::MaterialEditor::Update()
 
 void engine::editor::MaterialEditor::LoadUI()
 {
+	using graphics::Material;
+
 	MaterialParamsBox->DeleteChildren();
 	for (auto& i : LoadedMaterial->Fields)
 	{
 		auto Editor = new MaterialPropertyElement();
 		Editor->SetName(i.Name);
 
-		if (i.FieldType == graphics::Material::Field::Type::Texture)
+		if (i.FieldType == Material::Field::Type::Texture)
 		{
 			std::string TextureName;
 
@@ -89,6 +92,15 @@ void engine::editor::MaterialEditor::LoadUI()
 			continue;
 		}
 		auto Field = new MaterialValueElement();
+		switch (i.FieldType)
+		{
+		case Material::Field::Type::Int:
+		case Material::Field::Type::Bool:
+			Field->field->field->SetText(std::to_string(i.Int));
+			break;
+		default:
+			break;
+		}
 		Editor->contentBox->AddChild(Field);
 		MaterialParamsBox->AddChild(Editor);
 	}

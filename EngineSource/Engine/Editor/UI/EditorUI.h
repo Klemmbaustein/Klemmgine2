@@ -62,6 +62,8 @@ namespace engine::editor
 		void StartAssetDrag(DraggedItem With);
 		void StartDrag(kui::UIBox* bx, bool Centered);
 
+		static std::pair<string, kui::Vec3f> GetExtIconAndColor(string Extension);
+
 		enum class StatusType
 		{
 			Info,

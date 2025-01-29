@@ -32,6 +32,25 @@ EditorTheme EditorUI::Theme;
 engine::string EditorUI::DefaultFontName = "res:DefaultFont.ttf";
 EditorPanel* EditorUI::FocusedPanel = nullptr;
 
+static std::map<engine::string, kui::Vec3f> FileNameColors =
+{
+	{ "", kui::Vec3f(0.5f) },
+	{ "png", kui::Vec3f(0.5f, 0.1f, 0.8f) },
+	{ "kmt", kui::Vec3f(0.3f, 0.8f, 0.1f) },
+	{ "kts", kui::Vec3f(0.6f, 0.1f, 0.3f) },
+	{ "kmdl", kui::Vec3f(0.2f, 0.4f, 0.8f) },
+	{ "dir/", kui::Vec3f(0.8f, 0.5f, 0) },
+};
+static std::map<engine::string, engine::string> FileNameIcons =
+{
+	{ "", "Engine/Editor/Assets/Document.png" },
+	{ "png", "Engine/Editor/Assets/Texture.png" },
+	{ "kmt", "Engine/Editor/Assets/Material.png" },
+	{ "kts", "" },
+	{ "kmdl", "Engine/Editor/Assets/Model.png" },
+	{ "dir/", "Engine/Editor/Assets/Folder.png" },
+};
+
 void engine::editor::EditorUI::StartAssetDrag(DraggedItem With)
 {
 	if (DraggedBox)
@@ -57,6 +76,14 @@ void engine::editor::EditorUI::StartDrag(kui::UIBox* bx, bool Centered)
 	CurrentDraggedItem.Centered = Centered;
 	CurrentDraggedItem.IsAsset = false;
 	DraggedBox = bx;
+}
+
+std::pair<engine::string, kui::Vec3f> engine::editor::EditorUI::GetExtIconAndColor(string Extension)
+{
+	if (!FileNameIcons.contains(Extension))
+		Extension = "";
+
+	return { FileNameIcons[Extension], FileNameColors[Extension] };
 }
 
 void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Type)

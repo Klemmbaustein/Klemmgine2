@@ -8,6 +8,7 @@
 namespace engine
 {
 	struct ModelData;
+	class Scene;
 }
 
 namespace engine::graphics
@@ -20,7 +21,7 @@ namespace engine::graphics
 
 		std::vector<VertexBuffer*> ModelVertexBuffers;
 
-		virtual void Draw(const Transform& At, Camera* With, std::vector<Material*>& UsedMaterials);
+		virtual void Draw(Scene* In, const Transform& At, Camera* With, std::vector<Material*>& UsedMaterials);
 		virtual void SimpleDraw(const Transform& At, ShaderObject* Shader);
 	};
 }

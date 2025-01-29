@@ -19,14 +19,14 @@ engine::graphics::Model::~Model()
 	}
 }
 
-void engine::graphics::Model::Draw(const Transform& At, graphics::Camera* With, std::vector<Material*>& UsedMaterials)
+void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Camera* With, std::vector<Material*>& UsedMaterials)
 {
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
 		UsedMaterials[i]->Apply();
 		ShaderObject* Used = UsedMaterials[i]->Shader;
 
-		Scene::GetMain()->Shadows.BindUniforms(Used);
+		In->Shadows.BindUniforms(Used);
 
 		if (Used == nullptr)
 			continue;

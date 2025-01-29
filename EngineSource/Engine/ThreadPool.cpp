@@ -7,7 +7,7 @@ ThreadPool* ThreadPool::MainPool = nullptr;
 
 void engine::ThreadPool::AllocateDefaultThreadPool()
 {
-	MainPool = new ThreadPool(std::min(std::thread::hardware_concurrency() - 1, uint32(16)), "Engine thread pool");
+	MainPool = new ThreadPool(std::min(std::thread::hardware_concurrency(), uint32(16)), "Klemmgine worker");
 }
 
 engine::ThreadPool::ThreadPool(size_t MaxJobs, string PoolName)

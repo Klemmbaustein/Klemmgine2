@@ -23,11 +23,13 @@ static void GLAPIENTRY MessageCallback(
 	const void* userParam
 )
 {
+	using namespace engine::subsystem;
+
 	if (type == GL_DEBUG_TYPE_ERROR
 		|| type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR
 		|| type == GL_DEBUG_TYPE_PORTABILITY)
 	{
-		((engine::subsystem::VideoSubsystem*)userParam)->Print(std::string(message), engine::subsystem::Subsystem::LogType::Error);
+		((VideoSubsystem*)userParam)->Print(message, Subsystem::LogType::Error);
 	}
 }
 
