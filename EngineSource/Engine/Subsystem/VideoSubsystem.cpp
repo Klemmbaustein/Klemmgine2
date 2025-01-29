@@ -11,6 +11,7 @@
 #include <Engine/Stats.h>
 #include <Engine/Editor/UI/Panels/Viewport.h>
 #include <Engine/LaunchArgs.h>
+#include <Engine/Graphics/OpenGL.h>
 using namespace kui;
 
 static void GLAPIENTRY MessageCallback(
@@ -41,13 +42,15 @@ static systemWM::SysWindow* GetSysWindow(kui::Window* From)
 engine::subsystem::VideoSubsystem::VideoSubsystem()
 	: Subsystem("Video", Log::LogColor::Cyan)
 {
+	if (openGL::GetGLVersion() < openGL::Version::GL430)
+	{
+		Print("OpenGL 4.3 is unavailable, using OpenGL 3.3 instead. Some graphics effects won't work.", LogType::Warning);
+	}
+
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 		{
-#if !SERVER
 			app::MessageBox("kui error: " + Message, "Error", Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
-#else
 			Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
-#endif
 		});
 
 	Print("Initializing SDL", LogType::Info);

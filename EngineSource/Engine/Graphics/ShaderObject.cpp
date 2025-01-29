@@ -58,14 +58,24 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	this->VertexFile = VertexFile;
 	this->FragmentFile = FragmentFile;
 	this->GeometryFile = GeometryFile;
+	std::vector<uint32> VertexModules;
 	std::vector<uint32> FragmentModules;
 
-	auto Res = ShaderLoader::Current->Modules.ParseShader(FragmentFile);
-	FragmentFile = Res.ResultSource;
-	for (auto& mod : Res.DependencyModules)
+	auto VertexResult = ShaderLoader::Current->Modules.ParseShader(VertexFile, ShaderModule::ShaderType::Vertex);
+	VertexFile = VertexResult.ResultSource;
+	for (auto& mod : VertexResult.DependencyModules)
+	{
+		VertexModules.push_back(mod.ModuleObject);
+	}
+
+	auto FragmentResult = ShaderLoader::Current->Modules.ParseShader(FragmentFile, ShaderModule::ShaderType::Fragment);
+	FragmentFile = FragmentResult.ResultSource;
+	for (auto& mod : FragmentResult.DependencyModules)
 	{
 		FragmentModules.push_back(mod.ModuleObject);
 	}
+
+
 	Valid = true;
 	unsigned int vertex = 0, fragment = 0, geometry = 0;
 	const char* VertexCString = VertexFile.c_str();
@@ -110,6 +120,10 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 		glAttachShader(ShaderID, geometry);
 	}
 	for (uint32 mod : FragmentModules)
+	{
+		glAttachShader(ShaderID, mod);
+	}
+	for (uint32 mod : VertexModules)
 	{
 		glAttachShader(ShaderID, mod);
 	}

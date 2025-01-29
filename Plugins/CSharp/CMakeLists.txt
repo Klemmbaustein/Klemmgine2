@@ -7,6 +7,10 @@ set(SRC_DIR "Loader")
 
 include("FindSdk.cmake")
 
+if(NOT NET_SDK_BINARY_DIR)
+	return()
+endif()
+
 file(
 	GLOB_RECURSE
 	SRCS

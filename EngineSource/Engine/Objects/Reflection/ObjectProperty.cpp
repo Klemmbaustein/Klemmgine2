@@ -54,7 +54,7 @@ SerializedValue engine::ObjProperty<AssetRef>::Serialize()
 
 void engine::ObjProperty<AssetRef>::DeSerialize(SerializedValue* From)
 {
-	Value = AssetRef::FromPath(From->GetString());
+	Value = AssetRef::Convert(From->GetString());
 }
 
 void engine::ObjPropertyBase::RegisterSelf(SceneObject* Parent)

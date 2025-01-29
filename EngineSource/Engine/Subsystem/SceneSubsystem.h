@@ -5,6 +5,14 @@
 
 namespace engine::subsystem
 {
+	/**
+	* @brief
+	* Scene subsystem.
+	* 
+	* Subsystem that manages scenes 
+	* 
+	* @see engine::Scene
+	*/
 	class SceneSubsystem : public Subsystem
 	{
 	public:

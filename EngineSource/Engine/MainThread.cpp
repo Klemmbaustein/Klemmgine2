@@ -1,6 +1,7 @@
 #include "MainThread.h"
 #include <mutex>
 #include <cstdlib>
+#include <Engine/Error/EngineError.h>
 
 static std::vector<std::function<void()>> MainThreadFuncs;
 static std::mutex MainThreadFuncsMutex;
@@ -13,8 +14,7 @@ void engine::thread::ExecuteOnMainThread(std::function<void()> Function)
 
 void engine::thread::MainThreadUpdate()
 {
-	if (!IsMainThread)
-		abort();
+	ENGINE_ASSERT(IsMainThread);
 	std::lock_guard g{ MainThreadFuncsMutex };
 
 	for (auto& i : MainThreadFuncs)

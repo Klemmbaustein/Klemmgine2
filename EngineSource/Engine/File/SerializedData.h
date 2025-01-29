@@ -16,7 +16,7 @@ namespace engine
 	* @brief
 	* Exception thrown when an error with serialized data occurs.
 	* 
-	* @ingroup
+	* @ingroup serialize
 	*/
 	class SerializeException : std::exception
 	{

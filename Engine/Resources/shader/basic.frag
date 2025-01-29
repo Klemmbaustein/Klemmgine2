@@ -1,5 +1,5 @@
-#version 430
-#using "engine.common" //! #include "engine.common.glsl"
+//? #version 330
+#using "engine.common" //! #include "engine.common.frag"
 
 #param //!
 uniform sampler2D u_texture;

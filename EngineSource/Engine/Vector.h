@@ -16,7 +16,11 @@ namespace engine
 		string ToString() const;
 
 		[[nodiscard]]
-		Vector3 Normalize();
+		Vector3 Normalize() const;
+
+		[[nodiscard]]
+		Vector3 SnapToyGrid() const;
+
 		float Length() const;
 
 		static Vector3 Forward(Vector3 EulerRotation);

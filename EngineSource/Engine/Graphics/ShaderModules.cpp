@@ -5,6 +5,7 @@
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Internal/OpenGL.h>
+#include <Engine/Graphics/OpenGL.h>
 using namespace engine::graphics;
 
 ShaderModuleLoader::ShaderModuleLoader()
@@ -15,7 +16,7 @@ ShaderModuleLoader::~ShaderModuleLoader()
 {
 }
 
-ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource)
+ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type)
 {
 	std::stringstream SourceStream;
 	SourceStream << ShaderSource;
@@ -31,6 +32,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 	bool IsModule = false;
 	size_t Line = 0;
 	ShaderModule ParsedModule;
+	ParsedModule.Type = Type;
 
 	auto ParseError = [](string Message) {
 
@@ -44,6 +46,19 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 		OutStream << Content << std::endl;
 		Line++;
 		};
+
+	if (openGL::GetGLVersion() >= openGL::Version::GL430)
+	{
+		OutStream << "#version 430\n";
+		OutStream << "#define ENGINE_GL_430 1\n";
+		OutStream << "#define ENGINE_GL_330 1\n";
+	}
+	else
+	{
+		OutStream << "#version 330\n";
+		OutStream << "#define ENGINE_GL_330 1\n";
+	}
+	OutStream << "#line 1\n";
 
 	while (true)
 	{
@@ -90,7 +105,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 		}
 		else if (NextLineIsExport || NextLineIsParam)
 		{
-			abort();
+			return Result();
 		}
 
 		std::vector Statement = str::Split(LineString.substr(1), "\t ");
@@ -133,7 +148,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			}
 			string ModuleFile = Statement[1];
 
-			ShaderModule& Found = LoadedModules[ModuleFile];
+			ShaderModule& Found = LoadedModules.at(ModuleFile + (Type == ShaderModule::ShaderType::Vertex ? ":vert" : ":frag"));
 
 			FoundModules.push_back(Found);
 
@@ -141,7 +156,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			{
 				OutStream << i << ";";
 			}
-			OutStream << "\n#line " << Line + 2 << std::endl;
+			OutStream << "\n#line " << Line + 1 << std::endl;
 
 			NextLine("");
 			continue;
@@ -171,17 +186,21 @@ void engine::graphics::ShaderModuleLoader::ScanModules()
 {
 	FreeModules();
 
-	static std::array<string, 1> EngineDefaultModules =
+	static std::array<string, 2> EngineDefaultModules =
 	{
-		"res:shader/engine.common.glsl"
+		"res:shader/engine.common.vert",
+		"res:shader/engine.common.frag",
 	};
 
 	for (const auto& m : EngineDefaultModules)
 	{
-		Result Res = ParseShader(resource::GetTextFile(m));
+		bool IsVertex = m.substr(m.find_last_of(".") + 1) == "vert";
 
+		auto Type = IsVertex ? ShaderModule::ShaderType::Vertex : ShaderModule::ShaderType::Fragment;
+
+		Result Res = ParseShader(resource::GetTextFile(m), Type);
 		LoadModule(Res.ResultSource, Res.ThisModule);
-		LoadedModules.insert({ Res.ThisModule.Name, Res.ThisModule });
+		LoadedModules.insert({ Res.ThisModule.Name + (IsVertex ? ":vert" : ":frag"), Res.ThisModule});
 	}
 }
 
@@ -201,8 +220,7 @@ ShaderUniform engine::graphics::ShaderModuleLoader::ReadUniformDefinition(string
 
 	if (SplitValue.size() < 3)
 	{
-		"Peak error handling";
-		abort();
+		return ShaderUniform();
 	}
 
 	string Uniform = SplitValue[0];
@@ -226,11 +244,11 @@ ShaderUniform engine::graphics::ShaderModuleLoader::ReadUniformDefinition(string
 			DefinitionSource = str::ReplaceChar(DefinitionSource, ';', ' ');
 			if (ValueString.size() < 6)
 			{
-				abort();
+				return ShaderUniform();
 			}
 			if (ValueString.substr(0, 5) != "vec3(")
 			{
-				abort();
+				return ShaderUniform();
 			}
 			ValueString = ValueString.substr(5);
 			ValueString = str::ReplaceChar(ValueString.substr(0, ValueString.size() - 1), ',', ' ');
@@ -246,9 +264,11 @@ ShaderUniform engine::graphics::ShaderModuleLoader::ReadUniformDefinition(string
 
 void engine::graphics::ShaderModuleLoader::LoadModule(const string& Source, ShaderModule& Info)
 {
-	Info.ModuleObject = glCreateShader(GL_FRAGMENT_SHADER);
+	bool IsVertex = Info.Type == ShaderModule::ShaderType::Vertex;
+
+	Info.ModuleObject = glCreateShader(IsVertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
 	const char* SourcePointer = Source.c_str();
 	glShaderSource(Info.ModuleObject, 1, &SourcePointer, nullptr);
 	glCompileShader(Info.ModuleObject);
-	ShaderObject::CheckCompileErrors(Info.ModuleObject, "FRAGMENT");
+	ShaderObject::CheckCompileErrors(Info.ModuleObject, IsVertex ? "VERTEX" : "FRAGMENT");
 }

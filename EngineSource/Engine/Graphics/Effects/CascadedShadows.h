@@ -21,6 +21,8 @@ namespace engine::graphics
 
 		static uint32 LightDepthMaps;
 
+		bool Enabled = false;
+
 		void BindUniforms(graphics::ShaderObject* Target) const;
 
 	private:

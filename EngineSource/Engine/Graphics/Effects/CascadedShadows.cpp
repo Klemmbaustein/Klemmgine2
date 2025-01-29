@@ -6,6 +6,7 @@
 #include <Engine/Log.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Scene.h>
+#include <Engine/Graphics/OpenGL.h>
 #include <iostream>
 using namespace engine;
 using namespace engine::graphics;
@@ -21,10 +22,17 @@ graphics::ShaderObject* CascadedShadows::ShadowShader = nullptr;
 
 CascadedShadows::CascadedShadows()
 {
+	if (openGL::GetGLVersion() >= openGL::Version::GL430)
+	{
+		Enabled = true;
+	}
 }
 
 void CascadedShadows::Init()
 {
+	if (!Enabled)
+		return;
+
 	if (ShadowShader)
 		return;
 
@@ -83,6 +91,8 @@ void CascadedShadows::Init()
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
 {
+	if (!Enabled)
+		return;
 	LightMatrices = GetLightSpaceMatrices(From);
 	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
 	for (size_t i = 0; i < LightMatrices.size(); ++i)
@@ -97,6 +107,9 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 
 uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 {
+	if (!Enabled)
+		return 0;
+
 	glBindFramebuffer(GL_FRAMEBUFFER, LightFBO);
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -111,6 +124,9 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 
 void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Target) const
 {
+	if (!Target || !Enabled)
+		return;
+
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{
 		Target->SetFloat(Target->GetUniformLocation("cascadePlaneDistances[" + std::to_string(i) + "]"), ShadowCascadeLevels[i]);

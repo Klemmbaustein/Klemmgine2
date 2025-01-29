@@ -12,6 +12,13 @@ namespace engine::graphics
 		string Name;
 		uint32 ModuleObject = 0;
 		std::vector<string> Exported;
+		enum class ShaderType
+		{
+			Vertex,
+			Fragment
+		};
+
+		ShaderType Type = ShaderType::Vertex;
 	};
 
 	struct ShaderUniform
@@ -38,7 +45,7 @@ namespace engine::graphics
 		};
 
 		[[nodiscard]]
-		Result ParseShader(const string& ShaderSource);
+		Result ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type);
 
 		void ScanModules();
 	private:

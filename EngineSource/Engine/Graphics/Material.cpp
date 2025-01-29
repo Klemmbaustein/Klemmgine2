@@ -229,7 +229,7 @@ void engine::graphics::Material::Apply()
 
 void engine::graphics::Material::VerifyUniforms()
 {
-	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader));
+	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader), ShaderModule::ShaderType::Fragment);
 
 	std::vector<Field> NewFields;
 

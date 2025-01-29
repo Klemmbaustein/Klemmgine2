@@ -11,6 +11,8 @@ element DialogWindowButton
 		minSize = (50, 24)px;
 		maxSize = (100, 24)px;
 
+		corners = 5px;
+
 		allAlign = centered;
 
 		padding = 6px;
