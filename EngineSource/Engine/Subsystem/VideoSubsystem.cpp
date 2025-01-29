@@ -42,10 +42,6 @@ static systemWM::SysWindow* GetSysWindow(kui::Window* From)
 engine::subsystem::VideoSubsystem::VideoSubsystem()
 	: Subsystem("Video", Log::LogColor::Cyan)
 {
-	if (openGL::GetGLVersion() < openGL::Version::GL430)
-	{
-		Print("OpenGL 4.3 is unavailable, using OpenGL 3.3 instead. Some graphics effects won't work.", LogType::Warning);
-	}
 
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 		{
@@ -76,6 +72,10 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 
 	MainWindow = new Window("Klemmgine 2", Window::WindowFlag::Resizable, Window::POSITION_CENTERED, WindowSize);
 	MainWindow->SetMinSize(Vec2ui(600, 400));
+	if (openGL::GetGLVersion() < openGL::Version::GL430)
+	{
+		Print("OpenGL 4.3 is unavailable, using OpenGL 3.3 instead. Some graphics effects won't work.", LogType::Warning);
+	}
 
 	MainWindow->OnResizedCallback = [this](Window*)
 		{
