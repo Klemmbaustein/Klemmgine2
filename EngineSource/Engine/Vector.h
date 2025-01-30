@@ -19,18 +19,25 @@ namespace engine
 		Vector3 Normalize() const;
 
 		[[nodiscard]]
-		Vector3 SnapToyGrid() const;
-
 		float Length() const;
 
+		[[nodiscard]]
 		static Vector3 Forward(Vector3 EulerRotation);
+		[[nodiscard]]
 		static Vector3 Right(Vector3 EulerRotation);
+		[[nodiscard]]
 		static Vector3 Up(Vector3 EulerRotation);
 
+		[[nodiscard]]
 		static Vector3 Cross(Vector3 a, Vector3 b);
+		[[nodiscard]]
 		static float Dot(Vector3 a, Vector3 b);
 
+		[[nodiscard]]
 		static Vector3 GetScaledAxis(Vector3 Rotation, uint32 Direction);
+
+		[[nodiscard]]
+		static Vector3 SnapToGrid(Vector3 InPosition, float SnapSize);
 
 		Vector3 operator+(const Vector3& Other) const;
 		Vector3& operator+=(const Vector3& Other);
@@ -40,13 +47,17 @@ namespace engine
 		Vector3 operator*(const Vector3& Other) const;
 		Vector3 operator/(const Vector3& Other) const;
 		
+		[[nodiscard]]
 		static float Distance(const Vector3& a, const Vector3& b);
 
 		bool operator==(const Vector3& Other) const;
 
+		[[nodiscard]]
 		static Vector3 FromString(string VectorString);
 
+		[[nodiscard]]
 		float& operator[](size_t Index);
+		[[nodiscard]]
 		const float& operator[](size_t Index) const;
 	};
 

@@ -115,9 +115,14 @@ engine::editor::Viewport::Viewport()
 				EndPosition = hit.ImpactPoint;
 			}
 
+			EndPosition = Vector3::SnapToGrid(EndPosition, 0.1f);
+
 			if (Item.ObjectType != 0)
 			{
-				OnObjectCreated(Scene::GetMain()->CreateObjectFromID(Item.ObjectType, EndPosition));
+				auto obj = Scene::GetMain()->CreateObjectFromID(Item.ObjectType, EndPosition);
+				OnObjectCreated(obj);
+				SelectedObjects.clear();
+				SelectedObjects.insert(obj);
 			}
 
 			AssetRef Dropped = AssetRef::FromPath(Item.Path);
@@ -131,6 +136,8 @@ engine::editor::Viewport::Viewport()
 			obj->Name = Dropped.DisplayName();
 			obj->LoadMesh(Dropped);
 			OnObjectCreated(obj);
+			SelectedObjects.clear();
+			SelectedObjects.insert(obj);
 		});
 
 

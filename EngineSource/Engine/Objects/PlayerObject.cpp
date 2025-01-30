@@ -11,7 +11,7 @@ void engine::PlayerObject::Begin()
 	Collider = new PhysicsComponent();
 	Attach(Collider);
 	Collider->Scale = 0.5f;
-	Collider->CreateSphere(physics::MotionType::Static, physics::Layer::Static, true);
+	Collider->CreateSphere(physics::MotionType::Static, physics::Layer::Static, false);
 
 	Cam = new CameraComponent();
 	Collider->Attach(Cam);

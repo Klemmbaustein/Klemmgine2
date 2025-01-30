@@ -1,4 +1,11 @@
 #include "Platform.h"
+
+#if defined(ENGINE_UTILS_LIB) || defined(SERVER)
+#define INCLUDE_VIDEO 0
+#else
+#define INCLUDE_VIDEO 1
+#endif
+
 #include <array>
 #ifdef WINDOWS
 #include <Windows.h>
@@ -10,19 +17,25 @@
 #include <iostream>
 
 #undef DELETE
+#if INCLUDE_VIDEO
 #include "SystemWM_SDL3.h"
 #include <SDL3/SDL.h>
 #include <dwmapi.h>
 
 #pragma comment(lib, "Dwmapi.lib")
 
+#endif
+
 void engine::internal::platform::Init()
 {
+#if INCLUDE_VIDEO
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+#endif
 }
 
 void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
+#if INCLUDE_VIDEO
 	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
 	BOOL UseDarkMode = true;
@@ -35,6 +48,7 @@ void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, in
 	{
 		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION | WS_THICKFRAME);
 	}
+#endif
 }
 
 void engine::internal::platform::Execute(string Command)
@@ -122,6 +136,7 @@ void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, str
 
 std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
+#if INCLUDE_VIDEO
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (!SUCCEEDED(hr))
 	{
@@ -243,6 +258,10 @@ std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vect
 
 			hr = pItems->GetItemAt(DWORD(i), &pItem);
 			pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+			if (!pszFilePath)
+				continue;
+
 			Items.push_back(WstrToStr(pszFilePath));
 		}
 
@@ -253,6 +272,7 @@ std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vect
 
 	pFileOpen->Release();
 	CoUninitialize();
+#endif
 	return {};
 }
 
@@ -322,17 +342,7 @@ std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vect
 #endif
 
 
-#if WINDOWS
-static std::wstring ToWstring(std::string utf8)
-{
-	int WideLength = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[WideLength];
-	MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, wstr, WideLength);
-	std::wstring str = wstr;
-	delete[] wstr;
-	return str;
-}
-#else
+#if !WINDOWS
 static bool CommandExists(std::string Command)
 {
 	return system(("command -v " + Command + " > /dev/null").c_str()) == 0;
@@ -351,7 +361,7 @@ bool engine::internal::platform::ShowMessageBox(string Title, string Message, in
 #if WINDOWS
 	std::array<UINT, 3> Types = { 0, MB_ICONWARNING, MB_ICONERROR };
 
-	::MessageBoxW(NULL, ToWstring(Message).c_str(), ToWstring(Title).c_str(), Types[Type]);
+	::MessageBoxW(NULL, StrToWstr(Message).c_str(), StrToWstr(Title).c_str(), Types[Type]);
 	return true;
 #else
 	if (CommandExists("kdialog"))

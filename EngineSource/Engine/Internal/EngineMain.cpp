@@ -15,7 +15,7 @@ int WinMain(
 	_In_ int nShowCmd
 )
 {
-	engine::launchArgs::SetArgs(argc, argv);
+	engine::launchArgs::SetArgs(__argc, __argv);
 	return EngineMain(__argc, __argv);
 }
 

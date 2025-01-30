@@ -13,7 +13,9 @@ namespace engine::launchArgs
 		string Value;
 
 		string AsString() const;
+#if !defined (ENGINE_UTILS_LIB)
 		AssetRef AsFile();
+#endif
 		int32 AsInt() const;
 		float AsFloat() const;
 	};

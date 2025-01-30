@@ -4,9 +4,9 @@ element DialogWindowButton
 
 	child UIButton btn
 	{
-		color = Color_Highlight2;
+		color = Color_Background;
 		border = 1px;
-		borderColor = Color_HighlightDark;
+		borderColor = Color_Highlight1;
 
 		minSize = (50, 24)px;
 		maxSize = (100, 24)px;
@@ -22,7 +22,7 @@ element DialogWindowButton
 		{
 			text = Text;
 			size = 11px;
-			color = Color_HighlightText;
+			color = Color_Text;
 			padding = 5px;
 		}
 	}

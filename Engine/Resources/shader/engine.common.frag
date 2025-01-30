@@ -1,6 +1,11 @@
 //? #version 430
 #module "engine.common" //!
 
+#if !ENGINE_GL_430
+#extension GL_ARB_uniform_buffer_object : enable
+#extension GL_ARB_arrays_of_arrays : enable
+#endif
+
 #export //!
 in vec3 v_position;
 in vec3 v_screenPosition;
@@ -13,9 +18,7 @@ in vec3 v_normal;
 out vec4 f_color;
 
 uniform vec3 u_lightDirection = vec3(0, 1, 0);
-
-#if ENGINE_GL_430
-layout (std140, binding = 0) uniform LightSpaceMatrices
+layout (std140) uniform LightSpaceMatrices
 {
 	mat4 lightSpaceMatrices[16];
 };
@@ -118,19 +121,13 @@ float getShadowStrength()
 
 	// No need to do smoothing if all values are the same.
 	if (allValuesLight)
-		return 1;
+		return 1.0;
 	if (allValuesDark)
-		return 0;
+		return 0.0;
 
 	vec2 distances = vec2(mod(projCoords.x, texelSize.x), mod(projCoords.y, texelSize.y)) * vec2(textureSize(u_shadowMaps, 0));
 	return SampleFromShadowMap(distances);
 }
-#else
-float getShadowStrength()
-{
-	return 1.0;
-}
-#endif
 
 #export //!
 float getLightStrength()

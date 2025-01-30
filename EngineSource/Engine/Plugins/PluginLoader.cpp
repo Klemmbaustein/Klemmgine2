@@ -48,6 +48,8 @@ void engine::plugin::OnNewSceneLoaded(Scene* Target)
 
 void engine::plugin::Load(subsystem::PluginSubsystem* System)
 {
+	if (!std::filesystem::exists("Plugins/"))
+		return;
 	for (auto& i : std::filesystem::directory_iterator("Plugins/"))
 	{
 		if (!std::filesystem::exists(i.path() / "Plugin.k2p"))

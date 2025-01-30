@@ -53,6 +53,18 @@ void engine::launchArgs::SetArgs(int argc, char** argv)
 	}
 }
 
+string engine::launchArgs::Parameter::AsString() const
+{
+	return Value;
+}
+
+#if !defined (ENGINE_UTILS_LIB)
+AssetRef engine::launchArgs::Parameter::AsFile()
+{
+	return AssetRef::Convert(Value);
+}
+#endif
+
 int32 Parameter::AsInt() const
 {
 	try

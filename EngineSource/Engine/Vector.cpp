@@ -38,11 +38,6 @@ Vector3 engine::Vector3::Normalize() const
 	return Vector3();
 }
 
-Vector3 engine::Vector3::SnapToyGrid() const
-{
-	return Vector3();
-}
-
 float engine::Vector3::Length() const
 {
 	return std::sqrt(X * X + Y * Y + Z * Z);
@@ -143,6 +138,14 @@ Vector3 Vector3::GetScaledAxis(Vector3 Rot, uint32 Dir)
 	return Vector3(axes[Dir][2], axes[Dir][1], axes[Dir][0]).Normalize();
 }
 
+Vector3 engine::Vector3::SnapToGrid(Vector3 InPosition, float SnapSize)
+{
+	return Vector3(
+		std::roundf(InPosition.X / SnapSize) * SnapSize,
+		std::roundf(InPosition.Y / SnapSize) * SnapSize,
+		std::roundf(InPosition.Z / SnapSize) * SnapSize
+	);
+}
 
 Vector3 engine::Vector3::operator+(const Vector3& Other) const
 {

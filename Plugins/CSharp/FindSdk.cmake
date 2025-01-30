@@ -93,5 +93,9 @@ foreach(VER ${PACK_VERSIONS})
 	endif()
 endforeach()
 
+if ("${LATEST_PACK_PATH}" VERSION_EQUAL "0.0.0")
+	return()
+endif()
+
 set(NET_SDK_BINARY_DIR "${LATEST_PACK_PATH}/runtimes/${NET_RUNTIME_ID}/native")
 message(STATUS ".NET binary path: ${NET_SDK_BINARY_DIR}")

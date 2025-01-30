@@ -1,9 +1,14 @@
-#version 430 core
-	
+//? #version 430
+
+#if !ENGINE_GL_430
+#extension GL_ARB_uniform_buffer_object : enable
+#extension GL_ARB_gpu_shader5 : enable
+#endif
+
 layout(triangles, invocations = 5) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-layout (std140, binding = 0) uniform LightSpaceMatrices
+layout (std140) uniform LightSpaceMatrices
 {
 	mat4 lightSpaceMatrices[16];
 };

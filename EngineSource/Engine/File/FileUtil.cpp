@@ -22,3 +22,13 @@ engine::string engine::file::FileName(string FromPath)
 	return FromPath.substr(FromPath.find_last_of("/") + 1);
 #endif
 }
+
+engine::string engine::file::FilePath(string PathWithName)
+{
+#ifdef WINDOWS
+	size_t LastSlash = PathWithName.find_last_of("\\/");
+#else
+	size_t LastSlash = PathWithName.find_last_of("/");
+#endif
+	return PathWithName.substr(0, LastSlash);
+}

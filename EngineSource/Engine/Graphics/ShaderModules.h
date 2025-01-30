@@ -15,7 +15,8 @@ namespace engine::graphics
 		enum class ShaderType
 		{
 			Vertex,
-			Fragment
+			Fragment,
+			Geometry
 		};
 
 		ShaderType Type = ShaderType::Vertex;

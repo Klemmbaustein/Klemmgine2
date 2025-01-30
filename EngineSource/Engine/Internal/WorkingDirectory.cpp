@@ -12,17 +12,18 @@ void engine::internal::AdjustWorkingDirectory()
 
 	while (true)
 	{
+		if (std::filesystem::exists(CurrentDir / "Assets/"))
+		{
+			std::filesystem::current_path(CurrentDir);
+			return;
+		}
+
 		std::filesystem::path NewPath = CurrentDir / "../";
 		if (!std::filesystem::exists(NewPath))
 		{
 			break;
 		}
 
-		if (std::filesystem::exists(NewPath / "Engine/"))
-		{
-			std::filesystem::current_path(NewPath);
-			return;
-		}
 		CurrentDir = NewPath;
 	}
 }

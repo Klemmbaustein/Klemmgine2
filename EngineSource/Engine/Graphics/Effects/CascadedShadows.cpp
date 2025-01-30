@@ -22,7 +22,7 @@ graphics::ShaderObject* CascadedShadows::ShadowShader = nullptr;
 
 CascadedShadows::CascadedShadows()
 {
-	if (openGL::GetGLVersion() >= openGL::Version::GL430)
+	//if (openGL::GetGLVersion() >= openGL::Version::GL430)
 	{
 		Enabled = true;
 	}
@@ -79,7 +79,6 @@ void CascadedShadows::Init()
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	glGenBuffers(1, &MatricesBuffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
@@ -150,7 +149,7 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 	{
 		FrustumCenter += glm::vec3(v);
 	}
-	FrustumCenter /= Corners.size();
+	FrustumCenter /= float(Corners.size());
 
 	const float SnapSize = FarPlane / 5;
 

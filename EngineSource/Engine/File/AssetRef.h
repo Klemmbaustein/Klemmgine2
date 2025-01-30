@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine/Types.h>
 
+#if !defined (ENGINE_UTILS_LIB)
 namespace engine
 {
 	/**
@@ -57,3 +58,4 @@ namespace engine
 * @see AssetRef::FromName()
 */
 engine::AssetRef operator ""_asset(const char*, std::size_t);
+#endif
