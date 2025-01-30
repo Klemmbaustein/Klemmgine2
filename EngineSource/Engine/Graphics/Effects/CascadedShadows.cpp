@@ -22,7 +22,7 @@ graphics::ShaderObject* CascadedShadows::ShadowShader = nullptr;
 
 CascadedShadows::CascadedShadows()
 {
-	//if (openGL::GetGLVersion() >= openGL::Version::GL430)
+	if (openGL::GetGLVersion() >= openGL::Version::GL430 || glewIsSupported("GL_ARB_uniform_buffer_object"))
 	{
 		Enabled = true;
 	}
