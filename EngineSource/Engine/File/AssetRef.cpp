@@ -1,7 +1,7 @@
 #include "AssetRef.h"
 #include "Resource.h"
-#include "FileUtil.h"
-#include <Engine/Log.h>
+#include <Core/File/FileUtil.h>
+#include <Core/Log.h>
 #include <filesystem>
 
 engine::AssetRef operator""_asset(const char* Name, std::size_t Size)
@@ -22,7 +22,7 @@ engine::AssetRef engine::AssetRef::FromName(string Name, string Extension)
 	if (Found == resource::LoadedAssets.end())
 	{
 		return AssetRef{
-			.FilePath = "",
+			.FilePath = FullName,
 			.Extension = Extension
 		};
 	}
@@ -62,4 +62,9 @@ bool engine::AssetRef::IsValid() const
 engine::string engine::AssetRef::DisplayName() const
 {
 	return file::FileNameWithoutExt(FilePath);
+}
+
+bool engine::AssetRef::Exists() const
+{
+	return std::filesystem::exists(FilePath);
 }

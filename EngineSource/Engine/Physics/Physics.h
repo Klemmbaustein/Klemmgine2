@@ -1,6 +1,6 @@
 #pragma once
-#include <Engine/Vector.h>
-#include <Engine/Transform.h>
+#include <Core/Vector.h>
+#include <Core/Transform.h>
 #include <Engine/Objects/Components/ObjectComponent.h>
 #include <Engine/File/ModelData.h>
 #include <set>

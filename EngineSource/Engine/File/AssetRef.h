@@ -1,5 +1,5 @@
 #pragma once
-#include <Engine/Types.h>
+#include <Core/Types.h>
 
 #if !defined (ENGINE_UTILS_LIB)
 namespace engine
@@ -47,6 +47,9 @@ namespace engine
 		*/
 		[[nodiscard]]
 		string DisplayName() const;
+
+		[[nodiscard]]
+		bool Exists() const;
 	};
 
 }

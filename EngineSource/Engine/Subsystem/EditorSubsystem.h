@@ -1,7 +1,7 @@
 #ifdef EDITOR
 #pragma once
 #include "Subsystem.h"
-#include <Engine/Editor/UI/EditorUI.h>
+#include <Editor/UI/EditorUI.h>
 
 namespace engine::subsystem
 {

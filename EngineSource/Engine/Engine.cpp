@@ -8,9 +8,10 @@
 #include "Subsystem/PluginSubsystem.h"
 #include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
-#include "ThreadPool.h"
+#include "Core/ThreadPool.h"
 #include "File/Resource.h"
-#include "Error/EngineError.h"
+#include "Core/Error/EngineError.h"
+#include <Engine/Objects/PlayerObject.h>
 using namespace engine;
 using namespace engine::subsystem;
 

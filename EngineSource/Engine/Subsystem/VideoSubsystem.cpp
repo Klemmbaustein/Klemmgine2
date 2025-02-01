@@ -9,8 +9,8 @@
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
-#include <Engine/Editor/UI/Panels/Viewport.h>
-#include <Engine/LaunchArgs.h>
+#include <Editor/UI/Panels/Viewport.h>
+#include <Core/LaunchArgs.h>
 #include <Engine/Graphics/OpenGL.h>
 using namespace kui;
 

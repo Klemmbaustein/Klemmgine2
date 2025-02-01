@@ -1,6 +1,6 @@
 #pragma once
-#include <Engine/File/SerializedData.h>
-#include <Engine/Transform.h>
+#include <Core/File/SerializedData.h>
+#include <Core/Transform.h>
 #include "Reflection/ObjectReflection.h"
 #include "Reflection/ObjectPropery.h"
 #include "Components/ObjectComponent.h"

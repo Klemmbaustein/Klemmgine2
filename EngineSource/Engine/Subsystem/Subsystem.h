@@ -1,7 +1,7 @@
 #pragma once
-#include "Engine/Types.h"
+#include "Core/Types.h"
 #include <typeinfo>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 
 namespace engine::subsystem
 {

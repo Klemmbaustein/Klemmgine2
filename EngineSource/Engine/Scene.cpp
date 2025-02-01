@@ -2,15 +2,16 @@
 #include "Internal/OpenGL.h"
 #include "Subsystem/VideoSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
-#include "ThreadPool.h"
+#include "Core/ThreadPool.h"
 #include "Engine.h"
 #include <Engine/File/ModelData.h>
-#include <Engine/File/TextSerializer.h>
-#include <Engine/Error/EngineError.h>
-#include <Engine/File/BinarySerializer.h>
+#include <Core/File/TextSerializer.h>
+#include <Core/File/BinarySerializer.h>
+#include <Core/Error/EngineError.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
-#include <Engine/Editor/UI/Panels/Viewport.h>
+#include <Editor/UI/Panels/Viewport.h>
 #include <algorithm>
+#include <filesystem>
 #include <Engine/Plugins/PluginLoader.h>
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
@@ -381,7 +382,20 @@ void engine::Scene::LoadInternal(string File, bool Async)
 	Name = File;
 	try
 	{
-		SceneData = TextSerializer::FromFile(File);
+		if (std::filesystem::exists(File))
+		{
+			SceneData = TextSerializer::FromFile(Name);
+		}
+		else if (std::filesystem::exists(File + ".kts"))
+		{
+			Name = File + ".kts";
+			SceneData = TextSerializer::FromFile(Name);
+		}
+		else if (std::filesystem::exists(File + ".kbs"))
+		{
+			Name = File + ".kbs";
+			SceneData = BinarySerializer::FromFile(Name, "kbs");
+		}
 	}
 	catch (SerializeReadException& ReadErr)
 	{

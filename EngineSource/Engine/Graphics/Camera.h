@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
-#include <Engine/Vector.h>
-#include <Engine/Transform.h>
+#include <Core/Vector.h>
+#include <Core/Transform.h>
 
 namespace engine::graphics
 {

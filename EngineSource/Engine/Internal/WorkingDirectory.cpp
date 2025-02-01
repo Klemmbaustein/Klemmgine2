@@ -1,12 +1,14 @@
 #include "WorkingDirectory.h"
+#include <Core/Log.h>
 #include <filesystem>
 
 void engine::internal::AdjustWorkingDirectory()
 {
 	std::filesystem::path CurrentDir = std::filesystem::current_path();
 
-	if (std::filesystem::exists("Engine/"))
+	if (std::filesystem::exists("Assets/"))
 	{
+		Log::Info(std::filesystem::current_path().string());
 		return;
 	}
 

@@ -1,7 +1,7 @@
 #include "SceneObject.h"
 #include <Engine/Scene.h>
-#include <Engine/Error/EngineAssert.h>
-#include <Engine/Log.h>
+#include <Core/Error/EngineAssert.h>
+#include <Core/Log.h>
 using namespace engine;
 
 SerializedValue engine::SceneObject::Serialize()
@@ -144,7 +144,8 @@ void engine::SceneObject::InitObj(Scene* Scn, bool CallBegin, int32 TypeID)
 	this->TypeID = TypeID;
 	if (CallBegin)
 	{
-		this->Name = Reflection::ObjectTypes[TypeID].Name;
+		if (this->Name.empty())
+			this->Name = Reflection::ObjectTypes[TypeID].Name;
 		CheckTransform();
 		Begin();
 		BeginCalled = true;

@@ -1,7 +1,7 @@
 #include "MainThread.h"
 #include <mutex>
 #include <cstdlib>
-#include <Engine/Error/EngineError.h>
+#include <Core/Error/EngineError.h>
 
 static std::vector<std::function<void()>> MainThreadFuncs;
 static std::mutex MainThreadFuncsMutex;

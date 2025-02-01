@@ -1,8 +1,9 @@
 #include "ModelData.h"
-#include "BinarySerializer.h"
+#include "Core/File/BinarySerializer.h"
+#include "Core/File/FileUtil.h"
 #include <filesystem>
 #include <mutex>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 #include <Engine/MainThread.h>
 
 using namespace engine::graphics;
@@ -91,7 +92,7 @@ engine::SerializedValue engine::ModelData::Mesh::Serialize()
 	return std::vector{
 		SerializedData("vrt", OutVertices),
 		SerializedData("ind", OutIndices),
-		SerializedData("mat", Material)
+		SerializedData("mat", file::FileNameWithoutExt(Material))
 	};
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 #include <string>
-#include <Engine/Types.h>
+#include <Core/Types.h>
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 
 #if _WIN32

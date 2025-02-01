@@ -2,7 +2,7 @@
 #include <kui/Resource.h>
 #include "ShaderLoader.h"
 #include <Engine/Internal/OpenGL.h>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 
 bool engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string Type)
 {

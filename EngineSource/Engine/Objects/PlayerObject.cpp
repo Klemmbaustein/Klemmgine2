@@ -1,13 +1,12 @@
 #include "PlayerObject.h"
-#include <Engine/Log.h>
+#include <Core/Log.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
-#include <Engine/Editor/Editor.h>
+#include <Editor/Editor.h>
 #include "Components/MeshComponent.h"
 
 void engine::PlayerObject::Begin()
 {
-
 	Collider = new PhysicsComponent();
 	Attach(Collider);
 	Collider->Scale = 0.5f;

@@ -3,7 +3,7 @@
 #include <functional>
 #include <fstream>
 #include <sstream>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 #include <filesystem>
 #include <kui/Resource.h>
 
@@ -78,7 +78,7 @@ string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)
 	{
 		return Found->second;
 	}
-	return "Assets/" + EnginePath;
+	return EnginePath;
 }
 
 bool engine::resource::FileExists(string EnginePath)

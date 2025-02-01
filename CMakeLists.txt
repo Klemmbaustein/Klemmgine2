@@ -28,29 +28,51 @@ option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 
 project("Klemmgine")
 
-set(SRC_DIR "EngineSource")
+function(engine_part_library TARGET_NAME TARGET_PATH)
+	message("Including engine part: EngineSource/${TARGET_PATH} (${TARGET_NAME})")
 
-file(
-	GLOB_RECURSE
-	SRCS
-	"${SRC_DIR}/**.cpp"
-)
-file(
-	GLOB_RECURSE
-	INCLUDES
-	"${SRC_DIR}/**.h"
-)
+	set(SRC_DIR "EngineSource")
+
+	file(
+		GLOB_RECURSE
+		SRCS
+		"${SRC_DIR}/${TARGET_PATH}/**.cpp"
+	)
+	file(
+		GLOB_RECURSE
+		INCLUDES
+		"${SRC_DIR}/${TARGET_PATH}/**.h"
+	)
+
+	add_library(${TARGET_NAME} STATIC ${SRCS} ${INCLUDES})
+endfunction()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+set(INTERPROCEDURAL_OPTIMIZATION OFF)
+
+engine_part_library(KlemmgineCore "Core")
+engine_part_library(KlemmgineLib "Engine")
+engine_part_library(KlemmgineEditor "Editor")
+
+target_compile_definitions(KlemmgineCore PRIVATE ENGINE_CORE)
+
+target_link_libraries(KlemmgineLib PUBLIC KlemmgineCore)
 
 if(USE_WINDOWS_SUBSYSTEM AND WIN32)
-	add_executable(Klemmgine WIN32 ${SRCS} ${INCLUDES})
-	target_compile_definitions(Klemmgine PUBLIC ENGINE_SUBSYSTEM_WIN32)
+	add_executable(Klemmgine WIN32 "EngineSource/main.cpp")
+	target_compile_definitions(KlemmgineLib PUBLIC ENGINE_SUBSYSTEM_WIN32)
 else()
-	add_executable(Klemmgine ${SRCS} ${INCLUDES})
+	add_executable(Klemmgine "EngineSource/main.cpp")
+endif()
+
+if(ENGINE_EDITOR)
+	target_link_libraries(KlemmgineEditor PUBLIC KlemmgineLib)
+	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
+else()
+	target_link_libraries(Klemmgine PUBLIC KlemmgineLib)
 endif()
 
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)
@@ -75,24 +97,24 @@ add_subdirectory("Dependencies/SDL" EXCLUDE_FROM_ALL)
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory("Dependencies/glm" EXCLUDE_FROM_ALL)
 add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
-target_include_directories(Klemmgine PRIVATE "Dependencies/JoltPhysics/")
+target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
 set(GENERATE_DEBUG_SYMBOLS ON)
 
-target_include_directories(Klemmgine PRIVATE "Plugins/PluginInterface/Include/internal")
-target_compile_definitions(Klemmgine PRIVATE BUILD_LIBRARY=1)
+target_include_directories(KlemmgineLib PRIVATE "Plugins/PluginInterface/Include/internal")
+target_compile_definitions(KlemmgineLib PRIVATE BUILD_LIBRARY=1)
 
 if(WIN32)
-	target_compile_definitions(Klemmgine PUBLIC WINDOWS=1)
+	target_compile_definitions(KlemmgineCore PUBLIC WINDOWS=1)
 else()
-	target_compile_definitions(Klemmgine PUBLIC LINUX=1)
+	target_compile_definitions(KlemmgineCore PUBLIC LINUX=1)
 endif()
 
 if(USE_ENGINEMAIN)
-	target_compile_definitions(Klemmgine PRIVATE USE_ENGINEMAIN)
+	target_compile_definitions(KlemmgineLib PRIVATE USE_ENGINEMAIN)
 endif()
 
 if(ENGINE_SERVER)
-	target_compile_definitions(Klemmgine PUBLIC SERVER)
+	target_compile_definitions(KlemmgineLib PUBLIC SERVER)
 elseif(ENGINE_EDITOR)
 	set(ASSIMP_INSTALL OFF)
 	set(ASSIMP_WARNINGS_AS_ERRORS OFF)
@@ -121,34 +143,33 @@ elseif(ENGINE_EDITOR)
 
 	if (WIN32 AND USING_MSVC)
 		set(MSVC ON)
-		target_compile_options(Klemmgine PUBLIC "/w44244")
+		target_compile_options(KlemmgineLib PUBLIC "/w44244")
 	endif()
 
-	target_link_libraries(Klemmgine PUBLIC assimp::assimp)
-	target_compile_definitions(Klemmgine PUBLIC EDITOR)
+	target_link_libraries(KlemmgineLib PUBLIC assimp::assimp)
+	target_compile_definitions(KlemmgineLib PUBLIC EDITOR)
 	set(BUILD_SHARED_LIBS OFF)
-	klemmui_markup(Klemmgine "Engine/Editor/UI")
+	klemmui_markup(KlemmgineLib "Engine/Editor/UI")
 endif()
 
 # KlemmUI SystemWM declarations
-target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/SystemWM")
+target_include_directories(KlemmgineLib PRIVATE "Dependencies/KlemmUI/Source/SystemWM")
 # KlemmUI stb headers
-target_include_directories(Klemmgine PRIVATE "Dependencies/KlemmUI/Source/Util")
-target_include_directories(Klemmgine PRIVATE "EngineSource")
-target_link_libraries(Klemmgine PUBLIC SDL3::SDL3)
-target_link_libraries(Klemmgine PUBLIC Jolt)
-target_link_libraries(Klemmgine PUBLIC KlemmUI)
-target_link_libraries(Klemmgine PUBLIC libglew_static)
-target_link_libraries(Klemmgine PUBLIC glm)
+target_include_directories(KlemmgineLib PRIVATE "Dependencies/KlemmUI/Source/Util")
+target_include_directories(KlemmgineCore PUBLIC "EngineSource")
+target_link_libraries(KlemmgineLib PUBLIC SDL3::SDL3)
+target_link_libraries(KlemmgineLib PUBLIC Jolt)
+target_link_libraries(KlemmgineLib PUBLIC KlemmUI)
+target_link_libraries(KlemmgineLib PUBLIC libglew_static)
+target_link_libraries(KlemmgineCore PUBLIC glm)
 
 if(UNIX)
-	target_link_options(Klemmgine PRIVATE "-Wl,-rpath,$ORIGIN")
+	target_link_options(KlemmgineLib PRIVATE "-Wl,-rpath,$ORIGIN")
 endif()
 
-klemmui_resources(Klemmgine "Engine/Resources")
+klemmui_resources(KlemmgineLib "Engine/Resources")
 
 if (ENGINE_BUILD_TOOLS)
-	add_subdirectory("Tools/UtilLib")
 	add_subdirectory("Tools/ProjCompiler")
 endif()
 

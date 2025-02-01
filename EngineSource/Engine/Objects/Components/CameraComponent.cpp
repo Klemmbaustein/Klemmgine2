@@ -1,9 +1,9 @@
 #include "CameraComponent.h"
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
-#include <Engine/Editor/Editor.h>
+#include <Editor/Editor.h>
 #include <Engine/Input.h>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 
 engine::CameraComponent::CameraComponent()
 {

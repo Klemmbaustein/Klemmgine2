@@ -1,6 +1,6 @@
 #include "PhysicsComponent.h"
 #include <Engine/Scene.h>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 using namespace engine;
 
 engine::PhysicsComponent::PhysicsComponent()

@@ -48,7 +48,7 @@ element MaterialTextureElement
 		child UIBackground texturePreview
 		{
 			size = 64px;
-			image = "Assets/Bricks.png";
+			image = "";
 		}
 	}
 

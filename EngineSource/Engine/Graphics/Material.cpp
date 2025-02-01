@@ -1,8 +1,9 @@
 #include "Material.h"
 #include "ShaderLoader.h"
-#include <Engine/Log.h>
+#include <Core/Log.h>
 #include <Engine/File/Resource.h>
-#include <Engine/File/TextSerializer.h>
+#include <Core/File/TextSerializer.h>
+#include <Core/File/BinarySerializer.h>
 #include <Engine/Internal/OpenGL.h>
 
 using namespace engine;
@@ -12,7 +13,17 @@ engine::graphics::Material::Material(AssetRef File)
 {
 	try
 	{
-		SerializedValue FileData = TextSerializer::FromFile(File.FilePath);
+		SerializedValue FileData;
+
+		if (File.Extension == "kmt")
+		{
+			FileData = TextSerializer::FromFile(File.FilePath);
+		}
+		else
+		{
+			FileData = BinarySerializer::FromFile(File.FilePath, "kbm");
+		}
+
 		if (!FileData.GetObject().empty())
 		{
 			DeSerialize(&FileData);
@@ -26,6 +37,11 @@ engine::graphics::Material::Material(AssetRef File)
 	catch (SerializeException& Err)
 	{
 		Log::Warn(Err.what());
+	}
+
+	if (!File.FilePath.empty())
+	{
+		Log::Warn(str::Format("Failed to load material file: '%s'", File.FilePath.c_str()));
 	}
 	SetToDefault();
 }
@@ -205,7 +221,7 @@ void engine::graphics::Material::Apply()
 			if (i.TextureValue.Name && !i.TextureValue.Value)
 			{
 				// TODO: replace with engine's texture functions
-				i.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::FromPath(*i.TextureValue.Name), TextureLoadOptions{});
+				i.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::Convert(*i.TextureValue.Name), TextureLoadOptions{});
 			}
 			glActiveTexture(GL_TEXTURE1 + TextureSlot);
 			if (i.TextureValue.Value)
@@ -301,9 +317,9 @@ void engine::graphics::Material::SetToDefault()
 
 	Field ColorField;
 
-	UseTextureField.Name = "u_color";
-	UseTextureField.FieldType = Field::Type::Vec3;
-	UseTextureField.Vec3 = 1;
+	ColorField.Name = "u_color";
+	ColorField.FieldType = Field::Type::Vec3;
+	ColorField.Vec3 = 1;
 
 	Fields = {
 		UseTextureField,
@@ -311,6 +327,7 @@ void engine::graphics::Material::SetToDefault()
 	};
 	IsDefault = true;
 
+	VerifyUniforms();
 	UpdateShader();
 }
 

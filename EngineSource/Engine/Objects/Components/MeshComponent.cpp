@@ -44,7 +44,15 @@ void engine::MeshComponent::Load(AssetRef From)
 				Materials.push_back(graphics::Material::MakeDefault());
 				continue;
 			}
-			Materials.push_back(new graphics::Material(AssetRef::Convert(m.Material)));
+			AssetRef Ref = AssetRef::FromName(m.Material, "kmt");
+
+			if (Ref.Exists())
+				Materials.push_back(new graphics::Material(Ref));
+			else
+			{
+				Ref = AssetRef::FromName(m.Material, "kbm");
+				Materials.push_back(new graphics::Material(Ref));
+			}
 		}
 
 		if (!AlreadyRegistered)

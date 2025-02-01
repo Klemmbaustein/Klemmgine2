@@ -8,6 +8,7 @@ set(SRC_DIR "Loader")
 include("FindSdk.cmake")
 
 if(NOT NET_SDK_BINARY_DIR)
+	message(".NET sdk not found, not compiling c# plugin...")
 	return()
 endif()
 
@@ -36,4 +37,4 @@ else()
 	target_link_options(${PLUGIN_NAME} PRIVATE "-Wl,-rpath,$ORIGIN")
 endif()
 
-add_dependencies(Klemmgine ${PLUGIN_NAME})
+add_dependencies(KlemmgineLib ${PLUGIN_NAME})

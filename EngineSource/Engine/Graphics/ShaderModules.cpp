@@ -1,7 +1,7 @@
 #include "ShaderModules.h"
 #include <sstream>
 #include <array>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Internal/OpenGL.h>

@@ -1,6 +1,6 @@
 #pragma once
-#include <Engine/Types.h>
-#include <Engine/File/SerializedData.h>
+#include <Core/Types.h>
+#include <Core/File/SerializedData.h>
 #include "Engine/File/AssetRef.h"
 #include <functional>
 

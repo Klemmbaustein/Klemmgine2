@@ -1,7 +1,7 @@
 #include "CollisionComponent.h"
 #include <Engine/Scene.h>
 #include <Engine/Input.h>
-#include <Engine/Log.h>
+#include <Core/Log.h>
 using namespace engine::physics;
 
 void engine::CollisionComponent::OnAttached()

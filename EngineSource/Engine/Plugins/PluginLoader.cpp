@@ -1,11 +1,11 @@
 #include "PluginLoader.h"
 #include <Engine/Objects/Reflection/ObjectReflection.h>
-#include <Engine/Internal/Platform.h>
-#include <Engine/Log.h>
+#include <Core/Platform/Platform.h>
+#include <Core/Log.h>
 #include <Engine/Scene.h>
 #include <iostream>
 #include <filesystem>
-#include <Engine/File/TextSerializer.h>
+#include <Core/File/TextSerializer.h>
 #include <Engine/Subsystem/PluginSubsystem.h>
 #include <cstring>
 

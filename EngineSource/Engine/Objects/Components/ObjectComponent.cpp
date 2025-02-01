@@ -1,6 +1,6 @@
 #include "ObjectComponent.h"
 #include <Engine/Objects/SceneObject.h>
-#include <Engine/Error/EngineAssert.h>
+#include <Core/Error/EngineAssert.h>
 using namespace engine;
 
 engine::ObjectComponent::ObjectComponent()

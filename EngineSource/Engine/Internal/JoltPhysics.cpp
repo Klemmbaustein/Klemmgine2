@@ -1,11 +1,11 @@
 #include "JoltPhysics.h"
 #include <Engine/Physics/Physics.h>
-#include <Engine/Error/StackTrace.h>
-#include <Engine/Log.h>
+#include <Core/Error/StackTrace.h>
+#include <Core/Log.h>
 #include <cstdarg>
-#include <Engine/Error/EngineAssert.h>
+#include <Core/Error/EngineAssert.h>
 #include <Engine/Stats.h>
-#include <Engine/ThreadPool.h>
+#include <Core/ThreadPool.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 using namespace engine;
 using namespace engine::physics;

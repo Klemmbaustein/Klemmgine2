@@ -1,8 +1,8 @@
 #pragma once
-#include <Engine/Types.h>
+#include <Core/Types.h>
 #include <vector>
 #include <Engine/Graphics/Vertex.h>
-#include <Engine/File/SerializedData.h>
+#include <Core/File/SerializedData.h>
 #include <Engine/Graphics/Model.h>
 #include <unordered_map>
 #include "AssetRef.h"

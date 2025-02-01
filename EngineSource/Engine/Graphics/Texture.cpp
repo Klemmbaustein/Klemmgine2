@@ -1,6 +1,6 @@
 #include "Texture.h"
 #include <Engine/File/Resource.h>
-#include <Engine/Error/EngineAssert.h>
+#include <Core/Error/EngineAssert.h>
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/MainThread.h>
 #include <stb_image.hpp>

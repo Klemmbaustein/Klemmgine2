@@ -1,7 +1,7 @@
 #pragma once
-#include <Engine/Types.h>
-#include <Engine/Vector.h>
-#include <Engine/Transform.h>
+#include <Core/Types.h>
+#include <Core/Vector.h>
+#include <Core/Transform.h>
 #include <map>
 
 namespace engine::graphics

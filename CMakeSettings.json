@@ -114,7 +114,18 @@
 	{
 	  "name": "arm64-Release-NoEditor",
 	  "generator": "Ninja",
-	  "configurationType": "Debug",
+	  "configurationType": "Release",
+	  "buildRoot": "${projectDir}\\out\\build\\${name}",
+	  "installRoot": "${projectDir}\\out\\install\\${name}",
+	  "cmakeCommandArgs": "",
+	  "buildCommandArgs": "",
+	  "ctestCommandArgs": "",
+	  "inheritEnvironments": [ "msvc_arm64_x64" ]
+	},
+	{
+	  "name": "arm64-Release",
+	  "generator": "Ninja",
+	  "configurationType": "Release",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeCommandArgs": "",
@@ -123,8 +134,8 @@
 	  "inheritEnvironments": [ "msvc_arm64_x64" ],
 	  "variables": [
 		{
-		  "name": "USE_WINDOWS_SUBSYSTEM",
-		  "value": "False",
+		  "name": "ENGINE_EDITOR",
+		  "value": "True",
 		  "type": "BOOL"
 		}
 	  ]

@@ -1,9 +1,9 @@
-#include <Engine/Types.h>
-#include <Engine/Log.h>
-#include <Engine/File/FileUtil.h>
-#include <Engine/File/BinarySerializer.h>
-#include <Engine/File/TextSerializer.h>
-#include <Engine/LaunchArgs.h>
+#include <Core/Types.h>
+#include <Core/Log.h>
+#include <Core/File/FileUtil.h>
+#include <Core/File/BinarySerializer.h>
+#include <Core/File/TextSerializer.h>
+#include <Core/LaunchArgs.h>
 #include <filesystem>
 #include <map>
 
