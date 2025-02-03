@@ -13,6 +13,7 @@ namespace engine::editor
 			string Name;
 			std::function<void()> OnClicked;
 			bool Close = true;
+			bool OnMainThread = true;
 		};
 
 		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size);

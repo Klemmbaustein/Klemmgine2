@@ -36,10 +36,17 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 		NewButton->btn->OnClicked = [this, Value = *i]() {
 			if (Value.OnClicked)
 			{
-				thread::ExecuteOnMainThread([OnClicked = Value.OnClicked]()
-					{
-						OnClicked();
-					});
+				if (Value.OnMainThread)
+				{
+					thread::ExecuteOnMainThread([OnClicked = Value.OnClicked]()
+						{
+							OnClicked();
+						});
+				}
+				else
+				{
+					Value.OnClicked();
+				}
 			}
 			if (Value.Close)
 				Close();
