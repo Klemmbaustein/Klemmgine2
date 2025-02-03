@@ -57,7 +57,7 @@ static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context, string
 		}
 	}
 
-	string MaterialPath = str::Format("%s%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(TargetMesh->mMaterialIndex));
+	string MaterialPath = str::Format("%s%s_%i", OutDir.c_str(), Context.SceneName.c_str(), int(TargetMesh->mMaterialIndex));
 	OutMesh.Material = MaterialPath;
 }
 
