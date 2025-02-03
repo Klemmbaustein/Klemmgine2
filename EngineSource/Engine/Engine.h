@@ -67,5 +67,9 @@ namespace engine
 		}
 
 		friend class engine::subsystem::Subsystem;
+
+	private:
+		void InitSystems();
+		static void ErrorCallback(string Error, string StackTrace);
 	};
 }

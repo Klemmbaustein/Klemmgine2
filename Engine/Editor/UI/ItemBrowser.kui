@@ -45,7 +45,7 @@ element ItemBrowserHeading
 
 element ItemBrowserButton
 {
-	var Name;
+	var Name = "Name";
 	var Color = (1, 0, 0);
 	var BackgroundColor = 0.1;
 	var Image;
@@ -83,6 +83,7 @@ element ItemBrowserButton
 			padding = 2px;
 			upPadding = 0;
 			size = 10px;
+			maxWraps = 2;
 		}
 	}
 }

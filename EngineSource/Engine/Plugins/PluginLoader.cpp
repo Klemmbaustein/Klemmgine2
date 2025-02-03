@@ -1,13 +1,11 @@
 #include "PluginLoader.h"
-#include <Engine/Objects/Reflection/ObjectReflection.h>
 #include <Core/Platform/Platform.h>
-#include <Core/Log.h>
-#include <Engine/Scene.h>
-#include <iostream>
-#include <filesystem>
 #include <Core/File/TextSerializer.h>
+#include <Engine/Scene.h>
 #include <Engine/Subsystem/PluginSubsystem.h>
+#include <filesystem>
 #include <cstring>
+#include <kui/Timer.h>
 
 #include "InterfaceStruct.hpp"
 
@@ -24,14 +22,14 @@ static auto ctx = plugin::EnginePluginInterface{
 #include "InterfaceDefines.hpp"
 };
 
-static char* StrDup(const char* From, size_t FromSize)
+static char* StrDup(string From)
 {
-	char* NewString = (char*)malloc(FromSize + 1);
+	char* NewString = (char*)malloc(From.size() + 1);
 	if (!NewString)
 		return nullptr;
-	memcpy(NewString, From, FromSize);
+	memcpy(NewString, From.data(), From.size());
 
-	NewString[FromSize] = 0;
+	NewString[From.size()] = 0;
 	return NewString;
 }
 
@@ -46,15 +44,17 @@ void engine::plugin::OnNewSceneLoaded(Scene* Target)
 	}
 }
 
+static const string PLUGIN_DIR = "Plugins/";
+
 void engine::plugin::Load(subsystem::PluginSubsystem* System)
 {
-	if (!std::filesystem::exists("Plugins/"))
+	if (!std::filesystem::exists(PLUGIN_DIR))
 		return;
-	for (auto& i : std::filesystem::directory_iterator("Plugins/"))
+
+	for (const auto& i : std::filesystem::directory_iterator(PLUGIN_DIR))
 	{
-		if (!std::filesystem::exists(i.path() / "Plugin.k2p"))
-			continue;
-		TryLoadPlugin(i.path().string(), System);
+		if (std::filesystem::exists(i.path() / "Plugin.k2p"))
+			TryLoadPlugin(i.path().string(), System);
 	}
 }
 
@@ -62,6 +62,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 {
 	using namespace engine::internal::platform;
 	using namespace engine::subsystem;
+	using LogType = Subsystem::LogType;
 
 	try
 	{
@@ -71,25 +72,28 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		New.Name = File.At("name").GetString();
 
-		System->Print(str::Format("Loading plugin: %s", New.Name.c_str()), Subsystem::LogType::Info);
+		System->Print(str::Format("Loading plugin: %s", New.Name.c_str()), LogType::Info);
 
 		string PluginPath = File.At("binary").GetString();
 
 #if WINDOWS
-		SharedLibrary* Library = LoadSharedLibrary(str::Format("plugins/%s.dll", PluginPath.c_str()));
+		string PluginBinary = str::Format("plugins/%s.dll", PluginPath.c_str());
 #else
-		SharedLibrary* Library = LoadSharedLibrary(str::Format("plugins/lib%s.so", PluginPath.c_str()));
+		string PluginBinary = str::Format("plugins/lib%s.so", PluginPath.c_str());
 #endif
+
+		SharedLibrary* Library = LoadSharedLibrary(PluginBinary);
 
 		if (!Library)
 		{
-			System->Print(str::Format("Failed to load shared library file: %s", PluginPath.c_str()), Subsystem::LogType::Warning);
+			System->Print(str::Format("Failed to load shared library file: %s", PluginPath.c_str()), LogType::Warning);
 			return;
 		}
 
 		EnginePluginInterface TargetPluginInterface = ctx;
-		string Path = str::Format("Plugins/%s/", New.Name.c_str());
-		TargetPluginInterface.PluginPath = StrDup(Path.c_str(), Path.size());
+		TargetPluginInterface.PluginPath = StrDup(str::Format("Plugins/%s/", New.Name.c_str()));
+
+		kui::Timer t;
 
 		PluginLoadFn PluginLoad = (PluginLoadFn)GetLibraryFunction(Library, "PluginLoad");
 		PluginLoad(&TargetPluginInterface);
@@ -99,10 +103,13 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		New.OnNewSceneLoaded = (PluginInfo::SceneLoadFn)GetLibraryFunction(Library, "OnSceneLoaded");
 		New.PluginHandle = Library;
+
+		System->Print(str::Format("Finished loading %s (in %ims)", New.Name.c_str(), int(t.Get() * 1000.0f)), LogType::Note);
+
 		LoadedPlugins.push_back(New);
 	}
 	catch (SerializeException e)
 	{
-		System->Print(str::Format("Failed to load plugin: %s", e.what()), Subsystem::LogType::Warning);
+		System->Print(str::Format("Failed to load plugin: %s", e.what()), LogType::Warning);
 	}
 }

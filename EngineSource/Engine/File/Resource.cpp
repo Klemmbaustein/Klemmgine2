@@ -148,6 +148,7 @@ void engine::resource::FreeBinaryFile(BinaryFile& Target)
 
 void engine::resource::ScanForAssets()
 {
+	LoadedAssets.clear();
 	for (const auto& i : std::filesystem::recursive_directory_iterator("Assets/"))
 	{
 		if (i.path().filename().string() == ".")

@@ -2,6 +2,7 @@
 #include "IDialogWindow.h"
 #include <Core/Log.h>
 #include <DialogWindow.kui.hpp>
+#include <Engine/MainThread.h>
 
 using namespace kui;
 
@@ -34,7 +35,12 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 		auto NewButton = new DialogWindowButton();
 		NewButton->btn->OnClicked = [this, Value = *i]() {
 			if (Value.OnClicked)
-				Value.OnClicked();
+			{
+				thread::ExecuteOnMainThread([OnClicked = Value.OnClicked]()
+					{
+						OnClicked();
+					});
+			}
 			if (Value.Close)
 				Close();
 			};

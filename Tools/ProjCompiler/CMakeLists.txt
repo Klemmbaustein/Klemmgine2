@@ -15,4 +15,6 @@ file(
 
 add_executable(ProjectCompiler ${SRCS} ${INCLUDES})
 
+add_dependencies(ProjectCompiler Klemmgine)
+
 target_link_libraries(ProjectCompiler PRIVATE KlemmgineCore)

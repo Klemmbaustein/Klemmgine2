@@ -5,6 +5,7 @@
 #include <MaterialEditor.kui.hpp>
 #include <Engine/Objects/MeshObject.h>
 #include <Core/File/FileUtil.h>
+#include <stdexcept>
 
 using namespace kui;
 

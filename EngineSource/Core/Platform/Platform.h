@@ -1,11 +1,11 @@
 #pragma once
 #include <Core/Types.h>
 #include <Core/Log.h>
-#include <vector>
 
 namespace engine::internal::platform
 {
 	void Execute(string Command);
+	void Open(string File);
 
 	void SetConsoleColor(Log::LogColor NewColor);
 

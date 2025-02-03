@@ -12,6 +12,9 @@
 #include "File/Resource.h"
 #include "Core/Error/EngineError.h"
 #include <Engine/Objects/PlayerObject.h>
+#include <kui/App.h>
+#include <kui/Timer.h>
+#include <Core/LaunchArgs.h>
 using namespace engine;
 using namespace engine::subsystem;
 
@@ -27,16 +30,13 @@ Engine* Engine::Init()
 	{
 		return Instance;
 	}
+	kui::Timer StartupTimer;
 
 	internal::AdjustWorkingDirectory();
 
 	Instance = new Engine();
-	
-	error::InitForThread("Main");
-	thread::IsMainThread = true;
-	ThreadPool::AllocateDefaultThreadPool();
-	Reflection::Init();
-	resource::ScanForAssets();
+
+	Instance->InitSystems();
 
 	Instance->LoadSubsystem(new ConsoleSubsystem());
 	Instance->LoadSubsystem(new PluginSubsystem());
@@ -47,6 +47,8 @@ Engine* Engine::Init()
 #ifdef EDITOR
 	Instance->LoadSubsystem(new EditorSubsystem());
 #endif
+
+	Log::Info(str::Format("Engine started. (in %ims)", int(StartupTimer.Get() * 1000.0f)));
 
 	return Instance;
 }
@@ -80,6 +82,7 @@ void Engine::Run()
 	}
 	LoadedSystems.clear();
 
+	ThreadPool::FreeDefaultThreadPool();
 	Instance = nullptr;
 
 	delete this;
@@ -87,4 +90,34 @@ void Engine::Run()
 
 void Engine::LoadSubsystem(Subsystem* NewSubsystem)
 {
+}
+
+void engine::Engine::InitSystems()
+{
+	Log::IsVerbose = launchArgs::GetArg("verbose").has_value();
+
+	error::InitForThread("Main");
+	error::OnErrorCallback = ErrorCallback;
+
+	thread::IsMainThread = true;
+	ThreadPool::AllocateDefaultThreadPool();
+	Reflection::Init();
+	resource::ScanForAssets();
+}
+
+void engine::Engine::ErrorCallback(string Error, string StackTrace)
+{
+#ifndef SERVER
+	if (thread::IsMainThread)
+	{
+		subsystem::VideoSubsystem* VideoSys = Engine::GetSubsystem<subsystem::VideoSubsystem>();
+
+		if (VideoSys)
+		{
+			delete VideoSys->MainWindow;
+		}
+	}
+	kui::app::MessageBox(str::Format("%s!\nStack trace:\n%s", Error.c_str(), StackTrace.c_str()),
+		"Engine error", kui::app::MessageBoxType::Error);
+#endif
 }

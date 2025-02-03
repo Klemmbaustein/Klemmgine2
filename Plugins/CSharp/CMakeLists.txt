@@ -26,8 +26,9 @@ file(
 klemmgine_plugin_dirs()
 
 add_library(${PLUGIN_NAME} SHARED ${INCLUDES} ${SRCS})
-target_link_libraries(${PLUGIN_NAME} PRIVATE KlemmginePlugin)
+target_link_libraries(${PLUGIN_NAME} PUBLIC KlemmginePlugin)
 target_include_directories(${PLUGIN_NAME} PRIVATE ${NET_SDK_BINARY_DIR})
+
 if(WIN32)
 	file(COPY "${NET_SDK_BINARY_DIR}/nethost.dll" DESTINATION "${CMAKE_BINARY_DIR}/bin")
 	target_link_libraries(${PLUGIN_NAME} PRIVATE "${NET_SDK_BINARY_DIR}/nethost.lib")

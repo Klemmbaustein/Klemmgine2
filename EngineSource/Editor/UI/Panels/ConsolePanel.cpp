@@ -105,7 +105,7 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 	LastLogSize = LogMessages.size();
 	PanelElement->UpdateElement();
-	Element->logBox->CurrentScrollObject->Percentage = Element->logBox->CurrentScrollObject->MaxScroll;
+	Element->logBox->GetScrollObject()->Scrolled = Element->logBox->GetScrollObject()->MaxScroll;
 	Element->logBox->RedrawElement();
 }
 #endif

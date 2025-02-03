@@ -7,7 +7,17 @@ ThreadPool* ThreadPool::MainPool = nullptr;
 
 void engine::ThreadPool::AllocateDefaultThreadPool()
 {
+	if (MainPool)
+		FreeDefaultThreadPool();
+
 	MainPool = new ThreadPool(std::min(std::thread::hardware_concurrency(), uint32(16)), "Klemmgine worker");
+}
+
+void engine::ThreadPool::FreeDefaultThreadPool()
+{
+	if (MainPool)
+		delete MainPool;
+	MainPool = nullptr;
 }
 
 engine::ThreadPool::ThreadPool(size_t MaxJobs, string PoolName)
@@ -60,7 +70,7 @@ ThreadPool::ThreadFunction engine::ThreadPool::FindFunction()
 {
 	std::unique_lock g{ JobQueueMutex };
 
-	while (Jobs.empty())
+	while (Jobs.empty() && !ShouldQuit)
 		ThreadCondition.wait(g);
 
 	if (ShouldQuit)

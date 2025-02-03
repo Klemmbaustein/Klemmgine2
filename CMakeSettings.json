@@ -61,7 +61,7 @@
 	  "variables": [
 		{
 		  "name": "ENGINE_EDITOR",
-		  "value": "True",
+		  "value": "False",
 		  "type": "BOOL"
 		}
 	  ]
@@ -86,7 +86,14 @@
 	  "cmakeCommandArgs": "",
 	  "buildCommandArgs": "",
 	  "ctestCommandArgs": "",
-	  "inheritEnvironments": [ "msvc_x64_x64" ]
+	  "inheritEnvironments": [ "msvc_x64_x64" ],
+	  "variables": [
+		{
+		  "name": "USE_WINDOWS_SUBSYSTEM",
+		  "value": "False",
+		  "type": "BOOL"
+		}
+	  ]
 	},
 	{
 	  "name": "arm64-Debug",
@@ -101,7 +108,7 @@
 	  "variables": [
 		{
 		  "name": "USE_WINDOWS_SUBSYSTEM",
-		  "value": "False",
+		  "value": "True",
 		  "type": "BOOL"
 		},
 		{
@@ -112,33 +119,18 @@
 	  ]
 	},
 	{
-	  "name": "arm64-Release-NoEditor",
+	  "name": "WSL-GCC-Debug",
 	  "generator": "Ninja",
-	  "configurationType": "Release",
+	  "configurationType": "Debug",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
+	  "cmakeExecutable": "cmake",
 	  "cmakeCommandArgs": "",
 	  "buildCommandArgs": "",
 	  "ctestCommandArgs": "",
-	  "inheritEnvironments": [ "msvc_arm64_x64" ]
-	},
-	{
-	  "name": "arm64-Release",
-	  "generator": "Ninja",
-	  "configurationType": "Release",
-	  "buildRoot": "${projectDir}\\out\\build\\${name}",
-	  "installRoot": "${projectDir}\\out\\install\\${name}",
-	  "cmakeCommandArgs": "",
-	  "buildCommandArgs": "",
-	  "ctestCommandArgs": "",
-	  "inheritEnvironments": [ "msvc_arm64_x64" ],
-	  "variables": [
-		{
-		  "name": "ENGINE_EDITOR",
-		  "value": "True",
-		  "type": "BOOL"
-		}
-	  ]
+	  "inheritEnvironments": [ "linux_x64" ],
+	  "wslPath": "${defaultWSLPath}",
+	  "variables": []
 	}
   ]
 }

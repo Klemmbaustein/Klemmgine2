@@ -15,7 +15,6 @@ void engine::internal::platform::Execute(string Command)
 	PROCESS_INFORMATION ProcInfo;
 	ZeroMemory(&ProcInfo, sizeof(ProcInfo));
 
-
 	if (!CreateProcess(NULL, Command.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &Startup, &ProcInfo))
 	{
 		return;
@@ -23,6 +22,11 @@ void engine::internal::platform::Execute(string Command)
 	WaitForSingleObject(ProcInfo.hProcess, INFINITE);
 	CloseHandle(ProcInfo.hProcess);
 	CloseHandle(ProcInfo.hThread);
+}
+
+void engine::internal::platform::Open(string File)
+{
+	ShellExecute(NULL, "open", File.c_str(), NULL, NULL, FALSE);
 }
 
 static std::string WstrToStr(const std::wstring& wstr)
@@ -50,15 +54,15 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 {
 	static std::map<Log::LogColor, WORD> WindowsColors =
 	{
-		std::pair(Log::LogColor::Default, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED),
-		std::pair(Log::LogColor::White, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY),
-		std::pair(Log::LogColor::Gray, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED),
-		std::pair(Log::LogColor::Red, FOREGROUND_RED | FOREGROUND_INTENSITY),
-		std::pair(Log::LogColor::Green,FOREGROUND_GREEN | FOREGROUND_INTENSITY),
-		std::pair(Log::LogColor::Cyan, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY),
-		std::pair(Log::LogColor::Magenta, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY),
-		std::pair(Log::LogColor::Blue, FOREGROUND_BLUE | FOREGROUND_INTENSITY),
-		std::pair(Log::LogColor::Yellow, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY),
+		{ Log::LogColor::Default, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED },
+		{ Log::LogColor::White, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY },
+		{ Log::LogColor::Gray, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED },
+		{ Log::LogColor::Red, FOREGROUND_RED | FOREGROUND_INTENSITY },
+		{ Log::LogColor::Green, FOREGROUND_GREEN | FOREGROUND_INTENSITY },
+		{ Log::LogColor::Cyan, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY },
+		{ Log::LogColor::Magenta, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY },
+		{ Log::LogColor::Blue, FOREGROUND_BLUE | FOREGROUND_INTENSITY },
+		{ Log::LogColor::Yellow, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY },
 	};
 	static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -95,6 +99,7 @@ void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, str
 #include <dlfcn.h>
 #include <cstring>
 #include <errno.h>
+#include <thread>
 
 void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 {
@@ -127,6 +132,11 @@ void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, str
 void engine::internal::platform::Execute(string Command)
 {
 	system(Command.c_str());
+}
+
+void engine::internal::platform::Open(string File)
+{
+	std::thread([File]() {system(("xdg-open " + File).c_str()); }).detach();
 }
 
 void engine::internal::platform::SetThreadName(string Name)

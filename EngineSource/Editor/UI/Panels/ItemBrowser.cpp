@@ -14,6 +14,11 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	Heading = new ItemBrowserHeading();
 	Background->AddChild(Heading);
 	ItemsScrollBox = new UIScrollBox(false, 0, true);
+
+	StatusText = new UIText(11_px, EditorUI::Theme.Text, "", EditorUI::EditorFont);
+	StatusText
+		->SetPadding(5_px);
+
 	Background->AddChild((new DroppableBox(false, [this](EditorUI::DraggedItem Item)
 		{
 			auto* btn = GetHoveredButton();
@@ -43,13 +48,9 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 		}))
 		->SetMinSize(SizeVec(UISize(1, SizeMode::ParentRelative)))
 		->SetMaxSize(SizeVec(UISize(1, SizeMode::ParentRelative)))
-		->AddChild(ItemsScrollBox));
+		->AddChild(ItemsScrollBox)
+		->AddChild(StatusText));
 
-	StatusText = new UIText(11_px, EditorUI::Theme.Text, "", EditorUI::EditorFont);
-
-	StatusText
-		->SetPadding(5_px);
-	Background->AddChild(StatusText);
 
 	Heading->backButton->OnClicked = [this]() { Back(); };
 	Heading->searchBox->field->OnChanged = [this]()

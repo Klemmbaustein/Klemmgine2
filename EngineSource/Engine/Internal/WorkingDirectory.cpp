@@ -8,7 +8,6 @@ void engine::internal::AdjustWorkingDirectory()
 
 	if (std::filesystem::exists("Assets/"))
 	{
-		Log::Info(std::filesystem::current_path().string());
 		return;
 	}
 

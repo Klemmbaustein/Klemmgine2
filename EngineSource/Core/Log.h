@@ -5,6 +5,16 @@
 
 namespace engine
 {
+	/**
+	* @brief
+	* Class for logging messages.
+	* 
+	* Prints messages to the standard output (or in the future to a file)
+	* 
+	* @todo Log to a file.
+	* 
+	* @ingroup engine-core
+	*/
 	class Log
 	{
 	public:
@@ -59,6 +69,8 @@ namespace engine
 			LogColor Color;
 		};
 
+		static bool IsVerbose;
+
 		/**
 		* @brief
 		* Prints a message into the log, with the given color and the given prefixes.
@@ -79,6 +91,7 @@ namespace engine
 		* This function works like Log::PrintMsg(), but the [Info]: prefix is added and the log color is white.
 		* 
 		* @see Log::PrintMsg()
+		* @ingroup engine-core
 		*/
 		static void Info(string Message, std::vector<LogPrefix> Prefixes = {});
 		/**
@@ -88,6 +101,7 @@ namespace engine
 		* This function works like Log::PrintMsg(), but the [Warn]: prefix is added and the log color is yellow.
 		*
 		* @see Log::PrintMsg()
+		* @ingroup engine-core
 		*/
 		static void Warn(string Message, std::vector<LogPrefix> Prefixes = {});
 		/**
@@ -97,6 +111,7 @@ namespace engine
 		* This function works like Log::PrintMsg(), but the [Error]: prefix is added and the log color is red.
 		*
 		* @see Log::PrintMsg()
+		* @ingroup engine-core
 		*/
 		static void Error(string Message, std::vector<LogPrefix> Prefixes = {});
 

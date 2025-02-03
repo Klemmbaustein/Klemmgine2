@@ -40,12 +40,12 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 			}
 			else
 			{
-				std::filesystem::copy(DebugPath, OutPath / PdbName);
+				std::fs::copy(DebugPath, OutPath / PdbName);
 			}
 		}
 		i.append(".exe");
 #endif
-		std::filesystem::copy(BinaryPath / i , OutPath / i);
+		std::fs::copy(BinaryPath / i , OutPath / i);
 	}
 	for (string i : SharedLibraries)
 	{
@@ -54,7 +54,8 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 #elif LINUX
 		i = str::Format("lib%s.so", i.c_str());
 #endif
-		std::filesystem::copy(BinaryPath / i, OutPath / i);
+		if (std::fs::exists(BinaryPath / i))
+			std::fs::copy(BinaryPath / i, OutPath / i);
 	}
 }
 

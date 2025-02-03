@@ -147,11 +147,16 @@ void engine::editor::ModelEditor::OnModelLoaded()
 
 	for (ModelData::Mesh& m : Data->Data->Meshes)
 	{
-		auto* NewSelector = new AssetSelector(AssetRef::FromPath(m.Material), Width, nullptr);
+		auto* NewSelector = new AssetSelector(AssetRef::FromName(m.Material, "kmt"), Width, nullptr);
 		NewSelector->SelectedAsset.Extension = "kmt";
 		NewSelector->OnChanged = [this, &m, NewSelector]()
 			{
-				m.Material = NewSelector->SelectedAsset.FilePath;
+				auto NewMaterial = NewSelector->SelectedAsset.DisplayName();
+
+				if (NewMaterial == m.Material)
+					return;
+
+				m.Material = NewMaterial;
 				OnChanged();
 				OnModelChanged();
 			};

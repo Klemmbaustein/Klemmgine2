@@ -2,14 +2,8 @@
 #include <csignal>
 #include <Core/Error/StackTrace.h>
 #include <map>
-#include <Engine/Engine.h>
 #include <Core/Log.h>
-#include <Engine/MainThread.h>
-
-//#if !defined(ENGINE_UTILS_LIB) && !defined(SERVER)
-//#include <kui/App.h>
-//#include <Engine/Subsystem/VideoSubsystem.h>
-//#endif
+using namespace engine;
 
 static thread_local engine::string ThreadName;
 static thread_local bool Crashed = false;
@@ -17,16 +11,35 @@ static thread_local bool SignalReceived = false;
 
 #define ERRORS_TO_MESSAGEBOX 1
 
+static void OnErrorCallbackInternal(string Error, string StackTrace)
+{
+	std::vector<Log::LogPrefix> Prefixes = {
+		Log::LogPrefix{
+			.Text = "Critical",
+			.Color = Log::LogColor::Magenta
+	},
+		Log::LogPrefix{
+			.Text = "Crash",
+			.Color = Log::LogColor::Magenta
+	},
+	};
+
+	Log::PrintMsg(Error, Log::LogColor::Red, Prefixes);
+	Log::PrintMsg("Stack trace:\n" + StackTrace, Log::LogColor::Red, Prefixes);
+}
+
+std::function<void(string Error, string StackTrace)> error::OnErrorCallback = &OnErrorCallbackInternal;
+
 static void SignalHandler(int Signal)
 {
 	static std::map<int, const char*> SignalTypes =
 	{
-		{SIGABRT, "SIGABRT"},
-		{SIGFPE, "Math error"},
-		{SIGILL, "Illegal instruction"},
-		{SIGINT, "SIGINT"},
-		{SIGSEGV, "Access violation"},
-		{SIGTERM, "SIGTERM"},
+		{ SIGABRT, "SIGABRT" },
+		{ SIGFPE, "Math error" },
+		{ SIGILL, "Illegal instruction" },
+		{ SIGINT, "SIGINT" },
+		{ SIGSEGV, "Access violation" },
+		{ SIGTERM, "SIGTERM" },
 	};
 
 	if (SignalReceived)
@@ -61,35 +74,6 @@ void engine::error::Abort(string Message)
 	}
 	Crashed = true;
 
-	std::vector<Log::LogPrefix> Prefixes = {
-		Log::LogPrefix{
-			.Text = "Critical",
-			.Color = Log::LogColor::Red
-		},
-		Log::LogPrefix{
-			.Text = "Crash",
-			.Color = Log::LogColor::Red
-		},
-	};
-
-#if !defined(ENGINE_UTILS_LIB) && !defined(SERVER)
-	//if (thread::IsMainThread)
-	//{
-	//	subsystem::VideoSubsystem* VideoSys = Engine::GetSubsystem<subsystem::VideoSubsystem>();
-
-	//	if (VideoSys)
-	//	{
-	//		delete VideoSys->MainWindow;
-	//	}
-	//}
-#endif
-
-	Log::PrintMsg(Message, Log::LogColor::Red, Prefixes);
-	string Trace = error::GetStackTrace();
-	Log::PrintMsg("Stack trace:\n" + Trace, Log::LogColor::Red, Prefixes);
-
-//#if !defined(ENGINE_UTILS_LIB) && !defined(SERVER)
-//	kui::app::MessageBox(str::Format("%s!\nStack trace:\n%s", Message.c_str(), Trace.c_str()), "Engine error", kui::app::MessageBoxType::Error);
-//	abort();
-//#endif
+	OnErrorCallback(Message, GetStackTrace());
+	abort();
 }

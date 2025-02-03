@@ -122,7 +122,7 @@ HitResult engine::physics::HitResult::GetAverageHit(std::vector<HitResult> Hits)
 	HitNormal = HitNormal.Normalize();
 	AvgPos = AvgPos / Vector3((float)Hits.size());
 
-	if (HitNormal.Length() == 0)
+	if (HitNormal == 0)
 	{
 		HitNormal = 0;
 		for (auto& i : Hits)

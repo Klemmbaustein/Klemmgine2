@@ -1,6 +1,7 @@
 #include "LaunchArgs.h"
 #include <map>
 #include <Core/Log.h>
+#include <stdexcept>
 
 namespace engine::launchArgs
 {

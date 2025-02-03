@@ -8,6 +8,10 @@
 * 
 * @brief
 * Classes related to serialized data.
+* 
+* Part of the core library.
+* 
+* @ingroup engine-core
 */
 
 namespace engine
@@ -50,7 +54,7 @@ namespace engine
 	* the BinarySerializer and TextSerializer classes.
 	* 
 	* @ingroup serialize
-	* 
+	*
 	* @see BinarySerializer
 	* @see TextSerializer
 	* @see ISerializable
@@ -59,6 +63,10 @@ namespace engine
 	class SerializedData
 	{
 	public:
+		/**
+		* @brief
+		* Enum for the type of a serialized data value.
+		*/
 		enum class DataType : uint8
 		{
 			/// No type. The associated value is empty.
@@ -96,7 +104,7 @@ namespace engine
 		* This object stores a type and a value that can be serialized.
 		* 
 		* @see SerializedData
-		* 
+		*
 		* @ingroup serialize
 		*/
 		class DataValue

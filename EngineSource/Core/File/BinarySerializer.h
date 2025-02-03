@@ -5,7 +5,6 @@
 
 namespace engine
 {
-
 	/**
 	* @brief
 	* Class to convert a SerializedValue objects to binary files and .

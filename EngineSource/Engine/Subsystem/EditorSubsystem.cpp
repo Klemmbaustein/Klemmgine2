@@ -3,6 +3,7 @@
 #include "ConsoleSubsystem.h"
 #include <Engine/Engine.h>
 #include <Engine/Scene.h>
+#include <kui/Timer.h>
 
 bool engine::subsystem::EditorSubsystem::Active = false;
 
@@ -19,6 +20,8 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 		}
 
 	}
+	kui::Timer t;
+
 	UI = new editor::EditorUI();
 	Active = true;
 
@@ -29,6 +32,8 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 			StartProject();
 		}
 		});
+
+	Print(str::Format("Loaded editor UI (in %ims)", int(t.Get() * 1000.0f)), LogType::Note);
 }
 
 engine::subsystem::EditorSubsystem::~EditorSubsystem()

@@ -49,10 +49,10 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 			Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
 		});
 
-	Print("Initializing SDL", LogType::Info);
+	Print("Initializing SDL", LogType::Note);
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
-	Print("Creating main window", LogType::Info);
+	Print("Creating main window", LogType::Note);
 
 	UIManager::UseAlphaBuffer = true;
 
@@ -86,8 +86,9 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, this);
 
-	Print("Compiling shader modules", LogType::Note);
+	kui::Timer t;
 	Shaders.Modules.ScanModules();
+	Print(str::Format("Compiled shader modules (in %ims)", int(t.Get() * 1000.0f)), LogType::Note);
 
 	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
 	if (ConsoleSys)

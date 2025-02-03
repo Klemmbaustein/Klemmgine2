@@ -47,11 +47,15 @@ function(engine_part_library TARGET_NAME TARGET_PATH)
 	add_library(${TARGET_NAME} STATIC ${SRCS} ${INCLUDES})
 endfunction()
 
+# add_compile_options("-fPIC")
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-set(INTERPROCEDURAL_OPTIMIZATION OFF)
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+	set(INTERPROCEDURAL_OPTIMIZATION OFF)
+endif()
 
 engine_part_library(KlemmgineCore "Core")
 engine_part_library(KlemmgineLib "Engine")
@@ -60,19 +64,13 @@ engine_part_library(KlemmgineEditor "Editor")
 target_compile_definitions(KlemmgineCore PRIVATE ENGINE_CORE)
 
 target_link_libraries(KlemmgineLib PUBLIC KlemmgineCore)
+target_link_libraries(KlemmgineEditor PUBLIC KlemmgineLib)
 
 if(USE_WINDOWS_SUBSYSTEM AND WIN32)
 	add_executable(Klemmgine WIN32 "EngineSource/main.cpp")
 	target_compile_definitions(KlemmgineLib PUBLIC ENGINE_SUBSYSTEM_WIN32)
 else()
 	add_executable(Klemmgine "EngineSource/main.cpp")
-endif()
-
-if(ENGINE_EDITOR)
-	target_link_libraries(KlemmgineEditor PUBLIC KlemmgineLib)
-	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
-else()
-	target_link_libraries(Klemmgine PUBLIC KlemmgineLib)
 endif()
 
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)
@@ -88,9 +86,7 @@ endif()
 
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
 set(ENABLE_ALL_WARNINGS OFF)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set(GENERATE_DEBUG_SYMBOLS OFF)
-endif()
+set(GENERATE_DEBUG_SYMBOLS OFF)
 set(CPP_RTTI_ENABLED ON)
 set(OVERRIDE_CXX_FLAGS OFF)
 add_subdirectory("Dependencies/SDL" EXCLUDE_FROM_ALL)
@@ -98,7 +94,9 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory("Dependencies/glm" EXCLUDE_FROM_ALL)
 add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
 target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
-set(GENERATE_DEBUG_SYMBOLS ON)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+	set(GENERATE_DEBUG_SYMBOLS OFF)
+endif()
 
 target_include_directories(KlemmgineLib PRIVATE "Plugins/PluginInterface/Include/internal")
 target_compile_definitions(KlemmgineLib PRIVATE BUILD_LIBRARY=1)
@@ -163,9 +161,16 @@ target_link_libraries(KlemmgineLib PUBLIC KlemmUI)
 target_link_libraries(KlemmgineLib PUBLIC libglew_static)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 
-if(UNIX)
-	target_link_options(KlemmgineLib PRIVATE "-Wl,-rpath,$ORIGIN")
+target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
+
+if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC")
+	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
 endif()
+
+if(UNIX)
+	target_link_options(Klemmgine PUBLIC "-Wl,-rpath,$ORIGIN")
+endif()
+
 
 klemmui_resources(KlemmgineLib "Engine/Resources")
 
@@ -174,7 +179,7 @@ if (ENGINE_BUILD_TOOLS)
 endif()
 
 if(ENGINE_CSHARP)
-	add_subdirectory("Plugins/CSharp")
+#	add_subdirectory("Plugins/CSharp")
 endif()
 
 # TODO: Add tests and install targets if needed.

@@ -4,6 +4,8 @@
 std::vector<engine::Log::Message> engine::Log::LogMessages;
 std::mutex engine::Log::LogMutex;
 
+bool engine::Log::IsVerbose = false;
+
 void engine::Log::PrintMsg(string Message, LogColor Color, std::vector<LogPrefix> Prefixes)
 {
 	if (Message.size() && Message[Message.size() - 1] == '\n')

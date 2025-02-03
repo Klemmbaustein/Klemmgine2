@@ -53,7 +53,7 @@ void Subsystem::RenderUpdate()
 
 void Subsystem::Print(string Message, LogType Severity)
 {
-	if (Severity == LogType::Note)
+	if (Severity == LogType::Note && !Log::IsVerbose)
 		return;
 
 	static std::array<const char*, 5> SeverityStrings =
@@ -70,7 +70,7 @@ void Subsystem::Print(string Message, LogType Severity)
 		Log::LogColor::White,
 		Log::LogColor::Yellow,
 		Log::LogColor::Red,
-		Log::LogColor::Red
+		Log::LogColor::Magenta
 	};
 
 	size_t SeverityIndex = size_t(Severity);

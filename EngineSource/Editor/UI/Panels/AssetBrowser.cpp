@@ -74,6 +74,17 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 					Viewport::Current->AddChild(new MaterialEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
 				};
 		}
+		else if (Extension == "png")
+		{
+			OnClick = [this, FilePath]()
+				{
+#if WINDOWS
+					internal::platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
+#else
+					internal::platform::Open(FilePath);
+#endif
+				};
+		}
 
 		auto IconAndColor = EditorUI::GetExtIconAndColor(i.is_directory() ? "dir/" : Extension);
 

@@ -133,9 +133,12 @@ engine::editor::EditorUI::EditorUI()
 		DefaultFontName = WindowsFontPath;
 	}
 
-	EditorFont = new Font(DefaultFontName);
-	VideoSystem->MainWindow->Markup.SetDefaultFont(EditorFont);
-	MonospaceFont = new Font("Engine/Editor/Assets/EditorMono.ttf");
+	if (!EditorFont)
+	{
+		EditorFont = new Font(DefaultFontName);
+		VideoSystem->MainWindow->Markup.SetDefaultFont(EditorFont);
+		MonospaceFont = new Font("Engine/Editor/Assets/EditorMono.ttf");
+	}
 
 	UIBackground* Root = new UIBackground(false, -1, Theme.Background, 2);
 	Root
@@ -206,8 +209,6 @@ engine::editor::EditorUI::~EditorUI()
 	VideoSystem->OnResizedCallbacks.erase(this);
 	delete RootPanel;
 	delete MainBackground->GetAbsoluteParent();
-	delete EditorFont;
-	delete MonospaceFont;
 
 	VideoSystem->OnResized();
 	input::ShowMouseCursor = false;
