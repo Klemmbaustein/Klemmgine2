@@ -117,6 +117,7 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, std::vec
 		{
 			auto ArrayType = SerializedData::DataType::Null;
 			CopyTo(&ArrayType, sizeof(ArrayType), Out);
+			break;
 		}
 
 		auto ArrayType = Array.at(0).GetType();

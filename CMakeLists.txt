@@ -95,7 +95,7 @@ add_subdirectory("Dependencies/glm" EXCLUDE_FROM_ALL)
 add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
 target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-	set(GENERATE_DEBUG_SYMBOLS OFF)
+	set(GENERATE_DEBUG_SYMBOLS ON)
 endif()
 
 target_include_directories(KlemmgineLib PRIVATE "Plugins/PluginInterface/Include/internal")
