@@ -89,7 +89,10 @@ void engine::Transform::Decompose(Vector3& Position, Rotation3& Rotation, Vector
 	glm::vec3 translation;
 	glm::vec3 skew;
 	glm::vec4 perspective;
-	glm::decompose(Matrix, scale, rotation, translation, skew, perspective);
+	if (!glm::decompose(Matrix, scale, rotation, translation, skew, perspective))
+	{
+		return;
+	}
 	glm::vec3 EulerRotation = glm::eulerAngles(rotation);
 	Position = Vector3(translation.x, translation.y, translation.z);
 	Rotation = Rotation3(Vector3(EulerRotation.x, EulerRotation.y, EulerRotation.z), true);

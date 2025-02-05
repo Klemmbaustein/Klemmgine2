@@ -348,7 +348,8 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 			UsedShape = CreateNewMeshShape(MeshPtr);
 		}
 
-		JPH::ScaledShapeSettings Settings = JPH::ScaledShapeSettings(UsedShape, ToJPHVec3(Scale));
+		JPH::ScaledShapeSettings Settings = JPH::ScaledShapeSettings(UsedShape,
+			ToJPHVec3(Scale != 0 ? Scale : 0.001f));
 		JPH::ShapeSettings::ShapeResult r;
 		JPH::ScaledShape* Shape = new JPH::ScaledShape(Settings, r);
 

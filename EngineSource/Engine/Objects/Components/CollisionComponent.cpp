@@ -29,6 +29,9 @@ void engine::CollisionComponent::Update()
 	Vector3 NewPosition, NewScale, OldPosition, OldScale;
 	Rotation3 NewRotation, OldRotation;
 
+	WorldTransform.Decompose(NewPosition, NewRotation, NewScale);
+	OldTransform.Decompose(OldPosition, OldRotation, OldScale);
+
 	if (OldScale == 0)
 	{
 		OldScale = 0.001f;
@@ -38,9 +41,6 @@ void engine::CollisionComponent::Update()
 	{
 		NewScale = 0.001f;
 	}
-
-	WorldTransform.Decompose(NewPosition, NewRotation, NewScale);
-	OldTransform.Decompose(OldPosition, OldRotation, OldScale);
 
 	Body->SetPositionAndRotation(NewPosition, NewRotation);
 

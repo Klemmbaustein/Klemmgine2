@@ -55,7 +55,7 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std:
 			{
 				try
 				{
-					Value[i] = stoi(TextFields[i]->GetText());
+					Value[i] = std::stof(TextFields[i]->GetText());
 				}
 				catch (std::invalid_argument)
 				{
