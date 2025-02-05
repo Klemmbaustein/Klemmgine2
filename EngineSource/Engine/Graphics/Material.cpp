@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "Material.h"
 #include "ShaderLoader.h"
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
@@ -176,6 +177,17 @@ void Material::DeSerialize(SerializedValue* From)
 	UpdateShader();
 }
 
+void engine::graphics::Material::LoadTexture(Field& From)
+{
+	if (From.TextureValue.Name && !From.TextureValue.Value)
+	{
+		From.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(
+			AssetRef::Convert(*From.TextureValue.Name),
+			TextureLoadOptions{}
+		);
+	}
+}
+
 void Material::Clear()
 {
 	for (const Field& i : Fields)
@@ -218,11 +230,8 @@ void engine::graphics::Material::Apply()
 			break;
 		case Field::Type::Texture:
 		{
-			if (i.TextureValue.Name && !i.TextureValue.Value)
-			{
-				// TODO: replace with engine's texture functions
-				i.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(AssetRef::Convert(*i.TextureValue.Name), TextureLoadOptions{});
-			}
+			if (!i.TextureValue.Value)
+				LoadTexture(i);
 			glActiveTexture(GL_TEXTURE1 + TextureSlot);
 			if (i.TextureValue.Value)
 			{

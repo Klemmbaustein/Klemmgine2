@@ -61,6 +61,8 @@ namespace engine::graphics
 		virtual SerializedValue Serialize() override;
 		virtual void DeSerialize(SerializedValue* From) override;
 
+		void LoadTexture(Field& From);
+
 		void Clear();
 		void Apply();
 		void VerifyUniforms();

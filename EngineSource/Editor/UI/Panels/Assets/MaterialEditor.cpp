@@ -58,7 +58,7 @@ void engine::editor::MaterialEditor::LoadUI()
 	using graphics::Material;
 
 	MaterialParamsBox->DeleteChildren();
-	for (auto& i : LoadedMaterial->Fields)
+	for (Material::Field& i : LoadedMaterial->Fields)
 	{
 		auto Editor = new MaterialPropertyElement();
 		Editor->SetName(i.Name);
@@ -71,7 +71,7 @@ void engine::editor::MaterialEditor::LoadUI()
 			{
 				TextureName = *i.TextureValue.Name;
 			}
-
+			 
 			auto Field = new MaterialTextureElement();
 
 			auto Selector = new AssetSelector(TextureName.empty() ? AssetRef{.Extension = "png"} : AssetRef::Convert(TextureName), UISize(200_px).GetScreen().X, nullptr);
@@ -87,6 +87,9 @@ void engine::editor::MaterialEditor::LoadUI()
 					PreviewImage->RedrawElement();
 				};
 
+			LoadedMaterial->LoadTexture(i);
+			Field->texturePreview->SetUseTexture(i.TextureValue.Value, i.TextureValue.Value
+				? i.TextureValue.Value->TextureObject : 0);
 			Selector->SelectedAsset.Extension = "png";
 
 			Field->controlsBox->AddChild(Selector);
