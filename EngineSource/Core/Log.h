@@ -1,7 +1,7 @@
-#ifndef ENGINE_PLUGIN
 #pragma once
 #include <Core/Types.h>
 #include <mutex>
+#include <vector>
 
 namespace engine
 {
@@ -69,6 +69,7 @@ namespace engine
 			LogColor Color;
 		};
 
+#ifndef ENGINE_PLUGIN
 		static bool IsVerbose;
 
 		/**
@@ -83,6 +84,18 @@ namespace engine
 		* @see Log::Error()
 		*/
 		static void PrintMsg(string Message, LogColor Color, std::vector<LogPrefix> Prefixes = {});
+
+		/**
+		* @brief
+		* Prints an info message into the log.
+		* 
+		* This function works like Log::PrintMsg(), but it only logs if Log::IsVerbose is true.
+		* The [Note]: prefix is added and the log color is gray.
+		* 
+		* @see Log::PrintMsg()
+		* @ingroup engine-core
+		*/
+		static void Note(string Message, std::vector<LogPrefix> Prefixes = {});
 
 		/**
 		* @brief
@@ -121,6 +134,6 @@ namespace engine
 		static void PrintLine(string Message, LogColor Color, const std::vector<LogPrefix>& Prefixes);
 		static std::vector<Message> LogMessages;
 		static std::mutex LogMutex;
+#endif
 	};
 }
-#endif

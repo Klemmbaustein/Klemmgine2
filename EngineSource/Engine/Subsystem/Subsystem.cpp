@@ -1,4 +1,5 @@
 #include "Subsystem.h"
+#include "Subsystem.h"
 #include <iostream>
 #include <array>
 #include <Engine/Engine.h>
@@ -49,6 +50,13 @@ void Subsystem::Update()
 
 void Subsystem::RenderUpdate()
 {
+}
+
+std::vector<engine::Log::LogPrefix> engine::subsystem::Subsystem::GetLogPrefixes()
+{
+	std::string DisplayedName = this->Name;
+	DisplayedName.resize(7, ' ');
+	return { Log::LogPrefix{ DisplayedName, SubsystemColor } };
 }
 
 void Subsystem::Print(string Message, LogType Severity)

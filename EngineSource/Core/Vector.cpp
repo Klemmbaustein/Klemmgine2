@@ -3,6 +3,7 @@
 #include <iostream>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
+#include "Error/EngineAssert.h"
 using namespace engine;
 
 Vector3::Vector3()
@@ -221,12 +222,14 @@ Vector3 engine::Vector3::FromString(string VectorString)
 
 float& engine::Vector3::operator[](size_t Index)
 {
-	return *(reinterpret_cast<float*>(this) + Index);
+	ENGINE_ASSERT(Index < 3);
+	return reinterpret_cast<float*>(this)[Index];
 }
 
 const float& engine::Vector3::operator[](size_t Index) const
 {
-	return *(reinterpret_cast<const float*>(this) + Index);
+	ENGINE_ASSERT(Index < 3);
+	return reinterpret_cast<const float*>(this)[Index];
 }
 
 engine::Vector2::Vector2()

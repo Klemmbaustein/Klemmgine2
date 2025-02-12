@@ -2,10 +2,12 @@
 #include <Core/Platform/Platform.h>
 #include <Core/File/TextSerializer.h>
 #include <Engine/Scene.h>
+#include <Engine/Stats.h>
 #include <Engine/Subsystem/PluginSubsystem.h>
 #include <filesystem>
 #include <cstring>
-#include <kui/Timer.h>
+#include <Engine/Debug/TimeLogger.h>
+#include <Engine/MainThread.h>
 
 #include "InterfaceStruct.hpp"
 
@@ -18,10 +20,6 @@ using namespace engine;
 #define STRUCT_MEMBER(name, ret, args, func) .name = plugin::EnginePluginInterface:: name ## Fn ([] args -> ret { func ; }),
 #define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) .name = plugin::EnginePluginInterface:: name ## Fn (func),
 
-static auto ctx = plugin::EnginePluginInterface{
-#include "InterfaceDefines.hpp"
-};
-
 static char* StrDup(string From)
 {
 	char* NewString = (char*)malloc(From.size() + 1);
@@ -33,6 +31,10 @@ static char* StrDup(string From)
 	return NewString;
 }
 
+
+static auto ctx = plugin::EnginePluginInterface{
+#include "InterfaceDefines.hpp"
+};
 std::vector<engine::plugin::PluginInfo> LoadedPlugins;
 
 void engine::plugin::OnNewSceneLoaded(Scene* Target)
@@ -58,6 +60,15 @@ void engine::plugin::Load(subsystem::PluginSubsystem* System)
 	}
 }
 
+void engine::plugin::Update()
+{
+	for (auto& i : LoadedPlugins)
+	{
+		if (i.PluginUpdate)
+			i.PluginUpdate(stats::DeltaTime);
+	}
+}
+
 void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* System)
 {
 	using namespace engine::internal::platform;
@@ -72,9 +83,9 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		New.Name = File.At("name").GetString();
 
-		System->Print(str::Format("Loading plugin: %s", New.Name.c_str()), LogType::Info);
-
 		string PluginPath = File.At("binary").GetString();
+
+		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded Plugin: %s", New.Name.c_str()) };
 
 #if WINDOWS
 		string PluginBinary = str::Format("plugins/%s.dll", PluginPath.c_str());
@@ -93,23 +104,20 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 		EnginePluginInterface TargetPluginInterface = ctx;
 		TargetPluginInterface.PluginPath = StrDup(str::Format("Plugins/%s/", New.Name.c_str()));
 
-		kui::Timer t;
-
-		PluginLoadFn PluginLoad = (PluginLoadFn)GetLibraryFunction(Library, "PluginLoad");
+		PluginLoadFn PluginLoad = PluginLoadFn(GetLibraryFunction(Library, "PluginLoad"));
 		PluginLoad(&TargetPluginInterface);
 
-		RegisterTypesFn RegisterTypes = (RegisterTypesFn)GetLibraryFunction(Library, "RegisterTypes");
+		RegisterTypesFn RegisterTypes = RegisterTypesFn(GetLibraryFunction(Library, "RegisterTypes"));
 		RegisterTypes();
 
-		New.OnNewSceneLoaded = (PluginInfo::SceneLoadFn)GetLibraryFunction(Library, "OnSceneLoaded");
+		New.OnNewSceneLoaded = PluginInfo::SceneLoadFn(GetLibraryFunction(Library, "OnSceneLoaded"));
+		New.PluginUpdate = PluginInfo::UpdateFn(GetLibraryFunction(Library, "Update"));
 		New.PluginHandle = Library;
-
-		System->Print(str::Format("Finished loading %s (in %ims)", New.Name.c_str(), int(t.Get() * 1000.0f)), LogType::Note);
 
 		LoadedPlugins.push_back(New);
 	}
 	catch (SerializeException e)
 	{
-		System->Print(str::Format("Failed to load plugin: %s", e.what()), LogType::Warning);
+		System->Print(str::Format("Failed to load plugin %s: %s", Path.c_str(), e.what()), LogType::Warning);
 	}
 }

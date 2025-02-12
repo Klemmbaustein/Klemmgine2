@@ -7,7 +7,7 @@
 /**
 * @brief
 * Error handing namespace.
-* 
+*
 * @ingroup engine-core
 */
 namespace engine::error
@@ -15,10 +15,10 @@ namespace engine::error
 	/**
 	* @brief
 	* Initialized error handling for this thread.
-	* 
+	*
 	* @param ThreadName
 	* The name of this thread displayed by debuggers and shown when the engine crashes.
-	* 
+	*
 	* @see GetThreadName
 	*/
 	void InitForThread(string ThreadName);
@@ -26,7 +26,7 @@ namespace engine::error
 	/**
 	* @brief
 	* Gets the thread name of the current thread.
-	* 
+	*
 	* @see InitForThread
 	*/
 	string GetThreadName();
@@ -34,7 +34,7 @@ namespace engine::error
 	/**
 	* @brief
 	* Prints a stack trace, aborts the application.
-	* 
+	*
 	* @param Message
 	* The reason for aborting.
 	*/

@@ -2,6 +2,7 @@
 #include <functional>
 #include <string>
 #include <Core/Types.h>
+#include <Core/Vector.h>
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 
 #if _WIN32

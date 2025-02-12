@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -19,28 +20,22 @@ public class DependsOnNativeAttribute : Attribute
 
 public class NativeFunctions
 {
-	readonly static Dictionary<string, IntPtr> LoadedFunctions = [];
-	readonly static List<Type> DependsOnNative = [];
-	
-	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] Target, int _)
+	readonly static public Dictionary<string, IntPtr> LoadedFunctions = [];
+	static List<Type> DependsOnNative = [];
+
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(Log))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(SceneObject))]
+	[RequiresUnreferencedCode("Uses Assembly.DefinedTypes")]
+	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] Target, int _ = 0)
 	{
 		foreach (var Function in Target)
 		{
 			LoadedFunctions.Add(Function.Name, Function.FunctionPointer);
 		}
 
-		DependsOnNative.Clear();
-		foreach (var Type in Assembly.GetAssembly(typeof(NativeFunctions))!.DefinedTypes)
-		{
-			foreach (var Attrib in Type.CustomAttributes)
-			{
-				if (Attrib.Constructor.DeclaringType != typeof(DependsOnNativeAttribute))
-				{
-					continue;
-				}
-				DependsOnNative.Add(Type);
-			}
-		}
+		DependsOnNative = [.. Assembly.GetAssembly(typeof(NativeFunctions))!.DefinedTypes
+			.Where((type) => type.CustomAttributes
+				.Any((attrib) => attrib.Constructor.DeclaringType == typeof(DependsOnNativeAttribute)))];
 
 		foreach (Type NativeDep in DependsOnNative)
 		{
@@ -59,7 +54,11 @@ public class NativeFunctions
 
 	public static Delegate? GetFunction<T>(string Name)
 	{
-		return Marshal.GetDelegateForFunctionPointer<T>(LoadedFunctions[Name]) as Delegate;
+		if (LoadedFunctions.TryGetValue(Name, out IntPtr Pointer))
+		{
+			return Marshal.GetDelegateForFunctionPointer<T>(Pointer) as Delegate;
+		}
+		return null;
 	}
 
 }

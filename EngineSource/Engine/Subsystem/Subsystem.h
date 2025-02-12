@@ -59,6 +59,8 @@ namespace engine::subsystem
 			Critical
 		};
 
+		std::vector<Log::LogPrefix> GetLogPrefixes();
+
 		/**
 		* @brief
 		* Prints a message with the given type into the log, and adds a prefix of the subsystem name.

@@ -13,7 +13,7 @@
 #include "Core/Error/EngineError.h"
 #include <Engine/Objects/PlayerObject.h>
 #include <kui/App.h>
-#include <kui/Timer.h>
+#include <Engine/Debug/TimeLogger.h>
 #include <Core/LaunchArgs.h>
 using namespace engine;
 using namespace engine::subsystem;
@@ -30,7 +30,8 @@ Engine* Engine::Init()
 	{
 		return Instance;
 	}
-	kui::Timer StartupTimer;
+
+	debug::TimeLogger StartupTime{"Engine started"};
 
 	internal::AdjustWorkingDirectory();
 
@@ -48,7 +49,6 @@ Engine* Engine::Init()
 	Instance->LoadSubsystem(new EditorSubsystem());
 #endif
 
-	Log::Info(str::Format("Engine started. (in %ims)", int(StartupTimer.Get() * 1000.0f)));
 
 	return Instance;
 }

@@ -4,11 +4,11 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<EnableDynamicLoading>true</EnableDynamicLoading>
-		<AssemblyName>Klemmgine.CSharp</AssemblyName>
+		<PublishAot>true</PublishAot>
+		<AssemblyName>Klemmgine.CSharp.Aot</AssemblyName>
 		<OutputPath>../bin/</OutputPath>
-		<IsTrimmable>false</IsTrimmable>
-		<IsAotCompatible>True</IsAotCompatible>
+		<PublishTrimmed>true</PublishTrimmed>
+		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,5 +16,11 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Engine\Engine.csproj" />
+		<ProjectReference Include="../../../Script/Project.csproj" />
+		<TrimmerRootAssembly Include="CSharpAssembly" />
+	</ItemGroup>
 
 </Project>

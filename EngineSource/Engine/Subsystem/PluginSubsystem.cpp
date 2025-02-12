@@ -12,4 +12,5 @@ engine::subsystem::PluginSubsystem::~PluginSubsystem()
 
 void engine::subsystem::PluginSubsystem::Update()
 {
+	plugin::Update();
 }

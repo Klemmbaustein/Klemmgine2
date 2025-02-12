@@ -11,6 +11,7 @@
 		<EnableDynamicLoading>true</EnableDynamicLoading>
 		<AssemblyName>CSharpAssembly</AssemblyName>
 		<OutputPath>bin/</OutputPath>
+		<PublishAot>true</PublishAot>
 	</PropertyGroup>
 
 </Project>

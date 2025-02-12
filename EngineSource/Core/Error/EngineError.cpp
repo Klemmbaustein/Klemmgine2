@@ -9,8 +9,6 @@ static thread_local engine::string ThreadName;
 static thread_local bool Crashed = false;
 static thread_local bool SignalReceived = false;
 
-#define ERRORS_TO_MESSAGEBOX 1
-
 static void OnErrorCallbackInternal(string Error, string StackTrace)
 {
 	std::vector<Log::LogPrefix> Prefixes = {

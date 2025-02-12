@@ -50,7 +50,10 @@ namespace engine
 		SceneObject()
 		{
 		}
-		
+
+		SceneObject(const SceneObject&) = delete;
+
+
 		virtual void Begin() {}
 		virtual void OnDestroyed() {}
 		virtual void Update() {}

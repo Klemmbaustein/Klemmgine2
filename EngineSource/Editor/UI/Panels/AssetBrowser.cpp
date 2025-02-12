@@ -46,6 +46,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			OnClick = [this, i]()
 				{
 					Path.append(i.path().filename().string() + "/");
+					ItemsScrollBox->GetScrollObject()->Scrolled = 0;
 					UpdateItems();
 				};
 		}
@@ -151,6 +152,7 @@ void engine::editor::AssetBrowser::Back()
 	if (LastSlash == std::string::npos)
 		Path.clear();
 	Path = Path.substr(0, LastSlash);
+	ItemsScrollBox->GetScrollObject()->Scrolled = 0;
 	UpdateItems();
 }
 

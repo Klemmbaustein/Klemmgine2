@@ -22,14 +22,14 @@ namespace engine
 	* 
 	* @ingroup serialize
 	*/
-	class SerializeException : std::exception
+	class SerializeException
 	{
 		string ErrorMsg;
 	public:
 		/// Constructs the exception with the given message.
 		SerializeException(string Msg);
 		/// Gets the error message of this exception.
-		const char* what() const noexcept override;
+		const char* what() const noexcept;
 	};
 
 	/**

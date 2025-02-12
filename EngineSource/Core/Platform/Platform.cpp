@@ -43,8 +43,9 @@ static std::string WstrToStr(const std::wstring& wstr)
 static std::wstring StrToWstr(const std::string& str)
 {
 	int WideLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[WideLength];
+	wchar_t* wstr = new wchar_t[WideLength + 1];
 	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wstr, WideLength);
+	wstr[WideLength] = 0;
 	std::wstring OutStr = wstr;
 	delete[] wstr;
 	return OutStr;
@@ -93,6 +94,11 @@ void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, str
 	return GetProcAddress(HMODULE(Library), Name.c_str());
 }
 
+void engine::internal::platform::UnloadSharedLibrary(SharedLibrary* Library)
+{
+	FreeLibrary(reinterpret_cast<HMODULE>(Library));
+}
+
 #else
 #include <map>
 #include <iostream>
@@ -127,6 +133,11 @@ engine::internal::platform::SharedLibrary* engine::internal::platform::LoadShare
 void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
 {
 	return dlsym(Library, Name.c_str());
+}
+
+void engine::internal::platform::UnloadSharedLibrary(SharedLibrary* Library)
+{
+	dlclose(Library);
 }
 
 void engine::internal::platform::Execute(string Command)

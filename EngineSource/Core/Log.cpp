@@ -19,6 +19,16 @@ void engine::Log::PrintMsg(string Message, LogColor Color, std::vector<LogPrefix
 	}
 }
 
+void engine::Log::Note(string Message, std::vector<LogPrefix> Prefixes)
+{
+	if (!IsVerbose)
+		return;
+
+	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Note", .Color = Log::LogColor::Gray, });
+
+	PrintMsg(Message, Log::LogColor::Gray, Prefixes);
+}
+
 void engine::Log::Info(string Message, std::vector<LogPrefix> Prefixes)
 {
 	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Info", .Color = Log::LogColor::White, });

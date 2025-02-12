@@ -10,7 +10,7 @@ public class Native
 	public static LogFunction? Log;
 	readonly static Dictionary<string, IntPtr> LoadedFunctions = [];
 
-	private delegate void ObjectFunction();
+	private static MethodInfo? UpdateFunction = null;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct NativeFunction
@@ -66,6 +66,8 @@ public class Native
 
 		try
 		{
+			Engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Initialize")!.Invoke(null, []);
+			UpdateFunction = Engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Update")!;
 			ObjectTypes.LoadObjects(ProjectAssembly, Engine);
 			NativeFunctionsToEngine(Engine);
 		}
@@ -73,5 +75,11 @@ public class Native
 		{
 			Log!(e.ToString());
 		}
+	}
+
+	[UnmanagedCallersOnly]
+	public static void UpdateEngine(float delta)
+	{
+		UpdateFunction!.Invoke(null, [delta]);
 	}
 }

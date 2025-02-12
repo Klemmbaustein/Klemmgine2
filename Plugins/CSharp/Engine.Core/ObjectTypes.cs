@@ -8,7 +8,7 @@ namespace Engine.Core;
 internal static class ObjectTypes
 {
 	public delegate void RegisterObject([MarshalAs(UnmanagedType.LPUTF8Str)] string Name, IntPtr Type);
-	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr Type);
+	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr Type, IntPtr Object);
 	public delegate void RemoveObjectInstanceDelegate(IntPtr Type);
 
 	struct ObjectTypeInfo
@@ -18,6 +18,7 @@ internal static class ObjectTypes
 	}
 
 	static FieldInfo? SceneObjectTypeID;
+	static FieldInfo? SceneObjectNativePointer;
 	static Type? SceneObjectType;
 	static MethodInfo? SceneObjectBegin = null;
 	static MethodInfo? SceneObjectUpdate = null;
@@ -60,11 +61,12 @@ internal static class ObjectTypes
 		if (SceneObjectType == null)
 			return;
 
-		SceneObjectBegin = SceneObjectType.GetMethod("Begin")!;
+		SceneObjectBegin = SceneObjectType.GetMethod("BeginInternal", BindingFlags.Public | BindingFlags.Instance)!;
 		SceneObjectUpdate = SceneObjectType.GetMethod("Update")!;
-		SceneObjectOnDestroyed = SceneObjectType.GetMethod("OnDestroyed")!;
+		SceneObjectOnDestroyed = SceneObjectType.GetMethod("OnDestroyedInternal")!;
 
-		SceneObjectTypeID = SceneObjectType.GetField("CSharpType", BindingFlags.NonPublic | BindingFlags.Instance);
+		SceneObjectNativePointer = SceneObjectType.GetField("NativePointer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+		SceneObjectTypeID = SceneObjectType.GetField("CSharpType", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
 		var RegisterObject = GetFunction<RegisterObject>("RegisterCSharpObject")!;
 
@@ -86,11 +88,6 @@ internal static class ObjectTypes
 
 	public delegate void ObjectFunction(IntPtr Target);
 
-	public static void PrintObjectName(IntPtr Target)
-	{
-		Console.WriteLine(LoadedObjects[Target]);
-	}
-
 	public static void RemoveObjectInstance(IntPtr ObjectID)
 	{
 		try
@@ -98,6 +95,7 @@ internal static class ObjectTypes
 			object DestroyedObject = LoadedObjects[ObjectID]!;
 
 			SceneObjectOnDestroyed!.Invoke(DestroyedObject, []);
+			SceneObjectNativePointer!.SetValue(DestroyedObject, IntPtr.Zero);
 			LoadedObjects.Remove(ObjectID);
 		}
 		catch (Exception e)
@@ -106,25 +104,32 @@ internal static class ObjectTypes
 		}
 	}
 
-	public static IntPtr CreateObjectInstance(IntPtr Type)
+	public static IntPtr CreateObjectInstance(IntPtr Type, IntPtr NativeObject)
 	{
-		ObjectTypeInfo Loaded = LoadedTypes[Type];
-
-		object? New = Activator.CreateInstance(Loaded.ObjectType);
-
-		if (New != null)
+		try
 		{
-			SceneObjectTypeID!.SetValue(New, Type);
+			ObjectTypeInfo Loaded = LoadedTypes[Type];
+
+			object? New = Activator.CreateInstance(Loaded.ObjectType);
+
+			if (New != null)
+			{
+				SceneObjectTypeID!.SetValue(New, Type);
+				SceneObjectNativePointer!.SetValue(New, NativeObject);
+			}
+
+			if (New == null)
+				return IntPtr.Zero;
+
+			SceneObjectBegin!.Invoke(New, []);
+
+			LoadedObjects.Add(ObjectIdIndex, New);
+			return ObjectIdIndex++;
 		}
-
-		Console.WriteLine($"Create: {New ?? "no object :("}");
-
-		if (New == null)
-			return IntPtr.Zero;
-
-		SceneObjectBegin!.Invoke(New, []);
-
-		LoadedObjects.Add(ObjectIdIndex, New);
-		return ObjectIdIndex++;
+		catch (Exception ex)
+		{
+			Log!.Invoke(ex.ToString());
+		}
+		return 0;
 	}
 }

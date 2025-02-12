@@ -22,8 +22,8 @@ namespace engine::cSharp
 	{
 	public:
 		
-		static inline string ASSEMBLY_NAME = "Klemmgine.CSharp.Core";
-		static inline string ASSEMBLY_EXT = ".dll";
+		static inline const string ASSEMBLY_NAME = "Klemmgine.CSharp.Core";
+		static inline const string ASSEMBLY_EXT = ".dll";
 
 		CSharpLoaderRuntime(const std::vector<NativeFunction>& Functions);
 		load_assembly_and_get_function_pointer_fn LoadDotNetAssembly(netString config_path);
@@ -39,10 +39,11 @@ namespace engine::cSharp
 			return fPtr(argument...);
 		}
 
-		size_t CreateObjectInstance(size_t TypeId) override;
+		size_t CreateObjectInstance(size_t TypeId, void* NativeObject) override;
 		void RemoveObjectInstance(size_t ObjId) override;
 
 		void LoadFunctions(const std::vector<NativeFunction>& Functions);
+		void Update(float Delta) override;
 
 	private:
 		load_assembly_and_get_function_pointer_fn LoadFunction = nullptr;
@@ -54,5 +55,6 @@ namespace engine::cSharp
 
 		void* CreateObjectFunction = nullptr;
 		void* DestroyObjectFunction = nullptr;
+		void* UpdateEngineFunction = nullptr;
 	};
 }

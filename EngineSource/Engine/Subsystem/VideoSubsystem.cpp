@@ -12,6 +12,7 @@
 #include <Editor/UI/Panels/Viewport.h>
 #include <Core/LaunchArgs.h>
 #include <Engine/Graphics/OpenGL.h>
+#include <Engine/Debug/TimeLogger.h>
 using namespace kui;
 
 static void GLAPIENTRY MessageCallback(
@@ -53,7 +54,6 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
 	Print("Creating main window", LogType::Note);
-
 	UIManager::UseAlphaBuffer = true;
 
 	Vec2ui WindowSize = Window::SIZE_DEFAULT;
@@ -83,12 +83,13 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		};
 
 	MainWindow->UI.DrawToWindow = false;
+
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, this);
 
-	kui::Timer t;
+	debug::TimeLogger ModulesTime{ "Compiled shader modules", GetLogPrefixes() };
 	Shaders.Modules.ScanModules();
-	Print(str::Format("Compiled shader modules (in %ims)", int(t.Get() * 1000.0f)), LogType::Note);
+	ModulesTime.End();
 
 	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
 	if (ConsoleSys)

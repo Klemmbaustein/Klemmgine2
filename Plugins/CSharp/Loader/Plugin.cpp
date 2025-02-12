@@ -1,74 +1,83 @@
 #include <KlemmginePlugin.hpp>
 #include "CSharpLoader.h"
 #include "CSharpLoaderRuntime.h"
+#include "CSharpLoaderAot.h"
 #include <Engine/Objects/SceneObject.h>
 
-using namespace engine::cSharp;
-
-CSharpLoader* Current = nullptr;
-
-class CSharpObject : public engine::SceneObject
+namespace engine::cSharp
 {
-public:
+	CSharpLoader* Current = nullptr;
 
-	size_t CSharpTypeId;
-	size_t CSharpObjectId = 0;
-
-	CSharpObject(size_t CSharpTypeId)
+	class CSharpObject : public engine::SceneObject
 	{
-		this->CSharpTypeId = CSharpTypeId;
-	}
+	public:
 
-	void Begin() override
-	{
-		CSharpObjectId = Current->CreateObjectInstance(CSharpTypeId);
-	}
+		size_t CSharpTypeId;
+		size_t CSharpObjectId = 0;
 
-	void Update() override
-	{
-	}
-
-	void OnDestroyed() override
-	{
-		Current->RemoveObjectInstance(CSharpObjectId);
-	}
-};
-
-static void RegisterObject(const char* Name, size_t TypeId)
-{
-	engine::RegisterObject(Name, [TypeId]() -> engine::SceneObject*
+		CSharpObject(size_t CSharpTypeId)
 		{
-			return new CSharpObject(TypeId);
-		});
-}
+			this->CSharpTypeId = CSharpTypeId;
+		}
 
-static void LoadRuntime()
-{
-	engine::plugin::EnginePluginInterface* Interface = engine::plugin::GetInterface();
+		void Begin() override
+		{
+			CSharpObjectId = Current->CreateObjectInstance(CSharpTypeId, this);
+		}
+
+		void Update() override
+		{
+		}
+
+		void OnDestroyed() override
+		{
+			Current->RemoveObjectInstance(CSharpObjectId);
+		}
+	};
+
+	static void RegisterObject(const char* Name, size_t TypeId)
+	{
+		engine::RegisterObject(Name, [TypeId]() -> engine::SceneObject*
+			{
+				return new CSharpObject(TypeId);
+			});
+	}
+
+	static void LoadRuntime()
+	{
+		engine::plugin::EnginePluginInterface* Interface = engine::plugin::GetInterface();
 
 #undef STRUCT_MEMBER
 #undef STRUCT_MEMBER_CALL_DIRECT
-	// (void*)(size_t) cast to prevent GCC from complaining about casting function pointers to void*
-#define STRUCT_MEMBER(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(size_t)Interface->name},
-#define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(size_t)Interface->name},
+		// (void*)(intptr_t) cast to prevent GCC from complaining about casting function pointers to void*
+#define STRUCT_MEMBER(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(intptr_t)Interface->name},
+#define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(intptr_t)Interface->name},
 
-	std::vector<NativeFunction> Functions = {
+		std::vector<NativeFunction> Functions = {
 #include "../internal/InterfaceDefines.hpp"
-	};
+		};
 
-	Functions.push_back(NativeFunction{
-		.Name = "RegisterCSharpObject",
-		.FunctionPointer = (void*)&RegisterObject
-		});
+		Functions.push_back(NativeFunction{
+			.Name = "RegisterCSharpObject",
+			.FunctionPointer = (void*)&RegisterObject
+			});
 
-	Current = new CSharpLoaderRuntime(Functions);
+		Current = new CSharpLoaderRuntime(Functions);
+		//Current = new CSharpLoaderAot(Functions);
+	}
+
 }
 
 ENGINE_EXPORT void RegisterTypes()
 {
-	LoadRuntime();
+	engine::cSharp::LoadRuntime();
 }
 
 ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
 {
+}
+
+ENGINE_EXPORT void Update(float Delta)
+{
+	engine::cSharp::Current->Update(Delta);
 }

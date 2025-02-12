@@ -47,7 +47,9 @@ function(engine_part_library TARGET_NAME TARGET_PATH)
 	add_library(${TARGET_NAME} STATIC ${SRCS} ${INCLUDES})
 endfunction()
 
-# add_compile_options("-fPIC")
+if(UNIX)
+	add_compile_options("-fPIC")
+endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -179,7 +181,7 @@ if (ENGINE_BUILD_TOOLS)
 endif()
 
 if(ENGINE_CSHARP)
-#	add_subdirectory("Plugins/CSharp")
+	add_subdirectory("Plugins/CSharp")
 endif()
 
 # TODO: Add tests and install targets if needed.

@@ -9,3 +9,5 @@ bin
 obj
 /Docs
 .vscode/
+PublishProfiles/
+*.user

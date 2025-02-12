@@ -146,16 +146,22 @@ void engine::resource::FreeBinaryFile(BinaryFile& Target)
 	Target.CanFree = false;
 }
 
-void engine::resource::ScanForAssets()
+void resource::ScanForAssets()
 {
+	using std::filesystem::recursive_directory_iterator;
+
 	LoadedAssets.clear();
-	for (const auto& i : std::filesystem::recursive_directory_iterator("Assets/"))
+	for (const auto& i : recursive_directory_iterator("Assets/"))
 	{
 		if (i.path().filename().string() == ".")
 			abort();
 		if (i.is_regular_file())
-			LoadedAssets.insert({ i.path().filename().string(), str::ReplaceChar(i.path().string(), '\\', '/') });
+			LoadedAssets.insert(
+				{
+					i.path().filename().string(),
+					str::ReplaceChar(i.path().string(), '\\', '/')
+				});
 	}
 }
 
-std::map<engine::string, engine::string> resource::LoadedAssets;
+std::map<string, string> resource::LoadedAssets;

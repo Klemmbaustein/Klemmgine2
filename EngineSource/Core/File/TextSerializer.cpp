@@ -59,9 +59,10 @@ std::vector<engine::SerializedData> engine::TextSerializer::FromStream(std::istr
 
 std::vector<engine::SerializedData> engine::TextSerializer::FromFile(string File)
 {
-	if (!std::filesystem::exists(File))
+	if (!std::filesystem::exists(File) || !std::filesystem::is_regular_file(File))
 	{
-		return {};
+		throw SerializeReadException(str::Format("Failed reading '%s'. File does not exist or is not a regular file.",
+			File.c_str()));
 	}
 
 	if (std::filesystem::is_empty(File))

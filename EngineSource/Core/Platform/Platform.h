@@ -16,4 +16,5 @@ namespace engine::internal::platform
 
 	SharedLibrary* LoadSharedLibrary(string Path);
 	void* GetLibraryFunction(SharedLibrary* Library, string Name);
+	void UnloadSharedLibrary(SharedLibrary* Library);
 }

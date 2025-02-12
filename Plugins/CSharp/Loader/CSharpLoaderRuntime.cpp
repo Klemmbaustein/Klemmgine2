@@ -46,6 +46,11 @@ engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<Nativ
 		"RemoveObjectInstance",
 		"Engine.Core.ObjectTypes",
 		"Engine.Core.ObjectTypes+RemoveObjectInstanceDelegate");
+
+	UpdateEngineFunction = LoadCSharpFunction(
+		"UpdateEngine",
+		"Engine.Core.Native",
+		"");
 }
 
 load_assembly_and_get_function_pointer_fn engine::cSharp::CSharpLoaderRuntime::LoadDotNetAssembly(netString config_path)
@@ -125,9 +130,9 @@ void* engine::cSharp::CSharpLoaderRuntime::LoadCSharpFunction(string Function, s
 	return OutFunction;
 }
 
-size_t engine::cSharp::CSharpLoaderRuntime::CreateObjectInstance(size_t TypeId)
+size_t engine::cSharp::CSharpLoaderRuntime::CreateObjectInstance(size_t TypeId, void* NativeObject)
 {
-	return StaticCall<size_t, size_t>(CreateObjectFunction, TypeId);
+	return StaticCall<size_t, size_t, void*>(CreateObjectFunction, TypeId, NativeObject);
 }
 
 void engine::cSharp::CSharpLoaderRuntime::RemoveObjectInstance(size_t ObjId)
@@ -146,4 +151,9 @@ void engine::cSharp::CSharpLoaderRuntime::LoadFunctions(const std::vector<Native
 		RegisterFunction,
 		const_cast<NativeFunction*>(Functions.data()),
 		int(Functions.size()));
+}
+
+void engine::cSharp::CSharpLoaderRuntime::Update(float Delta)
+{
+	StaticCall<void, float>(UpdateEngineFunction, Delta);
 }

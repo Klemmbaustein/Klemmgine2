@@ -15,7 +15,7 @@ namespace engine::subsystem
 		
 		void StartProject();
 
-		editor::EditorUI* UI;
+		editor::EditorUI* UI = nullptr;
 
 		static bool Active;
 	};
