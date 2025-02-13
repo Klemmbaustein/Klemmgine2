@@ -183,7 +183,7 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 			char c = GetNextChar(Stream);
 			throw SerializeReadException(str::Format("Expected a ':' after \"%s\", got '%c' (hex 0x%x)", Name.c_str(), c, c));
 		}
-		std::string Type = ReadWord(Stream);
+		string Type = ReadWord(Stream);
 		SerializedValue Value;
 		if (Type != "null")
 		{
@@ -191,7 +191,14 @@ void engine::TextSerializer::ReadObject(std::vector<SerializedData>& Object, std
 			{
 				throw SerializeReadException(str::Format("Expected a '=' after the type, got '%c'", GetNextChar(Stream)));
 			}
-			Value = ReadValue(Stream, GetTypeFromString(Type));
+			try
+			{
+				Value = ReadValue(Stream, GetTypeFromString(Type));
+			}
+			catch (std::exception& e)
+			{
+				throw SerializeReadException(str::Format("Exception thrown while parsing: '%s'", e.what()));
+			}
 		}
 		if (!TryReadChar(Stream, ';'))
 		{

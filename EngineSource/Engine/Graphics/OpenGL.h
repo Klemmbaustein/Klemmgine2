@@ -12,5 +12,7 @@ namespace engine::openGL
 		GL430,
 	};
 
+	extern Version VersionOverride;
+
 	Version GetGLVersion();
 }
