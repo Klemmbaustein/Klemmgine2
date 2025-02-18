@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Engine.Components;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Engine.Native;
 
-public class NativeFunction
+public class NativeFunctionInfo
 {
 	[MarshalAs(UnmanagedType.LPUTF8Str)]
 	public string Name = "";
@@ -25,8 +25,9 @@ public class NativeFunctions
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(Log))]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(SceneObject))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(ObjectComponent))]
 	[RequiresUnreferencedCode("Uses Assembly.DefinedTypes")]
-	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] Target, int _ = 0)
+	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunctionInfo[] Target, int _ = 0)
 	{
 		foreach (var Function in Target)
 		{
@@ -52,11 +53,11 @@ public class NativeFunctions
 		}
 	}
 
-	public static Delegate? GetFunction<T>(string Name)
+	public static T? GetFunction<T>(string Name) where T : Delegate
 	{
 		if (LoadedFunctions.TryGetValue(Name, out IntPtr Pointer))
 		{
-			return Marshal.GetDelegateForFunctionPointer<T>(Pointer) as Delegate;
+			return Marshal.GetDelegateForFunctionPointer<T>(Pointer) as T;
 		}
 		return null;
 	}

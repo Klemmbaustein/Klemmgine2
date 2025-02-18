@@ -1,4 +1,5 @@
-﻿using Engine.Native;
+﻿using Engine.Components;
+using Engine.Native;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -15,7 +16,11 @@ public class InvalidObjectException : Exception
 public abstract class SceneObject
 {
 	delegate IntPtr GetNameDelegate(IntPtr NativePointer);
+	delegate void ObjectAttachComponent(IntPtr Obj, IntPtr Comp);
+
 	static GetNameDelegate? GetNativeName = null;
+
+	static ObjectAttachComponent? AttachComponent = null;
 
 	public IntPtr CSharpType;
 	public IntPtr NativePointer;
@@ -60,6 +65,7 @@ public abstract class SceneObject
 	public virtual void OnDestroyed()
 	{
 	}
+
 	public virtual Task OnDestroyedAsync()
 	{
 		return Task.CompletedTask;
@@ -80,8 +86,14 @@ public abstract class SceneObject
 		}
 	}
 
+	public void Attach(ObjectComponent NewComponent)
+	{
+		AttachComponent!(NativePointer, NewComponent.NativePointer);
+	}
+
 	internal static void OnNativeLoaded()
 	{
-		GetNativeName = NativeFunctions.GetFunction<GetNameDelegate>("GetObjName")! as GetNameDelegate;
+		GetNativeName = NativeFunctions.GetFunction<GetNameDelegate>("GetObjName");
+		AttachComponent = NativeFunctions.GetFunction<ObjectAttachComponent>("ObjectAttachComponent");
 	}
 }

@@ -13,7 +13,7 @@ public static class Log
 
 	internal static void OnNativeLoaded()
 	{
-		InfoFunction = NativeFunctions.GetFunction<LogFunction>("Log")! as LogFunction;
+		InfoFunction = NativeFunctions.GetFunction<LogFunction>("Log");
 	}
 
 	public static void Info(string Message)

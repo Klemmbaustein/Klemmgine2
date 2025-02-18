@@ -12,6 +12,7 @@ static engine::SerializedValue LastScene;
 engine::subsystem::EditorSubsystem::EditorSubsystem()
 	: Subsystem("Editor", Log::LogColor::Yellow)
 {
+	THIS_SUBSYSTEM_DEPENDS_ON(ConsoleSubsystem);
 	if (Scene::GetMain())
 	{
 		if (LastScene.GetType() != SerializedData::DataType::Null)

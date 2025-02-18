@@ -74,6 +74,10 @@ void engine::ObjectComponent::Attach(ObjectComponent* Child)
 	Child->ParentComponent = this;
 	Child->OnAttached();
 	Children.push_back(Child);
+
+	auto Root = GetRootComponent();
+	if (Root)
+		Root->UpdateTransform();
 }
 
 Transform engine::ObjectComponent::GetWorldTransform()

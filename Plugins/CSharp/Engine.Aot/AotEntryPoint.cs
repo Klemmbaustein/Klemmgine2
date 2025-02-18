@@ -20,14 +20,14 @@ internal class AotEntryPoint
 	[RequiresUnreferencedCode("Calls NativeFunctions.RegisterFunctions()")]
 	public static void EntryPoint(IntPtr functionPointers, int nativeFunctionCount)
 	{
-		List<NativeFunction> engineFunctions = [];
+		List<NativeFunctionInfo> engineFunctions = [];
 
 		for (int i = 0; i < nativeFunctionCount; i++)
 		{
 			IntPtr ptr = functionPointers + Marshal.SizeOf<NativeFunctionStruct>() * i;
 
 			NativeFunctionStruct func = Marshal.PtrToStructure<NativeFunctionStruct>(ptr);
-			engineFunctions.Add(new NativeFunction
+			engineFunctions.Add(new NativeFunctionInfo
 			{
 				Name = func.Name,
 				FunctionPointer = func.FunctionPointer

@@ -63,7 +63,7 @@ internal class AotObjects
 		{
 			SceneObject DestroyedObject = LoadedObjects[ObjectID]!;
 
-			DestroyedObject.OnDestroyed();
+			DestroyedObject.OnDestroyedInternal();
 			DestroyedObject.NativePointer = 0;
 			LoadedObjects.Remove(ObjectID);
 		}

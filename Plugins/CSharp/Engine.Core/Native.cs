@@ -35,7 +35,7 @@ public class Native
 
 	static void NativeFunctionsToEngine(Assembly Target)
 	{
-		Type? ArrayType = Target.GetType("Engine.Native.NativeFunction");
+		Type? ArrayType = Target.GetType("Engine.Native.NativeFunctionInfo");
 
 		Array NativeArray = Array.CreateInstance(ArrayType!, LoadedFunctions.Count);
 		var NameField = ArrayType!.GetField("Name", BindingFlags.Instance | BindingFlags.Public)!;

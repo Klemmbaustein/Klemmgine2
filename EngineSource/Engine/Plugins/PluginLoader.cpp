@@ -8,6 +8,7 @@
 #include <cstring>
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/MainThread.h>
+#include <Engine/Objects/Components/MeshComponent.h>
 
 #include "InterfaceStruct.hpp"
 
