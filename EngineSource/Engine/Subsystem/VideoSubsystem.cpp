@@ -3,7 +3,7 @@
 #include "ConsoleSubsystem.h"
 #include <kui/App.h>
 #include <SDL3/SDL.h>
-#include <GL/glew.h>
+#include <Engine/Internal/OpenGL.h>
 #include "EditorSubsystem.h"
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Engine.h>

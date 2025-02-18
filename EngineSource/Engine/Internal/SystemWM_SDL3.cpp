@@ -48,8 +48,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	ActiveWindows.push_back(OutWindow);
 
 	engine::internal::platform::InitWindow(OutWindow, int(Flags));
-	if (OutWindow->IsMain)
-		SDL_ShowWindow(OutWindow->SDLWindow);
+	SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
 	SDL_StartTextInput(OutWindow->SDLWindow);
@@ -179,7 +178,6 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 
 void kui::systemWM::SwapWindow(SysWindow* Target)
 {
-	SDL_ShowWindow(Target->SDLWindow);
 	if (!Target->IsMain)
 	{
 		SDL_GL_SetSwapInterval(1);
@@ -215,8 +213,6 @@ void kui::systemWM::SetWindowIcon(SysWindow* Target, uint8_t* Bytes, size_t Widt
 
 void kui::systemWM::UpdateWindow(SysWindow* Target)
 {
-	if (!Target->IsMain)
-		SDL_ShowWindow(Target->SDLWindow);
 	{
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev))
@@ -400,6 +396,16 @@ void kui::systemWM::MessageBox(std::string Text, std::string Title, int Type)
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT, Title.c_str(), Text.c_str(), nullptr);
 	}
+}
+
+bool kui::systemWM::YesNoBox(std::string, std::string)
+{
+	return false;
+}
+
+std::string kui::systemWM::SelectFileDialog(bool)
+{
+	return "";
 }
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
