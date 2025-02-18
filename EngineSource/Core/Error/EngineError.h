@@ -29,6 +29,7 @@ namespace engine::error
 	*
 	* @see InitForThread
 	*/
+	[[nodiscard]]
 	string GetThreadName();
 
 	/**
@@ -38,7 +39,15 @@ namespace engine::error
 	* @param Message
 	* The reason for aborting.
 	*/
+	[[noreturn]]
 	void Abort(string Message = "Aborted");
 
+	/**
+	* @brief
+	* The function that should be called when the application crashes.
+	* By default, this is set to a function that prints the stack trace to the log,
+	* but if the engine is compiled with the video subsystem it will be replaced with
+	* a function showing a message box instead.
+	*/
 	extern std::function<void(string Error, string StackTrace) > OnErrorCallback;
 }

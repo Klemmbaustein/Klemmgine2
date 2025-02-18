@@ -9,13 +9,14 @@
 * @brief
 * Core engine functionality, defined in `EngineSource/Core`
 * 
-* The engine core function as it's own library that functions without the rest of the engine.
+* The engine core functions as it's own library that is usable without the rest of the engine.
 * It can be used by linking with the `KlemmgineCore` CMake target.
 * 
 * The core library contains functions for:
+* - General utility functions.
 * - Error handling.
 * - Serialization.
-* - Basic types and structs used by the engine.
+* - Basic types and structs used by the engine. (Vectors, transformations...)
 * - A thread pool implementation.
 * - Basic application features like logging and parsing command line arguments.
 */

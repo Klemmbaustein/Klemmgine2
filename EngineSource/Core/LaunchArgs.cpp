@@ -32,9 +32,9 @@ void engine::launchArgs::SetArgs(int argc, char** argv)
 			}
 			else
 			{
-				New.push_back(Parameter{
-					.Value = Arg
-					});
+				Parameter p;
+				p.Value = Arg;
+				New.push_back(p);
 			}
 		}
 		else

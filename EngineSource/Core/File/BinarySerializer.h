@@ -7,8 +7,10 @@ namespace engine
 {
 	/**
 	* @brief
-	* Class to convert a SerializedValue objects to binary files and .
+	* Class to convert SerializedData objects to binary files and the other way around.
 	* 
+	* All functions of this class might throw a SerializeReadException.
+	*
 	* @ingroup serialize
 	*/
 	class BinarySerializer

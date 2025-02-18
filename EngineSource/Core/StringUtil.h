@@ -8,6 +8,14 @@ namespace engine
 	/// Alias for engine strings. An engine string is just an STL string.
 	using string = std::string;
 
+	/**
+	* @brief
+	* Engine string utility functions.
+	* 
+	* Contains various utility functions related to strings.
+	* 
+	* @ingroup engine-core
+	*/
 	namespace str
 	{
 		/**
@@ -15,10 +23,24 @@ namespace engine
 		* Splits a string into substrings.
 		* 
 		* @param Target
-		* the string
+		* The input string that should be split into chunks.
+		* 
+		* @param Delim
+		* A string containing all characters that function as delimitors.
+		* 
+		* @return
+		* The a vector containing the substrings.
+		* If a substring would be empty (if 2 delimitors were read one after another),
+		* It won't be added to the result.
 		*/
 		[[nodiscard]]
 		std::vector<string> Split(string Target, const string& Delim);
+
+		/**
+		* @brief
+		* Returns a string where all occurances of the character 'c' have
+		* been replaced with the character 'With'
+		*/
 		[[nodiscard]]
 		string ReplaceChar(string Target, char c, char With);
 

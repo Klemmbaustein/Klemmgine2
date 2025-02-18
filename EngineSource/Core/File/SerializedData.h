@@ -306,7 +306,9 @@ namespace engine
 			* Converts this value to a string.
 			* 
 			* This format is not equivalent with the format used by engine::TextSerializer.
-			* It cannot be de serialized.
+			* It cannot be de-serialized and only exists for debugging purposes.
+			* 
+			* To properly convert SerializedData to a string, use engine::TextSerializer.
 			*
 			* @see engine::TextSerializer
 			*/

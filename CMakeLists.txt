@@ -82,8 +82,6 @@ if(UNIX)
 	if(ENGINE_DYNAMIC_SYMBOLS)
 		target_link_options(Klemmgine PUBLIC "-rdynamic")
 	endif()
-elseif(WIN32)
-	# add_link_options("/INCREMENTAL:NO")
 endif()
 
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
