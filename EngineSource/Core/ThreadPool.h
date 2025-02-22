@@ -36,7 +36,7 @@ namespace engine
 		* @brief
 		* Frees the default thread pool.
 		* 
-		* This will also wait 
+		* This will also wait for all active workers to finish their tasks.
 		*/
 		static void FreeDefaultThreadPool();
 

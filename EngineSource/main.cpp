@@ -1,6 +1,5 @@
-#include "Engine/Engine.h"
+﻿#include "Engine/Engine.h"
 #include <Engine/Subsystem/SceneSubsystem.h>
-#include <iostream>
 #include <Engine/Objects/MeshObject.h>
 #include <Core/Error/EngineError.h>
 

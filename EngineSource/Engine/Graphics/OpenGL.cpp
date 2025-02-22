@@ -2,6 +2,7 @@
 #include <Engine/Internal/OpenGL.h>
 
 using namespace engine::openGL;
+
 Version engine::openGL::VersionOverride = Version(-1);
 
 Version engine::openGL::GetGLVersion()

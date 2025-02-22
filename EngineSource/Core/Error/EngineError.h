@@ -39,7 +39,6 @@ namespace engine::error
 	* @param Message
 	* The reason for aborting.
 	*/
-	[[noreturn]]
 	void Abort(string Message = "Aborted");
 
 	/**
