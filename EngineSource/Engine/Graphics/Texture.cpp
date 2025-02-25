@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include "Texture.h"
 #include <Engine/File/Resource.h>
 #include <Core/Error/EngineAssert.h>
 #include <Engine/Internal/OpenGL.h>
@@ -8,7 +9,6 @@
 using namespace engine;
 using namespace engine::graphics;
 
-std::unordered_map<string, Texture> TextureLoader::LoadedTextures;
 TextureLoader* TextureLoader::Instance = nullptr;
 std::mutex TextureLoadMutex;
 
@@ -26,25 +26,36 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureLoadOptions 
 	using namespace engine::resource;
 
 	{
-		std::lock_guard g{ TextureLoadMutex };
+		TextureLoadMutex.lock();
+
 		if (LoadedTextures.contains(From.FilePath))
 		{
 			Texture& tx = LoadedTextures[From.FilePath];
 
 			tx.References++;
+			TextureLoadMutex.unlock();
 			return &tx;
 		}
+
+		LoadInfo.Name = From.FilePath;
+
+		auto FoundBuffer = TextureBuffers.find(From.FilePath);
+		if (FoundBuffer != TextureBuffers.end())
+		{
+			TextureLoadMutex.unlock();
+			const Texture* Result = LoadTexture(FoundBuffer->second.Pixels, FoundBuffer->second.Width, FoundBuffer->second.Height, LoadInfo);
+			stbi_image_free(const_cast<uByte*>(FoundBuffer->second.Pixels));
+			TextureBuffers.erase(FoundBuffer);
+			return Result;
+		}
+		TextureLoadMutex.unlock();
 	}
-	LoadInfo.Name = From.FilePath;
 
 	BinaryFile Bytes = GetBinaryFile(From.FilePath);
 	if (!Bytes.DataPtr)
 		return nullptr;
 	const Texture* Result = LoadCompressedBuffer(Bytes.DataPtr, Bytes.DataSize, LoadInfo);
-	if (!Result->Pixels)
-	{
-		FreeBinaryFile(Bytes);
-	}
+	FreeBinaryFile(Bytes);
 
 	return Result;
 }
@@ -60,11 +71,7 @@ const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t B
 
 const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo)
 {
-	uint32 TextureID = 0;
-	if (thread::IsMainThread)
-	{
-		TextureID = CreateGLTexture(Pixels, Width, Height, LoadInfo);
-	}
+	uint32 TextureID = CreateGLTexture(Pixels, Width, Height, LoadInfo);
 	{
 		std::lock_guard g{ TextureLoadMutex };
 
@@ -75,6 +82,27 @@ const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uin
 			.References = 1,
 			} }).first).second;
 	}
+}
+
+const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, TextureLoadOptions LoadInfo)
+{
+	using namespace engine::resource;
+
+	std::lock_guard g{ TextureLoadMutex };
+
+	int w, h, ch;
+	BinaryFile Bytes = GetBinaryFile(From.FilePath);
+	auto Pixels = stbi_load_from_memory(Bytes.DataPtr, int(Bytes.DataSize), &w, &h, &ch, 4);
+	const Texture* New = &(*TextureBuffers.insert({ From.FilePath, Texture{
+		.Options = LoadInfo,
+		.Pixels = Pixels,
+		.TextureObject = 0,
+		.References = 1,
+		.Width = uint32(w),
+		.Height = uint32(h),
+	} }).first).second;
+	FreeBinaryFile(Bytes);
+	return New;
 }
 
 void TextureLoader::FreeTexture(const Texture* Tex)

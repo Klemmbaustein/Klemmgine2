@@ -2,6 +2,7 @@
 # project specific logic here.
 #
 cmake_minimum_required(VERSION 3.12)
+
 if(WIN32)
 	set(CMAKE_CXX_STANDARD 23)
 else()
@@ -26,7 +27,7 @@ option(ENGINE_EDITOR "Compile the editor" OFF)
 option(ENGINE_CSHARP "Include the C# plugin" ON)
 option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 
-project("Klemmgine")
+project("Klemmgine" LANGUAGES C CXX RC)
 
 function(engine_part_library TARGET_NAME TARGET_PATH)
 	message("Including engine part: EngineSource/${TARGET_PATH} (${TARGET_NAME})")
@@ -69,10 +70,10 @@ target_link_libraries(KlemmgineLib PUBLIC KlemmgineCore)
 target_link_libraries(KlemmgineEditor PUBLIC KlemmgineLib)
 
 if(USE_WINDOWS_SUBSYSTEM AND WIN32)
-	add_executable(Klemmgine WIN32 "EngineSource/main.cpp")
+	add_executable(Klemmgine WIN32 "EngineSource/main.cpp" "EngineSource/Resources.rc")
 	target_compile_definitions(KlemmgineLib PUBLIC ENGINE_SUBSYSTEM_WIN32)
 else()
-	add_executable(Klemmgine "EngineSource/main.cpp")
+	add_executable(Klemmgine "EngineSource/main.cpp" "EngineSource/Resources.rc")
 endif()
 
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)

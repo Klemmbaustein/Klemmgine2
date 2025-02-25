@@ -5,6 +5,7 @@
 #include <kui/UI/UIText.h>
 #include <Engine/Objects/SceneObject.h>
 #include <set>
+#include <Editor/UI/Elements/Toolbar.h>
 #include <stack>
 
 namespace engine::editor
@@ -57,7 +58,8 @@ namespace engine::editor
 
 		bool Undoing = false;
 
-		kui::UIBackground* ViewportToolbar = nullptr;
+		Toolbar* ViewportToolbar = nullptr;
+
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;
 		kui::UIBackground* LoadingScreenBox = nullptr;

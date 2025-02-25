@@ -5,10 +5,14 @@
 #include <cstdarg>
 #include <Core/Error/EngineAssert.h>
 #include <Engine/Stats.h>
+#include <mutex>
 #include <Core/ThreadPool.h>
+#include <Engine/MainThread.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 using namespace engine;
 using namespace engine::physics;
+
+static std::mutex LoadedModelsMutex;
 
 static bool LayerMask(Layer Bit, Layer Mask)
 {
@@ -198,9 +202,11 @@ static void JoltPhysicsTrace(const char* inFMT, ...)
 
 	Log::Error(error::GetStackTrace());
 }
+
 bool internal::JoltInstance::IsInitialized = false;
 JPH::TempAllocatorImpl* internal::JoltInstance::TempAllocator = nullptr;
 JoltJobSystemImpl* internal::JoltInstance::JobSystem = nullptr;
+
 void engine::internal::JoltInstance::InitJolt()
 {
 	if (IsInitialized)
@@ -225,12 +231,12 @@ void engine::internal::JoltInstance::InitJolt()
 	IsInitialized = true;
 }
 
-JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(MeshBody* From)
+JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(GraphicsModel* From, bool ExtraReference)
 {
 	JPH::VertexList Vertices;
 	JPH::IndexedTriangleList Indices;
 
-	auto& Meshes = From->Model->Data->Meshes;
+	auto& Meshes = From->Data->Meshes;
 
 	uint32 IndicesPosition = 0;
 	for (auto& m : Meshes)
@@ -261,19 +267,20 @@ JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(MeshBody* Fro
 		return nullptr;
 	}
 
-	auto BodyModel = From->Model;
+	auto BodyModel = From;
 	// Unload the Jolt Mesh Shape when the model data is unloaded.
 	// It will also be unloaded when the physics body itself is destroyed.
 	BodyModel->OnDereferenced.insert({ this, [this, BodyModel]()
 		{
 			UnloadMesh(BodyModel);
 		} });
+
 	Shape->AddRef();
 
 	LoadedMeshes.insert({ BodyModel, PhysicsMesh{
 		.Shape = Shape,
 		// One reference for the body, one for the mesh itself.
-		.References = 2,
+		.References = uint64(ExtraReference ? 2 : 1),
 		} });
 	return Shape;
 }
@@ -333,10 +340,11 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 	{
 		MeshBody* MeshPtr = static_cast<MeshBody*>(Body);
 
-		auto Found = LoadedMeshes.find(MeshPtr->Model);
+		std::lock_guard g{ LoadedModelsMutex };
 
 		JPH::MeshShape* UsedShape = nullptr;
 
+		auto Found = LoadedMeshes.find(MeshPtr->Model);
 		// Don't create duplicate mesh shapes, reference existing ones instead.
 		if (Found != LoadedMeshes.end())
 		{
@@ -345,7 +353,7 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 		}
 		else
 		{
-			UsedShape = CreateNewMeshShape(MeshPtr);
+			UsedShape = CreateNewMeshShape(MeshPtr->Model);
 		}
 
 		JPH::ScaledShapeSettings Settings = JPH::ScaledShapeSettings(UsedShape,
@@ -562,6 +570,17 @@ void engine::internal::JoltInstance::SetBodyCollisionEnabled(engine::physics::Ph
 		JoltBodyInterface->RemoveBody(Info->ID);
 	}
 	Body->IsCollisionEnabled = IsCollisionEnabled;
+}
+
+void engine::internal::JoltInstance::PreLoadMesh(GraphicsModel* Mesh)
+{
+	std::lock_guard g{ LoadedModelsMutex };
+	
+	if (LoadedMeshes.contains(Mesh))
+		return;
+
+	CreateNewMeshShape(Mesh);
+	UnloadMesh(Mesh);
 }
 
 class ObjectLayerFilterImpl : public JPH::ObjectLayerFilter

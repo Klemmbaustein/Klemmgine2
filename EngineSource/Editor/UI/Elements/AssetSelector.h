@@ -26,6 +26,7 @@ namespace engine::editor
 	private:
 		string LastEnteredText;
 		bool RemoveSearchList = false;
+		bool ChangedText = false;
 		void UpdateSelection();
 		void UpdateSearchSize();
 		void RemoveSearchResults();

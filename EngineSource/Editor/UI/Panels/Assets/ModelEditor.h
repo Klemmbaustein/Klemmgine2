@@ -1,6 +1,6 @@
 #ifdef EDITOR
 #pragma once
-#include <Editor/UI/Panels/EditorPanel.h>
+#include "AssetEditor.h"
 #include <Engine/File/AssetRef.h>
 #include <Engine/Scene.h>
 #include <thread>
@@ -9,7 +9,7 @@
 
 namespace engine::editor
 {
-	class ModelEditor : public EditorPanel
+	class ModelEditor : public AssetEditor
 	{
 	public:
 		ModelEditor(AssetRef ModelFile);
@@ -17,24 +17,17 @@ namespace engine::editor
 
 		void Update();
 
-		void Save();
+		void Save() override;
 
 		void OnResized() override;
-
-	protected:
-
-		bool OnClosed() override;
 
 	private:
 		void OnModelLoaded();
 		string GetDisplayName(string Asset);
-
+		
 		void OnModelChanged();
-		void OnChanged();
 
-		bool Unsaved = false;
 		bool ModelLoaded = false;
-		AssetRef EditedModel;
 		kui::UIBackground* SceneBackground = nullptr;
 		kui::UIBox* SidebarBox = nullptr;
 		kui::UIBox* MainBox = nullptr;

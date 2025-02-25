@@ -1,14 +1,14 @@
 #ifdef EDITOR
 #pragma once
-#include <Editor/UI/Panels/EditorPanel.h>
 #include <Engine/File/AssetRef.h>
 #include <Engine/Scene.h>
 #include <Engine/Graphics/Material.h>
 #include <kui/UI/UIScrollBox.h>
+#include "AssetEditor.h"
 
 namespace engine::editor
 {
-	class MaterialEditor : public EditorPanel
+	class MaterialEditor : public AssetEditor
 	{
 	public:
 
@@ -19,15 +19,14 @@ namespace engine::editor
 
 		void Update();
 		void LoadUI();
-		void Save();
+		void Save() override;
 
 		void OnResized() override;
 
 	private:
 
-		void OnChanged();
+		void OnChanged() override;
 
-		AssetRef MaterialPath;
 		kui::UIBackground* PreviewImage = nullptr;
 		Scene* PreviewScene = nullptr;
 		graphics::Material* LoadedMaterial = nullptr;

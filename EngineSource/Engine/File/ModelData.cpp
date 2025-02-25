@@ -5,6 +5,7 @@
 #include <mutex>
 #include <Core/Log.h>
 #include <Engine/MainThread.h>
+#include <Engine/Scene.h>
 
 using namespace engine::graphics;
 
@@ -25,6 +26,26 @@ engine::ModelData::ModelData()
 
 engine::ModelData::~ModelData()
 {
+}
+
+void engine::ModelData::PreLoadMaterials(Scene* With)
+{
+	for (auto& i : Meshes)
+	{
+		Material Mat = graphics::Material(AssetRef::FromName(i.Material, "kmt"));
+		for (auto& f : Mat.Fields)
+		{
+			if (f.FieldType != Material::Field::Type::Texture)
+			{
+				continue;
+			}
+			auto Asset = AssetRef::Convert(*f.TextureValue.Name);
+
+			if (!Asset.IsValid())
+				continue;
+			With->PreLoadAsset(Asset);
+		}
+	}
 }
 
 void engine::ModelData::ToFile(string FilePath)
@@ -132,46 +153,52 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	}
 }
 
-void engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name, bool Lock)
+engine::GraphicsModel* engine::GraphicsModel::RegisterModel(const ModelData& Mesh, string Name, bool Lock)
 {
 	if (Lock)
 		ModelDataMutex.lock();
+
+	GraphicsModel* New = nullptr;
 
 	if (thread::IsMainThread)
 	{
-		Models.insert({ Name, GraphicsModel{
+		New = &Models.insert({ Name, GraphicsModel{
 			.Data = new ModelData(Mesh),
 			.Drawable = new Model(&Mesh),
 			.References = 1,
-			} });
+			} }).first->second;
 	}
 	else
 	{
-		Models.insert({ Name, GraphicsModel{
+		New = &Models.insert({ Name, GraphicsModel{
 			.Data = new ModelData(Mesh),
 			.Drawable = nullptr,
 			.References = 1,
-			} });
+			} }).first->second;
 	}
 	if (Lock)
 		ModelDataMutex.unlock();
+
+	return New;
 }
 
-void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
+engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 {
 	if (Lock)
 		ModelDataMutex.lock();
 
-	if (Models.contains(Asset.FilePath))
+	auto Found = Models.find(Asset.FilePath);
+	if (Found != Models.end())
 	{
-		Models[Asset.FilePath].References++;
+		Found->second.References++;
 		if (Lock)
 			ModelDataMutex.unlock();
-		return;
+		return &Found->second;
 	}
 	if (Lock)
 		ModelDataMutex.unlock();
 	ModelData* New = nullptr;
+	GraphicsModel* NewModel = nullptr;
 	try
 	{
 		New = new ModelData(Asset.FilePath);
@@ -179,30 +206,31 @@ void engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
 	catch (SerializeReadException& e)
 	{
 		Log::Warn(str::Format("Failed to load model: %s", e.what()));
-		return;
+		return nullptr;
 	}
 	if (Lock)
 		ModelDataMutex.lock();
 
 	if (thread::IsMainThread)
 	{
-		Models.insert({ Asset.FilePath, GraphicsModel{
+		NewModel = &Models.insert({ Asset.FilePath, GraphicsModel{
 			.Data = New,
 			.Drawable = new Model(New),
 			.References = 1,
-			} });
+			} }).first->second;
 	}
 	else
 	{
-		Models.insert({ Asset.FilePath, GraphicsModel{
+		NewModel = &Models.insert({ Asset.FilePath, GraphicsModel{
 			.Data = New,
 			.Drawable = nullptr,
 			.References = 1,
-			} });
+			} }).first->second;
 	}
 	if (Lock)
 		ModelDataMutex.unlock();
 
+	return NewModel;
 }
 
 engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)

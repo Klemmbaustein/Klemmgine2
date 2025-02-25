@@ -46,15 +46,7 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 
 	AssetPath->OnChanged = [this]()
 		{
-			auto NewAsset = AssetRef::FromName(AssetPath->GetText(), SelectedAsset.Extension);
-
-			if (NewAsset.FilePath.empty())
-				return;
-
-			SelectedAsset = AssetPath->GetText().empty() ? AssetRef{ .Extension = SelectedAsset.Extension } : NewAsset;
-			if (this->OnChanged)
-				this->OnChanged();
-			UpdateSelection();
+			ChangedText = true;
 		};
 
 	RightBox->AddChild(AssetPath);
@@ -86,6 +78,18 @@ void engine::editor::AssetSelector::Tick()
 			{
 				RemoveSearchResults();
 			}, nullptr, 0));
+	}
+	if (ChangedText && !Window::GetActiveWindow()->Input.IsLMBDown)
+	{
+		auto NewAsset = AssetRef::FromName(AssetPath->GetText(), SelectedAsset.Extension);
+		if (NewAsset.FilePath.empty())
+			return;
+
+		SelectedAsset = AssetPath->GetText().empty() ? AssetRef{ .Extension = SelectedAsset.Extension } : NewAsset;
+		if (this->OnChanged)
+			this->OnChanged();
+		UpdateSelection();
+		ChangedText = false;
 	}
 	if (AssetPath->GetIsEdited())
 	{
@@ -145,6 +149,7 @@ void engine::editor::AssetSelector::RemoveSearchResults()
 
 void engine::editor::AssetSelector::UpdateSearchResults()
 {
+	ChangedText = false;
 	SearchBackground->DeleteChildren();
 
 	std::map<string, string> FilteredAssets;
@@ -179,11 +184,12 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Path]()
 			{
 				AssetPath->SetText(Name);
-				RemoveSearchResults();
 				SelectedAsset = AssetRef::FromPath(Path);
+				ChangedText = false;
 				if (this->OnChanged)
 					OnChanged();
 				UpdateSelection();
+				RemoveSearchResults();
 			}))
 			->SetMinWidth(UISize::Parent(1))
 			->AddChild((new UIText(11_px,

@@ -5,17 +5,17 @@
 #include <MaterialEditor.kui.hpp>
 #include <Engine/Objects/MeshObject.h>
 #include <Core/File/FileUtil.h>
+#include <Editor/UI/Elements/Toolbar.h>
 #include <stdexcept>
 
 using namespace kui;
 
 engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
-	: EditorPanel("Material: " + MaterialFile.DisplayName(), "")
+	: AssetEditor("Material: %s", MaterialFile)
 {
-	this->MaterialPath = MaterialFile;
 	LoadedMaterial = new graphics::Material(MaterialFile);
 
-	Background->SetHorizontal(true);
+	Background->SetHorizontal(false);
 
 	PreviewScene = new Scene();
 	PreviewScene->Physics.Active = false;
@@ -35,10 +35,20 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	MaterialParamsBox->SetMinHeight(UISize(1, SizeMode::ParentRelative));
 	MaterialParamsBox->SetMaxHeight(UISize(1, SizeMode::ParentRelative));
 	MaterialParamsBox->SetPadding(5_px);
-	Background->AddChild(MaterialParamsBox);
+
+	Toolbar* MaterialToolbar = new Toolbar();
+	MaterialToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
+		[this]()
+		{
+			Save();
+		});
 
 	PreviewImage = new UIBackground(true, 0, 1, 400_px);
-	Background->AddChild(PreviewImage);
+
+	Background->AddChild(MaterialToolbar);
+	Background->AddChild((new UIBox(true))
+		->AddChild(MaterialParamsBox)
+		->AddChild(PreviewImage));
 
 	LoadUI();
 }
@@ -50,6 +60,7 @@ engine::editor::MaterialEditor::~MaterialEditor()
 
 void engine::editor::MaterialEditor::Update()
 {
+	AssetEditor::Update();
 	PreviewImage->SetUseTexture(true, PreviewScene->Buffer->Textures[0]);
 }
 
@@ -150,7 +161,8 @@ void engine::editor::MaterialEditor::LoadUI()
 }
 void engine::editor::MaterialEditor::Save()
 {
-	LoadedMaterial->ToFile(MaterialPath.FilePath);
+	AssetEditor::Save();
+	LoadedMaterial->ToFile(EditedAsset.FilePath);
 }
 void engine::editor::MaterialEditor::OnResized()
 {
@@ -158,6 +170,7 @@ void engine::editor::MaterialEditor::OnResized()
 }
 void engine::editor::MaterialEditor::OnChanged()
 {
+	AssetEditor::OnChanged();
 	PreviewScene->Redraw = true;
 	PreviewImage->RedrawElement();
 }

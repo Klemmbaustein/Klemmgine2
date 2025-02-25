@@ -1,4 +1,6 @@
 #include "Scene.h"
+#include "Scene.h"
+#include "Scene.h"
 #include "Internal/OpenGL.h"
 #include "Subsystem/VideoSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
@@ -11,6 +13,7 @@
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Editor/UI/Panels/Viewport.h>
 #include <algorithm>
+#include <Engine/Graphics/Texture.h>
 #include <filesystem>
 #include <Engine/Plugins/PluginLoader.h>
 
@@ -74,7 +77,7 @@ engine::Scene::~Scene()
 
 	for (auto& i : ReferencedAssets)
 	{
-		GraphicsModel::UnloadModel(i);
+		UnloadAsset(i);
 	}
 
 	for (auto& i : Objects)
@@ -225,7 +228,7 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 
 		for (auto& i : OldReferenced)
 		{
-			GraphicsModel::UnloadModel(i);
+			UnloadAsset(i);
 		}
 	}
 	else
@@ -335,9 +338,33 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 {
 	if (Target.Extension == "kmdl")
 	{
-		GraphicsModel::RegisterModel(Target);
+		auto Model = GraphicsModel::RegisterModel(Target);
+		if (Model)
+		{
+			Model->Data->PreLoadMaterials(this);
+			if (Physics.Active)
+			{
+				Physics.PreLoadMesh(Model);
+			}
+		}
+	}
+	if (Target.Extension == "png")
+	{
+		graphics::TextureLoader::Instance->PreLoadBuffer(Target,
+			graphics::TextureLoadOptions{});
 	}
 	ReferencedAssets.push_back(Target);
+}
+
+void engine::Scene::UnloadAsset(AssetRef Target)
+{
+	if (Target.Extension == "kmdl")
+	{
+		GraphicsModel::UnloadModel(Target);
+	}
+	if (Target.Extension == "png")
+	{
+	}
 }
 
 void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
@@ -378,6 +405,8 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 
 void engine::Scene::LoadInternal(string File, bool Async)
 {
+	Physics.Init();
+	
 	SerializedValue SceneData;
 	Name = File;
 	try
@@ -446,7 +475,6 @@ void engine::Scene::Init()
 		} });
 
 	Shadows.Init();
-	Physics.Init();
 	plugin::OnNewSceneLoaded(this);
 }
 

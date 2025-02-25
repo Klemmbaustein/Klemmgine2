@@ -33,6 +33,7 @@ namespace engine::graphics
 		const uByte* Pixels = nullptr;
 		uint32 TextureObject = 0;
 		uint32 References = 0;
+		uint32 Width = 0, Height = 0;
 	};
 
 
@@ -51,6 +52,8 @@ namespace engine::graphics
 		[[nodiscard]]
 		const Texture* LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo);
 
+		const Texture* PreLoadBuffer(AssetRef From, TextureLoadOptions LoadInfo);
+
 		void FreeTexture(const Texture* Tex);
 
 		static TextureLoader* Instance;
@@ -58,6 +61,7 @@ namespace engine::graphics
 	private:
 		uint32 CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo);
 		void DeleteTexture(const Texture* Tex);
-		static std::unordered_map<string, Texture> LoadedTextures;
+		std::unordered_map<string, Texture> LoadedTextures;
+		std::unordered_map<string, Texture> TextureBuffers;
 	};
 }

@@ -351,6 +351,8 @@ namespace engine::physics
 		void AddBody(PhysicsBody* Body, bool StartActive, bool StartCollisionEnabled);
 		void RemoveBody(PhysicsBody* Body);
 
+		void PreLoadMesh(GraphicsModel* Mesh);
+
 		friend struct PhysicsBody;
 
 	private:

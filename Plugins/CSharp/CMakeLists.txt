@@ -25,7 +25,15 @@ file(
 
 klemmgine_plugin_dirs()
 
-add_library(${PLUGIN_NAME} SHARED ${INCLUDES} ${SRCS})
+add_library(${PLUGIN_NAME} SHARED ${INCLUDES} ${SRCS} "Loader/Resources.rc")
+
+if(WIN32)
+	foreach(LANG  C CXX RC)
+		set(CMAKE_${LANG}_STANDARD_INCLUDE_DIRECTORIES ${CUSTOM_INCLUDE_DIRECTORIES})
+	endforeach()
+	#target_sources(${PLUGIN_NAME} PRIVATE )
+endif()
+
 target_link_libraries(${PLUGIN_NAME} PUBLIC KlemmginePlugin)
 target_include_directories(${PLUGIN_NAME} PRIVATE ${NET_SDK_BINARY_DIR})
 

@@ -47,6 +47,8 @@ namespace engine::internal
 		void SetBodyActive(physics::PhysicsBody* Body, bool IsActive);
 		void SetBodyCollisionEnabled(physics::PhysicsBody* Body, bool IsCollisionEnabled);
 
+		void PreLoadMesh(GraphicsModel* Mesh);
+
 		std::vector<physics::HitResult> CollisionTest(physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
 		std::vector<physics::HitResult> ShapeCastBody(physics::PhysicsBody* Body, Transform StartPos, Vector3 EndPos, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
 		physics::HitResult LineCast(Vector3 Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
@@ -64,7 +66,7 @@ namespace engine::internal
 
 	private:
 
-		JPH::MeshShape* CreateNewMeshShape(physics::MeshBody* From);
+		JPH::MeshShape* CreateNewMeshShape(GraphicsModel* From, bool ExtraReference = true);
 
 		void UnloadMesh(GraphicsModel* Mesh);
 		JPH::BodyCreationSettings CreateJoltShapeFromBody(physics::PhysicsBody* Body);

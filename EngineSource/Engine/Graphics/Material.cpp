@@ -6,6 +6,7 @@
 #include <Core/File/TextSerializer.h>
 #include <Core/File/BinarySerializer.h>
 #include <Engine/Internal/OpenGL.h>
+#include <Engine/MainThread.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -28,6 +29,11 @@ engine::graphics::Material::Material(AssetRef File)
 		if (!FileData.GetObject().empty())
 		{
 			DeSerialize(&FileData);
+			return;
+		}
+		else
+		{
+			SetToDefault();
 			return;
 		}
 	}
@@ -342,6 +348,9 @@ void engine::graphics::Material::SetToDefault()
 
 void engine::graphics::Material::UpdateShader()
 {
+	if (!thread::IsMainThread)
+		return;
+
 	Shader = ShaderLoader::Current->Get(
 		VertexShader,
 		FragmentShader

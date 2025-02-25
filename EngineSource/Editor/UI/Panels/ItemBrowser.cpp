@@ -54,10 +54,10 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 
 	Heading->backButton->OnClicked = [this]() { Back(); };
 	Heading->searchBox->field->OnChanged = [this]()
-	{
-		Filter = Heading->searchBox->field->GetText();
-		UpdateItems();
-	};
+		{
+			Filter = Heading->searchBox->field->GetText();
+			UpdateItems();
+		};
 }
 
 void engine::editor::ItemBrowser::Update()
@@ -166,39 +166,48 @@ void engine::editor::ItemBrowser::DisplayList()
 		btn->SetName(NewItem.Name);
 		btn->SetImage(NewItem.Image);
 		btn->button->OnDragged = [NewItem](int)
-		{
-			EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
-				.Name = NewItem.Name,
-				.Type = "asset",
-				.Path = NewItem.Path,
-				.Icon = NewItem.Image,
-				.Color = NewItem.Color,
-				.ObjectType = NewItem.Type,
-				});
-		};
+			{
+				EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
+					.Name = NewItem.Name,
+					.Type = "asset",
+					.Path = NewItem.Path,
+					.Icon = NewItem.Image,
+					.Color = NewItem.Color,
+					.ObjectType = NewItem.Type,
+					});
+			};
 
-		btn->button->OnClicked = [this, i]()
-		{
-			if (!Buttons[i].first.Selected)
+		btn->button->OnClicked = [this, i, btn]()
 			{
-				if (!input::IsKeyDown(input::Key::LSHIFT))
-				{
-					for (auto& btn : Buttons)
+				auto UpdateButtonSelected = [this, i](ItemBrowserButton* b)
 					{
-						btn.first.Selected = false;
+						b->SetBackgroundColor(Buttons[i].first.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.DarkBackground);
+					};
+
+				if (!Buttons[i].first.Selected)
+				{
+					if (!input::IsKeyDown(input::Key::LSHIFT))
+					{
+						for (auto& btn : Buttons)
+						{
+							if (btn.first.Selected)
+							{
+								btn.first.Selected = false;
+								UpdateButtonSelected(btn.second);
+							}
+						}
 					}
+					Buttons[i].first.Selected = true;
+					UpdateButtonSelected(btn);
 				}
-				Buttons[i].first.Selected = true;
-				DisplayList();
-			}
-			else
-			{
-				Buttons[i].first.Selected = false;
-				if (Buttons[i].first.OnClick)
-					Buttons[i].first.OnClick();
-				DisplayList();
-			}
-		};
+				else
+				{
+					Buttons[i].first.Selected = false;
+					if (Buttons[i].first.OnClick)
+						Buttons[i].first.OnClick();
+					UpdateButtonSelected(btn);
+				}
+			};
 
 		Buttons[i] = { NewItem, btn };
 		CurrentBox->AddChild(btn);

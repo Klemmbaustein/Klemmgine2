@@ -14,8 +14,6 @@
 using namespace engine::subsystem;
 using namespace kui;
 
-const float TOOLBAR_SIZE = 38;
-
 engine::editor::Viewport* engine::editor::Viewport::Current = nullptr;
 
 engine::editor::Viewport::Viewport()
@@ -29,8 +27,8 @@ engine::editor::Viewport::Viewport()
 	ViewportBackground
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->SetHorizontalAlign(UIBox::Align::Centered)
-		->SetPadding(UISize::Pixels(1))
-		->SetDownPadding(UISize(0));
+		->SetPadding(1_px)
+		->SetUpPadding(0);
 	ViewportBackground->HasMouseCollision = true;
 
 	StatusBarBox = new UIBox(true, 0);
@@ -39,43 +37,29 @@ engine::editor::Viewport::Viewport()
 		->SetMaxSize(SizeVec(UISize::Parent(1), 23_px))
 		->SetVerticalAlign(UIBox::Align::Centered);
 
-	ViewportToolbar = new UIBackground(true, 0, EditorUI::Theme.Background);
-	ViewportToolbar
-		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
-		->SetBorderEdges(false, true, false, false)
-		->SetMinWidth(UISize::Parent(1))
-		->SetMinHeight(UISize::Pixels(TOOLBAR_SIZE))
-		->SetMaxHeight(UISize::Pixels(TOOLBAR_SIZE))
-		->SetPadding(1_px, 0_px, 1_px, 1.1_px);
+	ViewportToolbar = new Toolbar();
 
-	auto TestButton = new ToolBarButton();
-
-	TestButton->SetIcon("file:Engine/Editor/Assets/Save.png");
-	TestButton->SetName("Save");
-	TestButton->btn->OnClicked = [this]()
+	ViewportToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
+		[this]()
 		{
 			SaveCurrentScene();
-		};
-	delete TestButton->dropdownButton;
+		});
 
-	auto TestButton2 = new ToolBarButton();
-	TestButton2->SetIcon("file:Engine/Editor/Assets/Options.png");
-	TestButton2->SetName("View");
+	ViewportToolbar->AddDropdown("View", "file:Engine/Editor/Assets/Options.png", 
+		{
+			DropdownMenu::Option{.Name = "Default"},
+			DropdownMenu::Option{.Name = "Unlit"},
+			DropdownMenu::Option{.Name = "Wireframe"},
+			DropdownMenu::Option{.Name = "Collision"}
+		});
 
-	auto RunButton = new ToolBarButton();
-	RunButton->SetIcon("file:Engine/Editor/Assets/Run.png");
-	RunButton->btn->OnClicked = []()
+	ViewportToolbar->AddButton("Run", "file:Engine/Editor/Assets/Run.png",
+		[]()
 		{
 			using namespace subsystem;
 
 			Engine::GetSubsystem<EditorSubsystem>()->StartProject();
-		};
-	RunButton->SetName("Run");
-	delete RunButton->dropdownButton;
-
-	ViewportToolbar->AddChild(TestButton);
-	ViewportToolbar->AddChild(TestButton2);
-	ViewportToolbar->AddChild(RunButton);
+		});
 
 	ViewportStatusText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	ViewportStatusText
@@ -163,7 +147,7 @@ engine::editor::Viewport::~Viewport()
 
 void engine::editor::Viewport::OnResized()
 {
-	ViewportBackground->SetMinSize(Background->GetMinSize().GetScreen() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + TOOLBAR_SIZE + 2), ViewportBackground->GetParentWindow()));
+	ViewportBackground->SetMinSize(Background->GetMinSize().GetScreen() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + 42), ViewportBackground->GetParentWindow()));
 	PanelElement->UpdateElement();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();

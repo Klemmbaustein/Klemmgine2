@@ -190,6 +190,8 @@ namespace engine
 		* @see subsystem::SceneSubsystem
 		*/
 		void PreLoadAsset(AssetRef Target);
+
+		void UnloadAsset(AssetRef Target);
 	private:
 		void DeSerializeInternal(SerializedValue* From, bool Async);
 		friend class SceneObject;

@@ -9,6 +9,8 @@
 
 namespace engine
 {	
+	class Scene;
+
 	struct ModelData : ISerializable
 	{
 		struct Mesh : ISerializable
@@ -28,6 +30,8 @@ namespace engine
 		ModelData();
 		~ModelData();
 
+		void PreLoadMaterials(Scene* With);
+
 		void ToFile(string FilePath);
 
 		virtual SerializedValue Serialize() override;
@@ -43,8 +47,8 @@ namespace engine
 		size_t References;
 		std::map<void*, std::function<void()>> OnDereferenced;
 
-		static void RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
-		static void RegisterModel(AssetRef Asset, bool Lock = true);
+		static GraphicsModel* RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
+		static GraphicsModel* RegisterModel(AssetRef Asset, bool Lock = true);
 		static GraphicsModel* GetModel(AssetRef Asset);
 		static void ReferenceModel(GraphicsModel* Target);
 		static void UnloadModel(GraphicsModel* Target);

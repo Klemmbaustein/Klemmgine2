@@ -1,4 +1,5 @@
 #include "Physics.h"
+#include "Physics.h"
 #include <Engine/Scene.h>
 #include <Engine/Internal/JoltPhysics.h>
 using namespace engine::physics;
@@ -96,6 +97,11 @@ void engine::physics::PhysicsManager::AddBody(PhysicsBody* Body, bool StartActiv
 void engine::physics::PhysicsManager::RemoveBody(PhysicsBody* Body)
 {
 	PhysicsSystem->RemoveBody(Body);
+}
+
+void engine::physics::PhysicsManager::PreLoadMesh(GraphicsModel* Mesh)
+{
+	PhysicsSystem->PreLoadMesh(Mesh);
 }
 
 HitResult engine::physics::HitResult::GetAverageHit(std::vector<HitResult> Hits)
