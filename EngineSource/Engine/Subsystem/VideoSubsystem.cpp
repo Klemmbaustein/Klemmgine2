@@ -212,7 +212,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	}
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(0);
 	SDL_GL_SwapWindow(GetSysWindow(MainWindow)->SDLWindow);
 }
 

@@ -638,8 +638,7 @@ std::vector<HitResult> internal::JoltInstance::ShapeCastBody(
 	physics::PhysicsBody* Body,
 	Transform StartPos, Vector3 EndPos,
 	physics::Layer Layers,
-	std::set<SceneObject*> ObjectsToIgnore
-)
+	std::set<SceneObject*> ObjectsToIgnore)
 {
 	if (!Body->ShapeInfo)
 	{
@@ -681,8 +680,7 @@ std::vector<HitResult> internal::JoltInstance::ShapeCastBody(
 engine::physics::HitResult engine::internal::JoltInstance::LineCast(
 	Vector3 Start, Vector3 End,
 	engine::physics::Layer Layers,
-	std::set<SceneObject*> ObjectsToIgnore
-)
+	std::set<SceneObject*> ObjectsToIgnore)
 {
 	JPH::RRayCast Cast = JPH::RRayCast(ToJPHVec3(Start), ToJPHVec3(End - Start));
 	JPH::RayCastResult HitInfo;

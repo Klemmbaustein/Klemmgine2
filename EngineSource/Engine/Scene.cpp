@@ -396,7 +396,7 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		catch (std::out_of_range& RangeError)
 		{
 			subsystem::SceneSubsystem::Current->Print(
-				str::Format("Failed to DeSerialize object in scene: '%s'. Object likely had an invalid ID.", RangeError.what()),
+				str::Format("Out of range error while trying to DeSerialize object in scene: '%s'. Object likely had an invalid ID.", RangeError.what()),
 				subsystem::Subsystem::LogType::Warning
 			);
 		}

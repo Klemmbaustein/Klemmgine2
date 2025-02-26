@@ -10,7 +10,7 @@ engine::editor::RenameWindow::RenameWindow(string File, std::function<void(strin
 		{
 			Option{ .Name = "Rename", .OnClicked = [this]() { Confirm(); }, .Close = true, .OnMainThread = false, },
 			Option{ .Name = "Cancel", .Close = true, },
-		}, Vec2ui(400, 150))
+		}, Vec2ui(300, 130))
 {
 	this->File = File;
 	this->OnRenamed = OnRenamed;

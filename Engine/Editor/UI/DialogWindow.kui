@@ -94,7 +94,7 @@ element RenameWindowElement
 
 		child EditorTextField field
 		{
-			Size = 200px;
+			Size = 220px;
 			HintText = "Rename";
 			Image = "Engine/Editor/Assets/Search.png";
 			padding = 5px;

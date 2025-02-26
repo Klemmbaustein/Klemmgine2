@@ -203,9 +203,9 @@ void engine::editor::ItemBrowser::DisplayList()
 				else
 				{
 					Buttons[i].first.Selected = false;
+					UpdateButtonSelected(btn);
 					if (Buttons[i].first.OnClick)
 						Buttons[i].first.OnClick();
-					UpdateButtonSelected(btn);
 				}
 			};
 

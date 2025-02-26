@@ -64,7 +64,8 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	LoadModelThread = std::thread([this, ModelFile, CancelLoadShared]()
 		{
-			GraphicsModel::RegisterModel(ModelFile);
+			GraphicsModel::RegisterModel(ModelFile)
+				->Data->PreLoadMaterials(EditorScene);
 			if (*CancelLoadShared)
 			{
 				GraphicsModel::UnloadModel(ModelFile);

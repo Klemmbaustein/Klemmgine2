@@ -90,6 +90,9 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 
 	std::lock_guard g{ TextureLoadMutex };
 
+	if (LoadedTextures.contains(From.FilePath))
+		return &LoadedTextures[From.FilePath];
+
 	int w, h, ch;
 	BinaryFile Bytes = GetBinaryFile(From.FilePath);
 	auto Pixels = stbi_load_from_memory(Bytes.DataPtr, int(Bytes.DataSize), &w, &h, &ch, 4);
