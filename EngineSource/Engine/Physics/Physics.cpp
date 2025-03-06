@@ -1,5 +1,6 @@
 #include "Physics.h"
 #include "Physics.h"
+#include "Physics.h"
 #include <Engine/Scene.h>
 #include <Engine/Internal/JoltPhysics.h>
 using namespace engine::physics;
@@ -152,6 +153,11 @@ MeshBody::MeshBody(GraphicsModel* Mesh, Transform MeshTransform, MotionType Coll
 	: PhysicsBody(BodyType::Mesh, MeshTransform, ColliderMovability, CollisionLayers, Parent)
 {
 	this->Model = Mesh;
+}
+
+std::vector<HitResult> engine::physics::PhysicsBody::CollisionTest(Transform At, Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+{
+	return Manager->PhysicsSystem->CollisionTest(At, this, Layers, ObjectsToIgnore);
 }
 
 std::vector<HitResult> PhysicsBody::ShapeCast(Transform StartTransform, Vector3 EndPos, Layer Layers, std::set<SceneObject*> ObjectsToIgnore)

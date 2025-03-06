@@ -49,7 +49,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	MainBox->AddChild(SceneBackground
 		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
-		->SetBorderEdges(false, true, true, true)
+		->SetBorderEdges(false, false, false, true)
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->AddChild(new UISpinner(0, EditorUI::Theme.Highlight1)));
@@ -60,12 +60,19 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 		->SetMinSize(SizeVec(280_px, UISize::Parent(1)))
 		->SetMaxSize(SizeVec(280_px, UISize::Parent(1)))
 		->SetHorizontalAlign(UIBox::Align::Centered)
-		->SetPadding(3_px));
+		->SetPadding(8_px, 3_px, 3_px, 3_px));
 
 	LoadModelThread = std::thread([this, ModelFile, CancelLoadShared]()
 		{
-			GraphicsModel::RegisterModel(ModelFile)
-				->Data->PreLoadMaterials(EditorScene);
+			auto Loaded = GraphicsModel::RegisterModel(ModelFile);
+
+			if (!Loaded)
+			{
+				FailedLoading = true;
+				return;
+			}
+
+			Loaded->Data->PreLoadMaterials(EditorScene);
 			if (*CancelLoadShared)
 			{
 				GraphicsModel::UnloadModel(ModelFile);
@@ -97,20 +104,32 @@ engine::editor::ModelEditor::~ModelEditor()
 void engine::editor::ModelEditor::OnModelLoaded()
 {
 	SidebarBox->DeleteChildren();
-
-	SidebarBox->AddChild((new UIBox(true))
-		->SetMinWidth(UISize::Parent(1))
-		->AddChild(new UIText(14_px, 1, "Materials", EditorUI::EditorFont)));
-
 	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 
 	if (!Data)
 	{
-		SidebarBox->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
-			->SetBackgroundColor(EditorUI::Theme.HighlightDark));
+		if (!FailedLoading)
+		{
+			SidebarBox->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
+				->SetBackgroundColor(EditorUI::Theme.HighlightDark));
+		}
+		else
+		{
+			SceneBackground->AddChild((new UIBox(true, 0))
+				->SetVerticalAlign(UIBox::Align::Centered)
+				->AddChild((new UIBackground(true, 0, 1, 24_px))
+					->SetUseTexture(true, "Engine/Editor/Assets/Error.png")
+					->SetPadding(10_px))
+				->AddChild(new UIText(11_px, 1, "Model failed to load.\nCheck the log for details", EditorUI::EditorFont)));
+		}
 		return;
 	}
 	float Width = UIBox::PixelSizeToScreenSize(245, Background->GetParentWindow()).X;
+
+	SidebarBox->AddChild((new UIBox(true))
+		->SetMinWidth(UISize::Parent(1))
+		->AddChild(new UIText(14_px, EditorUI::Theme.Text, "Materials", EditorUI::EditorFont)));
+
 
 	for (ModelData::Mesh& m : Data->Data->Meshes)
 	{
@@ -146,9 +165,10 @@ void engine::editor::ModelEditor::OnModelChanged()
 }
 void engine::editor::ModelEditor::Update()
 {
-	if (ModelLoaded && SceneBackground->GetChildren().size())
+	if ((ModelLoaded || FailedLoading) && SceneBackground->GetChildren().size())
 	{
 		SceneBackground->DeleteChildren();
+
 		OnModelLoaded();
 	}
 	if (EditorUI::FocusedPanel == this)

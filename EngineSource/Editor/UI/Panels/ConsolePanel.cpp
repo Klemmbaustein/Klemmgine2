@@ -22,6 +22,19 @@ static std::map<Log::LogColor, kui::Vec3f> LogColorValues =
 	std::pair(Log::LogColor::Yellow, kui::Vec3f(1, 1, 0)),
 };
 
+static std::map<Log::LogColor, kui::Vec3f> LogColorValuesLight =
+{
+	std::pair(Log::LogColor::Default, kui::Vec3f(0.3f)),
+	std::pair(Log::LogColor::White, kui::Vec3f(0)),
+	std::pair(Log::LogColor::Gray, kui::Vec3f(0.3f)),
+	std::pair(Log::LogColor::Red, kui::Vec3f(1, 0.0f, 0.0f)),
+	std::pair(Log::LogColor::Green, kui::Vec3f(0.0f, 0.6f, 0.0f)),
+	std::pair(Log::LogColor::Cyan, kui::Vec3f(0, 0.6f, 0.6f)),
+	std::pair(Log::LogColor::Magenta, kui::Vec3f(0.6f, 0, 0.6f)),
+	std::pair(Log::LogColor::Blue, kui::Vec3f(0, 0, 0.6f)),
+	std::pair(Log::LogColor::Yellow, kui::Vec3f(0.6f, 0.6f, 0)),
+};
+
 engine::editor::ConsolePanel::ConsolePanel()
 	: EditorPanel("Console", "console")
 {

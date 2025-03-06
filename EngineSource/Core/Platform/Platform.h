@@ -11,7 +11,7 @@ namespace engine::internal::platform
 
 	void SetThreadName(string Name);
 	string GetThreadName();
-	
+
 	struct SharedLibrary;
 
 	SharedLibrary* LoadSharedLibrary(string Path);

@@ -46,7 +46,7 @@ namespace engine
 		Vector3& operator-=(const Vector3& Other);
 		Vector3 operator*(const Vector3& Other) const;
 		Vector3 operator/(const Vector3& Other) const;
-		
+
 		[[nodiscard]]
 		static float Distance(const Vector3& a, const Vector3& b);
 
@@ -59,6 +59,9 @@ namespace engine
 		float& operator[](size_t Index);
 		[[nodiscard]]
 		const float& operator[](size_t Index) const;
+
+		[[nodiscard]]
+		Vector3 ProjectToPlane(Vector3 PlaneOrigin, Vector3 PlaneNormal) const;
 	};
 
 	struct Vector2
@@ -68,9 +71,19 @@ namespace engine
 		Vector2();
 		Vector2(float XY);
 		Vector2(float X, float Y);
-		Vector2 operator+(const Vector2& Other);
-		Vector2 operator*(const Vector2& Other);
+		Vector2 operator+(const Vector2& Other) const;
+		Vector2 operator*(const Vector2& Other) const;
+		Vector2 operator-() const;
+		Vector2 operator-(const Vector2& Other) const;
+		Vector2 operator/(const Vector2& Other) const;
+		Vector2& operator+=(const Vector2& Other);
 		string ToString() const;
 		static Vector2 FromString(string VectorString);
+
+		[[nodiscard]]
+		Vector2 Normalize() const;
+
+		[[nodiscard]]
+		float Length() const;
 	};
 }

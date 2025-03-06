@@ -9,19 +9,19 @@
 /**
 * @brief
 * Engine launch argument functions.
-* 
+*
 * Namespace contains functions for reading launch arguments passed to the executable.
 * After the launch arguments have been set using @SetArgs(), they can be read
 * using the GetArg() functions.
-* 
+*
 * Example:
 * Launch arguments: SomeExe -abc def -g
 * -> Arguments: abc (with parameter "def"), g (with no parameters)
-* 
+*
 * An argument is everything that starts with a '-'.
 * Anything after that argument that isn't a new argument is
 * interpreted as parameters belonging to that argument.
-* 
+*
 * @ingroup engine-core
 */
 namespace engine::launchArgs
@@ -29,9 +29,9 @@ namespace engine::launchArgs
 	/**
 	* @brief
 	* Sets the launch arguments of this executable.
-	* 
+	*
 	* The arguments should be passed directly from the main() function.
-	* 
+	*
 	* @see engine::launchArgs
 	*/
 	void SetArgs(int argc, char** argv);
@@ -72,9 +72,9 @@ namespace engine::launchArgs
 
 	/**
 	* Returns the parameters passed to a launch argument.
-	* 
+	*
 	* If there were no parameters passed to the argument, the function returns an empty vector.
-	* 
+	*
 	* If The argument doesn't exist, it returns an empty optional.
 	*/
 	std::optional<std::vector<Parameter>> GetArg(string Name);

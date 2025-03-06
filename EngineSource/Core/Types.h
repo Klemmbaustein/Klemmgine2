@@ -5,13 +5,13 @@
 
 /**
 * @defgroup engine-core Engine core
-* 
+*
 * @brief
 * Core engine functionality, defined in `EngineSource/Core`
-* 
+*
 * The engine core functions as it's own library that is usable without the rest of the engine.
 * It can be used by linking with the `KlemmgineCore` CMake target.
-* 
+*
 * The core library contains functions for:
 * - General utility functions.
 * - Error handling.
@@ -24,7 +24,7 @@
 /**
 * @brief
 * Signed byte type.
-* 
+*
 * @ingroup engine-core
 */
 using sByte = signed char;
@@ -119,4 +119,10 @@ using int64 = signed long;
 */
 using uint64 = unsigned long;
 
+#endif
+
+#if WINDOWS
+#define ENGINE_INTERFACE class __declspec(novtable)
+#else
+#define ENGINE_INTERFACE class
 #endif

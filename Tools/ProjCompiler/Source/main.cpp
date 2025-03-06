@@ -4,8 +4,11 @@
 #include <Core/File/BinarySerializer.h>
 #include <Core/File/TextSerializer.h>
 #include <Core/LaunchArgs.h>
+#include <Core/Archive/Archive.h>
+#include <Core/ThreadPool.h>
 #include <filesystem>
 #include <map>
+#include "ToArchives.h"
 
 using namespace engine;
 namespace std
@@ -45,7 +48,7 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 		}
 		i.append(".exe");
 #endif
-		std::fs::copy(BinaryPath / i , OutPath / i);
+		std::fs::copy(BinaryPath / i, OutPath / i);
 	}
 	for (string i : SharedLibraries)
 	{
@@ -57,59 +60,66 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 		if (std::fs::exists(BinaryPath / i))
 			std::fs::copy(BinaryPath / i, OutPath / i);
 	}
+
+	std::fs::path PluginPath = OutPath / "plugins" / "bin";
+
+	std::fs::create_directories(PluginPath);
+	//std::fs::copy("Plugins/");
+
+	for (auto& plugin : std::fs::directory_iterator(BinaryPath / "plugins"))
+	{
+		if (plugin.path().extension() == ".dll")
+		{
+			std::fs::copy(plugin, PluginPath / plugin.path().filename());
+		}
+	}
 }
 
-void CopyAndConvertFiles(std::fs::path InPath, std::fs::path OutPath)
+static BufferStream* CopyAndConvertFile(std::fs::path InPath, string& OutPath)
 {
 	std::map<string, string> KnownExtensions = {
 		{"kmt", "kbm"},
 		{"kts", "kbs"},
 	};
 
-	for (auto& i : std::fs::directory_iterator(InPath))
+	auto Name = InPath.filename();
+
+	string NameStr = InPath.string();
+
+	size_t Dot = NameStr.find_last_of(".");
+
+	if (Dot != string::npos)
 	{
-		auto Name = i.path().filename();
+		string Extension = NameStr.substr(Dot + 1);
+		string WithoutExtension = NameStr.substr(0, Dot);
 
-		if (std::fs::is_directory(i))
+		if (KnownExtensions.contains(Extension))
 		{
-			std::fs::create_directory(OutPath / Name);
-			CopyAndConvertFiles(InPath / Name, OutPath / Name);
-			continue;
+			string NewExtension = KnownExtensions[Extension];
+			OutPath = str::ReplaceChar(WithoutExtension, '\\', '/') + "." + NewExtension;
+
+			Log::Note(str::Format("Convert to binary: %s -> %s",
+				str::ReplaceChar(InPath.string(), '\\', '/').c_str(),
+				OutPath.c_str()));
+
+			BufferStream* NewStream = new BufferStream();
+
+			BinarySerializer::ToBinaryData(
+				TextSerializer::FromFile(InPath.string()),
+				NewStream,
+				NewExtension
+			);
+			NewStream->ResetStreamPosition();
+			return NewStream;
 		}
-
-		string NameStr = Name.string();
-
-		size_t Dot = NameStr.find_last_of(".");
-		if (Dot != string::npos)
-		{
-			string Extension = NameStr.substr(Dot + 1);
-			string WithoutExtension = NameStr.substr(0, Dot);
-
-			if (KnownExtensions.contains(Extension))
-			{
-				string NewExtension = KnownExtensions[Extension];
-				std::string NewFile = (OutPath / WithoutExtension).string() + "." + NewExtension;
-
-				Log::Info(str::Format("Convert to binary: %s -> %s",
-					str::ReplaceChar(i.path().string(), '\\', '/').c_str(),
-					str::ReplaceChar(NewFile, '\\', '/').c_str()));
-
-				BinarySerializer::ToFile(
-					TextSerializer::FromFile(i.path().string()),
-					NewFile,
-					NewExtension
-				);
-				continue;
-			}
-		}
-		
-		std::fs::copy(i, OutPath / i.path().filename());
 	}
+	return nullptr;
 }
 
 int main(int argc, char** argv)
 {
 	launchArgs::SetArgs(argc, argv);
+	Log::IsVerbose = true;
 
 	string OutPath = "build";
 
@@ -130,13 +140,12 @@ int main(int argc, char** argv)
 		BinPath = BinArg->at(0).AsString();
 	}
 
-
 	try
 	{
 		if (std::fs::exists(OutPath))
-	{
-		std::fs::remove_all(OutPath);
-	}
+		{
+			std::fs::remove_all(OutPath);
+		}
 	}
 	catch (std::fs::filesystem_error e)
 	{
@@ -149,7 +158,51 @@ int main(int argc, char** argv)
 
 	try
 	{
-		CopyAndConvertFiles("Assets/", OutPath + "/Assets");
+		ThreadPool ArchiveThreads = engine::ThreadPool(std::thread::hardware_concurrency() - 1, "Archive workers");
+
+		auto Archives = engine::build::GetBuildArchives("Assets/");
+
+		SerializedValue MapFile = std::vector<SerializedData>();
+
+		for (auto& ArchiveFiles : Archives)
+		{
+			std::fs::path ResultPath = std::fs::path(OutPath) / "Assets" / (ArchiveFiles.Name + ".bin");
+			ArchiveThreads.AddJob([ArchiveFiles, ResultPath]()
+				{
+					Log::Info("Writing archive: " + ResultPath.string());
+
+					Archive a;
+
+					for (auto& file : ArchiveFiles.Files)
+					{
+						string Name = str::ReplaceChar(file.string(), '\\', '/');
+
+						IBinaryStream* Data = CopyAndConvertFile(file, Name);
+						if (!Data)
+						{
+							Data = new FileStream(file.string(), true);
+						}
+
+						a.AddFile(Name, Data);
+						delete Data;
+					}
+					a.Save(ResultPath.string());
+					Log::Info("Done writing archive: " + ResultPath.string());
+				});
+
+			SerializedValue SceneArray = std::vector<SerializedValue>();
+
+			for (auto& i : ArchiveFiles.DependentScenes)
+			{
+				string SceneString = str::ReplaceChar(i.string(), '\\', '/');
+				SceneString = file::FilePath(SceneString) + "/" + file::FileNameWithoutExt(SceneString) + ".kbs";
+
+				SceneArray.Append(SceneString);
+			}
+
+			MapFile.Append(SerializedData(ArchiveFiles.Name, SceneArray));
+		}
+		BinarySerializer::ToFile(MapFile.GetObject(), OutPath + "/Assets/archmap.bin", "archm");
 
 		CopyBinaries(BinPath, OutPath);
 	}

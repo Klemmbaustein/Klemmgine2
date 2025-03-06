@@ -9,7 +9,7 @@ namespace engine
 #define ENGINE_OBJECT(name, path) private: static ::engine::SceneObject* Internal_Reflect_CreateNewInst() { \
 	return reinterpret_cast<::engine::SceneObject*>(new name());\
 }\
-public: static inline const ObjectTypeID ObjectType\
+public: static inline const volatile ObjectTypeID ObjectType\
 	 = ::engine::Reflection::RegisterObjectMacro(# name, Internal_Reflect_CreateNewInst, path)
 
 	using ObjectTypeID = int32;
@@ -17,7 +17,7 @@ public: static inline const ObjectTypeID ObjectType\
 	class Reflection
 	{
 	public:
-		
+
 		static ObjectTypeID RegisterObjectMacro(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
 		static ObjectTypeID RegisterObject(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
 

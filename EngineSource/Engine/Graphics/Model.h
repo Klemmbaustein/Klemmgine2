@@ -22,6 +22,6 @@ namespace engine::graphics
 		std::vector<VertexBuffer*> ModelVertexBuffers;
 
 		virtual void Draw(Scene* In, const Transform& At, Camera* With, std::vector<Material*>& UsedMaterials);
-		virtual void SimpleDraw(const Transform& At, ShaderObject* Shader);
+		virtual void SimpleDraw(const Transform& At, ShaderObject* Shader, std::vector<Material*>& UsedMaterials);
 	};
 }

@@ -49,18 +49,16 @@ namespace engine::internal
 
 		void PreLoadMesh(GraphicsModel* Mesh);
 
-		std::vector<physics::HitResult> CollisionTest(physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
+		std::vector<physics::HitResult> CollisionTest(Transform At, physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
 		std::vector<physics::HitResult> ShapeCastBody(physics::PhysicsBody* Body, Transform StartPos, Vector3 EndPos, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
 		physics::HitResult LineCast(Vector3 Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore);
 
 		struct PhysicsBodyInfo
 		{
 			JPH::BodyID ID;
-			JPH::Shape* BodyShape = nullptr;
 			physics::PhysicsBody* Body = nullptr;
-			GraphicsModel* ReferencedModel = nullptr;
 		};
-		
+
 		std::unordered_map<JPH::BodyID, PhysicsBodyInfo> Bodies;
 		JPH::BodyInterface* JoltBodyInterface = nullptr;
 

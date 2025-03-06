@@ -6,6 +6,7 @@
 #include <Core/Log.h>
 #include <Engine/MainThread.h>
 #include <Engine/Scene.h>
+#include <Engine/File/Resource.h>
 
 using namespace engine::graphics;
 
@@ -16,7 +17,13 @@ std::unordered_map<engine::string, engine::GraphicsModel> engine::GraphicsModel:
 engine::ModelData::ModelData(string FilePath)
 {
 	std::vector<SerializedData> File;
-	BinarySerializer::FromFile(FilePath, FormatName, File);
+
+	IBinaryStream* BinaryFile = resource::GetBinaryFile(FilePath);
+
+	if (!BinaryFile)
+		return;
+
+	BinarySerializer::FromStream(BinaryFile, File, FormatName);
 	DeSerialize(&File.at(0).Value);
 }
 
@@ -32,13 +39,26 @@ void engine::ModelData::PreLoadMaterials(Scene* With)
 {
 	for (auto& i : Meshes)
 	{
-		Material Mat = graphics::Material(AssetRef::FromName(i.Material, "kmt"));
+		auto Asset = AssetRef::FromName(i.Material, "kmt");
+
+		if (!Asset.Exists())
+		{
+			Asset = AssetRef::FromName(i.Material, "kbm");
+		}
+
+		Material Mat = graphics::Material(Asset);
 		for (auto& f : Mat.Fields)
 		{
 			if (f.FieldType != Material::Field::Type::Texture)
 			{
 				continue;
 			}
+
+			if (f.TextureValue.Name == nullptr)
+			{
+				continue;
+			}
+
 			auto Asset = AssetRef::Convert(*f.TextureValue.Name);
 
 			if (!Asset.IsValid())

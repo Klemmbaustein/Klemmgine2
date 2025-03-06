@@ -7,17 +7,17 @@
 
 void engine::PlayerObject::Begin()
 {
-	Collider = new PhysicsComponent();
-	Attach(Collider);
-	Collider->Scale = 0.5f;
-	Collider->CreateSphere(physics::MotionType::Static, physics::Layer::Static, false);
+	Movement = new MoveComponent();
+	Attach(Movement);
 
 	Cam = new CameraComponent();
-	Collider->Attach(Cam);
+	Attach(Cam);
 	Cam->Use();
+	Cam->Position.Y = 0.4f;
 
 	auto Mesh = new MeshComponent();
-	Collider->Attach(Mesh);
+	Attach(Mesh);
+	Mesh->Scale = Vector3(0.4f, 1.0f, 0.4f);
 	Mesh->Load(PlayerModel.Value);
 }
 
@@ -48,15 +48,14 @@ void engine::PlayerObject::Update()
 	{
 		Move(-CameraTransform.Right() * Speed);
 	}
+
+	if (input::IsKeyDown(input::Key::SPACE))
+	{
+		Movement->Jump();
+	}
 }
 
 void engine::PlayerObject::Move(Vector3 Direction)
 {
-	auto hit = Collider->ShapeCast(ObjectTransform, Position + Direction, physics::Layer::Static);
-
-	if (hit.Hit)
-	{
-		Position += hit.Normal * Vector3::Dot(hit.Normal, -Direction.Normalize()) * Direction.Length();
-	}
-	Position += Direction;
+	Movement->AddMovementInput((Direction * Vector3(1, 0, 1)).Normalize());
 }

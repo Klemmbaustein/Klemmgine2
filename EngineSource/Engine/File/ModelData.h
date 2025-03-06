@@ -8,7 +8,7 @@
 #include "AssetRef.h"
 
 namespace engine
-{	
+{
 	class Scene;
 
 	struct ModelData : ISerializable

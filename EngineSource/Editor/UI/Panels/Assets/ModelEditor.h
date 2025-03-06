@@ -24,7 +24,7 @@ namespace engine::editor
 	private:
 		void OnModelLoaded();
 		string GetDisplayName(string Asset);
-		
+
 		void OnModelChanged();
 
 		bool ModelLoaded = false;
@@ -35,6 +35,7 @@ namespace engine::editor
 		MeshObject* CurrentObj = nullptr;
 		std::thread LoadModelThread;
 		std::shared_ptr<bool> CancelLoad;
+		bool FailedLoading = false;
 	};
 }
 #endif

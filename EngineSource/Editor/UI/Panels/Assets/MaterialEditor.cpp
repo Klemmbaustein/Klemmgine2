@@ -82,7 +82,7 @@ void engine::editor::MaterialEditor::LoadUI()
 			{
 				TextureName = *i.TextureValue.Name;
 			}
-			 
+
 			auto Field = new MaterialTextureElement();
 
 			auto Selector = new AssetSelector(TextureName.empty() ? AssetRef{.Extension = "png"} : AssetRef::Convert(TextureName), UISize(200_px).GetScreen().X, nullptr);

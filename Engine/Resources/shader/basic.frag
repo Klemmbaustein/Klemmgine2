@@ -15,5 +15,5 @@ void main()
 	if (pixelColor.w < 0.5)
 		discard;
 
-	f_color = vec4(getLightStrength() * pixelColor.xyz * u_color, 1);
+	f_color = vec4(getLightStrength() * pixelColor.xyz * u_color, 1.0);
 }

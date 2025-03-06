@@ -1,4 +1,7 @@
 {
 	"name": str = "CSharp";
 	"binary": str = "Klemmgine.CSharp.Loader";
+	"include": array = [
+		str: "bin/net8.0/publish/*.dll",
+	];
 }

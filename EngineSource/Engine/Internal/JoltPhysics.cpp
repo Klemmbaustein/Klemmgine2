@@ -9,6 +9,8 @@
 #include <Core/ThreadPool.h>
 #include <Engine/MainThread.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/PhysicsSettings.h>
+
 using namespace engine;
 using namespace engine::physics;
 
@@ -433,15 +435,14 @@ void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive
 
 	if (StartCollisionEnabled)
 	{
-		JPH::BodyID ID = JoltBodyInterface->CreateAndAddBody(*JoltShape, StartActive ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
-		info.ID = ID;
+		info.ID = JoltBodyInterface->CreateAndAddBody(*JoltShape, StartActive ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
 	}
 	else
 	{
-		JoltBodyInterface->CreateBodyWithID(info.ID, *JoltShape);
+		info.ID = JoltBodyInterface->CreateBody(*JoltShape)->GetID();
 	}
 	Body->PhysicsSystemBody = &Bodies.emplace(info.ID, info).first->second;
-	JoltBodyInterface->SetUserData(info.ID, uint64(Body->PhysicsSystemBody));
+	JoltBodyInterface->SetUserData(info.ID, reinterpret_cast<uint64>(Body->PhysicsSystemBody));
 	Body->IsActive = StartActive;
 	Body->IsCollisionEnabled = StartCollisionEnabled;
 }
@@ -461,8 +462,10 @@ void engine::internal::JoltInstance::RemoveBody(engine::physics::PhysicsBody* Bo
 
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
 	if (Body->IsCollisionEnabled)
+	{
 		JoltBodyInterface->RemoveBody(Info->ID);
-	JoltBodyInterface->DestroyBody(Info->ID);
+		JoltBodyInterface->DestroyBody(Info->ID);
+	}
 	Bodies.erase(Info->ID);
 	Body->PhysicsSystemBody = nullptr;
 	auto JoltShape = static_cast<JPH::BodyCreationSettings*>(Body->ShapeInfo);
@@ -575,7 +578,7 @@ void engine::internal::JoltInstance::SetBodyCollisionEnabled(engine::physics::Ph
 void engine::internal::JoltInstance::PreLoadMesh(GraphicsModel* Mesh)
 {
 	std::lock_guard g{ LoadedModelsMutex };
-	
+
 	if (LoadedMeshes.contains(Mesh))
 		return;
 
@@ -613,8 +616,7 @@ public:
 		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(), inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
 		r.Distance = inResult.mFraction;
 
-		auto val = Instance->JoltBodyInterface->GetUserData(inResult.mBodyID2);
-		PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
+		PhysicsBody* BodyInfo = Instance->Bodies[inResult.mBodyID2].Body;
 		r.HitComponent = BodyInfo->Parent;
 		Hits.push_back(r);
 	}
@@ -628,11 +630,78 @@ public:
 
 	virtual bool ShouldCollide(const JPH::BodyID& inObject) const override
 	{
-		auto val = Instance->JoltBodyInterface->GetUserData(inObject);
-		PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
+		if (ObjectsToIgnore->empty())
+			return true;
+		PhysicsBody* BodyInfo = Instance->Bodies[inObject].Body;
+		//auto val = Instance->JoltBodyInterface->GetUserData(inObject);
+		//PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
 		return ObjectsToIgnore->find(BodyInfo->Parent->RootObject) == ObjectsToIgnore->end();
 	}
 };
+
+class CollisionShapeCollectorImpl : public JPH::CollideShapeCollector
+{
+public:
+
+	CollisionShapeCollectorImpl()
+	{
+
+	}
+
+	std::vector<HitResult> Hits;
+	internal::JoltInstance* Instance = nullptr;
+
+	virtual void AddHit(const ResultType& inResult) override
+	{
+		HitResult r;
+		r.Hit = true;
+		r.Depth = inResult.mPenetrationDepth;
+		r.Normal = -Vector3(inResult.mPenetrationAxis.GetX(), inResult.mPenetrationAxis.GetY(), inResult.mPenetrationAxis.GetZ()).Normalize();
+		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(), inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
+
+		PhysicsBody* BodyInfo = Instance->Bodies[inResult.mBodyID2].Body;
+		r.HitComponent = BodyInfo->Parent;
+		Hits.push_back(r);
+	};
+};
+
+std::vector<physics::HitResult> engine::internal::JoltInstance::CollisionTest(Transform At, physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+{
+	if (!Body->ShapeInfo)
+	{
+		CreateShape(Body);
+		if (!Body->ShapeInfo)
+		{
+			return {};
+		}
+	}
+	auto JoltShape = static_cast<JPH::BodyCreationSettings*>(Body->ShapeInfo);
+
+	glm::mat4 mat = At.Matrix;
+
+	Vector3 Position, Scale;
+	Rotation3 Rotation;
+	At.Decompose(Position, Rotation, Scale);
+
+	JPH::Mat44 ResultMat = JPH::Mat44(ToJPHVec4(mat[0]), ToJPHVec4(mat[1]), ToJPHVec4(mat[2]), ToJPHVec4(mat[3]));
+
+	CollisionShapeCollectorImpl cl;
+	cl.Instance = this;
+	JPH::CollideShapeSettings Settings = JPH::CollideShapeSettings();
+
+	JPH::BroadPhaseLayerFilter BplF;
+	ObjectLayerFilterImpl LayerF;
+	LayerF.ObjLayer = Layers;
+	BodyFilterImpl ObjF;
+	ObjF.ObjectsToIgnore = &ObjectsToIgnore;
+	ObjF.Instance = this;
+
+	JPH::Vec3 ObjectScale = ToJPHVec3(1);
+
+	System->GetNarrowPhaseQuery().CollideShape(JoltShape->GetShape(), ObjectScale, ResultMat, Settings, JPH::Vec3(), cl, BplF, LayerF, ObjF);
+
+	return cl.Hits;
+}
 
 std::vector<HitResult> internal::JoltInstance::ShapeCastBody(
 	physics::PhysicsBody* Body,
@@ -672,7 +741,7 @@ std::vector<HitResult> internal::JoltInstance::ShapeCastBody(
 	ObjF.Instance = this;
 	ObjF.ObjectsToIgnore = &ObjectsToIgnore;
 
-	JPH::RShapeCast c = JPH::RShapeCast(JoltShape->GetShape(), ToJPHVec3(Scale), ResultMat, ToJPHVec3(Direction));
+	JPH::RShapeCast c = JPH::RShapeCast(JoltShape->GetShape(), ToJPHVec3(1), ResultMat, ToJPHVec3(Direction));
 	System->GetNarrowPhaseQuery().CastShape(c, s, JPH::Vec3(0, 0, 0), cl, BplF, LayerF, ObjF);
 	return cl.Hits;
 }

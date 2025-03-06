@@ -288,6 +288,7 @@ void engine::editor::EditorPanel::SetFocused()
 
 	EditorPanel* Old = EditorUI::FocusedPanel;
 	EditorUI::FocusedPanel = this;
+	Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = Background;
 	if (Old)
 	{
 		Old->UpdateFocusState();

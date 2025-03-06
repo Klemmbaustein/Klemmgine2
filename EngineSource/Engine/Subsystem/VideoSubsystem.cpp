@@ -70,28 +70,40 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		}
 	}
 
-	MainWindow = new Window("Klemmgine 2", Window::WindowFlag::Resizable, Window::POSITION_CENTERED, WindowSize);
+	auto VersionArg = launchArgs::GetArg("gl");
+
+	if (VersionArg.has_value() && VersionArg->size() == 1)
+	{
+		string VersionString = VersionArg->at(0).AsString();
+
+		if (VersionString == "4.3")
+		{
+			openGL::VersionOverride = openGL::Version::GL430;
+		}
+		else if (VersionString == "3.3")
+		{
+			openGL::VersionOverride = openGL::Version::GL430;
+		}
+		else
+		{
+			Print(str::Format("Unknown OpenGL version '%s' will be interpreted as default", VersionString.c_str()));
+		}
+
+		Print(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
+	}
+
+	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", ENGINE_COMPILER_ID, "4.3");
+
+#ifdef EDITOR
+	Title.append(" Editor");
+#endif
+
+	MainWindow = new Window(Title, Window::WindowFlag::Resizable, Window::POSITION_CENTERED, WindowSize);
 	MainWindow->SetMinSize(Vec2ui(600, 400));
 
 	if (openGL::GetGLVersion() < openGL::Version::GL430)
 	{
 		Print("OpenGL 4.3 is unavailable, using OpenGL 3.3 instead. Some graphics effects won't work.", LogType::Warning);
-	}
-
-	auto VersionArg = launchArgs::GetArg("gl");
-
-	if (VersionArg.has_value() && VersionArg->size() == 1)
-	{
-		if (VersionArg->at(0).AsString() == "4.3")
-		{
-			openGL::VersionOverride = openGL::Version::GL430;
-		}
-		else if (VersionArg->at(0).AsString() == "3.3")
-		{
-			openGL::VersionOverride = openGL::Version::GL430;
-		}
-
-		Print(str::Format("OpenGL version set through command line: '%s'", VersionArg->at(0).AsString().c_str()));
 	}
 
 	MainWindow->OnResizedCallback = [this](Window*)
@@ -107,6 +119,11 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	debug::TimeLogger ModulesTime{ "Compiled shader modules", GetLogPrefixes() };
 	Shaders.Modules.ScanModules();
 	ModulesTime.End();
+
+	MainWindow->Input.RegisterOnKeyDownCallback(Key::F11, [](Window* w)
+		{
+			w->SetMaximized(!w->GetWindowFullScreen());
+		});
 
 	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
 	if (ConsoleSys)
@@ -171,7 +188,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 		glDisable(GL_DEPTH_TEST);
 	}
 
-	auto PostProcess = MainWindow->Shaders.LoadShader("shader/postProcess.vert", "shader/drawToWindow.frag", "engineToWindow");
+	auto PostProcess = MainWindow->Shaders.LoadShader("shader/internal/postProcess.vert", "shader/internal/drawToWindow.frag", "engineToWindow");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	PostProcess->Bind();
@@ -212,7 +229,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	}
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 	SDL_GL_SwapWindow(GetSysWindow(MainWindow)->SDLWindow);
 }
 

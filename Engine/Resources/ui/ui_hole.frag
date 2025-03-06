@@ -1,3 +1,4 @@
+//! #version 330
 in vec2 v_texcoords;
 in vec2 v_position;
 in float v_cornerIndex;
@@ -27,7 +28,7 @@ bool isBorderVisible(int index)
 }
 
 float rand(vec2 n)
-{ 
+{
 	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
 
@@ -37,9 +38,9 @@ void main()
 	vec2 scaledTexCoords = v_texcoords * scale * (1 + 0.5 / u_screenRes);
 	vec2 nonAbsCenteredTexCoords = (scaledTexCoords - scale / 2) * 2;
 	vec2 centeredTexCoords = abs(nonAbsCenteredTexCoords);
-	
+
 	int cornerIndex = int(round(v_cornerIndex));
-	
+
 	if (u_offset.y > v_position.y)
 	{
 		discard;
@@ -64,5 +65,6 @@ void main()
 	}
 	f_alpha.xyz = vec3(0);
 	f_alpha.w = f_color.w;
+	f_color.xyz = vec3(0);
 	f_color.w = 0;
 }

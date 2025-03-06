@@ -4,6 +4,7 @@
 #include <Engine/Engine.h>
 #include <Engine/Scene.h>
 #include <Engine/Debug/TimeLogger.h>
+#include <Engine/Input.h>
 
 bool engine::subsystem::EditorSubsystem::Active = false;
 
@@ -19,7 +20,6 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 		{
 			Scene::GetMain()->ReloadObjects(&LastScene);
 		}
-
 	}
 
 	debug::TimeLogger UITime{"Created editor UI", GetLogPrefixes()};
@@ -59,7 +59,7 @@ void engine::subsystem::EditorSubsystem::StartProject()
 
 	Active = false;
 	Unload();
-	
+
 	LastScene = Scene::GetMain()->Serialize();
 	Scene::GetMain()->ReloadObjects(nullptr);
 }

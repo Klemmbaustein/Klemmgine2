@@ -41,7 +41,7 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 		bool Last = i == Options.end() - 1;
 
 		Box->AddChild((new UIButton(true, 0, i->Name == "Delete" ? Vec3f(0.5f, 0, 0) : EditorUI::Theme.LightBackground, fn))
-			->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight * 2)
+			->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
 			->SetBorderEdges(First, Last || i->Separator, true, true)
 			->SetCorner(5_px)
 			->SetOpacity(0.65f)

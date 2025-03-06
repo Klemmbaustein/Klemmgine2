@@ -1,5 +1,7 @@
+#pragma once
 #include <Core/Types.h>
 #include <map>
+#include <Core/File/BinaryStream.h>
 
 namespace engine::resource
 {
@@ -11,18 +13,11 @@ namespace engine::resource
 	[[nodiscard]]
 	bool FileExists(string EnginePath);
 
-	struct BinaryFile
-	{
-		const uByte* DataPtr = nullptr;
-		size_t DataSize = 0;
-		bool CanFree = true;
-	};
-
 	[[nodiscard]]
-	BinaryFile GetBinaryFile(string EnginePath);
-	void FreeBinaryFile(BinaryFile& Target);
+	ReadOnlyBufferStream* GetBinaryFile(string EnginePath);
 
 	extern std::map<string, string> LoadedAssets;
 
+	void LoadSceneFiles(string ScenePath);
 	void ScanForAssets();
 }

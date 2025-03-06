@@ -1,4 +1,4 @@
-//? version 330
+//? #version 330
 #module "engine.common" //!
 
 #export //!

@@ -20,6 +20,16 @@ namespace engine::editor
 		kui::Vec3f Highlight2 = 1;
 		kui::Vec3f HighlightText = 0;
 
+		//kui::Vec3f Text = 0;
+		//kui::Vec3f Background = kui::Vec3f(0.9f, 0.9f, 0.9f);
+		//kui::Vec3f DarkBackground = 1.0f;
+		//kui::Vec3f DarkBackground2 = 0.8f;
+		//kui::Vec3f LightBackground = 0.8f;
+		//kui::Vec3f BackgroundHighlight = kui::Vec3f(0.4f);
+		//kui::Vec3f Highlight1 = kui::Vec3f(0.1f, 0.3f, 0.7f);
+		//kui::Vec3f HighlightDark = kui::Vec3f(0.5f, 0.7f, 1.0f);
+		//kui::Vec3f Highlight2 = 0.1f;
+		//kui::Vec3f HighlightText = 1;
 	};
 
 	class EditorUI

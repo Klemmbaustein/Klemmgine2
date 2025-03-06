@@ -66,5 +66,5 @@ engine::string engine::AssetRef::DisplayName() const
 
 bool engine::AssetRef::Exists() const
 {
-	return std::filesystem::exists(FilePath);
+	return resource::FileExists(FilePath);
 }

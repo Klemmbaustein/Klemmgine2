@@ -17,7 +17,7 @@ void engine::debug::TimeLogger::End()
 {
 	if (Ended)
 		return;
-	
+
 	uint64 Difference = SDL_GetPerformanceCounter() - BeginTime;
 	double DifferenceSeconds = double(Difference) / double(SDL_GetPerformanceFrequency());
 

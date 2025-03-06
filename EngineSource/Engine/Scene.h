@@ -16,9 +16,9 @@ namespace engine
 	/**
 	* @brief
 	* A scene is a collection of objects and rendering information.
-	* 
+	*
 	* Each scene can have one graphics::Camera
-	* 
+	*
 	* @see subsystem::SceneSubsystem
 	*/
 	class Scene : ISerializable
@@ -39,9 +39,9 @@ namespace engine
 		/**
 		* @brief
 		* A camera owned by this scene that is used if no other camera is available.
-		* 
+		*
 		* This camera is also used by the editor as the editor camera.
-		* 
+		*
 		* @see UsedCamera
 		*/
 		graphics::Camera* SceneCamera = nullptr;
@@ -49,9 +49,9 @@ namespace engine
 		/**
 		* @brief
 		* The camera that is used to draw this scene.
-		* 
+		*
 		* When the scene is first loaded, this has the same value as SceneCamera.
-		* 
+		*
 		* @see CameraComponent
 		*/
 		graphics::Camera* UsedCamera = nullptr;
@@ -59,7 +59,7 @@ namespace engine
 		/**
 		* @brief
 		* All objects in this scene.
-		* 
+		*
 		* @see SceneObject
 		*/
 		std::vector<SceneObject*> Objects;
@@ -70,14 +70,14 @@ namespace engine
 		/**
 		* @brief
 		* If this is true, this scene will be drawn each frame.
-		* 
+		*
 		* @see engine::Scene::Redraw
 		*/
 		bool AlwaysRedraw = true;
 		/**
 		* @brief
 		* Should this scene be redrawn the next frame.
-		* 
+		*
 		* This value is ignored if AlwaysRedraw is true.
 		* Otherwise this scene will only be drawn if it is true.
 		*/
@@ -86,7 +86,7 @@ namespace engine
 		/**
 		* @brief
 		* Gets the main scene, or nullptr if there is none.
-		* 
+		*
 		* The function might also return nullptr when:
 		* -	The main scene is still loading.
 		* - The SceneSubsystem is unloaded.
@@ -102,7 +102,7 @@ namespace engine
 		/**
 		* @brief
 		* Creates an object with the given type and places it into this scene.
-		* 
+		*
 		* @see SceneObject
 		*/
 		template<typename T>
@@ -116,7 +116,7 @@ namespace engine
 		/**
 		* @brief
 		* Creates an object with the given type ID and places it into the scene.
-		* 
+		*
 		* @see SceneObject
 		*/
 		engine::SceneObject* CreateObjectFromID(int32 ID, Vector3 Position = 0, Rotation3 Rotation = 0, Vector3 Scale = 1);
@@ -124,7 +124,7 @@ namespace engine
 		/**
 		* @brief
 		* Reloads all objects in this scene.
-		* 
+		*
 		* This is used to transition from the editor to the game when built with the KLEMMGINE_EDITOR argument.
 		*/
 		void ReloadObjects(SerializedValue* FromState);
@@ -135,7 +135,7 @@ namespace engine
 		/**
 		* @brief
 		* A string representing the scene.
-		* 
+		*
 		* Usually this is the path to the scene file (kts or kbs) that this scene was loaded from.
 		*/
 		string Name;
@@ -161,9 +161,9 @@ namespace engine
 		/**
 		* @brief
 		* Adds a component to the list of drawn components.
-		* 
+		*
 		* Drawn components will be sorted and rendered each time this scene is drawn.
-		* 
+		*
 		* @see RemoveDrawnComponent
 		* @see DrawableComponent
 		*/
@@ -180,12 +180,12 @@ namespace engine
 		/**
 		* @brief
 		* Pre-loads an asset from the given asset reference.
-		* 
+		*
 		* All assets that are pre-loaded by this scene will be unloaded again when it is unloaded.
 		* This function is meant to be used when loading the scene.
 		* If the scene is loaded asynchronously using subsystem::SceneSubsystem::LoadSceneAsync(),
 		* the asset will also be loaded asynchronously.
-		* 
+		*
 		* @see subsystem::SceneSubsystem::LoadSceneAsync()
 		* @see subsystem::SceneSubsystem
 		*/

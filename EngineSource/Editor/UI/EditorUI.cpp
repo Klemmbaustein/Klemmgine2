@@ -146,7 +146,7 @@ engine::editor::EditorUI::EditorUI()
 		->SetMaxSize(2);
 
 	MenuBar = new UIBackground(true, 0, Theme.LightBackground, SizeVec(UISize::Parent(1), UISize::Pixels(MenuBarSize)));
-	MenuBar 
+	MenuBar
 		->SetVerticalAlign(UIBox::Align::Centered);
 	Root->AddChild(MenuBar);
 

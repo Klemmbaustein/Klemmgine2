@@ -11,9 +11,9 @@ namespace engine
 	/**
 	* @brief
 	* Engine string utility functions.
-	* 
+	*
 	* Contains various utility functions related to strings.
-	* 
+	*
 	* @ingroup engine-core
 	*/
 	namespace str
@@ -21,13 +21,13 @@ namespace engine
 		/**
 		* @brief
 		* Splits a string into substrings.
-		* 
+		*
 		* @param Target
 		* The input string that should be split into chunks.
-		* 
+		*
 		* @param Delim
 		* A string containing all characters that function as delimitors.
-		* 
+		*
 		* @return
 		* The a vector containing the substrings.
 		* If a substring would be empty (if 2 delimitors were read one after another),
@@ -61,7 +61,7 @@ namespace engine
 		/**
 		* @brief
 		* Hashes the string, gives an unique integer from a string.
-		* 
+		*
 		* This function is used for object IDs. The object ID is derived from the object's name.
 		*/
 		[[nodiscard]]
@@ -70,7 +70,7 @@ namespace engine
 		/**
 		* @brief
 		* Formats a string using the C printf functions.
-		* 
+		*
 		* Any string passed with %s must be passed as a C-string!
 		*/
 		[[nodiscard]]

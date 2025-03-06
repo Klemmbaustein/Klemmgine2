@@ -79,6 +79,7 @@ element ItemBrowserButton
 		child UIText
 		{
 			text = Name;
+			color = Color_Text;
 			wrap = 76px;
 			padding = 2px;
 			upPadding = 0;

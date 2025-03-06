@@ -37,9 +37,9 @@ void CascadedShadows::Init()
 		return;
 
 	ShadowShader = new ShaderObject(
-		resource::GetTextFile("res:shader/shadow.vert"),
-		resource::GetTextFile("res:shader/shadow.frag"),
-		resource::GetTextFile("res:shader/shadow.geom")
+		resource::GetTextFile("res:shader/internal/shadow.vert"),
+		resource::GetTextFile("res:shader/internal/shadow.frag"),
+		resource::GetTextFile("res:shader/internal/shadow.geom")
 	);
 
 	glGenFramebuffers(1, &LightFBO);
@@ -109,6 +109,7 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 	if (!Enabled)
 		return 0;
 
+	glEnable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, LightFBO);
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

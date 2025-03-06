@@ -1,7 +1,7 @@
 #pragma once
 #include "SceneObject.h"
 #include "Components/CameraComponent.h"
-#include "Components/PhysicsComponent.h"
+#include "Components/MoveComponent.h"
 
 namespace engine
 {
@@ -10,7 +10,7 @@ namespace engine
 	public:
 
 		CameraComponent* Cam = nullptr;
-		PhysicsComponent* Collider = nullptr;
+		MoveComponent* Movement = nullptr;
 
 		ENGINE_OBJECT(PlayerObject, "Game");
 

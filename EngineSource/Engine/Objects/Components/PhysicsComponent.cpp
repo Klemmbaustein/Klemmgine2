@@ -76,24 +76,26 @@ void engine::PhysicsComponent::CreateCapsule(physics::MotionType Movability, phy
 		Layers,
 		this);
 
-	if (StartEnabled)
-	{
-		GetRootObject()->GetScene()->Physics.AddBody(Body, true, true);
-		Added = true;
-	}
-	else
-	{
-		Body->IsCollisionEnabled = false;
-	}
+	GetRootObject()->GetScene()->Physics.AddBody(Body, true, StartEnabled);
+	Added = true;
 }
 
-physics::HitResult engine::PhysicsComponent::ShapeCast(Transform Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+std::vector<physics::HitResult> engine::PhysicsComponent::ShapeCast(Transform Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
 {
 	if (!Body)
 	{
-		return physics::HitResult();
+		return {};
 	}
-	return physics::HitResult::GetAverageHit(Body->ShapeCast(Start, End, Layers, ObjectsToIgnore));
+	return Body->ShapeCast(Start, End, Layers, ObjectsToIgnore);
+}
+
+std::vector<physics::HitResult> engine::PhysicsComponent::CollisionTest(physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+{
+	if (!Body)
+	{
+		return {};
+	}
+	return Body->CollisionTest(GetWorldTransform(), Layers, ObjectsToIgnore);
 }
 
 void engine::PhysicsComponent::SetCollisionEnabled(bool NewEnabled)
@@ -144,7 +146,7 @@ void engine::PhysicsComponent::SetActive(bool NewActive)
 		Body->IsActive = NewActive;
 		return;
 	}
-	
+
 	if (NewActive != Body->IsActive)
 	{
 		if (NewActive)
@@ -171,7 +173,7 @@ void engine::PhysicsComponent::Clear()
 {
 	if (Body)
 	{
-		RootObject->GetScene()->Physics.RemoveBody(Body);
+		GetRootObject()->GetScene()->Physics.RemoveBody(Body);
 		delete Body;
 	}
 	Body = nullptr;

@@ -14,7 +14,9 @@ namespace engine
 		void CreateBox(physics::MotionType Movability, physics::Layer Layers = physics::Layer::Dynamic, bool StartEnabled = true);
 		void CreateCapsule(physics::MotionType Movability, physics::Layer Layers = physics::Layer::Dynamic, bool StartEnabled = true);
 
-		physics::HitResult ShapeCast(Transform Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore = {});
+		std::vector<physics::HitResult> ShapeCast(Transform Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore = {});
+
+		std::vector<physics::HitResult> CollisionTest(physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore = {});
 
 		void SetCollisionEnabled(bool NewEnabled);
 		bool GetCollisionEnabled() const;

@@ -1,4 +1,6 @@
 #include "SceneObject.h"
+#include "MeshObject.h"
+#include "PlayerObject.h"
 #include <Engine/Scene.h>
 #include <Core/Error/EngineAssert.h>
 #include <Core/Log.h>
@@ -23,6 +25,8 @@ SerializedValue engine::SceneObject::Serialize()
 		SerializedData("typeId", int32(TypeID)),
 		SerializedData("properties", SerializedProperties)
 		});
+	&MeshObject::Begin;
+	&PlayerObject::Begin;
 }
 
 void engine::SceneObject::DeSerialize(SerializedValue* From)
@@ -156,7 +160,7 @@ void engine::SceneObject::UpdateObject()
 {
 	Update();
 	CheckTransform();
-	
+
 	for (ObjectComponent* c : ChildComponents)
 	{
 		c->UpdateAll();

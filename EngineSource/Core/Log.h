@@ -8,11 +8,11 @@ namespace engine
 	/**
 	* @brief
 	* Class for logging messages.
-	* 
+	*
 	* Prints messages to the standard output (or in the future to a file)
-	* 
+	*
 	* @todo Log to a file.
-	* 
+	*
 	* @ingroup engine-core
 	*/
 	class Log
@@ -22,7 +22,7 @@ namespace engine
 		/**
 		* @brief
 		* A color used for logging messages.
-		* 
+		*
 		* @see Log::PrintMsg()
 		*/
 		enum class LogColor
@@ -50,7 +50,7 @@ namespace engine
 		/**
 		* @brief
 		* A prefix added to a log message.
-		* 
+		*
 		* The prefix follows the format
 		* `[<Text>]: `, where the `<Text>` portion will have the given color.
 		*/
@@ -75,9 +75,9 @@ namespace engine
 		/**
 		* @brief
 		* Prints a message into the log, with the given color and the given prefixes.
-		* 
+		*
 		* The message can contain multiple lines (separated by a newline character) and the prefix will be added for each line.
-		* 
+		*
 		* @see LogColor
 		* @see Log::Info()
 		* @see Log::Warn()
@@ -88,10 +88,10 @@ namespace engine
 		/**
 		* @brief
 		* Prints an info message into the log.
-		* 
+		*
 		* This function works like Log::PrintMsg(), but it only logs if Log::IsVerbose is true.
 		* The [Note]: prefix is added and the log color is gray.
-		* 
+		*
 		* @see Log::PrintMsg()
 		* @ingroup engine-core
 		*/
@@ -100,9 +100,9 @@ namespace engine
 		/**
 		* @brief
 		* Prints an info message into the log.
-		* 
+		*
 		* This function works like Log::PrintMsg(), but the [Info]: prefix is added and the log color is white.
-		* 
+		*
 		* @see Log::PrintMsg()
 		* @ingroup engine-core
 		*/

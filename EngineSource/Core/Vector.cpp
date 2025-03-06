@@ -1,4 +1,11 @@
 #include "Vector.h"
+#include "Vector.h"
+#include "Vector.h"
+#include "Vector.h"
+#include "Vector.h"
+#include "Vector.h"
+#include "Vector.h"
+#include "Vector.h"
 #include <cmath>
 #include <iostream>
 #include <glm/geometric.hpp>
@@ -232,6 +239,13 @@ const float& engine::Vector3::operator[](size_t Index) const
 	return reinterpret_cast<const float*>(this)[Index];
 }
 
+Vector3 engine::Vector3::ProjectToPlane(Vector3 PlaneOrigin, Vector3 PlaneNormal) const
+{
+	Vector3 normalizedPlaneNormal = PlaneNormal.Normalize();
+	Vector3 pointProjection = *this - Vector3(Vector3::Dot(*this - PlaneOrigin, normalizedPlaneNormal)) * normalizedPlaneNormal;
+	return pointProjection;
+}
+
 engine::Vector2::Vector2()
 {
 }
@@ -248,14 +262,36 @@ engine::Vector2::Vector2(float X, float Y)
 	this->Y = Y;
 }
 
-Vector2 engine::Vector2::operator+(const Vector2& Other)
+Vector2 engine::Vector2::operator+(const Vector2& Other) const
 {
 	return Vector2(X + Other.X, Y + Other.Y);
 }
 
-Vector2 engine::Vector2::operator*(const Vector2& Other)
+Vector2 engine::Vector2::operator*(const Vector2& Other) const
 {
 	return Vector2(X * Other.X, Y * Other.Y);
+}
+
+Vector2 engine::Vector2::operator-() const
+{
+	return Vector2(-X, -Y);
+}
+
+Vector2 engine::Vector2::operator-(const Vector2& Other) const
+{
+	return Vector2(X - Other.X, Y - Other.Y);
+}
+
+Vector2 engine::Vector2::operator/(const Vector2& Other) const
+{
+	return Vector2(X / Other.X, Y / Other.Y);
+}
+
+Vector2& engine::Vector2::operator+=(const Vector2& Other)
+{
+	X += Other.X;
+	Y += Other.Y;
+	return *this;
 }
 
 string engine::Vector2::ToString() const
@@ -282,4 +318,19 @@ Vector2 engine::Vector2::FromString(string VectorString)
 	{
 		return 0;
 	}
+}
+
+Vector2 engine::Vector2::Normalize() const
+{
+	float Len = Length();
+	if (Len > 0)
+	{
+		return *this / Vector2(Len);
+	}
+	return Vector2();
+}
+
+float engine::Vector2::Length() const
+{
+	return std::sqrt(X * X + Y * Y);
 }

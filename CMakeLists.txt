@@ -15,7 +15,7 @@ if(POLICY CMP0141)
 	cmake_policy(SET CMP0141 NEW)
 	set(
 		CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
-		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug>:EditAndContinue>,$<$<CONFIG:Debug>:ProgramDatabase>>"
+		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
 	)
 endif()
 
@@ -27,7 +27,11 @@ option(ENGINE_EDITOR "Compile the editor" OFF)
 option(ENGINE_CSHARP "Include the C# plugin" ON)
 option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 
-project("Klemmgine" LANGUAGES C CXX RC)
+if(WIN32)
+	project("Klemmgine" LANGUAGES C CXX RC)
+else()
+	project("Klemmgine" LANGUAGES C CXX)
+endif()
 
 function(engine_part_library TARGET_NAME TARGET_PATH)
 	message("Including engine part: EngineSource/${TARGET_PATH} (${TARGET_NAME})")
@@ -76,6 +80,8 @@ else()
 	add_executable(Klemmgine "EngineSource/main.cpp" "EngineSource/Resources.rc")
 endif()
 
+target_compile_definitions(KlemmgineLib PRIVATE ENGINE_COMPILER_ID="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}-${CMAKE_BUILD_TYPE}")
+
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)
 set(KLEMMUI_INCLUDE_EXAMPLES OFF)
 
@@ -85,6 +91,8 @@ if(UNIX)
 	endif()
 endif()
 
+include("Dependencies/miniz/miniz.cmake")
+
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
 set(ENABLE_ALL_WARNINGS OFF)
 set(GENERATE_DEBUG_SYMBOLS OFF)
@@ -93,6 +101,8 @@ set(OVERRIDE_CXX_FLAGS OFF)
 add_subdirectory("Dependencies/SDL" EXCLUDE_FROM_ALL)
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory("Dependencies/glm" EXCLUDE_FROM_ALL)
+set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF)
+set(PROFILER_IN_DEBUG_AND_RELEASE OFF)
 add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
 target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -161,6 +171,7 @@ target_link_libraries(KlemmgineLib PUBLIC Jolt)
 target_link_libraries(KlemmgineLib PUBLIC KlemmUI)
 target_link_libraries(KlemmgineLib PUBLIC libglew_static)
 target_link_libraries(KlemmgineCore PUBLIC glm)
+target_link_libraries(KlemmgineCore PUBLIC miniz)
 
 target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
 
@@ -175,7 +186,10 @@ endif()
 
 klemmui_resources(KlemmgineLib "Engine/Resources")
 
+
 if (ENGINE_BUILD_TOOLS)
+	enable_testing()
+	add_subdirectory("Tools/Tests")
 	add_subdirectory("Tools/ProjCompiler")
 endif()
 

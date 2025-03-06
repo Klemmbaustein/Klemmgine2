@@ -33,7 +33,7 @@ element ConsolePanelElement
 		verticalAlign = centered;
 		width = 100%;
 		height = 32px;
-		
+
 		child EditorTextField commandField
 		{
 			HintText = "Execute command";

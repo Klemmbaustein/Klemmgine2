@@ -13,7 +13,7 @@ namespace engine
 		/**
 		* @brief
 		* Creates an asset reference from a file name.
-		* 
+		*
 		* Equivalent to writing "FileName.ext"_asset
 		*/
 		[[nodiscard]]
@@ -40,9 +40,9 @@ namespace engine
 		/**
 		* @brief
 		* Gets the display name of this asset.
-		* 
+		*
 		* The display name is the name of the file (without the path) without the extension.
-		* 
+		*
 		* Example: Assets/Cube.kmdl -> Cube
 		*/
 		[[nodiscard]]
@@ -57,7 +57,7 @@ namespace engine
 /**
 * @brief
 * Creates an asset reference from a file name.
-* 
+*
 * @see AssetRef::FromName()
 */
 engine::AssetRef operator ""_asset(const char*, std::size_t);

@@ -19,7 +19,7 @@ void engine::internal::AdjustWorkingDirectory()
 		}
 
 		std::filesystem::path NewPath = CurrentDir / "..";
-		if (!std::filesystem::exists(NewPath) || !NewPath.has_root_name())
+		if (!std::filesystem::exists(NewPath) || !NewPath.has_parent_path())
 		{
 			break;
 		}

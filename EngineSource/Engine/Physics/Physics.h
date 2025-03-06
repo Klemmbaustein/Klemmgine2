@@ -44,12 +44,12 @@ namespace engine::physics
 	/**
 	* @brief
 	* Physics layer enum. Defines collision rules for physics objects.
-	* 
+	*
 	* Each layer is one bit, so they can be combined. Example:
 	* ```cpp
 	* Body.CollisionLayers = Dynamic | Layer0;
 	* ```
-	* 
+	*
 	* @ingroup Physics
 	*/
 	enum class Layer : uint16_t
@@ -187,7 +187,7 @@ namespace engine::physics
 		Vector3 GetVelocity();
 		Vector3 GetAngularVelocity();
 
-		std::vector<HitResult> CollisionTest(Layer Layers, std::set<SceneObject*> ObjectsToIgnore = {});
+		std::vector<HitResult> CollisionTest(Transform At, Layer Layers, std::set<SceneObject*> ObjectsToIgnore = {});
 		std::vector<HitResult> ShapeCast(Transform StartTransform, Vector3 EndPos, Layer Layers, std::set<SceneObject*> ObjectsToIgnore = {});
 
 		/// The *initial* Transform of the body.

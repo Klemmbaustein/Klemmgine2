@@ -1,9 +1,6 @@
 #include "Texture.h"
-#include "Texture.h"
 #include <Engine/File/Resource.h>
-#include <Core/Error/EngineAssert.h>
 #include <Engine/Internal/OpenGL.h>
-#include <Engine/MainThread.h>
 #include <stb_image.hpp>
 #include <mutex>
 using namespace engine;
@@ -51,11 +48,11 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureLoadOptions 
 		TextureLoadMutex.unlock();
 	}
 
-	BinaryFile Bytes = GetBinaryFile(From.FilePath);
-	if (!Bytes.DataPtr)
+	ReadOnlyBufferStream* Bytes = GetBinaryFile(From.FilePath);
+	if (!Bytes)
 		return nullptr;
-	const Texture* Result = LoadCompressedBuffer(Bytes.DataPtr, Bytes.DataSize, LoadInfo);
-	FreeBinaryFile(Bytes);
+	const Texture* Result = LoadCompressedBuffer(Bytes->GetData(), Bytes->GetSize(), LoadInfo);
+	delete Bytes;
 
 	return Result;
 }
@@ -63,6 +60,7 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureLoadOptions 
 const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t BufferSize, TextureLoadOptions LoadInfo)
 {
 	int w, h, ch;
+	stbi_set_flip_vertically_on_load(true);
 	stbi_uc* Loaded = stbi_load_from_memory(Buffer, int(BufferSize), &w, &h, &ch, 4);
 	const Texture* Out = LoadTexture(Loaded, w, h, LoadInfo);
 	stbi_image_free(Loaded);
@@ -94,8 +92,9 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 		return &LoadedTextures[From.FilePath];
 
 	int w, h, ch;
-	BinaryFile Bytes = GetBinaryFile(From.FilePath);
-	auto Pixels = stbi_load_from_memory(Bytes.DataPtr, int(Bytes.DataSize), &w, &h, &ch, 4);
+	ReadOnlyBufferStream* Bytes = GetBinaryFile(From.FilePath);
+	stbi_set_flip_vertically_on_load(true);
+	auto Pixels = stbi_load_from_memory(Bytes->GetData(), int(Bytes->GetSize()), &w, &h, &ch, 4);
 	const Texture* New = &(*TextureBuffers.insert({ From.FilePath, Texture{
 		.Options = LoadInfo,
 		.Pixels = Pixels,
@@ -104,7 +103,8 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 		.Width = uint32(w),
 		.Height = uint32(h),
 	} }).first).second;
-	FreeBinaryFile(Bytes);
+
+	delete Bytes;
 	return New;
 }
 

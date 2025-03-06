@@ -1,21 +1,22 @@
 #include "Scene.h"
-#include "Scene.h"
-#include "Scene.h"
-#include "Internal/OpenGL.h"
-#include "Subsystem/VideoSubsystem.h"
-#include "Subsystem/SceneSubsystem.h"
 #include "Core/ThreadPool.h"
 #include "Engine.h"
-#include <Engine/File/ModelData.h>
-#include <Core/File/TextSerializer.h>
+#include "Internal/OpenGL.h"
+#include "Subsystem/SceneSubsystem.h"
+#include "Subsystem/VideoSubsystem.h"
+#include <algorithm>
 #include <Core/File/BinarySerializer.h>
-#include <Core/Error/EngineError.h>
+#include <Core/File/TextSerializer.h>
+#include <Engine/File/ModelData.h>
+#include <Engine/File/Resource.h>
+#include <Engine/Graphics/Texture.h>
+#include <Engine/Plugins/PluginLoader.h>
+#include <filesystem>
+
+#if EDITOR
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Editor/UI/Panels/Viewport.h>
-#include <algorithm>
-#include <Engine/Graphics/Texture.h>
-#include <filesystem>
-#include <Engine/Plugins/PluginLoader.h>
+#endif
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
@@ -54,7 +55,7 @@ engine::Scene::Scene(string FilePath)
 
 engine::Scene::~Scene()
 {
-	using namespace subsystem;
+	using namespace engine::subsystem;
 
 	delete Buffer;
 	delete SceneCamera;
@@ -163,7 +164,7 @@ void engine::Scene::Update()
 
 engine::Scene* engine::Scene::GetMain()
 {
-	using namespace subsystem;
+	using namespace engine::subsystem;
 
 	if (!SceneSubsystem::Current)
 		return nullptr;
@@ -173,7 +174,7 @@ engine::Scene* engine::Scene::GetMain()
 
 void engine::Scene::OnResized(kui::Vec2ui NewSize)
 {
-	using namespace subsystem;
+	using namespace engine::subsystem;
 
 	if (BufferSize != 0)
 	{
@@ -405,8 +406,9 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 
 void engine::Scene::LoadInternal(string File, bool Async)
 {
+
 	Physics.Init();
-	
+
 	SerializedValue SceneData;
 	Name = File;
 	try
@@ -420,10 +422,12 @@ void engine::Scene::LoadInternal(string File, bool Async)
 			Name = File + ".kts";
 			SceneData = TextSerializer::FromFile(Name);
 		}
-		else if (std::filesystem::exists(File + ".kbs"))
+		else if (resource::FileExists(File + ".kbs"))
 		{
 			Name = File + ".kbs";
-			SceneData = BinarySerializer::FromFile(Name, "kbs");
+			IBinaryStream* SceneFile = resource::GetBinaryFile(Name);
+			SceneData = BinarySerializer::FromStream(SceneFile, "kbs");
+			delete SceneFile;
 		}
 	}
 	catch (SerializeReadException& ReadErr)
@@ -434,6 +438,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 		);
 		return;
 	}
+	resource::LoadSceneFiles(Name);
 
 	DeSerializeInternal(&SceneData, Async);
 
@@ -445,8 +450,8 @@ void engine::Scene::LoadInternal(string File, bool Async)
 
 void engine::Scene::Init()
 {
-	using namespace graphics;
-	using namespace subsystem;
+	using namespace engine::graphics;
+	using namespace engine::subsystem;
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
@@ -480,11 +485,16 @@ void engine::Scene::Init()
 
 engine::SerializedValue engine::Scene::GetSceneInfo()
 {
-	return SerializedValue();
+	return std::vector{
+		SerializedData("sunColor", Vector3(1, 0.5f, 0)),
+	};
 }
 
 void engine::Scene::StartSorting()
 {
+	if (DrawnComponents.size() < 2)
+		return;
+
 	if (IsSorting)
 		return;
 

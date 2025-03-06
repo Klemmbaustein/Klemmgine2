@@ -7,6 +7,7 @@
 #include <Core/File/BinarySerializer.h>
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/MainThread.h>
+#include <Engine/File/Resource.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -23,7 +24,9 @@ engine::graphics::Material::Material(AssetRef File)
 		}
 		else
 		{
-			FileData = BinarySerializer::FromFile(File.FilePath, "kbm");
+			IBinaryStream* BinaryFile = resource::GetBinaryFile(File.FilePath);
+			FileData = BinarySerializer::FromStream(BinaryFile, "kbm");
+			delete BinaryFile;
 		}
 
 		if (!FileData.GetObject().empty())
@@ -133,6 +136,7 @@ void Material::DeSerialize(SerializedValue* From)
 {
 	Clear();
 	std::vector<SerializedData>& Values = From->GetObject();
+	size_t it = 0;
 	for (SerializedData& i : Values)
 	{
 		if (i.Value.GetType() != SerializedData::DataType::Object)
@@ -152,7 +156,7 @@ void Material::DeSerialize(SerializedValue* From)
 		Field::Type Type = Field::Type(i.At("type").GetInt());
 		SerializedValue Val = i.At("val");
 
-		Field NewField;
+		Field& NewField = Fields.emplace_back();
 		NewField.Name = i.Name;
 		NewField.FieldType = Type;
 		switch (Type)
@@ -162,6 +166,10 @@ void Material::DeSerialize(SerializedValue* From)
 			break;
 		case Field::Type::Int:
 			NewField.Int = Val.GetInt();
+			if (i.Name == "u_useTexture")
+			{
+				UseTexture = NewField.Int;
+			}
 			break;
 		case Field::Type::Float:
 			NewField.Float = Val.GetFloat();
@@ -172,12 +180,16 @@ void Material::DeSerialize(SerializedValue* From)
 		case Field::Type::Texture:
 			NewField.TextureValue.Name = new std::string(Val.GetString());
 			NewField.TextureValue.Value = 0;
+			if (i.Name == "u_texture")
+			{
+				TextureField = it;
+			}
 			break;
 		case Field::Type::None:
 		default:
 			break;
 		}
-		Fields.push_back(NewField);
+		it++;
 	}
 
 	UpdateShader();
@@ -206,6 +218,8 @@ void Material::Clear()
 	Fields.clear();
 
 	Shader = nullptr;
+	TextureField = SIZE_MAX;
+	UseTexture = false;
 }
 
 void engine::graphics::Material::Apply()
@@ -223,6 +237,10 @@ void engine::graphics::Material::Apply()
 		switch (i.FieldType)
 		{
 		case Field::Type::Bool:
+			if (i.Name == "u_useTexture")
+			{
+				UseTexture = i.Int;
+			}
 			Shader->SetInt(i.UniformLocation, i.Int);
 			break;
 		case Field::Type::Int:
@@ -255,6 +273,29 @@ void engine::graphics::Material::Apply()
 		default:
 			break;
 		}
+	}
+}
+
+void engine::graphics::Material::ApplySimple(graphics::ShaderObject* With)
+{
+	With->SetInt(With->GetUniformLocation("u_useTexture"), UseTexture && TextureField != SIZE_MAX);
+
+	if (TextureField != SIZE_MAX && UseTexture)
+	{
+		auto& tx = Fields[TextureField];
+
+		if (!tx.TextureValue.Value)
+			LoadTexture(tx);
+		glActiveTexture(GL_TEXTURE1);
+		if (tx.TextureValue.Value)
+		{
+			glBindTexture(GL_TEXTURE_2D, tx.TextureValue.Value->TextureObject);
+		}
+		else
+		{
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		With->SetInt(With->GetUniformLocation("u_texture"), 1);
 	}
 }
 

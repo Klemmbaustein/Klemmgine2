@@ -1,7 +1,7 @@
 element StatusBarElement
 {
 	var Icon = "Engine/Editor/Assets/Info.png";
-	var Text = "Some text";
+	var Text = "Status text";
 
 	width = 1pn;
 	height = 24px;

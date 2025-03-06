@@ -1,5 +1,6 @@
 #include "ThreadPool.h"
 #include <Core/Log.h>
+#include <Core/Error/EngineError.h>
 #include <Core/Platform/Platform.h>
 using namespace engine;
 
@@ -83,7 +84,9 @@ ThreadPool::ThreadFunction engine::ThreadPool::FindFunction()
 
 void engine::ThreadPool::ThreadMain(size_t ThreadId)
 {
-	internal::platform::SetThreadName(str::Format("%s - %i", Name.c_str(), int(ThreadId)));
+	string ThreadName = str::Format("%s - %i", Name.c_str(), int(ThreadId));
+	internal::platform::SetThreadName(ThreadName);
+	error::InitForThread(ThreadName);
 	bool ShouldQuitThread = false;
 	while (true)
 	{

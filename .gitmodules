@@ -13,3 +13,6 @@
 [submodule "Dependencies/JoltPhysics"]
 	path = Dependencies/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "Dependencies/miniz"]
+	path = Dependencies/miniz
+	url = https://github.com/richgel999/miniz.git

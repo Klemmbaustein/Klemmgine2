@@ -147,6 +147,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	Name->valueBox->AddChild(NameField
 		->SetText(Object->Name)
+		->SetTextColor(EditorUI::Theme.Text)
 		->SetTextSize(11_px)
 		->SetMinSize(kui::Vec2f(Size, 0)));
 

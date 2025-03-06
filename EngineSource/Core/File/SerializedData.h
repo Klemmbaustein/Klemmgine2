@@ -5,12 +5,12 @@
 
 /**
 * @defgroup serialize Serialization
-* 
+*
 * @brief
 * Classes related to serialized data.
-* 
+*
 * Part of the core library.
-* 
+*
 * @ingroup engine-core
 */
 
@@ -19,7 +19,7 @@ namespace engine
 	/**
 	* @brief
 	* Exception thrown when an error with serialized data occurs.
-	* 
+	*
 	* @ingroup serialize
 	*/
 	class SerializeException
@@ -35,7 +35,7 @@ namespace engine
 	/**
 	* @brief
 	* Exception thrown for errors reading or parsing files containing serialized data.
-	* 
+	*
 	* @ingroup serialize
 	*/
 	class SerializeReadException : public SerializeException
@@ -48,11 +48,11 @@ namespace engine
 	/**
 	* @brief
 	* A Serialized data value containing a name and value.
-	* 
+	*
 	* Serialized data is mostly used to store information in files.
 	* This class itself only holds the data in a format that can be serialized, but the serializing itself is done by
 	* the BinarySerializer and TextSerializer classes.
-	* 
+	*
 	* @ingroup serialize
 	*
 	* @see BinarySerializer
@@ -85,7 +85,7 @@ namespace engine
 			/// String. @see engine::string
 			String,
 			/// A C++ vector of SerializedValue objects.
-			/// @see SerializedValue 
+			/// @see SerializedValue
 			/// @see SerializedData::DataValue
 			Array,
 			/// Used by the binary serializer to save an array where all elements have the same type.
@@ -100,9 +100,9 @@ namespace engine
 		/**
 		* @brief
 		* A serialized value.
-		* 
+		*
 		* This object stores a type and a value that can be serialized.
-		* 
+		*
 		* @see SerializedData
 		*
 		* @ingroup serialize
@@ -216,7 +216,7 @@ namespace engine
 			/**
 			* @brief
 			* Gets this value as an int.
-			* 
+			*
 			* If the type of this value isn't DataType::Int, this returns 0.
 			*/
 			int32 GetInt() const;
@@ -267,7 +267,7 @@ namespace engine
 			* Gets this value as an array.
 			*
 			* If the type of this value isn't DataType::Array, it throws a SerializeException.
-			* 
+			*
 			* @throw SerializeException
 			*/
 			std::vector<DataValue>& GetArray();
@@ -304,10 +304,10 @@ namespace engine
 			/**
 			* @brief
 			* Converts this value to a string.
-			* 
+			*
 			* This format is not equivalent with the format used by engine::TextSerializer.
 			* It cannot be de-serialized and only exists for debugging purposes.
-			* 
+			*
 			* To properly convert SerializedData to a string, use engine::TextSerializer.
 			*
 			* @see engine::TextSerializer
@@ -323,14 +323,14 @@ namespace engine
 			/**
 			* @brief
 			* Checks if this value contains a key with the given value.
-			* 
+			*
 			* This only works of the data value is an object.
 			*/
 			bool Contains(string Name);
 			/**
 			* @brief
 			* Appends the SerializedData object to the current object.
-			* 
+			*
 			* This only works of the data value is an object.
 			*/
 			void Append(const SerializedData& New);
@@ -408,9 +408,9 @@ namespace engine
 	/**
 	* @brief
 	* SerializedData::DataValue alias.
-	* 
+	*
 	* SerializedValue stores a type and value.
-	* 
+	*
 	* @ingroup serialize
 	*/
 	using SerializedValue = SerializedData::DataValue;
@@ -418,10 +418,10 @@ namespace engine
 	/**
 	* @brief
 	* An interface for a serializable object.
-	* 
+	*
 	* A serializable object can save and load it's state from a engine::SerializedValue object.
 	* In theory, any Serializable can be the value of an engine::ObjProperty.
-	* 
+	*
 	* @ingroup serialize
 	*/
 	class ISerializable
@@ -431,7 +431,7 @@ namespace engine
 		/**
 		* @brief
 		* Function to serialize this object to the SerializedValue structure.
-		* 
+		*
 		* Used often to save the state of an object implementing this interface to a file.
 		*/
 		virtual SerializedValue Serialize() = 0;

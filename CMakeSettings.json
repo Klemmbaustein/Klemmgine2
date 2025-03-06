@@ -49,7 +49,7 @@
 	{
 	  "name": "WSL-GCC-Release",
 	  "generator": "Ninja",
-	  "configurationType": "Release",
+	  "configurationType": "Debug",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeExecutable": "cmake",
@@ -61,6 +61,24 @@
 	  "variables": [
 		{
 		  "name": "ENGINE_EDITOR",
+		  "value": "True",
+		  "type": "BOOL"
+		}
+	  ]
+	},
+	{
+	  "name": "x64-Release-NoEditor",
+	  "generator": "Ninja",
+	  "configurationType": "Release",
+	  "buildRoot": "${projectDir}\\out\\build\\${name}",
+	  "installRoot": "${projectDir}\\out\\install\\${name}",
+	  "cmakeCommandArgs": "",
+	  "buildCommandArgs": "",
+	  "ctestCommandArgs": "",
+	  "inheritEnvironments": [ "msvc_x64_x64" ],
+	  "variables": [
+		{
+		  "name": "USE_WINDOWS_SUBSYSTEM",
 		  "value": "False",
 		  "type": "BOOL"
 		}

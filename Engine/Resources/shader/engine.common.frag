@@ -17,6 +17,7 @@ in vec3 v_normal;
 #export //!
 out vec4 f_color;
 
+#export //!
 uniform vec3 u_lightDirection = vec3(0, 1, 0);
 layout (std140) uniform LightSpaceMatrices
 {
@@ -34,7 +35,7 @@ uniform float u_shadowBiasModifier = 0;
 float shadowValues[PCF_SIZE][PCF_SIZE];
 
 float rand(vec2 n)
-{ 
+{
 	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
 
@@ -55,7 +56,7 @@ float getShadowStrength()
 {
 	// select cascade layer
 	float depthValue = abs(v_screenPosition.z);
-	
+
 	int layer = -1;
 	float difference = 10;
 	float differenceScale = 0;
@@ -79,7 +80,7 @@ float getShadowStrength()
 	{
 		layer = u_shadowCascadeCount;
 	}
-	
+
 	vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(v_position, 1.0);
 
 	// perform perspective divide

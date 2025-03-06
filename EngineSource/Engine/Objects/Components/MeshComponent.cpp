@@ -21,7 +21,7 @@ void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 {
 	if (DrawnModel)
 	{
-		DrawnModel->Drawable->SimpleDraw(WorldTransform, With);
+		DrawnModel->Drawable->SimpleDraw(WorldTransform, With, Materials);
 	}
 }
 

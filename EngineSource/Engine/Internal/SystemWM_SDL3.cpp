@@ -87,6 +87,18 @@ static std::map<int, kui::Key> Keys =
 	{ SDLK_7, Key::k7 },
 	{ SDLK_8, Key::k8 },
 	{ SDLK_9, Key::k9 },
+	{ SDLK_F1, Key::F1 },
+	{ SDLK_F2, Key::F2 },
+	{ SDLK_F3, Key::F3 },
+	{ SDLK_F4, Key::F4 },
+	{ SDLK_F5, Key::F5 },
+	{ SDLK_F6, Key::F6 },
+	{ SDLK_F7, Key::F7 },
+	{ SDLK_F8, Key::F8 },
+	{ SDLK_F9, Key::F9 },
+	{ SDLK_F10, Key::F10 },
+	{ SDLK_F11, Key::F11 },
+	{ SDLK_F12, Key::F12 },
 	{ SDLK_SEMICOLON, Key::SEMICOLON },
 	{ SDLK_LESS, Key::LESS },
 	{ SDLK_RETURN, Key::RETURN },
@@ -349,7 +361,8 @@ void kui::systemWM::SetTitle(SysWindow* Target, std::string Text)
 
 bool kui::systemWM::IsWindowFullScreen(SysWindow* Target)
 {
-	return SDL_GetWindowFlags(Target->SDLWindow) & SDL_WINDOW_MAXIMIZED;
+	auto Maximized = SDL_GetWindowFlags(Target->SDLWindow) & SDL_WINDOW_MAXIMIZED;
+	return Maximized;
 }
 
 void kui::systemWM::SetWindowMinSize(SysWindow* Target, Vec2ui MinSize)
@@ -451,7 +464,7 @@ void kui::systemWM::SysWindow::UpdateEvents()
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
 			if (WindowHasFocus(this) && !input::ShowMouseCursor)
-				input::MouseMovement = input::MouseMovement + Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.001f, 0.001f);
+				input::MouseMovement = input::MouseMovement + Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.0008f, 0.0008f);
 			break;
 		default:
 			break;

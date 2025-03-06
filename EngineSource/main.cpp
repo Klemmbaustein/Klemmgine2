@@ -1,7 +1,6 @@
 ﻿#include "Engine/Engine.h"
 #include <Engine/Subsystem/SceneSubsystem.h>
-#include <Engine/Objects/MeshObject.h>
-#include <Core/Error/EngineError.h>
+#include "Core/Types.h"
 
 int32 EngineMain(int argc, char** argv)
 {

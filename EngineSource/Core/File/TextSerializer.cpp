@@ -106,7 +106,7 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 		Stream << "<" << Target.GetVector3().ToString() << ">";
 		break;
 	case SerializedData::DataType::Vector2:
-		Stream << "<" << Target.GetVector3().ToString() << ">";
+		Stream << "<" << Target.GetVector2().ToString() << ">";
 		break;
 	case SerializedData::DataType::String:
 		Stream << "\"" << EscapeString(Target.GetString()) << "\"";
