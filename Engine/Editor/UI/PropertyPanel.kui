@@ -54,7 +54,7 @@ element PropertyHeaderElement
 		padding = 5px;
 		downPadding = 3px;
 		leftPadding = 10px;
-		
+
 		upPadding = UpPadding;
 		color = Color_Text;
 		text = Title;

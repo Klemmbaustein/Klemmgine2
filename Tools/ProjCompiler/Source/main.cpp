@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <map>
 #include "ToArchives.h"
+#include "Plugins.h"
 
 using namespace engine;
 namespace std
@@ -59,19 +60,6 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 #endif
 		if (std::fs::exists(BinaryPath / i))
 			std::fs::copy(BinaryPath / i, OutPath / i);
-	}
-
-	std::fs::path PluginPath = OutPath / "plugins" / "bin";
-
-	std::fs::create_directories(PluginPath);
-	//std::fs::copy("Plugins/");
-
-	for (auto& plugin : std::fs::directory_iterator(BinaryPath / "plugins"))
-	{
-		if (plugin.path().extension() == ".dll")
-		{
-			std::fs::copy(plugin, PluginPath / plugin.path().filename());
-		}
 	}
 }
 
@@ -154,22 +142,25 @@ int main(int argc, char** argv)
 	}
 
 	std::fs::create_directories(std::fs::path(OutPath) / "Assets");
-	Log::Info("Building into " + OutPath);
+	Log::Info("Building into " + std::fs::canonical(OutPath).string());
 
 	try
 	{
 		ThreadPool ArchiveThreads = engine::ThreadPool(std::thread::hardware_concurrency() - 1, "Archive workers");
 
+		build::CopyPluginFiles(BinPath, OutPath);
+		CopyBinaries(BinPath, OutPath);
+
 		auto Archives = engine::build::GetBuildArchives("Assets/");
+		Log::Info(str::Format("Starting %i archive compression jobs...", int(Archives.size())));
 
 		SerializedValue MapFile = std::vector<SerializedData>();
-
 		for (auto& ArchiveFiles : Archives)
 		{
 			std::fs::path ResultPath = std::fs::path(OutPath) / "Assets" / (ArchiveFiles.Name + ".bin");
 			ArchiveThreads.AddJob([ArchiveFiles, ResultPath]()
 				{
-					Log::Info("Writing archive: " + ResultPath.string());
+					Log::Note("Writing archive: " + ResultPath.string());
 
 					Archive a;
 
@@ -187,7 +178,7 @@ int main(int argc, char** argv)
 						delete Data;
 					}
 					a.Save(ResultPath.string());
-					Log::Info("Done writing archive: " + ResultPath.string());
+					Log::Note("Done writing archive: " + ResultPath.string());
 				});
 
 			SerializedValue SceneArray = std::vector<SerializedValue>();
@@ -202,13 +193,13 @@ int main(int argc, char** argv)
 
 			MapFile.Append(SerializedData(ArchiveFiles.Name, SceneArray));
 		}
-		BinarySerializer::ToFile(MapFile.GetObject(), OutPath + "/Assets/archmap.bin", "archm");
 
-		CopyBinaries(BinPath, OutPath);
+		BinarySerializer::ToFile(MapFile.GetObject(), OutPath + "/Assets/archmap.bin", "archm");
 	}
 	catch (std::fs::filesystem_error e)
 	{
 		Log::Error(e.what());
+		return 1;
 	}
 
 	return 0;

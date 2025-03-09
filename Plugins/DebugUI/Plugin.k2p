@@ -1,0 +1,5 @@
+{
+	"name": str = "DebugUI";
+	"binary": str = "Klemmgine.DebugUI";
+	"devOnly": bool = 1;
+}

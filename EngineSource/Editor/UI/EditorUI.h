@@ -36,8 +36,6 @@ namespace engine::editor
 	{
 	public:
 
-		static string DefaultFontName;
-
 		kui::UIBox* MainBackground = nullptr;
 		kui::UIBackground* MenuBar = nullptr;
 		kui::UIBackground* StatusBar = nullptr;

@@ -1,4 +1,5 @@
 #include "ConsoleSubsystem.h"
+#include <Engine/Engine.h>
 #include <sstream>
 
 using namespace engine::console;
@@ -13,6 +14,16 @@ engine::subsystem::ConsoleSubsystem::ConsoleSubsystem()
 			.OnCalled = [this](const Command::CallContext&) {
 				Print("Hi!");
 			}
+		}
+		});
+
+	AddCommand({
+	Command{
+		.Name = "exit",
+		.Args = {},
+		.OnCalled = [this](const Command::CallContext&) {
+			Engine::Instance->ShouldQuit = true;
+		}
 		}
 		});
 }
@@ -53,6 +64,13 @@ void engine::subsystem::ConsoleSubsystem::ExecuteCommand(const string& Command)
 		CommandContext.ProvidedArguments.erase(CommandContext.ProvidedArguments.begin());
 		CommandContext.Context = this;
 
+		if (CommandContext.ProvidedArguments.size() != FoundCommand->second.Args.size())
+		{
+			Print(str::Format("Invalid number of arguments, got %i, expected %i",
+				int(CommandContext.ProvidedArguments.size()), int(FoundCommand->second.Args.size())), LogType::Error);
+			return;
+		}
+
 		FoundCommand->second.OnCalled(CommandContext);
 		return;
 	}
@@ -61,7 +79,7 @@ void engine::subsystem::ConsoleSubsystem::ExecuteCommand(const string& Command)
 
 void engine::subsystem::ConsoleSubsystem::AddCommand(const console::Command& NewCommand)
 {
-	Commands.insert({NewCommand.Name, NewCommand});
+	Commands.insert({ NewCommand.Name, NewCommand });
 }
 
 void engine::subsystem::ConsoleSubsystem::RemoveCommand(const string& CommandName)

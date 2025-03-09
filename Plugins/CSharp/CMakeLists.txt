@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.12)
 
 set(PLUGIN_NAME "Klemmgine.CSharp.Loader")
 
-add_subdirectory("../PluginInterface" "PluginInterface")
 set(SRC_DIR "Loader")
 
 include("FindSdk.cmake")

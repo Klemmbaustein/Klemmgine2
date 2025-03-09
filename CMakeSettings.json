@@ -49,7 +49,7 @@
 	{
 	  "name": "WSL-GCC-Release",
 	  "generator": "Ninja",
-	  "configurationType": "Debug",
+	  "configurationType": "Release",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeExecutable": "cmake",
@@ -61,7 +61,7 @@
 	  "variables": [
 		{
 		  "name": "ENGINE_EDITOR",
-		  "value": "True",
+		  "value": "False",
 		  "type": "BOOL"
 		}
 	  ]
@@ -69,7 +69,7 @@
 	{
 	  "name": "x64-Release-NoEditor",
 	  "generator": "Ninja",
-	  "configurationType": "Release",
+	  "configurationType": "RelWithDebInfo",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeCommandArgs": "",

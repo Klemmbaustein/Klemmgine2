@@ -3,6 +3,7 @@
 #include <string>
 #include <Core/Transform.h>
 #include <Core/Vector.h>
+#include "PluginCanvas.hpp"
 
 namespace engine::plugin
 {
@@ -12,9 +13,16 @@ namespace engine::plugin
 	/**
 	* @brief
 	* The engine plugin interface struct, containing methods the plugin can call in the engine.
-	* 
-	* 
+	*
+	*
 	*/
+
+	class kuiUIBox;
+	class PluginUICanvas;
+
+
+	using CallbackFn = void(*)(void* UserData);
+
 	struct EnginePluginInterface
 	{
 		/// The relative path to this plugin's asset files.

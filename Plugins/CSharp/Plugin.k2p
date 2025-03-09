@@ -2,6 +2,6 @@
 	"name": str = "CSharp";
 	"binary": str = "Klemmgine.CSharp.Loader";
 	"include": array = [
-		str: "bin/net8.0/publish/*.dll",
+		str: "bin/net8.0/publish/win-x64/Klemmgine.CSharp.Aot.dll",
 	];
 }

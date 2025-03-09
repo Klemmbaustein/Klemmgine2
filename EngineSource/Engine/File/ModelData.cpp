@@ -75,29 +75,46 @@ void engine::ModelData::ToFile(string FilePath)
 
 engine::SerializedValue engine::ModelData::Serialize()
 {
-	std::vector<SerializedValue> Out;
+	std::vector<SerializedValue> OutMeshes;
 
 	for (auto& i : Meshes)
 	{
-		Out.push_back(i.Serialize());
+		OutMeshes.push_back(i.Serialize());
 	}
 
-	return Out;
+	return SerializedValue({
+		SerializedData("meshes", OutMeshes),
+		SerializedData("shadow", SerializedValue(CastShadow)),
+		SerializedData("collision", SerializedValue(HasCollision)),
+		});
 }
 
 void engine::ModelData::DeSerialize(SerializedValue* From)
 {
-	if (From->GetType() != SerializedData::DataType::Array)
+	if (From->GetType() == SerializedData::DataType::Array)
+	{
+		auto& Array = From->GetArray();
+
+		for (SerializedValue& Elem : Array)
+		{
+			Meshes.emplace_back().DeSerialize(&Elem);
+		}
+		return;
+	}
+	else if (From->GetType() != SerializedData::DataType::Object)
 	{
 		return;
 	}
 
-	auto& Array = From->GetArray();
+	auto& MeshesArray = From->At("meshes").GetArray();
 
-	for (SerializedValue& Elem : Array)
+	for (SerializedValue& Elem : MeshesArray)
 	{
 		Meshes.emplace_back().DeSerialize(&Elem);
 	}
+
+	CastShadow = From->At("shadow").GetBool();
+	HasCollision = From->At("collision").GetBool();
 }
 
 engine::ModelData::Mesh::Mesh()

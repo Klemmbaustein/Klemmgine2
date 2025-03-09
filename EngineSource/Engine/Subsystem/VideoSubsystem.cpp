@@ -9,10 +9,14 @@
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
+#include <Engine/UI/UICanvas.h>
 #include <Editor/UI/Panels/Viewport.h>
+#include <Editor/Editor.h>
 #include <Core/LaunchArgs.h>
 #include <Engine/Graphics/OpenGL.h>
 #include <Engine/Debug/TimeLogger.h>
+#include <stdexcept>
+#include <Engine/File/Resource.h>
 using namespace kui;
 
 static void GLAPIENTRY MessageCallback(
@@ -39,6 +43,8 @@ static systemWM::SysWindow* GetSysWindow(kui::Window* From)
 {
 	return static_cast<systemWM::SysWindow*>(From->GetSysWindow());
 }
+
+engine::string engine::subsystem::VideoSubsystem::DefaultFontName = "res:DefaultFont.ttf";
 
 engine::subsystem::VideoSubsystem::VideoSubsystem()
 	: Subsystem("Video", Log::LogColor::Cyan)
@@ -125,6 +131,18 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 			w->SetMaximized(!w->GetWindowFullScreen());
 		});
 
+	string WindowsFontPath = "file:C:/Windows/Fonts/seguisb.ttf";
+	if (resource::FileExists(WindowsFontPath))
+	{
+		DefaultFontName = WindowsFontPath;
+	}
+
+	if (!DefaultFont)
+	{
+		DefaultFont = new Font(DefaultFontName);
+		MainWindow->Markup.SetDefaultFont(DefaultFont);
+	}
+
 	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
 	if (ConsoleSys)
 	{
@@ -143,7 +161,18 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 				.Required = true,
 			}, },
 			.OnCalled = [this](const console::Command::CallContext& ctx) {
+				try
+				{
 				MainWindow->DPIMultiplier = std::stof(ctx.ProvidedArguments.at(0));
+				}
+				catch (std::invalid_argument&)
+				{
+					ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+				}
+				catch (std::out_of_range&)
+				{
+					ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+				}
 			}
 			});
 	}
@@ -160,6 +189,12 @@ void engine::subsystem::VideoSubsystem::Update()
 	{
 		Engine::Instance->ShouldQuit = true;
 	}
+
+	if (!editor::IsActive())
+	{
+		UICanvas::UpdateAll();
+	}
+
 	input::IsLMBDown = MainWindow->Input.IsLMBDown;
 	input::IsLMBClicked = MainWindow->Input.IsLMBClicked;
 	input::IsRMBDown = MainWindow->Input.IsRMBDown;

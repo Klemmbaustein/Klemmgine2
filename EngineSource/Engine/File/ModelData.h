@@ -38,6 +38,8 @@ namespace engine
 		virtual void DeSerialize(SerializedValue* From) override;
 
 		std::vector<Mesh> Meshes;
+		bool HasCollision = true;
+		bool CastShadow = false;
 	};
 
 	struct GraphicsModel

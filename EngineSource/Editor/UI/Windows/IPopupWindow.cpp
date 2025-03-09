@@ -2,6 +2,8 @@
 #include "IPopupWindow.h"
 #include <Editor/UI/EditorUI.h>
 #include <thread>
+#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Engine.h>
 
 void engine::editor::IPopupWindow::Open()
 {
@@ -46,7 +48,7 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 
 	EditorUI::UpdateTheme(Popup);
 
-	DefaultFont = new kui::Font(EditorUI::DefaultFontName);
+	DefaultFont = new kui::Font(Engine::GetSubsystem<subsystem::VideoSubsystem>()->DefaultFontName);
 	Popup->Markup.SetDefaultFont(DefaultFont);
 
 	this->Begin();

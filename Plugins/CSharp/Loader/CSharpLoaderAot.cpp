@@ -7,7 +7,7 @@ const string MainFunctionName = "Aot_Main";
 
 engine::cSharp::CSharpLoaderAot::CSharpLoaderAot(const std::vector<NativeFunction>& Functions)
 {
-	AotLibrary = LoadSharedLibrary("Plugins/CSharp/bin/net8.0/publish/win-x64/Klemmgine.CSharp.Aot.dll");
+	AotLibrary = LoadSharedLibrary(string(plugin::GetInterface()->PluginPath) + "bin/net8.0/publish/win-x64/Klemmgine.CSharp.Aot.dll");
 
 	if (!AotLibrary)
 	{
@@ -28,6 +28,12 @@ engine::cSharp::CSharpLoaderAot::CSharpLoaderAot(const std::vector<NativeFunctio
 	CreateObject = AotCreateObjectFn(GetLibraryFunction(AotLibrary, "Aot_CreateObjectInstance"));
 	DestroyObject = AotDestroyObjectFn(GetLibraryFunction(AotLibrary, "Aot_RemoveObjectInstance"));
 	UpdateAot = AotUpdateFn(GetLibraryFunction(AotLibrary, "Aot_Update"));
+
+	if (!UpdateAot || !DestroyObject || !CreateObject)
+	{
+		log::Info("Failed to load Klemmgine.CSharp.Aot functions");
+		return;
+	}
 }
 
 engine::cSharp::CSharpLoaderAot::~CSharpLoaderAot()
@@ -47,5 +53,6 @@ void engine::cSharp::CSharpLoaderAot::RemoveObjectInstance(size_t ObjId)
 
 void engine::cSharp::CSharpLoaderAot::Update(float Delta)
 {
-	UpdateAot(Delta);
+	if (UpdateAot)
+		UpdateAot(Delta);
 }

@@ -28,4 +28,6 @@ namespace engine::console
 		std::vector<Argument> Args;
 		std::function<void(const CallContext&)> OnCalled;
 	};
+
+	void ExecuteCommand(string CmdString);
 }

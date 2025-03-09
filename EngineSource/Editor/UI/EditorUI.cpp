@@ -29,7 +29,6 @@ EditorUI* EditorUI::Instance = nullptr;
 kui::Font* EditorUI::EditorFont = nullptr;
 kui::Font* EditorUI::MonospaceFont = nullptr;
 EditorTheme EditorUI::Theme;
-engine::string EditorUI::DefaultFontName = "res:DefaultFont.ttf";
 EditorPanel* EditorUI::FocusedPanel = nullptr;
 
 static std::map<engine::string, kui::Vec3f> FileNameColors =
@@ -127,16 +126,9 @@ engine::editor::EditorUI::EditorUI()
 
 	UpdateTheme(VideoSystem->MainWindow);
 
-	string WindowsFontPath = "file:C:/Windows/Fonts/seguisb.ttf";
-	if (resource::FileExists(WindowsFontPath))
+	if (!MonospaceFont)
 	{
-		DefaultFontName = WindowsFontPath;
-	}
-
-	if (!EditorFont)
-	{
-		EditorFont = new Font(DefaultFontName);
-		VideoSystem->MainWindow->Markup.SetDefaultFont(EditorFont);
+		EditorFont = VideoSystem->DefaultFont;
 		MonospaceFont = new Font("Engine/Editor/Assets/EditorMono.ttf");
 	}
 

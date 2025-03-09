@@ -80,7 +80,7 @@ else()
 	add_executable(Klemmgine "EngineSource/main.cpp" "EngineSource/Resources.rc")
 endif()
 
-target_compile_definitions(KlemmgineLib PRIVATE ENGINE_COMPILER_ID="${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}-${CMAKE_BUILD_TYPE}")
+target_compile_definitions(KlemmgineLib PRIVATE ENGINE_COMPILER_ID="${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}-${CMAKE_BUILD_TYPE}")
 
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)
 set(KLEMMUI_INCLUDE_EXAMPLES OFF)
@@ -93,6 +93,7 @@ endif()
 
 include("Dependencies/miniz/miniz.cmake")
 
+set(KLEMMUI_DYNAMIC_MARKUP ON)
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
 set(ENABLE_ALL_WARNINGS OFF)
 set(GENERATE_DEBUG_SYMBOLS OFF)
@@ -169,6 +170,7 @@ target_include_directories(KlemmgineCore PUBLIC "EngineSource")
 target_link_libraries(KlemmgineLib PUBLIC SDL3::SDL3)
 target_link_libraries(KlemmgineLib PUBLIC Jolt)
 target_link_libraries(KlemmgineLib PUBLIC KlemmUI)
+target_link_libraries(KlemmgineLib PUBLIC KuiDynamicMarkup)
 target_link_libraries(KlemmgineLib PUBLIC libglew_static)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
@@ -194,7 +196,9 @@ if (ENGINE_BUILD_TOOLS)
 endif()
 
 if(ENGINE_CSHARP)
+	add_subdirectory("Plugins/PluginInterface")
 	add_subdirectory("Plugins/CSharp")
+	add_subdirectory("Plugins/DebugUI")
 endif()
 
 # TODO: Add tests and install targets if needed.

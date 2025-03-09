@@ -26,11 +26,11 @@ namespace engine
 		* The input string that should be split into chunks.
 		*
 		* @param Delim
-		* A string containing all characters that function as delimitors.
+		* A string containing all characters that function as delimiters.
 		*
 		* @return
 		* The a vector containing the substrings.
-		* If a substring would be empty (if 2 delimitors were read one after another),
+		* If a substring would be empty (if 2 delimiters were read one after another),
 		* It won't be added to the result.
 		*/
 		[[nodiscard]]
@@ -38,7 +38,7 @@ namespace engine
 
 		/**
 		* @brief
-		* Returns a string where all occurances of the character 'c' have
+		* Returns a string where all occurrences of the character 'c' have
 		* been replaced with the character 'With'
 		*/
 		[[nodiscard]]

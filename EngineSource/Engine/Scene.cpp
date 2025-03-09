@@ -12,6 +12,7 @@
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Plugins/PluginLoader.h>
 #include <filesystem>
+#include <Engine/UI/UICanvas.h>
 
 #if EDITOR
 #include <Engine/Subsystem/EditorSubsystem.h>
@@ -89,6 +90,7 @@ engine::Scene::~Scene()
 	}
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+	UICanvas::ClearAll();
 
 	VideoSystem->OnResizedCallbacks.erase(this);
 }
@@ -212,6 +214,8 @@ engine::SceneObject* engine::Scene::CreateObjectFromID(int32 ID, Vector3 Positio
 
 void engine::Scene::ReloadObjects(SerializedValue* FromState)
 {
+	UICanvas::ClearAll();
+
 	if (FromState)
 	{
 		for (SceneObject* i : Objects)
@@ -247,6 +251,7 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 			i->BeginCalled = true;
 		}
 	}
+	plugin::OnNewSceneLoaded(this);
 }
 
 void engine::Scene::LoadAsync(string SceneFile)

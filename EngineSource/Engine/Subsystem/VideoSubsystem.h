@@ -17,10 +17,12 @@ namespace engine::subsystem
 		virtual void RenderUpdate() override;
 
 		kui::Window* MainWindow = nullptr;
+		kui::Font* DefaultFont = nullptr;
 		graphics::ShaderLoader Shaders;
 		graphics::TextureLoader Textures;
 
 		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
+		static string DefaultFontName;
 
 		void OnResized();
 

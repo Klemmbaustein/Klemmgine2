@@ -9,10 +9,15 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/Components/MeshComponent.h>
+#include <Engine/Plugins/PluginUI.h>
+#include <kui/KlemmUI.h>
+#include <Engine/Input.h>
+#include <Engine/Console.h>
 
 #include "InterfaceStruct.hpp"
 
 using namespace engine;
+using namespace engine::plugin;
 
 // Incredibly cursed, but it means I wont have to write everything twice!
 
@@ -32,10 +37,10 @@ static char* StrDup(string From)
 	return NewString;
 }
 
-
 static auto ctx = plugin::EnginePluginInterface{
 #include "InterfaceDefines.hpp"
 };
+
 std::vector<engine::plugin::PluginInfo> LoadedPlugins;
 
 void engine::plugin::OnNewSceneLoaded(Scene* Target)
@@ -84,21 +89,32 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		New.Name = File.At("name").GetString();
 
-		string PluginPath = File.At("binary").GetString();
+		string PluginFileName = File.At("binary").GetString();
 
 		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded Plugin: %s", New.Name.c_str()) };
 
+		string PluginPath;
+
+		if (std::filesystem::exists("Plugins/bin"))
+		{
+			PluginPath = "Plugins/bin";
+		}
+		else
+		{
+			PluginPath = "plugins";
+		}
+
 #if WINDOWS
-		string PluginBinary = str::Format("plugins/%s.dll", PluginPath.c_str());
+		string PluginBinary = str::Format("%s/%s.dll", PluginPath.c_str(), PluginFileName.c_str());
 #else
-		string PluginBinary = str::Format("plugins/lib%s.so", PluginPath.c_str());
+		string PluginBinary = str::Format("%s/lib%s.so", PluginPath.c_str(), PluginFileName.c_str());
 #endif
 
 		SharedLibrary* Library = LoadSharedLibrary(PluginBinary);
 
 		if (!Library)
 		{
-			System->Print(str::Format("Failed to load shared library file: %s", PluginPath.c_str()), LogType::Warning);
+			System->Print(str::Format("Failed to load shared library file: %s", PluginFileName.c_str()), LogType::Warning);
 			return;
 		}
 
@@ -117,7 +133,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		LoadedPlugins.push_back(New);
 	}
-	catch (SerializeException e)
+	catch (SerializeException& e)
 	{
 		System->Print(str::Format("Failed to load plugin %s: %s", Path.c_str(), e.what()), LogType::Warning);
 	}

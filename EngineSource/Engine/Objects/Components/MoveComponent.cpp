@@ -24,12 +24,6 @@ void engine::MoveComponent::Update()
 		return;
 	}
 
-	auto Hits = Collider->CollisionTest(physics::Layer::Static, { RootObject });
-	for (auto& h : Hits)
-	{
-		ParentObject->Position += h.Normal * h.Depth;
-	}
-
 	Transform WorldTransform = GetWorldTransform();
 
 	InputDirection.Y = 0;
@@ -68,7 +62,7 @@ void engine::MoveComponent::Update()
 	RootObject->Position += Moved;
 
 
-	MoveDir = Vector3(0, (VerticalVelocity - 5.0f + (Jumping ? JumpHeight : 0)) * stats::DeltaTime, 0);
+	MoveDir = Vector3(0, (VerticalVelocity - 1.0f + (Jumping ? JumpHeight : 0)) * stats::DeltaTime, 0);
 	Vector3 GravityMovement = TryMove(MoveDir, MoveDir, Position, true);
 
 	RootObject->Position += GravityMovement;
@@ -84,11 +78,20 @@ void engine::MoveComponent::Update()
 	}
 
 	InputDirection = 0;
+
+	auto Hits = Collider->CollisionTest(physics::Layer::Static, { RootObject });
+	for (auto& h : Hits)
+	{
+		if (h.Depth > 0.1f)
+		{
+			ParentObject->Position += h.Normal * h.Depth;
+		}
+	}
 }
 
 Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirection, Vector3 Pos, bool GravityPass, uint32 Depth)
 {
-	float Distance = Direction.Length() + 0.01f;
+	float Distance = Direction.Length() + 0.001f;
 
 	auto Hits = Collider->ShapeCast(
 		Transform(Pos, 0, Vector3(ColliderSize.X, ColliderSize.Y, ColliderSize.X)),
@@ -169,7 +172,7 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 	}
 
 	float AbsoluteDistance = MinDistance * Direction.Length();
-	Vector3 SnapToSurface = Direction.Normalize() * (AbsoluteDistance - 0.01f);
+	Vector3 SnapToSurface = Direction.Normalize() * (AbsoluteDistance - 0.001f);
 	Vector3 LeftOver = Direction - SnapToSurface;
 
 	float Length = LeftOver.Length();
