@@ -12,6 +12,8 @@ namespace engine
 public: static inline const volatile ObjectTypeID ObjectType\
 	 = ::engine::Reflection::RegisterObjectMacro(# name, Internal_Reflect_CreateNewInst, path)
 
+#define SERIALIZE_PROPERTY(Type, Name, Value) ObjProperty<Type> Name = ObjProperty<Type>(# Name, Value, this)
+
 	using ObjectTypeID = int32;
 
 	class Reflection

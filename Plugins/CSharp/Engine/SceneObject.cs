@@ -44,7 +44,6 @@ public abstract class SceneObject
 
 	public virtual void Begin()
 	{
-
 	}
 
 	public virtual Task BeginAsync()

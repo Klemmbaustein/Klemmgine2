@@ -91,7 +91,7 @@ if(UNIX)
 	endif()
 endif()
 
-include("Dependencies/miniz/miniz.cmake")
+include("Dependencies/miniz.cmake")
 
 set(KLEMMUI_DYNAMIC_MARKUP ON)
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)

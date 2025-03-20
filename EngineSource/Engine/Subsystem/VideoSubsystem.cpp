@@ -88,7 +88,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		}
 		else if (VersionString == "3.3")
 		{
-			openGL::VersionOverride = openGL::Version::GL430;
+			openGL::VersionOverride = openGL::Version::GL330;
 		}
 		else
 		{
@@ -109,7 +109,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 
 	if (openGL::GetGLVersion() < openGL::Version::GL430)
 	{
-		Print("OpenGL 4.3 is unavailable, using OpenGL 3.3 instead. Some graphics effects won't work.", LogType::Warning);
+		Print("Using OpenGL 3.3 instead of 4.3. Some graphics effects might not work.", LogType::Warning);
 	}
 
 	MainWindow->OnResizedCallback = [this](Window*)
