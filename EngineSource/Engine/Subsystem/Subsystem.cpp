@@ -1,5 +1,4 @@
 #include "Subsystem.h"
-#include "Subsystem.h"
 #include <iostream>
 #include <array>
 #include <Engine/Engine.h>

@@ -9,47 +9,12 @@
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeCommandArgs": "",
 	  "buildCommandArgs": "",
-	  "ctestCommandArgs": "",
-	  "variables": [
-		{
-		  "name": "USE_WINDOWS_SUBSYSTEM",
-		  "value": "False",
-		  "type": "BOOL"
-		},
-		{
-		  "name": "ENGINE_EDITOR",
-		  "value": "True",
-		  "type": "BOOL"
-		}
-	  ]
-	},
-	{
-	  "name": "x64-Release",
-	  "generator": "Ninja",
-	  "configurationType": "Release",
-	  "buildRoot": "${projectDir}\\out\\build\\${name}",
-	  "installRoot": "${projectDir}\\out\\install\\${name}",
-	  "cmakeCommandArgs": "",
-	  "buildCommandArgs": "",
-	  "ctestCommandArgs": "",
-	  "inheritEnvironments": [ "msvc_x64_x64" ],
-	  "variables": [
-		{
-		  "name": "USE_WINDOWS_SUBSYSTEM",
-		  "value": "False",
-		  "type": "BOOL"
-		},
-		{
-		  "name": "ENGINE_EDITOR",
-		  "value": "True",
-		  "type": "BOOL"
-		}
-	  ]
+	  "ctestCommandArgs": ""
 	},
 	{
 	  "name": "WSL-GCC-Release",
 	  "generator": "Ninja",
-	  "configurationType": "Release",
+	  "configurationType": "RelWithDebInfo",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeExecutable": "cmake",
@@ -58,31 +23,7 @@
 	  "ctestCommandArgs": "",
 	  "inheritEnvironments": [ "linux_x64" ],
 	  "wslPath": "${defaultWSLPath}",
-	  "variables": [
-		{
-		  "name": "ENGINE_EDITOR",
-		  "value": "False",
-		  "type": "BOOL"
-		}
-	  ]
-	},
-	{
-	  "name": "x64-Release-NoEditor",
-	  "generator": "Ninja",
-	  "configurationType": "RelWithDebInfo",
-	  "buildRoot": "${projectDir}\\out\\build\\${name}",
-	  "installRoot": "${projectDir}\\out\\install\\${name}",
-	  "cmakeCommandArgs": "",
-	  "buildCommandArgs": "",
-	  "ctestCommandArgs": "",
-	  "inheritEnvironments": [ "msvc_x64_x64" ],
-	  "variables": [
-		{
-		  "name": "USE_WINDOWS_SUBSYSTEM",
-		  "value": "False",
-		  "type": "BOOL"
-		}
-	  ]
+	  "variables": []
 	}
   ]
 }

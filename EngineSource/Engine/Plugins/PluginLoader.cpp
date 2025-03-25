@@ -26,7 +26,7 @@ using namespace engine::plugin;
 #define STRUCT_MEMBER(name, ret, args, func) .name = plugin::EnginePluginInterface:: name ## Fn ([] args -> ret { func ; }),
 #define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) .name = plugin::EnginePluginInterface:: name ## Fn (func),
 
-static char* StrDup(string From)
+static char* StrDup(engine::string From)
 {
 	char* NewString = (char*)malloc(From.size() + 1);
 	if (!NewString)
@@ -35,6 +35,43 @@ static char* StrDup(string From)
 
 	NewString[From.size()] = 0;
 	return NewString;
+}
+
+
+
+static plugin::LogEntry* GetLog(size_t* OutSize)
+{
+	static std::vector<LogEntry> Entries;
+	static std::vector<Log::Message> Messages;
+	static std::vector<std::vector<LogPrefix>> Prefixes;
+
+	Messages = Log::GetMessages();
+	Entries.clear();
+	Prefixes.resize(Messages.size());
+
+	size_t Index = 0;
+	for (auto& i : Messages)
+	{
+		Prefixes[Index].clear();
+		for (auto& pref : i.Prefixes)
+		{
+			Prefixes[Index].push_back(LogPrefix{
+				.Text = pref.Text.c_str(),
+				.Color = pref.Color,
+				});
+		}
+
+		Entries.push_back(LogEntry{
+				.Prefixes = Prefixes[Index].data(),
+				.PrefixSize = Prefixes[Index].size(),
+				.Message = i.Message.c_str(),
+				.Color = i.Color,
+			});
+		Index++;
+	}
+
+	*OutSize = Entries.size();
+	return Entries.data();
 }
 
 static auto ctx = plugin::EnginePluginInterface{
@@ -91,7 +128,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		string PluginFileName = File.At("binary").GetString();
 
-		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded Plugin: %s", New.Name.c_str()) };
+		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded Plugin: %s", New.Name.c_str()), System->GetLogPrefixes()};
 
 		string PluginPath;
 

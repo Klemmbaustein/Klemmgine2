@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "SerializedData.h"
-#include "BInaryStream.h"
+#include "BinaryStream.h"
 #include <cstring>
 
 namespace engine

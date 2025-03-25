@@ -11,6 +11,8 @@ static bool UpdateFPS = false;
 class DebugUICanvas : public plugin::PluginCanvasInterface
 {
 	plugin::kuiUIBox* ConsoleBox = nullptr;
+	size_t LastLogSize = 0;
+	plugin::kuiUIBox* ConsoleBackground = nullptr;
 
 	void Begin() override
 	{
@@ -20,6 +22,29 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 	{
 		auto Interface = plugin::GetInterface();
 		Interface->DeleteUIBox(ConsoleBox);
+	}
+
+	void UpdateLogEntries(plugin::EnginePluginInterface* Interface)
+	{
+		size_t MessageSize = 0;
+		plugin::LogEntry* Entries = Interface->GetLogMessages(&MessageSize);
+		Interface->DeleteUIBoxChildren(ConsoleBackground);
+		for (size_t i = 0; i < MessageSize; i++)
+		{
+			string Displayed;
+
+			for (size_t j = 0; j < Entries[i].PrefixSize; j++)
+			{
+				Displayed.append(str::Format("[%s]: ", Entries[i].Prefixes[j].Text));
+			}
+
+			Displayed.append(Entries[i].Message);
+
+			auto Text = Interface->CreateUIBox("ConsoleEntry", UIObject);
+			Interface->UITextSetText(Interface->GetDynamicChild(Text, "text"), Displayed.c_str());
+			Interface->AddChild(ConsoleBackground, Text);
+		}
+		LastLogSize = MessageSize;
 	}
 
 	void Update() override
@@ -37,6 +62,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 		if (Interface->InputIsKeyDown(int(input::Key::RETURN)) && !ConsoleBox)
 		{
 			ConsoleBox = Interface->CreateUIBox("Console", UIObject);
+			ConsoleBackground = Interface->GetDynamicChild(ConsoleBox, "bg");
 
 			auto TextField = Interface->GetDynamicChild(ConsoleBox, "field");
 
@@ -46,6 +72,12 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 					DebugUICanvas* Canvas = (DebugUICanvas*)UserData;
 					Canvas->ProcessCommand();
 				}, this);
+			UpdateLogEntries(Interface);
+		}
+
+		if (ConsoleBox && LastLogSize != Interface->GetLogSize())
+		{
+			UpdateLogEntries(Interface);
 		}
 	}
 
@@ -129,6 +161,17 @@ element Console
 		color = 0;
 		height = 500px;
 		opacity = 0.8;
+		orientation = vertical;
+	}
+}
+
+element ConsoleEntry
+{
+	child UIText text
+	{
+		size = 13px;
+		color = 1;
+		font = "mono";
 	}
 }
 

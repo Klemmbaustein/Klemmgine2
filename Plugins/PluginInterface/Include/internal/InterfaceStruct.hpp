@@ -3,6 +3,7 @@
 #include <string>
 #include <Core/Transform.h>
 #include <Core/Vector.h>
+#include <Core/Log.h>
 #include "PluginCanvas.hpp"
 
 namespace engine::plugin
@@ -22,6 +23,21 @@ namespace engine::plugin
 
 
 	using CallbackFn = void(*)(void* UserData);
+
+	struct LogPrefix
+	{
+		const char* Text = nullptr;
+		Log::LogColor Color = Log::LogColor::Default;
+	};
+
+	struct LogEntry
+	{
+		LogPrefix* Prefixes = nullptr;
+		size_t PrefixSize = 0;
+
+		const char* Message = nullptr;
+		Log::LogColor Color = Log::LogColor::Default;
+	};
 
 	struct EnginePluginInterface
 	{

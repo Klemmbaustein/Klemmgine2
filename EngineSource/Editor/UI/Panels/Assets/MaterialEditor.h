@@ -27,6 +27,7 @@ namespace engine::editor
 
 		void OnChanged() override;
 
+		kui::UIBackground* Sidebar = nullptr;
 		kui::UIBackground* PreviewImage = nullptr;
 		Scene* PreviewScene = nullptr;
 		graphics::Material* LoadedMaterial = nullptr;

@@ -45,7 +45,6 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	}
 
 	Popup = new Window(Name, Flags, Window::POSITION_CENTERED, Size);
-
 	EditorUI::UpdateTheme(Popup);
 
 	DefaultFont = new kui::Font(Engine::GetSubsystem<subsystem::VideoSubsystem>()->DefaultFontName);

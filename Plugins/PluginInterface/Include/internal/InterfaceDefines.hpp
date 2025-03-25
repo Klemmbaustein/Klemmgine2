@@ -34,6 +34,7 @@ STRUCT_MEMBER(CreateUIBox, kuiUIBox*, (const char* Name, void* UICanvas), \
 { return (kuiUIBox*)((PluginUICanvas*)UICanvas)->CreateElement(Name); })
 
 STRUCT_MEMBER(DeleteUIBox, void, (kuiUIBox * Target), delete (kui::UIBox*)Target)
+STRUCT_MEMBER(DeleteUIBoxChildren, void, (kuiUIBox * Target), ((kui::UIBox*)Target)->DeleteChildren())
 
 STRUCT_MEMBER(GetDynamicChild, kuiUIBox*, (kuiUIBox * Target, const char* Name), \
 { auto c = (kui::markup::UIDynMarkupBox*)Target; return (kuiUIBox*)c->NamedChildren[Name]; })
@@ -56,3 +57,9 @@ STRUCT_MEMBER(UITextFieldSetText, void, (kuiUIBox * UIElement, const char* Text)
 
 STRUCT_MEMBER(UITextFieldOnChanged, void, (kuiUIBox * UIElement, CallbackFn Callback, void* UserData), \
 { auto c = (kui::UITextField*)UIElement; c->OnChanged = ([Callback, UserData]() {Callback(UserData); }); })
+
+STRUCT_MEMBER_CALL_DIRECT(GetLogSize, size_t, (), \
+	Log::GetLogMessagesCount)
+
+STRUCT_MEMBER(GetLogMessages, engine::plugin::LogEntry*, (size_t* OutSize), \
+{ return ::GetLog(OutSize); })
