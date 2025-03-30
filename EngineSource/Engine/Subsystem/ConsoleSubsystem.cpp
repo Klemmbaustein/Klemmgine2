@@ -1,6 +1,7 @@
 #include "ConsoleSubsystem.h"
 #include <Engine/Engine.h>
 #include <sstream>
+#include <Core/Error/EngineError.h>
 
 using namespace engine::console;
 
@@ -9,10 +10,10 @@ engine::subsystem::ConsoleSubsystem::ConsoleSubsystem()
 {
 	AddCommand({
 		Command{
-			.Name = "sayHi",
+			.Name = "crash",
 			.Args = {},
 			.OnCalled = [this](const Command::CallContext&) {
-				Print("Hi!");
+				error::Abort();
 			}
 		}
 		});

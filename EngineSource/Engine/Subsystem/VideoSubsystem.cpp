@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <Engine/File/Resource.h>
 using namespace kui;
+using namespace engine::subsystem;
 
 static void GLAPIENTRY MessageCallback(
 	GLenum source,
@@ -44,12 +45,15 @@ static systemWM::SysWindow* GetSysWindow(kui::Window* From)
 	return static_cast<systemWM::SysWindow*>(From->GetSysWindow());
 }
 
-engine::string engine::subsystem::VideoSubsystem::DefaultFontName = "res:DefaultFont.ttf";
+engine::string VideoSubsystem::DefaultFontName = "res:DefaultFont.ttf";
+VideoSubsystem* VideoSubsystem::Current = nullptr;
+
+static float TimeScale = 1;
 
 engine::subsystem::VideoSubsystem::VideoSubsystem()
 	: Subsystem("Video", Log::LogColor::Cyan)
 {
-
+	Current = this;
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 		{
 			app::MessageBox("kui error: " + Message, "Error", Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
@@ -98,7 +102,9 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		Print(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
 	}
 
-	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", ENGINE_COMPILER_ID, "4.3");
+#define STR_INNER(x) # x
+#define STR(x) STR_INNER(x)
+	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", STR(ENGINE_COMPILER_ID), "4.3");
 
 #ifdef EDITOR
 	Title.append(" Editor");
@@ -175,11 +181,33 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 				}
 			}
 			});
+
+		ConsoleSys->AddCommand(console::Command{
+		.Name = "time_scale",
+		.Args = { console::Command::Argument{
+			.Name = "value",
+			.Required = true,
+		}, },
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
+			try
+			{
+				TimeScale = std::stof(ctx.ProvidedArguments.at(0));
+			}
+			catch (std::invalid_argument&)
+			{
+				ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+			}
+			catch (std::out_of_range&)
+			{
+				ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+			}
+		} });
 	}
 }
 
 engine::subsystem::VideoSubsystem::~VideoSubsystem()
 {
+	Current = nullptr;
 	delete MainWindow;
 }
 
@@ -200,7 +228,7 @@ void engine::subsystem::VideoSubsystem::Update()
 	input::IsRMBDown = MainWindow->Input.IsRMBDown;
 	input::IsRMBClicked = MainWindow->Input.IsRMBClicked;
 
-	stats::DeltaTime = MainWindow->GetDeltaTime();
+	stats::DeltaTime = MainWindow->GetDeltaTime() * TimeScale;
 	stats::Time += stats::DeltaTime;
 
 }

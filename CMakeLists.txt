@@ -80,7 +80,7 @@ else()
 	add_executable(Klemmgine "EngineSource/main.cpp" "EngineSource/Resources.rc")
 endif()
 
-target_compile_definitions(KlemmgineLib PRIVATE ENGINE_COMPILER_ID="${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}")
+target_compile_definitions(KlemmgineLib PRIVATE "ENGINE_COMPILER_ID=${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}")
 
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)
 set(KLEMMUI_INCLUDE_EXAMPLES OFF)

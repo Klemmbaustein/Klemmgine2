@@ -35,7 +35,7 @@ void engine::MeshComponent::Load(AssetRef From)
 
 	DrawnModel = GraphicsModel::GetModel(From);
 
-	if (DrawnModel)
+	if (DrawnModel && DrawnModel->Drawable)
 	{
 		for (auto& m : DrawnModel->Data->Meshes)
 		{
@@ -57,6 +57,7 @@ void engine::MeshComponent::Load(AssetRef From)
 
 		if (!AlreadyRegistered)
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
+		CastShadow = DrawnModel->Data->CastShadow;
 	}
 	DrawBoundingBox.Position = 0;
 }

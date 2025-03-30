@@ -330,7 +330,7 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 	case PhysicsBody::BodyType::Capsule:
 	{
 		CapsuleBody* CapsulePtr = static_cast<CapsuleBody*>(Body);
-		JPH::CapsuleShapeSettings Settings = JPH::CapsuleShapeSettings(Scale.X, Scale.Y);
+		JPH::CapsuleShapeSettings Settings = JPH::CapsuleShapeSettings(Scale.Y, Scale.X);
 		JPH::Shape::ShapeResult r;
 		return JPH::BodyCreationSettings(new JPH::CapsuleShape(Settings, r),
 			ToJPHVec3(Position),

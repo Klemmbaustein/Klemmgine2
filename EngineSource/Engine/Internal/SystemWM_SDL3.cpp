@@ -19,7 +19,7 @@ std::vector<kui::systemWM::SysWindow*> ActiveWindows;
 kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	Window* Parent, Vec2ui Size, Vec2ui Pos, std::string Title, Window::WindowFlag Flags)
 {
-	engine::internal::platform::Init();
+	engine::platform::Init();
 
 	std::lock_guard g{ WindowCreateMutex };
 	SysWindow* OutWindow = new SysWindow();
@@ -47,7 +47,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	OutWindow->IsMain = ActiveWindows.empty();
 	ActiveWindows.push_back(OutWindow);
 
-	engine::internal::platform::InitWindow(OutWindow, int(Flags));
+	engine::platform::InitWindow(OutWindow, int(Flags));
 	SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
@@ -405,7 +405,7 @@ void kui::systemWM::HideWindow(SysWindow* Target)
 
 void kui::systemWM::MessageBox(std::string Text, std::string Title, int Type)
 {
-	if (!engine::internal::platform::ShowMessageBox(Title, Text, Type))
+	if (!engine::platform::ShowMessageBox(Title, Text, Type))
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT, Title.c_str(), Text.c_str(), nullptr);
 	}

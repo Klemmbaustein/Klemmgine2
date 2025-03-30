@@ -3,7 +3,7 @@
 
 int main()
 {
-	using namespace engine::internal::platform;
+	using namespace engine::platform;
 
 	ENGINE_BEGIN_TESTS();
 

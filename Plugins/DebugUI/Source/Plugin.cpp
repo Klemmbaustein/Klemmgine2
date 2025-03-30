@@ -29,7 +29,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 		size_t MessageSize = 0;
 		plugin::LogEntry* Entries = Interface->GetLogMessages(&MessageSize);
 		Interface->DeleteUIBoxChildren(ConsoleBackground);
-		for (size_t i = 0; i < MessageSize; i++)
+		for (int64 i = int64(MessageSize) - 1; i >= 0; i--)
 		{
 			string Displayed;
 
@@ -94,9 +94,10 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 			return;
 		}
 
-		Interface->ConsoleExecuteCommand(Text.c_str());
+		log::Info("> " + Text);
 		Interface->UITextFieldSetText(TextField, "");
 		Interface->UITextFieldEdit(TextField);
+		Interface->ConsoleExecuteCommand(Text.c_str());
 	}
 };
 
@@ -107,7 +108,6 @@ ENGINE_EXPORT void RegisterTypes()
 ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
 {
 	plugin::GetInterface()->CreateUICanvas("Overlay", R"(
-
 element Overlay
 {
 	width = 100%;
@@ -120,12 +120,6 @@ element Overlay
 	child UIText fpsText
 	{
 		text = "";
-		color = (1, 1, 0.2);
-		size = 15px;
-	}
-	child UIText sceneText
-	{
-		text = "Scene: probably";
 		color = (1, 1, 0.2);
 		size = 15px;
 	}
@@ -147,7 +141,8 @@ element Console
 		textColor = 1;
 		color = 0.1;
 		width = 2;
-		textSize = 14px;
+		textSize = 12px;
+		font = "mono";
 	}
 
 	child UIBackground bg
@@ -162,6 +157,7 @@ element Console
 		height = 500px;
 		opacity = 0.8;
 		orientation = vertical;
+		verticalAlign = default;
 	}
 }
 
@@ -169,9 +165,10 @@ element ConsoleEntry
 {
 	child UIText text
 	{
-		size = 13px;
+		size = 11px;
 		color = 1;
 		font = "mono";
+		downPadding = 2px;
 	}
 }
 

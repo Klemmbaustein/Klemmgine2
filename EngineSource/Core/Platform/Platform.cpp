@@ -6,7 +6,7 @@
 #include <iostream>
 
 #undef DELETE
-void engine::internal::platform::Execute(string Command)
+void engine::platform::Execute(string Command)
 {
 	STARTUPINFO Startup;
 	ZeroMemory(&Startup, sizeof(Startup));
@@ -24,7 +24,7 @@ void engine::internal::platform::Execute(string Command)
 	CloseHandle(ProcInfo.hThread);
 }
 
-void engine::internal::platform::Open(string File)
+void engine::platform::Open(string File)
 {
 	ShellExecute(NULL, "open", File.c_str(), NULL, NULL, FALSE);
 }
@@ -51,7 +51,7 @@ static std::wstring StrToWstr(const std::string& str)
 	return OutStr;
 }
 
-void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
+void engine::platform::SetConsoleColor(Log::LogColor NewColor)
 {
 	static std::map<Log::LogColor, WORD> WindowsColors =
 	{
@@ -71,12 +71,12 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	SetConsoleTextAttribute(hConsole, WindowsColors[NewColor]);
 }
 
-void engine::internal::platform::SetThreadName(string Name)
+void engine::platform::SetThreadName(string Name)
 {
 	SetThreadDescription(GetCurrentThread(), StrToWstr(Name).c_str());
 }
 
-engine::string engine::internal::platform::GetThreadName()
+engine::string engine::platform::GetThreadName()
 {
 	PWSTR OutString;
 	GetThreadDescription(GetCurrentThread(), &OutString);
@@ -84,17 +84,17 @@ engine::string engine::internal::platform::GetThreadName()
 	return WstrToStr(OutString);
 }
 
-engine::internal::platform::SharedLibrary* engine::internal::platform::LoadSharedLibrary(string Path)
+engine::platform::SharedLibrary* engine::platform::LoadSharedLibrary(string Path)
 {
 	return reinterpret_cast<SharedLibrary*>(LoadLibraryW(StrToWstr(Path).c_str()));
 }
 
-void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
+void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
 {
 	return GetProcAddress(HMODULE(Library), Name.c_str());
 }
 
-void engine::internal::platform::UnloadSharedLibrary(SharedLibrary* Library)
+void engine::platform::UnloadSharedLibrary(SharedLibrary* Library)
 {
 	FreeLibrary(reinterpret_cast<HMODULE>(Library));
 }
@@ -107,7 +107,7 @@ void engine::internal::platform::UnloadSharedLibrary(SharedLibrary* Library)
 #include <errno.h>
 #include <thread>
 
-void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
+void engine::platform::SetConsoleColor(Log::LogColor NewColor)
 {
 	static std::map<Log::LogColor, const char*> ColorCodes =
 	{
@@ -125,36 +125,36 @@ void engine::internal::platform::SetConsoleColor(Log::LogColor NewColor)
 	printf("%s", ColorCodes[NewColor]);
 }
 
-engine::internal::platform::SharedLibrary* engine::internal::platform::LoadSharedLibrary(string Path)
+engine::platform::SharedLibrary* engine::platform::LoadSharedLibrary(string Path)
 {
 	return reinterpret_cast<SharedLibrary*>(dlopen(Path.c_str(), RTLD_LAZY | RTLD_LOCAL));
 }
 
-void* engine::internal::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
+void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
 {
 	return dlsym(Library, Name.c_str());
 }
 
-void engine::internal::platform::UnloadSharedLibrary(SharedLibrary* Library)
+void engine::platform::UnloadSharedLibrary(SharedLibrary* Library)
 {
 	dlclose(Library);
 }
 
-void engine::internal::platform::Execute(string Command)
+void engine::platform::Execute(string Command)
 {
 	system(Command.c_str());
 }
 
-void engine::internal::platform::Open(string File)
+void engine::platform::Open(string File)
 {
 	std::thread([File]() {system(("xdg-open " + File).c_str()); }).detach();
 }
 
-void engine::internal::platform::SetThreadName(string Name)
+void engine::platform::SetThreadName(string Name)
 {
 
 }
-engine::string engine::internal::platform::GetThreadName()
+engine::string engine::platform::GetThreadName()
 {
 	return "<Unknown thread>";
 }

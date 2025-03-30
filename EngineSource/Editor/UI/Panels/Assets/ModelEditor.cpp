@@ -2,6 +2,7 @@
 #include "ModelEditor.h"
 #include <Engine/MainThread.h>
 #include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Elements/Checkbox.h>
 #include <Editor/UI/Elements/AssetSelector.h>
 #include <kui/UI/UISpinner.h>
 #include <kui/Window.h>
@@ -151,6 +152,30 @@ void engine::editor::ModelEditor::OnModelLoaded()
 
 		SidebarBox->AddChild(NewSelector);
 	}
+
+	UIBox* PropertiesBox = new UIBox(false);
+	SidebarBox->AddChild(PropertiesBox
+		->SetMinWidth(UISize::Parent(1)));
+
+	PropertiesBox->AddChild(new UIText(14_px, EditorUI::Theme.Text, "Properties", EditorUI::EditorFont));
+
+	auto AddBoolProperty = [this, PropertiesBox, Data](string Name, bool& Value)
+		{
+			auto Checkbox = new UICheckbox(Value, nullptr);
+			Checkbox->OnClicked = [&Value, Checkbox]()
+				{
+					Value = Checkbox->Value;
+				};
+			PropertiesBox->AddChild((new UIBox(true))
+				->AddChild((new UIText(11_px, 1, Name, EditorUI::EditorFont))
+					->SetTextWidthOverride(100_px)
+					->SetPadding(5_px))
+				->AddChild(Checkbox
+					->SetPadding(5_px)));
+		};
+
+	AddBoolProperty("Has collision", Data->Data->HasCollision);
+	AddBoolProperty("Cast shadow", Data->Data->CastShadow);
 }
 
 engine::string engine::editor::ModelEditor::GetDisplayName(string Asset)
@@ -165,6 +190,7 @@ void engine::editor::ModelEditor::OnModelChanged()
 }
 void engine::editor::ModelEditor::Update()
 {
+	AssetEditor::Update();
 	if ((ModelLoaded || FailedLoading) && SceneBackground->GetChildren().size())
 	{
 		SceneBackground->DeleteChildren();

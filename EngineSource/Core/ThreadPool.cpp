@@ -85,7 +85,7 @@ ThreadPool::ThreadFunction engine::ThreadPool::FindFunction()
 void engine::ThreadPool::ThreadMain(size_t ThreadId)
 {
 	string ThreadName = str::Format("%s - %i", Name.c_str(), int(ThreadId));
-	internal::platform::SetThreadName(ThreadName);
+	platform::SetThreadName(ThreadName);
 	error::InitForThread(ThreadName);
 	bool ShouldQuitThread = false;
 	while (true)

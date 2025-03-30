@@ -8,7 +8,7 @@ namespace kui::systemWM
 	class SysWindow;
 }
 
-namespace engine::internal::platform
+namespace engine::platform
 {
 	struct FileDialogFilter
 	{

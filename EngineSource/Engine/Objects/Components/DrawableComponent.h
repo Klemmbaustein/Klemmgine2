@@ -10,6 +10,7 @@ namespace engine
 	public:
 		graphics::BoundingBox DrawBoundingBox;
 		bool IsVisible = true;
+		bool CastShadow = true;
 		virtual void Draw(graphics::Camera* From) = 0;
 		virtual void SimpleDraw(graphics::ShaderObject* With) {};
 	};

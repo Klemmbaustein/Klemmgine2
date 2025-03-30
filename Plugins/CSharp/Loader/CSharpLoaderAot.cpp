@@ -1,13 +1,14 @@
 #include "CSharpLoaderAot.h"
 #include <KlemmginePlugin.hpp>
-using namespace engine::internal::platform;
+using namespace engine::platform;
 using namespace engine;
 
 const string MainFunctionName = "Aot_Main";
 
 engine::cSharp::CSharpLoaderAot::CSharpLoaderAot(const std::vector<NativeFunction>& Functions)
 {
-	AotLibrary = LoadSharedLibrary(string(plugin::GetInterface()->PluginPath) + "bin/net8.0/publish/win-x64/Klemmgine.CSharp.Aot.dll");
+	//AotLibrary = LoadSharedLibrary(string(plugin::GetInterface()->PluginPath) + "bin/net8.0/win-x64/native/Klemmgine.CSharp.Aot.dll");
+	AotLibrary = LoadSharedLibrary("Klemmgine.CSharp.Aot.dll");
 
 	if (!AotLibrary)
 	{

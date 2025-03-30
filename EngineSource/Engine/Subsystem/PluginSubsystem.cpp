@@ -8,6 +8,7 @@ engine::subsystem::PluginSubsystem::PluginSubsystem()
 
 engine::subsystem::PluginSubsystem::~PluginSubsystem()
 {
+	plugin::Unload(this);
 }
 
 void engine::subsystem::PluginSubsystem::Update()

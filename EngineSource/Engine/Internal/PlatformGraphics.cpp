@@ -32,12 +32,12 @@ static std::wstring StrToWstr(const std::string& str)
 	return OutStr;
 }
 
-void engine::internal::platform::Init()
+void engine::platform::Init()
 {
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 }
 
-void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
+void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
 	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
@@ -53,7 +53,7 @@ void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, in
 	}
 }
 
-std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
+std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (!SUCCEEDED(hr))
@@ -200,15 +200,15 @@ static bool CommandExists(std::string Command)
 	return system(("command -v " + Command + " > /dev/null").c_str()) == 0;
 }
 
-void engine::internal::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
+void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
 }
 
-void engine::internal::platform::Init()
+void engine::platform::Init()
 {
 }
 
-std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
+std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
 	// TODO: implement
 	return {};
@@ -218,7 +218,7 @@ std::vector<engine::string> engine::internal::platform::OpenFileDialog(std::vect
 
 // Stolen from SystemWM_Win32 and SystemWM_Linux in KlemmUI.
 // SDL also has a message box function but that one looks weird. (It doesn't even seem to use MessageBox() on Windows)
-bool engine::internal::platform::ShowMessageBox(string Title, string Message, int Type)
+bool engine::platform::ShowMessageBox(string Title, string Message, int Type)
 {
 	if (Type < 0 || Type > 2)
 	{

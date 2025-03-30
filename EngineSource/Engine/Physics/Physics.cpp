@@ -176,6 +176,6 @@ engine::physics::BoxBody::BoxBody(Vector3 Position, Rotation3 Rotation, Vector3 
 }
 
 engine::physics::CapsuleBody::CapsuleBody(Vector3 Position, Rotation3 Rotation, Vector2 Scale, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
-	: PhysicsBody(BodyType::Sphere, Transform(Position, Rotation, Vector3(Scale.X, Scale.Y, 1)), ColliderMovability, CollisionLayers, Parent)
+	: PhysicsBody(BodyType::Capsule, Transform(Position, Rotation, Vector3(Scale.X, Scale.Y, 1)), ColliderMovability, CollisionLayers, Parent)
 {
 }

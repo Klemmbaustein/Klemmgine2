@@ -82,7 +82,7 @@ void engine::CollisionComponent::Load(AssetRef File, bool StartCollisionEnabled)
 	GetRootComponent()->UpdateTransform();
 	this->LoadedModel = GraphicsModel::GetModel(File);
 
-	if (!LoadedModel)
+	if (!LoadedModel || LoadedModel->Data->Meshes.empty())
 		return;
 
 	Body = new MeshBody(LoadedModel, WorldTransform, physics::MotionType::Static, physics::Layer::Static, this);

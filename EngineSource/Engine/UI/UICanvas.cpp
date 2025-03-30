@@ -1,5 +1,6 @@
 #include "UICanvas.h"
 #include <Engine/Scene.h>
+#include <kui/Window.h>
 
 using namespace engine;
 using namespace kui;
@@ -41,6 +42,7 @@ void engine::UICanvas::UpdateAll()
 
 void engine::UICanvas::ClearAll()
 {
+	Window::GetActiveWindow()->UI.ButtonEvents.clear();
 	auto CanvasCopy = ActiveCanvases;
 	for (auto& i : CanvasCopy)
 	{

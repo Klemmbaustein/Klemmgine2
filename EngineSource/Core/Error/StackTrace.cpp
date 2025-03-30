@@ -120,7 +120,7 @@ engine::string engine::error::GetStackTrace()
 	free(messages);
 #endif
 
-	OutStream << "    Thread: " << internal::platform::GetThreadName() << std::endl;
+	OutStream << "    Thread: " << platform::GetThreadName() << std::endl;
 	for (auto& i : Stack)
 	{
 		if (HasDebugInfo && i.Name.empty())

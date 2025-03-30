@@ -116,7 +116,8 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 	ShadowShader->Bind();
 	for (DrawableComponent* i : Components)
 	{
-		i->SimpleDraw(ShadowShader);
+		if (i->CastShadow)
+			i->SimpleDraw(ShadowShader);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return LightDepthMaps;

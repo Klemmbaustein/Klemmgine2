@@ -39,7 +39,7 @@ namespace engine
 
 		std::vector<Mesh> Meshes;
 		bool HasCollision = true;
-		bool CastShadow = false;
+		bool CastShadow = true;
 	};
 
 	struct GraphicsModel

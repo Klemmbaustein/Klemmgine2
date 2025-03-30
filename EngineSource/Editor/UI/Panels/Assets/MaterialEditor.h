@@ -27,8 +27,10 @@ namespace engine::editor
 
 		void OnChanged() override;
 
+		bool RedrawNextFrame = false;
 		kui::UIBackground* Sidebar = nullptr;
 		kui::UIBackground* PreviewImage = nullptr;
+		kui::UIBox* MainBox = nullptr;
 		Scene* PreviewScene = nullptr;
 		graphics::Material* LoadedMaterial = nullptr;
 	};

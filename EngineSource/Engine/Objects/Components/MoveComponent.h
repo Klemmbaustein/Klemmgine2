@@ -29,7 +29,7 @@ namespace engine
 		void Jump();
 
 		/// Jump height.
-		float JumpHeight = 12;
+		float JumpHeight = 8;
 		/// The maximum movement speed.
 		float MaxSpeed = 5;
 		/// The acceleration of the movement.
@@ -47,7 +47,7 @@ namespace engine
 		const uint32 MoveMaxDepth = 5;
 
 		/// The size of the collider used by the movement. X is the capsule width, Y is the capsule height.
-		Vector2 ColliderSize = Vector2(0.5f, 1.0f);
+		Vector2 ColliderSize = Vector2(0.5f, 0.5f);
 
 		Vector3 LastHitNormal;
 		ObjectComponent* StoodOn = nullptr;

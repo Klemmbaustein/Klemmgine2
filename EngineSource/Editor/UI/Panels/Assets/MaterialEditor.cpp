@@ -1,15 +1,17 @@
 #ifdef EDITOR
 #include "MaterialEditor.h"
 #include <Editor/UI/Elements/AssetSelector.h>
+#include <Editor/UI/Elements/Checkbox.h>
 #include <Editor/UI/Elements/VectorField.h>
+#include <Editor/UI/Elements/Toolbar.h>
 #include <MaterialEditor.kui.hpp>
 #include <Engine/Objects/MeshObject.h>
 #include <Core/File/FileUtil.h>
-#include <Editor/UI/Elements/Toolbar.h>
 #include <stdexcept>
 #include <kui/Window.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
 #include <Engine/Engine.h>
+#include <kui/UI/UIDropdown.h>
 
 using namespace kui;
 using engine::subsystem::VideoSubsystem;
@@ -28,7 +30,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	PreviewScene->Resizable = false;
 	PreviewScene->AlwaysRedraw = true;
 	PreviewScene->Redraw = true;
-	PreviewScene->BufferSize = 400 * Window::GetActiveWindow()->GetDPI();
+	PreviewScene->BufferSize = 200 * Window::GetActiveWindow()->GetDPI();
 	PreviewScene->OnResized(PreviewScene->BufferSize);
 
 	auto CurrentObj = PreviewScene->CreateObject<MeshObject>();
@@ -52,11 +54,13 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 			Engine::GetSubsystem<VideoSubsystem>()->Shaders.ReloadAll();
 		});
 
-	PreviewImage = new UIBackground(true, 0, 1, 300_px);
+	PreviewImage = new UIBackground(true, 0, 1, 200_px);
 	Sidebar = new UIBackground(false, 0, EditorUI::Theme.Background);
 
+	MainBox = new UIBox(true);
+
 	Background->AddChild(MaterialToolbar);
-	Background->AddChild((new UIBox(true))
+	Background->AddChild(MainBox
 		->SetMinHeight(UISize::Parent(1).GetScreen().Y - (42_px).GetScreen().Y)
 		->AddChild(Sidebar
 			->SetPadding(1_px)
@@ -77,6 +81,12 @@ void engine::editor::MaterialEditor::Update()
 {
 	AssetEditor::Update();
 	PreviewImage->SetUseTexture(true, PreviewScene->Buffer->Textures[0]);
+
+	if (RedrawNextFrame)
+	{
+		PreviewImage->RedrawElement();
+		RedrawNextFrame = false;
+	}
 }
 
 void engine::editor::MaterialEditor::LoadUI()
@@ -84,6 +94,20 @@ void engine::editor::MaterialEditor::LoadUI()
 	using graphics::Material;
 
 	MaterialParamsBox->DeleteChildren();
+
+	bool Compact = SizeVec(Size).GetPixels().X < 600;
+
+	MainBox->SetHorizontal(!Compact);
+
+	if (Compact)
+	{
+		Sidebar->SetMinSize(SizeVec(UISize::Parent(1), 0));
+	}
+	else
+	{
+		Sidebar->SetMinSize(SizeVec(0, UISize::Parent(1)));
+	}
+
 	for (Material::Field& i : LoadedMaterial->Fields)
 	{
 		auto Editor = new MaterialPropertyElement();
@@ -109,16 +133,28 @@ void engine::editor::MaterialEditor::LoadUI()
 
 					i.TextureValue.Name = new string(file::FileName(Selector->SelectedAsset.FilePath));
 					i.TextureValue.Value = nullptr;
-					PreviewScene->Redraw = true;
-					PreviewImage->RedrawElement();
+					OnChanged();
 				};
 
 			LoadedMaterial->LoadTexture(i);
 			Field->texturePreview->SetUseTexture(i.TextureValue.Value, i.TextureValue.Value
 				? i.TextureValue.Value->TextureObject : 0);
 			Selector->SelectedAsset.Extension = "png";
+			 
+			std::vector FilteringOptions = {
+				UIDropdown::Option("Nearest"),
+				UIDropdown::Option("Linear"),
+			};
+
+			auto MaterialFilteringDropdown = new UIDropdown(0, 50_px, 0, 1, FilteringOptions, [](int Selected)
+				{
+
+				}, EditorUI::EditorFont);
+
+			MaterialFilteringDropdown->SetTextSize(11_px, 1_px);
 
 			Field->controlsBox->AddChild(Selector);
+			Field->controlsBox->AddChild(MaterialFilteringDropdown);
 			Editor->contentBox->AddChild(Field);
 			MaterialParamsBox->AddChild(Editor);
 			continue;
@@ -129,6 +165,8 @@ void engine::editor::MaterialEditor::LoadUI()
 			auto VecField = new VectorField(i.Vec3, 200_px, nullptr);
 			VecField->OnChanged = [this, VecField, &i]()
 				{
+					if (i.Vec3 == VecField->GetValue())
+						return;
 					i.Vec3 = VecField->GetValue();
 					OnChanged();
 				};
@@ -140,16 +178,12 @@ void engine::editor::MaterialEditor::LoadUI()
 		}
 		if (i.FieldType == Material::Field::Type::Bool)
 		{
-			auto Checkbox = new UIButton(true, 0, 1, nullptr);
+			auto Checkbox = new UICheckbox(i.Int, nullptr);
 			Checkbox->OnClicked = [this, Checkbox, &i]()
 				{
-					i.Int = int(not bool(i.Int));
-					Checkbox->SetUseTexture(bool(i.Int), "Engine/Editor/Assets/Checkbox.png");
+					i.Int = Checkbox->Value;
 					OnChanged();
 				};
-			Checkbox->SetUseTexture(bool(i.Int), "Engine/Editor/Assets/Checkbox.png");
-			Checkbox->SetMinSize(16_px);
-			Checkbox->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
 
 			Editor->contentBox->AddChild(Checkbox);
 			MaterialParamsBox->AddChild(Editor);
@@ -204,6 +238,6 @@ void engine::editor::MaterialEditor::OnChanged()
 {
 	AssetEditor::OnChanged();
 	PreviewScene->Redraw = true;
-	PreviewImage->RedrawElement();
+	RedrawNextFrame = true;
 }
 #endif

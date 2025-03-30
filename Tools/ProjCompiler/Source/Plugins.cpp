@@ -19,6 +19,7 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 	{
 		try
 		{
+			auto PluginBinPath = OutPath / "Plugins" / "bin";
 			auto PluginOutPath = OutPath / "Plugins" / p.filename();
 			auto PluginFile = SerializedValue(TextSerializer::FromFile((p / "Plugin.k2p").string()));
 
@@ -29,14 +30,22 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 			}
 
 			Log::Info(str::Format("Copying plugin %s", p.filename().string().c_str()));
+			std::filesystem::create_directories(PluginBinPath);
 
 			std::filesystem::create_directories(PluginOutPath);
 			if (PluginFile.Contains("include"))
 			{
 				for (auto& i : PluginFile.At("include").GetArray())
 				{
-					std::filesystem::create_directories(PluginOutPath / file::FilePath(i.GetString()));
-					fs::copy(p / i.GetString(), PluginOutPath / i.GetString());
+					//std::filesystem::create_directories(PluginOutPath / file::FilePath(i.GetString()));
+					if (fs::exists(BinaryPath / "plugins" / i.GetString()))
+					{
+						fs::copy(BinaryPath / "plugins" / i.GetString(), PluginBinPath / file::FileName(i.GetString()));
+					}
+					else
+					{
+						fs::copy(p / i.GetString(), PluginBinPath / file::FileName(i.GetString()));
+					}
 				}
 			}
 
@@ -48,8 +57,7 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 			PluginBinary = str::Format("lib%s.so", PluginBinary.c_str());
 #endif
 
-			std::filesystem::create_directories(OutPath / "Plugins" / "bin");
-			fs::copy(BinaryPath / "plugins" / PluginBinary, OutPath / "Plugins" / "bin" / PluginBinary);
+			fs::copy(BinaryPath / "plugins" / PluginBinary, PluginBinPath / PluginBinary);
 			fs::copy(p / "Plugin.k2p", PluginOutPath / "Plugin.k2p");
 		}
 		catch (SerializeException& e)

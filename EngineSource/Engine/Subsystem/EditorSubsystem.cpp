@@ -4,6 +4,7 @@
 #include <Engine/Engine.h>
 #include <Engine/Scene.h>
 #include <Engine/Debug/TimeLogger.h>
+#include <Editor/Editor.h>
 
 bool engine::subsystem::EditorSubsystem::Active = false;
 
@@ -21,19 +22,31 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 		}
 	}
 
-	debug::TimeLogger UITime{"Created editor UI", GetLogPrefixes()};
+	debug::TimeLogger UITime{ "Created editor UI", GetLogPrefixes() };
 
 	UI = new editor::EditorUI();
 	Active = true;
 
 	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
-		.Name = "unload_editor",
+		.Name = "ed.run",
 		.Args = {},
-		.OnCalled = [this](const console::Command::CallContext& ctx) {
-			StartProject();
+		.OnCalled = [](const console::Command::CallContext& ctx) {
+			if (editor::IsActive())
+			{
+				Engine::GetSubsystem<EditorSubsystem>()->StartProject();
+			}
 		}
 		});
-
+	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
+	.Name = "ed.edit",
+	.Args = {},
+	.OnCalled = [this](const console::Command::CallContext& ctx) {
+			if (!editor::IsActive())
+			{
+				Engine::Instance->LoadSubsystem(new EditorSubsystem());
+			}
+		}
+		});
 }
 
 engine::subsystem::EditorSubsystem::~EditorSubsystem()

@@ -115,15 +115,14 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 				FileName = Context.SceneName;
 			}
 
-			TexturePath = str::Format("%s%s_%i.png", OutDir.c_str(), FileName.c_str(), int(i));
+			TexturePath = str::Format("%s_%i.png", FileName.c_str(), int(i));
 
-			std::ofstream TextureOutput = std::ofstream(TexturePath, std::ios::binary);
+			std::ofstream TextureOutput = std::ofstream(OutDir + TexturePath, std::ios::binary);
 			if (!texture->mHeight)
 			{
 				TextureOutput.write((char*)texture->pcData, texture->mWidth);
 			}
 			TextureOutput.close();
-			TexturePath = str::Format("%s_%i.png", FileName.c_str(), int(i));
 		}
 
 		string MaterialPath = str::Format("%s%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));

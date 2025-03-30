@@ -22,7 +22,7 @@ namespace engine::cSharp
 		using AotMainFn = void(*)(intptr_t ArrayPointer, uint32 ArrayLength);
 		using AotUpdateFn = void(*)(float Delta);
 
-		internal::platform::SharedLibrary* AotLibrary = nullptr;
+		platform::SharedLibrary* AotLibrary = nullptr;
 
 		AotDestroyObjectFn DestroyObject = nullptr;
 		AotCreateObjectFn CreateObject = nullptr;

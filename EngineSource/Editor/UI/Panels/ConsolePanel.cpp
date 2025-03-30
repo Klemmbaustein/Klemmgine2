@@ -48,8 +48,8 @@ engine::editor::ConsolePanel::ConsolePanel()
 			return;
 
 		Log::Info("> " + Command);
-		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
 		Element->commandField->field->SetText("");
+		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
 		};
 	Background->AddChild(Element);
 }

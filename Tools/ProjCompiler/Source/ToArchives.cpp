@@ -115,7 +115,7 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 	if (FilePath.extension() == ".kmdl")
 	{
 		SerializedValue Model = BinarySerializer::FromFile(FilePath.string(), "kmdl");
-		auto& Meshes = Model.At("meshes").GetArray();
+		auto& Meshes = Model.At("meshes").At("meshes").GetArray();
 		for (auto& i : Meshes)
 		{
 			fs::path Material = GetFileFromName(i.At("mat").GetString() + ".kmt");

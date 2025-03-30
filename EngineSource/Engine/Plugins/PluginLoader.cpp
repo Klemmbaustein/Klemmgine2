@@ -112,9 +112,23 @@ void engine::plugin::Update()
 	}
 }
 
+void engine::plugin::Unload(subsystem::PluginSubsystem* System)
+{
+	using namespace engine::platform;
+
+	for (auto& i : LoadedPlugins)
+	{
+		debug::TimeLogger PluginLoadTime{ str::Format("Unloaded plugin: %s", i.Name.c_str()), System->GetLogPrefixes() };
+		if (i.PluginUnload)
+			i.PluginUnload();
+		UnloadSharedLibrary((SharedLibrary*)i.PluginHandle);
+	}
+	LoadedPlugins.clear();
+}
+
 void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* System)
 {
-	using namespace engine::internal::platform;
+	using namespace engine::platform;
 	using namespace engine::subsystem;
 	using LogType = Subsystem::LogType;
 
@@ -128,7 +142,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		string PluginFileName = File.At("binary").GetString();
 
-		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded Plugin: %s", New.Name.c_str()), System->GetLogPrefixes()};
+		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded plugin: %s", New.Name.c_str()), System->GetLogPrefixes()};
 
 		string PluginPath;
 
@@ -144,7 +158,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 #if WINDOWS
 		string PluginBinary = str::Format("%s/%s.dll", PluginPath.c_str(), PluginFileName.c_str());
 #else
-		string PluginBinary = str::Format("%s/lib%s.so", PluginPath.c_str(), PluginFileName.c_str());
+		string PluginBinary = str::Format("out/build/WSL-GCC-Release/bin/%s/lib%s.so", PluginPath.c_str(), PluginFileName.c_str());
 #endif
 
 		SharedLibrary* Library = LoadSharedLibrary(PluginBinary);
@@ -166,6 +180,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		New.OnNewSceneLoaded = PluginInfo::SceneLoadFn(GetLibraryFunction(Library, "OnSceneLoaded"));
 		New.PluginUpdate = PluginInfo::UpdateFn(GetLibraryFunction(Library, "Update"));
+		New.PluginUnload = PluginInfo::PluginUnloadFn(GetLibraryFunction(Library, "PluginUnload"));
 		New.PluginHandle = Library;
 
 		LoadedPlugins.push_back(New);

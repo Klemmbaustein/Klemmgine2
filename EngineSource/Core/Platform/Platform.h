@@ -2,7 +2,7 @@
 #include <Core/Types.h>
 #include <Core/Log.h>
 
-namespace engine::internal::platform
+namespace engine::platform
 {
 	void Execute(string Command);
 	void Open(string File);

@@ -7,6 +7,7 @@
 #include <Engine/MainThread.h>
 #include <Engine/Scene.h>
 #include <Engine/File/Resource.h>
+#include <Engine/Subsystem/VideoSubsystem.h>
 
 using namespace engine::graphics;
 
@@ -291,7 +292,7 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 		Found->second.References++;
 	}
 
-	if (Found->second.Drawable == nullptr)
+	if (Found->second.Drawable == nullptr && subsystem::VideoSubsystem::Current)
 	{
 		Found->second.Drawable = new Model(Found->second.Data);
 	}

@@ -354,7 +354,7 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 			}
 		}
 	}
-	if (Target.Extension == "png")
+	if (Target.Extension == "png" && graphics::TextureLoader::Instance)
 	{
 		graphics::TextureLoader::Instance->PreLoadBuffer(Target,
 			graphics::TextureLoadOptions{});
@@ -460,31 +460,35 @@ void engine::Scene::Init()
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
-	kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
-#if EDITOR
-	if (EditorSubsystem::Active)
+	if (VideoSystem)
 	{
-		BufferSize = GetEditorSize(BufferSize);
-	}
-#endif
-	Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
-
-	SceneCamera = new Camera(1);
-	SceneCamera->Position.Z = 2;
-	SceneCamera->Rotation.Y = 3.14f / -2.0f;
-
-	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
-	UsedCamera = SceneCamera;
-	SceneSubsystem::Current->LoadedScenes.push_back(this);
-
-	VideoSystem->OnResizedCallbacks.insert({ this,
-		[this](kui::Vec2ui NewSize)
+		kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
+#if EDITOR
+		if (EditorSubsystem::Active)
 		{
-			if (Resizable)
-				OnResized(NewSize);
-		} });
+			BufferSize = GetEditorSize(BufferSize);
+		}
+#endif
+		Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
 
-	Shadows.Init();
+		SceneCamera = new Camera(1);
+		SceneCamera->Position.Z = 2;
+		SceneCamera->Rotation.Y = 3.14f / -2.0f;
+
+		SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
+		UsedCamera = SceneCamera;
+
+		VideoSystem->OnResizedCallbacks.insert({ this,
+			[this](kui::Vec2ui NewSize)
+			{
+				if (Resizable)
+					OnResized(NewSize);
+			} });
+
+		Shadows.Init();
+	}
+
+	SceneSubsystem::Current->LoadedScenes.push_back(this);
 	plugin::OnNewSceneLoaded(this);
 }
 

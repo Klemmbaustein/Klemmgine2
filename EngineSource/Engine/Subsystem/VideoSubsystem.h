@@ -23,6 +23,7 @@ namespace engine::subsystem
 
 		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
 		static string DefaultFontName;
+		static VideoSubsystem* Current;
 
 		void OnResized();
 

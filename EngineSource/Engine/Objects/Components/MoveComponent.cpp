@@ -79,14 +79,8 @@ void engine::MoveComponent::Update()
 
 	InputDirection = 0;
 
-	auto Hits = Collider->CollisionTest(physics::Layer::Static, { RootObject });
-	for (auto& h : Hits)
-	{
-		if (h.Depth > 0.1f)
-		{
-			ParentObject->Position += h.Normal * h.Depth;
-		}
-	}
+	//auto Hits = physics::HitResult::GetAverageHit(Collider->CollisionTest(physics::Layer::Static, { RootObject }));
+	//ParentObject->Position += Hits.Normal * Hits.Depth;
 }
 
 Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirection, Vector3 Pos, bool GravityPass, uint32 Depth)
@@ -94,7 +88,7 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 	float Distance = Direction.Length() + 0.001f;
 
 	auto Hits = Collider->ShapeCast(
-		Transform(Pos, 0, Vector3(ColliderSize.X, ColliderSize.Y, ColliderSize.X)),
+		Transform(Pos, 0, 1),
 		Pos + Direction.Normalize() * Distance,
 		physics::Layer::Static,
 		{ RootObject }

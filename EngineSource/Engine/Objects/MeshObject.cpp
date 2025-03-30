@@ -4,7 +4,10 @@ void engine::MeshObject::LoadMesh(AssetRef File)
 {
 	ModelName.Value = File;
 	Mesh->Load(File);
-	Collider->Load(File);
+	if (Mesh->DrawnModel && Mesh->DrawnModel->Data->HasCollision)
+	{
+		Collider->Load(File);
+	}
 }
 
 void engine::MeshObject::Begin()

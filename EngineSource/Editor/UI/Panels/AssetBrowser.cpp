@@ -80,9 +80,9 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			OnClick = [this, FilePath]()
 				{
 #if WINDOWS
-					internal::platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
+					platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
 #else
-					internal::platform::Open(FilePath);
+					platform::Open(FilePath);
 #endif
 				};
 		}
@@ -191,8 +191,18 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 		Progress->Close();
 
 		thread::ExecuteOnMainThread([]() {
+			resource::ScanForAssets();
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
-				resource::ScanForAssets();
+				Browser->UpdateItems();
+				});
+			});
+	}
+	else
+	{
+		std::filesystem::copy(File, CurrentPath + file::FileName(CurrentPath));
+		thread::ExecuteOnMainThread([]() {
+			resource::ScanForAssets();
+			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
 				Browser->UpdateItems();
 				});
 			});
@@ -266,7 +276,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		}, .Name = "New material", .Separator = true },
 		DropdownMenu::Option{ .OnClicked = [this]()
 		{
-			using namespace engine::internal::platform;
+			using namespace engine::platform;
 #if WINDOWS
 			Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
 #else

@@ -18,7 +18,7 @@ engine::Vector3 engine::graphics::Camera::GetForward() const
 
 void engine::graphics::Camera::Update()
 {
-	Projection = glm::perspective(FOV, Aspect, 0.1f, 1000.0f);
+	Projection = glm::perspective(FOV, Aspect, 0.1f, 5000.0f);
 
 	if (UseTransform)
 	{
