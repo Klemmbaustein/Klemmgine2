@@ -5,5 +5,4 @@
 		str: "bin/net8.0/win-x64/native/Klemmgine.CSharp.Aot.dll",
 		str: "nethost.dll"
 	];
-	"devOnly": bool = 1;
 }

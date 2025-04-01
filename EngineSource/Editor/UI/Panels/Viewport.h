@@ -55,7 +55,9 @@ namespace engine::editor
 	private:
 		void UndoChange(Change& Target, Scene* Current);
 		void UpdateSelection();
+		static void HandleKeyPress(kui::Window* w);
 
+		bool PolledForText = false;
 		bool Undoing = false;
 
 		Toolbar* ViewportToolbar = nullptr;

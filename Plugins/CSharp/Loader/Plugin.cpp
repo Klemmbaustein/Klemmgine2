@@ -62,8 +62,8 @@ namespace engine::cSharp
 			.FunctionPointer = (void*)&RegisterObject
 			});
 
-		//Current = new CSharpLoaderRuntime(Functions);
-		Current = new CSharpLoaderAot(Functions);
+		Current = new CSharpLoaderRuntime(Functions);
+		//Current = new CSharpLoaderAot(Functions);
 	}
 
 }

@@ -1,13 +1,13 @@
 #include "CameraComponent.h"
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
-#include <Editor/Editor.h>
+#include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Core/Log.h>
 
 engine::CameraComponent::CameraComponent()
 {
-	if (editor::IsActive())
+	if (!Engine::IsPlaying)
 	{
 		return;
 	}
@@ -28,18 +28,19 @@ engine::CameraComponent::~CameraComponent()
 
 void engine::CameraComponent::Update()
 {
-	if (editor::IsActive())
+	if (!Engine::IsPlaying)
 	{
 		return;
 	}
 
 	ComponentCamera.CameraTransform = WorldTransform;
+	ComponentCamera.Aspect = GetRootObject()->GetScene()->SceneCamera->Aspect;
 	ComponentCamera.Update();
 }
 
 void engine::CameraComponent::Use()
 {
-	if (editor::IsActive())
+	if (!Engine::IsPlaying)
 	{
 		return;
 	}

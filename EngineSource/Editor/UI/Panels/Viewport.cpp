@@ -16,12 +16,46 @@ using namespace kui;
 
 engine::editor::Viewport* engine::editor::Viewport::Current = nullptr;
 
+void engine::editor::Viewport::HandleKeyPress(Window* w)
+{
+	VideoSubsystem* VideoSystem = VideoSubsystem::Current;
+
+	using namespace engine;
+	using namespace engine::editor;
+
+	if (!Engine::IsPlaying)
+	{
+		return;
+	}
+
+	if (Viewport::Current->PolledForText)
+	{
+		return;
+	}
+
+	if (Viewport::Current == EditorUI::FocusedPanel)
+	{
+		if (input::IsKeyDown(input::Key::LSHIFT))
+		{
+			EditorUI::FocusedPanel = nullptr;
+		}
+		else
+		{
+			Engine::GetSubsystem<EditorSubsystem>()->StopProject();
+			input::ShowMouseCursor = true;
+			Viewport::Current->RedrawStats = true;
+			Viewport::Current->SetName(Viewport::Current->UnsavedChanges ? "Viewport*" : "Viewport");
+		}
+	}
+}
+
 engine::editor::Viewport::Viewport()
 	: EditorPanel("Viewport", "viewport")
 {
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
 	kui::Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader("shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
+	VideoSystem->MainWindow->Input.RegisterOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 
 	ViewportBackground = new UIBackground(false, 0, 1, 0, HoleShader);
 	ViewportBackground
@@ -45,7 +79,7 @@ engine::editor::Viewport::Viewport()
 			SaveCurrentScene();
 		});
 
-	ViewportToolbar->AddDropdown("View", "file:Engine/Editor/Assets/Options.png", 
+	ViewportToolbar->AddDropdown("View", "file:Engine/Editor/Assets/Options.png",
 		{
 			DropdownMenu::Option{.Name = "Default"},
 			DropdownMenu::Option{.Name = "Unlit"},
@@ -54,11 +88,13 @@ engine::editor::Viewport::Viewport()
 		});
 
 	ViewportToolbar->AddButton("Run", "file:Engine/Editor/Assets/Run.png",
-		[]()
+		[this]()
 		{
 			using namespace subsystem;
 
 			Engine::GetSubsystem<EditorSubsystem>()->StartProject();
+			SetName("Viewport (playing)");
+			RedrawStats = true;
 		});
 
 	ViewportStatusText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
@@ -124,15 +160,13 @@ engine::editor::Viewport::Viewport()
 			SelectedObjects.insert(obj);
 		});
 
-
 	Background
 		->AddChild(ViewportToolbar)
 		->AddChild(ViewportDropBox
 			->AddChild(ViewportBackground
-			->AddChild(LoadingScreenBox)))
+				->AddChild(LoadingScreenBox)))
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
-
 
 	RedrawStats = true;
 	CanClose = false;
@@ -143,6 +177,7 @@ engine::editor::Viewport::Viewport()
 
 engine::editor::Viewport::~Viewport()
 {
+	VideoSubsystem::Current->MainWindow->Input.RemoveOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 }
 
 void engine::editor::Viewport::OnResized()
@@ -182,6 +217,7 @@ void engine::editor::Viewport::Update()
 	FameCount++;
 
 	LoadingScreenBox->IsVisible = !SceneSubsystem::Current->Main;
+	PolledForText = Win->Input.PollForText;
 
 	if (StatsRedrawTimer.Get() > 1 || RedrawStats)
 	{
@@ -196,7 +232,15 @@ void engine::editor::Viewport::Update()
 			SceneName = SceneSystem->Main->Name;
 			ObjCount = int(SceneSystem->Main->Objects.size());
 		}
-		ViewportStatusText->SetText(str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, int(Fps)));
+
+		string ViewportText = str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, int(Fps));
+
+		if (Engine::IsPlaying)
+		{
+			ViewportText.append(" | Esc: Stop | Shift+Esc: Release mouse cursor");
+		}
+
+		ViewportStatusText->SetText(ViewportText);
 		FameCount = 0;
 		StatsRedrawTimer.Reset();
 		RedrawStats = false;
@@ -204,6 +248,15 @@ void engine::editor::Viewport::Update()
 	Scene* Current = Scene::GetMain();
 
 	bool HasFocus = EditorUI::FocusedPanel == this;
+
+	if (Engine::IsPlaying)
+	{
+		Engine::GameHasFocus = HasFocus;
+		input::ShowMouseCursor = HasFocus ? false : true;
+
+		return;
+	}
+	Engine::GameHasFocus = false;
 
 	if (Current && ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)
 	{
@@ -271,6 +324,11 @@ void engine::editor::Viewport::Update()
 }
 void engine::editor::Viewport::SceneChanged()
 {
+	if (Engine::IsPlaying)
+	{
+		return;
+	}
+
 	if (!UnsavedChanges)
 	{
 		SetName("Viewport*");
@@ -280,6 +338,11 @@ void engine::editor::Viewport::SceneChanged()
 
 void engine::editor::Viewport::SaveCurrentScene()
 {
+	if (Engine::IsPlaying)
+	{
+		return;
+	}
+
 	Scene* Current = Scene::GetMain();
 
 	if (!Current)
@@ -389,7 +452,7 @@ void engine::editor::Viewport::UpdateSelection()
 		}
 		if (Found)
 			continue;
-		
+
 		SelectedObjects.clear();
 		return;
 	}

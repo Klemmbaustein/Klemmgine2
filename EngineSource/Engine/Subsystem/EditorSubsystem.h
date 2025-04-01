@@ -14,6 +14,7 @@ namespace engine::subsystem
 		virtual void Update() override;
 		
 		void StartProject();
+		void StopProject();
 
 		editor::EditorUI* UI = nullptr;
 

@@ -19,6 +19,9 @@ using namespace engine;
 using namespace engine::subsystem;
 
 Engine* Engine::Instance = nullptr;
+bool Engine::IsPlaying = false;
+bool Engine::GameHasFocus = false;
+
 
 Engine::Engine()
 {
@@ -47,6 +50,9 @@ Engine* Engine::Init()
 
 #ifdef EDITOR
 	Instance->LoadSubsystem(new EditorSubsystem());
+#else
+	IsPlaying = true;
+	GameHasFocus = true;
 #endif
 
 
@@ -84,7 +90,7 @@ void Engine::Run()
 
 	ThreadPool::FreeDefaultThreadPool();
 	Instance = nullptr;
-
+	IsPlaying = false;
 	delete this;
 }
 

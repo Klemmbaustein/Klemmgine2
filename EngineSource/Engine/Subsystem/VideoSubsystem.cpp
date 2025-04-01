@@ -218,7 +218,7 @@ void engine::subsystem::VideoSubsystem::Update()
 		Engine::Instance->ShouldQuit = true;
 	}
 
-	if (!editor::IsActive())
+	if (Engine::IsPlaying)
 	{
 		UICanvas::UpdateAll();
 	}

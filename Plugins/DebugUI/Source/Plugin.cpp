@@ -29,16 +29,16 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 		size_t MessageSize = 0;
 		plugin::LogEntry* Entries = Interface->GetLogMessages(&MessageSize);
 		Interface->DeleteUIBoxChildren(ConsoleBackground);
-		for (int64 i = int64(MessageSize) - 1; i >= 0; i--)
+		for (int64 i = int64(MessageSize) - 1; i >= std::max(int64(0), int64(MessageSize - 20)); i--)
 		{
 			string Displayed;
 
-			for (size_t j = 0; j < Entries[i].PrefixSize; j++)
-			{
-				Displayed.append(str::Format("[%s]: ", Entries[i].Prefixes[j].Text));
-			}
+				for (size_t j = 0; j < Entries[i].PrefixSize; j++)
+				{
+					Displayed.append(str::Format("[%s]: ", Entries[i].Prefixes[j].Text));
+				}
 
-			Displayed.append(Entries[i].Message);
+				Displayed.append(Entries[i].Message);
 
 			auto Text = Interface->CreateUIBox("ConsoleEntry", UIObject);
 			Interface->UITextSetText(Interface->GetDynamicChild(Text, "text"), Displayed.c_str());
@@ -51,7 +51,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 	{
 		auto Interface = plugin::GetInterface();
 
-		if (UpdateFPS)
+		if (UpdateFPS && !Interface->IsEditorActive())
 		{
 			Interface->UITextSetText(
 				Interface->GetCanvasChild(UIObject, "fpsText"),
@@ -59,7 +59,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 			UpdateFPS = false;
 		}
 
-		if (Interface->InputIsKeyDown(int(input::Key::RETURN)) && !ConsoleBox)
+		if (Interface->GameHasFocus() && Interface->InputIsKeyDown(int(input::Key::RETURN)) && !ConsoleBox)
 		{
 			ConsoleBox = Interface->CreateUIBox("Console", UIObject);
 			ConsoleBackground = Interface->GetDynamicChild(ConsoleBox, "bg");

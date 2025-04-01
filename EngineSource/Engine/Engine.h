@@ -68,6 +68,9 @@ namespace engine
 
 		friend class engine::subsystem::Subsystem;
 
+		static bool IsPlaying;
+		static bool GameHasFocus;
+
 	private:
 		void InitSystems();
 		static void ErrorCallback(string Error, string StackTrace);

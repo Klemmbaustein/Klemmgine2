@@ -13,6 +13,7 @@ using namespace kui;
 engine::editor::PropertyPanel::PropertyPanel()
 	: EditorPanel("Properties", "object_properties")
 {
+	LoadPropertiesFrom(nullptr);
 }
 
 void engine::editor::PropertyPanel::Update()
@@ -54,12 +55,17 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	Background->DeleteChildren();
 
 	UIScrollBox* ContentBox = new UIScrollBox(false, 0, true);
-	ContentBox->SetMinSize(Background->GetMinSize());
-	ContentBox->SetMaxSize(Background->GetMinSize());
+	ContentBox->SetMinSize(UISize::Parent(1));
+	ContentBox->SetMaxSize(UISize::Parent(1));
 	Background->AddChild(ContentBox);
 
 	if (!Object)
+	{
+		ContentBox->SetHorizontalAlign(UIBox::Align::Centered);
+		ContentBox->AddChild((new UIText(11_px, EditorUI::Theme.Text, "Nothing selected", EditorUI::EditorFont))
+			->SetPadding(10_px));
 		return;
+	}
 
 	int32 PixelSize = int32(Size.X
 		* float(Background->GetParentWindow()->GetSize().X)

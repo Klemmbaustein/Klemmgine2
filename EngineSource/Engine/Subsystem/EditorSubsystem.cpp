@@ -5,6 +5,7 @@
 #include <Engine/Scene.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <Editor/Editor.h>
+#include <Engine/Input.h>
 
 bool engine::subsystem::EditorSubsystem::Active = false;
 
@@ -14,13 +15,6 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 	: Subsystem("Editor", Log::LogColor::Yellow)
 {
 	THIS_SUBSYSTEM_DEPENDS_ON(ConsoleSubsystem);
-	if (Scene::GetMain())
-	{
-		if (LastScene.GetType() != SerializedData::DataType::Null)
-		{
-			Scene::GetMain()->ReloadObjects(&LastScene);
-		}
-	}
 
 	debug::TimeLogger UITime{ "Created editor UI", GetLogPrefixes() };
 
@@ -43,7 +37,7 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 	.OnCalled = [this](const console::Command::CallContext& ctx) {
 			if (!editor::IsActive())
 			{
-				Engine::Instance->LoadSubsystem(new EditorSubsystem());
+				//Engine::Instance->LoadSubsystem(new EditorSubsystem());
 			}
 		}
 		});
@@ -69,10 +63,23 @@ void engine::subsystem::EditorSubsystem::StartProject()
 		return;
 	}
 
-	Active = false;
-	Unload();
+	Engine::IsPlaying = true;
+	//Unload();
 
+	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	Scene::GetMain()->ReloadObjects(nullptr);
+	editor::EditorUI::SetStatusMessage("Running project", editor::EditorUI::StatusType::Info);
 }
+
+void engine::subsystem::EditorSubsystem::StopProject()
+{
+	Engine::IsPlaying = false;
+	if (LastScene.GetType() != SerializedData::DataType::Null)
+	{
+		Scene::GetMain()->ReloadObjects(&LastScene);
+	}
+	editor::EditorUI::SetStatusMessage("Stopped project", editor::EditorUI::StatusType::Info);
+}
+
 #endif

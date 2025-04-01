@@ -167,6 +167,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 					Value = Checkbox->Value;
 				};
 			PropertiesBox->AddChild((new UIBox(true))
+				->SetVerticalAlign(UIBox::Align::Centered)
 				->AddChild((new UIText(11_px, 1, Name, EditorUI::EditorFont))
 					->SetTextWidthOverride(100_px)
 					->SetPadding(5_px))

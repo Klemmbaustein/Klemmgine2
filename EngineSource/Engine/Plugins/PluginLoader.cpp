@@ -6,6 +6,7 @@
 #include <Engine/Subsystem/PluginSubsystem.h>
 #include <filesystem>
 #include <cstring>
+#include <Core/File/FileUtil.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/Components/MeshComponent.h>
@@ -13,6 +14,7 @@
 #include <kui/KlemmUI.h>
 #include <Engine/Input.h>
 #include <Engine/Console.h>
+#include <Editor/Editor.h>
 
 #include "InterfaceStruct.hpp"
 
@@ -144,7 +146,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded plugin: %s", New.Name.c_str()), System->GetLogPrefixes()};
 
-		string PluginPath;
+		string PluginPath = file::FilePath(platform::GetExecutablePath());
 
 		if (std::filesystem::exists("Plugins/bin"))
 		{
@@ -152,7 +154,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 		}
 		else
 		{
-			PluginPath = "plugins";
+			PluginPath.append("/plugins");
 		}
 
 #if WINDOWS
@@ -165,7 +167,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		if (!Library)
 		{
-			System->Print(str::Format("Failed to load shared library file: %s", PluginFileName.c_str()), LogType::Warning);
+			System->Print(str::Format("Failed to load shared library file: %s/%s", PluginPath.c_str(), PluginFileName.c_str()), LogType::Warning);
 			return;
 		}
 

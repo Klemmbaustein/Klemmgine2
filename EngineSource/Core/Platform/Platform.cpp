@@ -3,6 +3,7 @@
 #ifdef WINDOWS
 #include <Windows.h>
 #include <map>
+#include <filesystem>
 #include <iostream>
 
 #undef DELETE
@@ -86,7 +87,12 @@ engine::string engine::platform::GetThreadName()
 
 engine::platform::SharedLibrary* engine::platform::LoadSharedLibrary(string Path)
 {
-	return reinterpret_cast<SharedLibrary*>(LoadLibraryW(StrToWstr(Path).c_str()));
+	std::wstring WidePath = StrToWstr(Path);
+	if (std::filesystem::exists(WidePath))
+		WidePath = std::filesystem::canonical(WidePath);
+
+	return reinterpret_cast<SharedLibrary*>(LoadLibraryExW(WidePath.c_str(),
+		NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR));
 }
 
 void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
@@ -97,6 +103,13 @@ void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
 void engine::platform::UnloadSharedLibrary(SharedLibrary* Library)
 {
 	FreeLibrary(reinterpret_cast<HMODULE>(Library));
+}
+
+engine::string engine::platform::GetExecutablePath()
+{
+	wchar_t FileName[MAX_PATH];
+	GetModuleFileNameW(NULL, FileName, MAX_PATH);
+	return WstrToStr(FileName);
 }
 
 #else

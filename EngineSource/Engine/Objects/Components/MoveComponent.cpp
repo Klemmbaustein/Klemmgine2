@@ -1,6 +1,6 @@
 #include "MoveComponent.h"
 #include <Engine/Objects/SceneObject.h>
-#include <Editor/Editor.h>
+#include <Engine/Engine.h>
 #include <Engine/Stats.h>
 
 using namespace engine;
@@ -19,7 +19,7 @@ void engine::MoveComponent::OnAttached()
 
 void engine::MoveComponent::Update()
 {
-	if (editor::IsActive() || !this->Active)
+	if (!Engine::IsPlaying || !this->Active)
 	{
 		return;
 	}
@@ -145,8 +145,8 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 
 	float Angle = Vector3::Dot(HitNormal, Vector3(0, 1, 0));
 
-	float StepSize = ColliderSize.Y * 0.8f;
-	if (!GravityPass)
+	float StepSize = ColliderSize.Y * 0.85f;
+	if (!GravityPass && GetVelocity().Y > -5.0f)
 	{
 		Vector3 NewDir = (-HitNormal * Vector3(1, 0, 1)).Normalize() * 1;
 		Vector3 TestPos = Pos + Vector3(0, StepSize, 0);

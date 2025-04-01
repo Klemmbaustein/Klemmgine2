@@ -1,6 +1,6 @@
 #pragma once
 #include <kui/UI/UIBox.h>
-#include <Editor/Editor.h>
+#include <Engine/Engine.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
 
 namespace engine
@@ -18,7 +18,7 @@ namespace engine
 		template<typename T>
 		static T* CreateNew()
 		{
-			if (editor::IsActive() || !subsystem::VideoSubsystem::Current)
+			if (!Engine::IsPlaying || !subsystem::VideoSubsystem::Current)
 				return nullptr;
 			T* New = new T();
 			RegisterSelf(New);

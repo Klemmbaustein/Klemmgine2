@@ -2,7 +2,7 @@
 #include <Core/Log.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
-#include <Editor/Editor.h>
+#include <Engine/Engine.h>
 #include "Components/MeshComponent.h"
 
 void engine::PlayerObject::Begin()
@@ -24,7 +24,7 @@ void engine::PlayerObject::Begin()
 
 void engine::PlayerObject::Update()
 {
-	if (editor::IsActive())
+	if (!Engine::IsPlaying)
 		return;
 
 	Cam->Rotation = Cam->Rotation.EulerVector() - Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0) * 70;

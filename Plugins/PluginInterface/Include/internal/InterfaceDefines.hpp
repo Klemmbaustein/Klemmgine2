@@ -1,6 +1,10 @@
 // Core
 STRUCT_MEMBER(Log, void, (const char* Message), Log::Info(Message))
 
+// Editor
+STRUCT_MEMBER_CALL_DIRECT(IsEditorActive, bool, (), editor::IsActive)
+STRUCT_MEMBER(GameHasFocus, bool, (), return Engine::GameHasFocus)
+
 // Console
 
 STRUCT_MEMBER(ConsoleExecuteCommand, void, (const char* cmd), console::ExecuteCommand(cmd); )
