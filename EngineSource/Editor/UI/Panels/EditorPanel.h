@@ -22,7 +22,6 @@ namespace engine::editor
 		void UpdateLayout();
 
 		void UpdatePanel();
-		bool ShouldUpdate = false;
 
 		virtual void OnResized();
 		virtual void Update();
@@ -50,21 +49,22 @@ namespace engine::editor
 		EditorPanel* SetWidth(float NewWidth);
 
 		float SizeFraction = 0.5f;
+		bool ShouldUpdate = false;
 
 		static void UpdateAllPanels();
-
-		bool Visible = true;
 
 		void AddChild(EditorPanel* NewChild, Align ChildAlign, bool Select = false, size_t Position = SIZE_MAX);
 
 		void GenerateTabs();
-		size_t SelectedTab = 0;
 
 		void SetFocused();
 		void SetName(string NewName);
 
 	protected:
+
 		bool CanClose = true;
+		bool Visible = true;
+		size_t SelectedTab = 0;
 
 		static EditorPanel* DraggedPanel;
 		static bool DraggingHorizontal;

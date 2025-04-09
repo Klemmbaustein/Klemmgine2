@@ -16,6 +16,10 @@ namespace engine::editor
 		void LoadPropertiesFrom(SceneObject* Object);
 
 		SceneObject* SelectedObj = nullptr;
+
+	private:
+		Transform OldObjectTransform;
+		std::vector<std::function<void()>> UpdateProperties;
 	};
 }
 #endif

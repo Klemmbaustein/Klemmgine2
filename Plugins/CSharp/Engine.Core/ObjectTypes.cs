@@ -54,6 +54,14 @@ internal static class ObjectTypes
 		return Delegate.CreateDelegate(GetType([.. Types]), target, methodInfo.Name);
 	}
 
+	public static void UpdateObjects()
+	{
+		foreach (var i in LoadedObjects)
+		{
+			SceneObjectUpdate!.Invoke(i.Value, []);
+		}
+	}
+
 	public static void LoadObjects(Assembly TargetAssembly, Assembly EngineAssembly)
 	{
 		SceneObjectType = EngineAssembly.GetType("Engine.SceneObject");

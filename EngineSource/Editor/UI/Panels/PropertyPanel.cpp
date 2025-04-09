@@ -7,6 +7,7 @@
 #include <Engine/Scene.h>
 #include <PropertyPanel.kui.hpp>
 #include <Editor/UI/Elements/VectorField.h>
+#include <Core/Log.h>
 #include <Editor/UI/Elements/AssetSelector.h>
 using namespace kui;
 
@@ -18,7 +19,7 @@ engine::editor::PropertyPanel::PropertyPanel()
 
 void engine::editor::PropertyPanel::Update()
 {
-	if (Viewport::Current)
+	if (Viewport::Current && Scene::GetMain())
 	{
 		SceneObject* New = nullptr;
 		if (!Viewport::Current->SelectedObjects.empty())
@@ -30,6 +31,13 @@ void engine::editor::PropertyPanel::Update()
 		{
 			SelectedObj = New;
 			LoadPropertiesFrom(SelectedObj);
+		}
+		else if (SelectedObj && OldObjectTransform.Matrix != SelectedObj->ObjectTransform.Matrix)
+		{
+			for (auto& UpdateFn : UpdateProperties)
+			{
+				UpdateFn();
+			}
 		}
 	}
 	else
@@ -53,6 +61,7 @@ void engine::editor::PropertyPanel::OnResized()
 void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 {
 	Background->DeleteChildren();
+	UpdateProperties.clear();
 
 	UIScrollBox* ContentBox = new UIScrollBox(false, 0, true);
 	ContentBox->SetMinSize(UISize::Parent(1));
@@ -111,35 +120,27 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	CreateNewHeading("Object");
 
-	auto* Position = CreateNewEntry("Position");
 
-	auto* PosField = new VectorField(Object->Position, Size, nullptr);
-	PosField->OnChanged = [Object, PosField]()
+	auto AddVecEntry = [this, Object, Size, CreateNewEntry](string Name, Vector3& Value)
 		{
-			Viewport::Current->OnObjectChanged(Object);
-			Object->Position = PosField->GetValue();
+			auto* Position = CreateNewEntry(Name);
+
+			auto* PosField = new VectorField(Value, Size, nullptr);
+			PosField->OnChanged = [&Value, Object, PosField]()
+				{
+					Viewport::Current->OnObjectChanged(Object);
+					Value = PosField->GetValue();
+				};
+			Position->valueBox->AddChild(PosField);
+			UpdateProperties.push_back([PosField, &Value]()
+				{
+					PosField->SetValue(Value);
+				});
 		};
-	Position->valueBox->AddChild(PosField);
 
-	auto* Rotation = CreateNewEntry("Rotation");
-
-	auto* RotField = new VectorField(Object->Rotation.EulerVector(), Size, nullptr);
-	RotField->OnChanged = [Object, RotField]()
-		{
-			Viewport::Current->OnObjectChanged(Object);
-			Object->Rotation = RotField->GetValue();
-		};
-	Rotation->valueBox->AddChild(RotField);
-
-	auto* Scale = CreateNewEntry("Scale");
-
-	auto* ScaleField = new VectorField(Object->Scale, Size, nullptr);
-	ScaleField->OnChanged = [Object, ScaleField]()
-		{
-			Viewport::Current->OnObjectChanged(Object);
-			Object->Scale = ScaleField->GetValue();
-		};
-	Scale->valueBox->AddChild(ScaleField);
+	AddVecEntry("Position", Object->Position);
+	AddVecEntry("Rotation", *(Vector3*)&Object->Rotation);
+	AddVecEntry("Scale", *(Vector3*)&Object->Scale);
 
 	auto* Name = CreateNewEntry("Name");
 

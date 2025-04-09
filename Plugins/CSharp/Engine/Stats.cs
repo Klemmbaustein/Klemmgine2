@@ -1,4 +1,6 @@
-﻿namespace Engine;
+﻿using Engine.Internal;
+
+namespace Engine;
 
 public static class Stats
 {
@@ -6,7 +8,7 @@ public static class Stats
 	{
 		get
 		{
-			return Internal.EngineInternal.frameDelta;
+			return EngineInternal.frameDelta;
 		}
 	}
 }

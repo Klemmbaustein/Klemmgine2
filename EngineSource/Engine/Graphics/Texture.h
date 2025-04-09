@@ -4,7 +4,7 @@
 
 namespace engine::graphics
 {
-	struct TextureLoadOptions
+	struct TextureOptions
 	{
 		enum Filtering : uint8
 		{
@@ -18,7 +18,7 @@ namespace engine::graphics
 			Repeat,
 		};
 
-		Filtering Filter = Nearest;
+		Filtering Filter = Linear;
 		BorderType TextureBorders = Repeat;
 
 		bool MipMaps = false;
@@ -29,7 +29,7 @@ namespace engine::graphics
 
 	struct Texture
 	{
-		TextureLoadOptions Options;
+		TextureOptions Options;
 		const uByte* Pixels = nullptr;
 		uint32 TextureObject = 0;
 		uint32 References = 0;
@@ -44,22 +44,22 @@ namespace engine::graphics
 		~TextureLoader();
 
 		[[nodiscard]]
-		const Texture* LoadTextureFile(AssetRef From, TextureLoadOptions LoadInfo);
+		const Texture* LoadTextureFile(AssetRef From, TextureOptions LoadInfo);
 
 		[[nodiscard]]
-		const Texture* LoadCompressedBuffer(const uByte* Buffer, size_t BufferSize, TextureLoadOptions LoadInfo);
+		const Texture* LoadCompressedBuffer(const uByte* Buffer, size_t BufferSize, TextureOptions LoadInfo);
 
 		[[nodiscard]]
-		const Texture* LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo);
+		const Texture* LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo);
 
-		const Texture* PreLoadBuffer(AssetRef From, TextureLoadOptions LoadInfo);
+		const Texture* PreLoadBuffer(AssetRef From, TextureOptions LoadInfo);
 
 		void FreeTexture(const Texture* Tex);
 
 		static TextureLoader* Instance;
 
 	private:
-		uint32 CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo);
+		uint32 CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo);
 		void DeleteTexture(const Texture* Tex);
 		std::unordered_map<string, Texture> LoadedTextures;
 		std::unordered_map<string, Texture> TextureBuffers;

@@ -29,7 +29,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 		size_t MessageSize = 0;
 		plugin::LogEntry* Entries = Interface->GetLogMessages(&MessageSize);
 		Interface->DeleteUIBoxChildren(ConsoleBackground);
-		for (int64 i = int64(MessageSize) - 1; i >= std::max(int64(0), int64(MessageSize - 20)); i--)
+		for (int64 i = int64(MessageSize) - 1; i >= std::max(int64(0), int64(MessageSize - 29)); i--)
 		{
 			string Displayed;
 

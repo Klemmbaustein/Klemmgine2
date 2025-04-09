@@ -94,13 +94,13 @@ void engine::TextSerializer::ValueToString(const SerializedValue& Target, std::o
 		Stream << Target.GetInt();
 		break;
 	case SerializedData::DataType::Byte:
-		Stream << Target.GetByte();
+		Stream << int32(Target.GetByte());
 		break;
 	case SerializedData::DataType::Boolean:
 		Stream << Target.GetBool();
 		break;
 	case SerializedData::DataType::Float:
-		Stream << Target.GetFloat();
+		Stream << str::FloatToString(Target.GetFloat());
 		break;
 	case SerializedData::DataType::Vector3:
 		Stream << "<" << Target.GetVector3().ToString() << ">";

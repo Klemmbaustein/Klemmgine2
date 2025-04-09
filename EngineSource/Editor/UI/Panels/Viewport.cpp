@@ -1,7 +1,6 @@
 #ifdef EDITOR
 #include "Viewport.h"
 #include <Engine/Engine.h>
-#include <Engine/Subsystem/SceneSubsystem.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
 #include <Engine/Subsystem/EditorSubsystem.h>
 #include <Engine/Input.h>
@@ -121,21 +120,10 @@ engine::editor::Viewport::Viewport()
 				return;
 
 			Window* Win = Window::GetActiveWindow();
-			graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
 
-			kui::Vec2f MousePos = ((Win->Input.MousePosition - PanelPosition) / Size) * 2 - 1;
+			auto hit = RayAtCursor();
 
-			Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
-			Vector3 EndPosition = Cam->Position + Direction * 10;
-
-			auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic);
-
-			if (hit.Hit)
-			{
-				EndPosition = hit.ImpactPoint;
-			}
-
-			EndPosition = Vector3::SnapToGrid(EndPosition, 0.1f);
+			Vector3 EndPosition = Vector3::SnapToGrid(hit.ImpactPoint, 0.1f);
 
 			if (Item.ObjectType != 0)
 			{
@@ -321,6 +309,15 @@ void engine::editor::Viewport::Update()
 		Win->Input.PollForText = false;
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
+	else if (ViewportBackground == Win->UI.HoveredBox && Current && input::IsLMBClicked)
+	{
+		SelectedObjects.clear();
+		auto hit = RayAtCursor();
+		if (hit.Hit)
+		{
+			this->SelectedObjects.insert(hit.HitComponent->ParentObject);
+		}
+	}
 }
 void engine::editor::Viewport::SceneChanged()
 {
@@ -386,6 +383,25 @@ void engine::editor::Viewport::OnObjectCreated(SceneObject* Target)
 
 	SceneChanged();
 }
+
+engine::physics::HitResult engine::editor::Viewport::RayAtCursor()
+{
+	Window* Win = Window::GetActiveWindow();
+	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
+
+	kui::Vec2f MousePos = ((Win->Input.MousePosition - PanelPosition) / Size) * 2 - 1;
+
+	Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
+	Vector3 EndPosition = Cam->Position + Direction * 30;
+
+	auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic);
+	if (!hit.Hit)
+	{
+		hit.ImpactPoint = Cam->Position + Direction * 10;
+	}
+	return hit;
+}
+
 void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)
 {
 	bool Found = false;

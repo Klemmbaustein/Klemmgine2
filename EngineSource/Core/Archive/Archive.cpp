@@ -100,6 +100,18 @@ string engine::Archive::ConvertFileName(string Name) const
 	return Name;
 }
 
+std::vector<string> engine::Archive::GetArchiveFiles()
+{
+	std::vector<string> Found;
+
+	for (auto& i : this->FileNames)
+	{
+		Found.push_back(i.first);
+	}
+
+	return Found;
+}
+
 void engine::Archive::Save(string FilePath)
 {
 	FileStream ArchiveFile = FileStream(FilePath, false);

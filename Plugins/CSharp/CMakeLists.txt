@@ -11,6 +11,31 @@ if(NOT NET_SDK_BINARY_DIR)
 	return()
 endif()
 
+klemmgine_plugin_dirs()
+
+set(CSHARP_DLL "${CMAKE_CURRENT_SOURCE_DIR}/bin/net8.0/Klemmgine.CSharp.dll")
+
+file(
+    GLOB_RECURSE
+    CS_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/Engine/**.cs"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Engine.Core/**.cs"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Engine.Aot/**.cs"
+)
+
+list(FILTER CS_SOURCES EXCLUDE REGEX "obj")
+
+add_custom_command(
+    OUTPUT ${CSHARP_DLL}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${CS_SOURCES}
+    COMMAND dotnet build
+)
+
+add_custom_target(CSharpBinaries
+    DEPENDS ${CS_SOURCES}
+    DEPENDS ${CSHARP_DLL})
+	
 file(
 	GLOB_RECURSE
 	SRCS
@@ -22,9 +47,8 @@ file(
 	"${SRC_DIR}/**.h"
 )
 
-klemmgine_plugin_dirs()
-
 add_library(${PLUGIN_NAME} SHARED ${INCLUDES} ${SRCS} "Loader/Resources.rc")
+add_dependencies(${PLUGIN_NAME} CSharpBinaries)
 
 if(WIN32)
 	foreach(LANG  C CXX RC)

@@ -21,8 +21,6 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	EditorScene = new Scene();
 	EditorScene->Physics.Active = false;
-	EditorScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
-	EditorScene->SceneCamera->Position = Vector3(3, 3, 3);
 	EditorScene->Resizable = false;
 
 	CurrentObj = EditorScene->CreateObject<MeshObject>();
@@ -87,6 +85,12 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 						return;
 					}
 					this->CurrentObj->LoadMesh(ModelFile);
+
+					Vector3 Pos = Vector3(0.75f) * CurrentObj->Mesh->DrawnModel->Data->Bounds.Extents.Length()
+						+ CurrentObj->Mesh->DrawnModel->Data->Bounds.Position;
+
+					EditorScene->SceneCamera->Position = Pos;
+					EditorScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
 					this->SceneBackground->RedrawElement();
 					this->ModelLoaded = true;
 				});
@@ -199,7 +203,7 @@ void engine::editor::ModelEditor::Update()
 		OnModelLoaded();
 	}
 	if (EditorUI::FocusedPanel == this)
-		SceneBackground->SetUseTexture(true, EditorScene->Buffer->Textures[0]);
+		SceneBackground->SetUseTexture(true, EditorScene->GetDrawBuffer());
 }
 
 void engine::editor::ModelEditor::Save()

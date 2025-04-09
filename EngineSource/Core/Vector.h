@@ -45,6 +45,7 @@ namespace engine
 		Vector3 operator-() const;
 		Vector3& operator-=(const Vector3& Other);
 		Vector3 operator*(const Vector3& Other) const;
+		Vector3& operator*=(const Vector3& Other);
 		Vector3 operator/(const Vector3& Other) const;
 
 		[[nodiscard]]

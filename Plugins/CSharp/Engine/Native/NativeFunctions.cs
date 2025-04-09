@@ -26,6 +26,7 @@ public class NativeFunctions
 	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(Log))]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(SceneObject))]
 	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(ObjectComponent))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(MeshComponent))]
 	[RequiresUnreferencedCode("Uses Assembly.DefinedTypes")]
 	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunctionInfo[] Target, int _ = 0)
 	{

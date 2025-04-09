@@ -7,12 +7,17 @@ uniform sampler2D u_ui;
 uniform sampler2D u_alpha;
 uniform vec2 u_pos;
 uniform vec2 u_size;
-uniform sampler2DArray u_shadowMap;
 
 void main()
 {
 	vec2 viewportTexCoords = (v_texcoords - u_pos) / u_size;
-	f_color.xyz = texture(u_texture, viewportTexCoords).xyz;
+
+	if (viewportTexCoords.x >= 0 && viewportTexCoords.y >= 0
+		&& viewportTexCoords.x <= 1 && viewportTexCoords.y != 1)
+	{
+		f_color.xyz = texture(u_texture, viewportTexCoords).xyz;
+	}
+
 	vec4 uiColor = texture(u_ui, v_texcoords);
 
 	float uiAlpha = texture(u_alpha, v_texcoords).x;

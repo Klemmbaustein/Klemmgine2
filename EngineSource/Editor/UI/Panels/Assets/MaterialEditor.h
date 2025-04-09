@@ -5,6 +5,7 @@
 #include <Engine/Graphics/Material.h>
 #include <kui/UI/UIScrollBox.h>
 #include "AssetEditor.h"
+#include <iostream>
 
 namespace engine::editor
 {

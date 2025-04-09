@@ -103,6 +103,9 @@ bool BufferStream::Read(uByte* To, size_t Size)
 
 void BufferStream::Write(uByte* Buffer, size_t Size)
 {
+	if (Size == 0)
+		return;
+
 	StreamPosition = this->Buffer.size();
 	this->Buffer.resize(StreamPosition + Size);
 	memcpy(&this->Buffer[StreamPosition], Buffer, Size);

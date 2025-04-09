@@ -132,6 +132,8 @@ void engine::Scene::Draw()
 		}
 	}
 
+	this->SceneTexture = PostProcess.Draw(Buffer, this->UsedCamera);
+
 	glDisable(GL_CULL_FACE);
 	StartSorting();
 }
@@ -180,6 +182,7 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 
 	if (BufferSize != 0)
 	{
+		this->PostProcess.OnBufferResized(uint32(BufferSize.X), uint32(BufferSize.Y));
 		Buffer->Resize(int64(BufferSize.X), int64(BufferSize.Y));
 	}
 	else
@@ -188,12 +191,14 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 		if (EditorSubsystem::Active)
 		{
 			auto Size = GetEditorSize(NewSize);
+			this->PostProcess.OnBufferResized(uint32(Size.X), uint32(Size.Y));
 			Buffer->Resize(Size.X, Size.Y);
 			SceneCamera->Aspect = float(Size.X) / float(Size.Y);
 			return;
 		}
 #endif
-		Buffer->Resize(NewSize.X, NewSize.Y);
+		this->PostProcess.OnBufferResized(uint32(NewSize.X), uint32(NewSize.Y));
+		Buffer->Resize(int64(NewSize.X), int64(NewSize.Y));
 	}
 
 	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
@@ -357,7 +362,7 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 	if (Target.Extension == "png" && graphics::TextureLoader::Instance)
 	{
 		graphics::TextureLoader::Instance->PreLoadBuffer(Target,
-			graphics::TextureLoadOptions{});
+			graphics::TextureOptions{});
 	}
 	ReferencedAssets.push_back(Target);
 }
@@ -485,6 +490,7 @@ void engine::Scene::Init()
 					OnResized(NewSize);
 			} });
 
+		PostProcess.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
 		Shadows.Init();
 	}
 

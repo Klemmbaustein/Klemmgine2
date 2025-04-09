@@ -1,4 +1,5 @@
 #include "ShaderObject.h"
+#include "ShaderObject.h"
 #include <kui/Resource.h>
 #include "ShaderLoader.h"
 #include <Engine/Internal/OpenGL.h>
@@ -188,6 +189,11 @@ void engine::graphics::ShaderObject::SetFloat(uint32 UniformLocation, float Valu
 void engine::graphics::ShaderObject::SetVec3(uint32 UniformLocation, Vector3 Value)
 {
 	glUniform3f(UniformLocation, Value.X, Value.Y, Value.Z);
+}
+
+void engine::graphics::ShaderObject::SetVec2(uint32 UniformLocation, Vector2 Value)
+{
+	glUniform2f(UniformLocation, Value.X, Value.Y);
 }
 
 void engine::graphics::ShaderObject::SetTransform(uint32 UniformLocation, const Transform& Value)

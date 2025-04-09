@@ -25,12 +25,14 @@ namespace engine::editor
 			string Name;
 			SceneObject* From = nullptr;
 			bool Selected = false;
-			std::vector<ListObject> Children;
+			std::map<string, ListObject> Children;
 		};
 
 		size_t LastLength = SIZE_MAX;
+		size_t LastSelectedLength = 0;
+		SceneObject* LastSelectedObj = nullptr;
 
-		void AddListObjects(const std::vector<ListObject>& Objects, size_t Depth);
+		void AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth);
 	};
 }
 #endif

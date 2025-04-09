@@ -32,6 +32,17 @@ void engine::graphics::Camera::Update()
 		View = glm::translate(View, -glm::vec3(Position.X, Position.Y, Position.Z));
 	}
 }
+engine::Vector3 engine::graphics::Camera::GetPosition()
+{
+	if (UseTransform)
+	{
+		return CameraTransform.ApplyTo(0);
+	}
+	else
+	{
+		return this->Position;
+	}
+}
 
 engine::Vector3 engine::graphics::Camera::ScreenToWorld(Vector2 Screen) const
 {

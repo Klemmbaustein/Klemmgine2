@@ -22,6 +22,8 @@ namespace engine::graphics
 
 		Vector3 GetForward() const;
 
+		Vector3 GetPosition();
+
 		void Update();
 		Vector3 ScreenToWorld(Vector2 Screen) const;
 	};

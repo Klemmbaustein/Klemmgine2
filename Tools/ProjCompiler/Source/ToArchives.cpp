@@ -134,7 +134,20 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 			if (i.At("type").GetInt() != 4)
 				continue;
 
-			fs::path Texture = GetFileFromName(i.At("val").GetString());
+			if (!i.Value.Contains("val"))
+				continue;
+
+			auto& TextureValue = i.At("val");
+			fs::path Texture;
+
+			if (TextureValue.GetType() == SerializedData::DataType::String)
+			{
+				Texture = GetFileFromName(TextureValue.GetString());
+			}
+			else
+			{
+				Texture = GetFileFromName(TextureValue.At("file").GetString());
+			}
 			if (fs::exists(Texture))
 				out.insert(Texture);
 		}

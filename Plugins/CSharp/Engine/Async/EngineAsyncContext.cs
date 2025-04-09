@@ -1,11 +1,7 @@
 ﻿namespace Engine.Async;
 
-public class EngineSyncContext : SynchronizationContext
+public class EngineSyncContext() : SynchronizationContext
 {
-	public EngineSyncContext()
-	{
-	}
-
 	public override void Send(SendOrPostCallback d, object? state)
 	{
 		EngineAsyncTasks.Queue(d, state, true);

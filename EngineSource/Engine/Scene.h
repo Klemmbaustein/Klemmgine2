@@ -3,6 +3,7 @@
 #include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
 #include "Graphics/Effects/CascadedShadows.h"
+#include "Graphics/Effects/PostProcess.h"
 #include "Objects/SceneObject.h"
 #include <kui/Vec2.h>
 #include <atomic>
@@ -98,6 +99,7 @@ namespace engine
 
 		physics::PhysicsManager Physics = physics::PhysicsManager(this);
 		graphics::CascadedShadows Shadows;
+		graphics::PostProcess PostProcess;
 
 		/**
 		* @brief
@@ -192,6 +194,12 @@ namespace engine
 		void PreLoadAsset(AssetRef Target);
 
 		void UnloadAsset(AssetRef Target);
+
+		uint32 GetDrawBuffer()
+		{
+			return SceneTexture;
+		}
+
 	private:
 		void DeSerializeInternal(SerializedValue* From, bool Async);
 		friend class SceneObject;
@@ -199,6 +207,9 @@ namespace engine
 		std::set<SceneObject*> DestroyedObjects;
 		void LoadInternal(string File, bool Async);
 		void Init();
+
+		uint32 SceneTexture = 0;
+
 		SerializedValue GetSceneInfo();
 
 		struct SortingInfo

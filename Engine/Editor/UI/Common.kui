@@ -42,7 +42,6 @@ element EditorTextField
 		{
 			image = Image;
 			size = 12px;
-			padding = 5px;
 			color = Color_Text;
 		}
 	}

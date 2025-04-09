@@ -1,4 +1,5 @@
 #include "StringUtil.h"
+#include "StringUtil.h"
 #include <iostream>
 #include <cstdarg>
 #include <cmath>
@@ -91,4 +92,29 @@ engine::string engine::str::Format(string Format, ...)
 	string StrBuffer = Buffer;
 	delete[] Buffer;
 	return StrBuffer;
+}
+
+engine::string engine::str::FloatToString(float Val, size_t Precision)
+{
+	string Out = std::to_string(Val);
+
+	while (Out.size()
+		&& (Out[Out.size() - 1] == '0' || Out[Out.size() - 1] == '.'))
+	{
+		if (Out[Out.size() - 1] == '.')
+		{
+			Out.pop_back();
+			break;
+		}
+		Out.pop_back();
+	}
+
+	if (Precision == 0)
+	{
+		return Out;
+	}
+
+	size_t Dot = Out.find_first_of('.');
+
+	return Out.substr(0, Dot + 1 + Precision);
 }

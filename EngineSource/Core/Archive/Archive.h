@@ -21,6 +21,8 @@ namespace engine
 
 		string ConvertFileName(string Name) const;
 
+		std::vector<string> GetArchiveFiles();
+
 		void Save(string FilePath);
 	private:
 		struct ArchiveData

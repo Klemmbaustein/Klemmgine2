@@ -84,7 +84,7 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 
 	if (TextureField)
 	{
-		TextureField->TextureValue.Name = new std::string(Texture);
+		TextureField->TextureValue.Name = new Material::MatTexture(Texture);
 	}
 
 	auto UseTextureField = NewMaterial->FindField("u_useTexture", Material::Field::Type::Bool);
@@ -160,6 +160,7 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 
 	ConvertContext ctx;
 	ctx.SceneName = file::FileNameWithoutExt(ModelPath);
+	ctx.Options = Options;
 
 	aiLogStream stream;
 	stream.callback = AssimpLogCallback;

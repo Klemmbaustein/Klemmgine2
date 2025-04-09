@@ -130,6 +130,7 @@ void engine::editor::EditorPanel::UpdateLayout()
 			Child->UpdateLayout();
 		}
 	}
+	ShouldUpdate = false;
 
 	OnResized();
 }
@@ -139,7 +140,6 @@ void engine::editor::EditorPanel::UpdatePanel()
 	if (ShouldUpdate)
 	{
 		UpdateLayout();
-		ShouldUpdate = false;
 	}
 
 	if (PanelElement)

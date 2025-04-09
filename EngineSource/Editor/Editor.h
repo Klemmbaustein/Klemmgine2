@@ -5,6 +5,6 @@ namespace engine::editor
 #ifdef EDITOR
 	const bool IsActive();
 #else
-	consteval bool IsActive() { return false; }
+	constexpr bool IsActive() { return false; }
 #endif
 }

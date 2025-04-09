@@ -56,6 +56,14 @@ internal class AotObjects
 	}
 
 
+	public static void UpdateObjects()
+	{
+		foreach (var i in LoadedObjects)
+		{
+			i.Value.Update();
+		}
+	}
+
 	[UnmanagedCallersOnly(EntryPoint = "Aot_RemoveObjectInstance")]
 	internal static void RemoveObjectInstance(IntPtr ObjectID, IntPtr NativeObject)
 	{

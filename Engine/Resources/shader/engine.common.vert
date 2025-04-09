@@ -12,6 +12,7 @@ out vec3 v_position;
 out vec3 v_screenPosition;
 out vec2 v_texCoord;
 out vec3 v_normal;
+out vec3 v_screenNormal;
 
 #export //!
 uniform mat4 u_model;
@@ -31,6 +32,7 @@ void SetScreenPosition(vec3 inScreenPos)
 {
 	v_position = inScreenPos;
 	v_normal = normalize(mat3(u_model) * a_normal);
+	v_screenNormal = normalize(mat3(u_view) * v_normal);
 	v_texCoord = a_uv;
 	v_screenPosition = (u_view * vec4(inScreenPos, 1)).xyz;
 	gl_Position = u_projection * vec4(v_screenPosition, 1);

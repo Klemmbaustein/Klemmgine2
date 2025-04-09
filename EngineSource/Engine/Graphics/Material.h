@@ -19,11 +19,17 @@ namespace engine::graphics
 
 		Material& operator=(const Material&) = delete;
 
+		struct MatTexture
+		{
+			string Name;
+			TextureOptions Options;
+		};
+
 		struct Field
 		{
 			Field()
 			{
-
+				this->Int = 0;
 			}
 			enum class Type
 			{
@@ -45,7 +51,7 @@ namespace engine::graphics
 				Vector3 Vec3;
 				struct
 				{
-					string* Name;
+					MatTexture* Name;
 					const Texture* Value;
 				} TextureValue;
 			};

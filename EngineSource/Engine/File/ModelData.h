@@ -2,6 +2,7 @@
 #include <Core/Types.h>
 #include <vector>
 #include <Engine/Graphics/Vertex.h>
+#include <Engine/Graphics/BoundingBox.h>
 #include <Core/File/SerializedData.h>
 #include <Engine/Graphics/Model.h>
 #include <unordered_map>
@@ -20,6 +21,7 @@ namespace engine
 
 			std::vector<graphics::Vertex> Vertices;
 			std::vector<uint32> Indices;
+			graphics::BoundingBox Bounds;
 
 			virtual SerializedValue Serialize() override;
 			virtual void DeSerialize(SerializedValue* From) override;
@@ -37,6 +39,7 @@ namespace engine
 		virtual SerializedValue Serialize() override;
 		virtual void DeSerialize(SerializedValue* From) override;
 
+		graphics::BoundingBox Bounds;
 		std::vector<Mesh> Meshes;
 		bool HasCollision = true;
 		bool CastShadow = true;

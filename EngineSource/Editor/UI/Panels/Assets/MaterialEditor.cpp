@@ -16,6 +16,8 @@
 using namespace kui;
 using engine::subsystem::VideoSubsystem;
 
+const auto number = std::stoi("15");
+
 engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	: AssetEditor("Material: %s", MaterialFile)
 {
@@ -28,7 +30,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	PreviewScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
 	PreviewScene->SceneCamera->Position = Vector3(3, 3, 3);
 	PreviewScene->Resizable = false;
-	PreviewScene->AlwaysRedraw = true;
+	PreviewScene->AlwaysRedraw = false;
 	PreviewScene->Redraw = true;
 	PreviewScene->BufferSize = 200 * Window::GetActiveWindow()->GetDPI();
 	PreviewScene->OnResized(PreviewScene->BufferSize);
@@ -69,8 +71,12 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 				->SetPadding(5_px)))
 		->AddChild(MaterialParamsBox));
 
-	LoadUI();
+	auto AddSidebarTextField = []()
+		{
+
+		};
 }
+
 engine::editor::MaterialEditor::~MaterialEditor()
 {
 	if (PreviewScene)
@@ -80,7 +86,7 @@ engine::editor::MaterialEditor::~MaterialEditor()
 void engine::editor::MaterialEditor::Update()
 {
 	AssetEditor::Update();
-	PreviewImage->SetUseTexture(true, PreviewScene->Buffer->Textures[0]);
+	PreviewImage->SetUseTexture(true, PreviewScene->GetDrawBuffer());
 
 	if (RedrawNextFrame)
 	{
@@ -115,29 +121,28 @@ void engine::editor::MaterialEditor::LoadUI()
 
 		if (i.FieldType == Material::Field::Type::Texture)
 		{
-			string TextureName;
+			Material::MatTexture TextureName;
 
 			if (i.TextureValue.Name)
 			{
 				TextureName = *i.TextureValue.Name;
 			}
 
-			auto Field = new MaterialTextureElement();
+			auto TexElement = new MaterialTextureElement();
 
-			auto Selector = new AssetSelector(TextureName.empty() ? AssetRef{.Extension = "png"} : AssetRef::Convert(TextureName), UISize(200_px).GetScreen().X, nullptr);
+			auto Selector = new AssetSelector(
+				TextureName.Name.empty() ? AssetRef{.Extension = "png"} : AssetRef::Convert(TextureName.Name),
+				UISize(200_px).GetScreen().X, nullptr);
 
 			Selector->OnChanged = [this, Selector, &i]()
 				{
-					if (i.TextureValue.Name)
-						delete i.TextureValue.Name;
-
-					i.TextureValue.Name = new string(file::FileName(Selector->SelectedAsset.FilePath));
+					i.TextureValue.Name->Name = string(file::FileName(Selector->SelectedAsset.FilePath));
 					i.TextureValue.Value = nullptr;
 					OnChanged();
 				};
 
 			LoadedMaterial->LoadTexture(i);
-			Field->texturePreview->SetUseTexture(i.TextureValue.Value, i.TextureValue.Value
+			TexElement->texturePreview->SetUseTexture(i.TextureValue.Value, i.TextureValue.Value
 				? i.TextureValue.Value->TextureObject : 0);
 			Selector->SelectedAsset.Extension = "png";
 			 
@@ -146,16 +151,24 @@ void engine::editor::MaterialEditor::LoadUI()
 				UIDropdown::Option("Linear"),
 			};
 
-			auto MaterialFilteringDropdown = new UIDropdown(0, 50_px, 0, 1, FilteringOptions, [](int Selected)
+			auto FilteringDropdown = new UIDropdown(0, 50_px, EditorUI::Theme.DarkBackground, EditorUI::Theme.Text, FilteringOptions, nullptr, EditorUI::EditorFont);
+			FilteringDropdown->SelectOption(TextureName.Options.Filter, false);
+			FilteringDropdown->OnClicked = [this, FilteringDropdown, TexElement, &i]()
 				{
+					i.TextureValue.Name->Options.Filter = graphics::TextureOptions::Filtering(FilteringDropdown->SelectedIndex);
+					i.TextureValue.Value = nullptr;
+					TexElement->texturePreview->RedrawElement();
 
-				}, EditorUI::EditorFont);
+					OnChanged();
+				};
 
-			MaterialFilteringDropdown->SetTextSize(11_px, 1_px);
+			FilteringDropdown->SetPadding(5_px);
+			FilteringDropdown->SetTextSize(11_px, 3_px);
+			FilteringDropdown->SetCorner(5_px);
 
-			Field->controlsBox->AddChild(Selector);
-			Field->controlsBox->AddChild(MaterialFilteringDropdown);
-			Editor->contentBox->AddChild(Field);
+			TexElement->controlsBox->AddChild(Selector);
+			TexElement->controlsBox->AddChild(FilteringDropdown);
+			Editor->contentBox->AddChild(TexElement);
 			MaterialParamsBox->AddChild(Editor);
 			continue;
 		}

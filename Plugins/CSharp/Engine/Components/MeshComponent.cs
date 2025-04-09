@@ -1,9 +1,11 @@
 ﻿using Engine.Native;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Engine.Components;
 
 [DependsOnNative]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class MeshComponent : ObjectComponent
 {
 	delegate IntPtr NewMeshComponent();
@@ -19,6 +21,7 @@ public class MeshComponent : ObjectComponent
 
 	public void Load(string MeshFile)
 	{
+		Log.Info("Object created: " + MeshFile);
 		MeshLoad!(NativePointer, MeshFile);
 	}
 

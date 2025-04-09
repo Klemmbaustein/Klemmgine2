@@ -45,5 +45,6 @@ internal class AotEntryPoint
 	public static void Update(float delta)
 	{
 		EngineInternal.Update(delta);
+		AotObjects.UpdateObjects();
 	}
 }

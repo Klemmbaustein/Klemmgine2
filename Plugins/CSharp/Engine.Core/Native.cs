@@ -1,5 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
+
 namespace Engine.Core;
 
 public class Native
@@ -59,6 +61,9 @@ public class Native
 	[UnmanagedCallersOnly]
 	public static void LoadEngine()
 	{
+		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+		Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
 		Log = GetFunction<LogFunction>("Log")! as LogFunction;
 
 		Assembly Engine = Assembly.LoadFrom(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/Klemmgine.CSharp.dll"); ;
@@ -81,5 +86,6 @@ public class Native
 	public static void UpdateEngine(float delta)
 	{
 		UpdateFunction!.Invoke(null, [delta]);
+		ObjectTypes.UpdateObjects();
 	}
 }

@@ -29,6 +29,7 @@ namespace engine::graphics
 		void SetInt(uint32 UniformLocation, uint32 Value);
 		void SetFloat(uint32 UniformLocation, float Value);
 		void SetVec3(uint32 UniformLocation, Vector3 Value);
+		void SetVec2(uint32 UniformLocation, Vector2 Value);
 		void SetTransform(uint32 UniformLocation, const Transform& Value);
 	private:
 

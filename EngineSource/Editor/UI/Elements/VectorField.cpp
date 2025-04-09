@@ -11,23 +11,6 @@ static std::array<Vec3f, 3> Colors = {
 	Vec3f(0.0f, 0.1f, 0.6f),
 };
 
-static engine::string FloatToString(float Val)
-{
-	engine::string Out = std::to_string(Val);
-
-	while (Out.size()
-		&& (Out[Out.size() - 1] == '0' || Out[Out.size() - 1] == '.'))
-	{
-		if (Out[Out.size() - 1] == '.')
-		{
-			Out.pop_back();
-			break;
-		}
-		Out.pop_back();
-	}
-	return Out;
-}
-
 engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std::function<void()> OnChanged)
 	: kui::UIBox(true, 0)
 {
@@ -59,16 +42,16 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std:
 				}
 				catch (std::invalid_argument)
 				{
-					TextFields[i]->SetText(FloatToString(Value[i]));
+					TextFields[i]->SetText(str::FloatToString(Value[i], 3));
 				}
 				catch (std::out_of_range)
 				{
-					TextFields[i]->SetText(FloatToString(Value[i]));
+					TextFields[i]->SetText(str::FloatToString(Value[i], 3));
 				}
 				this->OnChanged();
 			});
 		AddChild(NewField
-			->SetText(FloatToString(Value[i]))
+			->SetText(str::FloatToString(Value[i], 3))
 			->SetTextColor(EditorUI::Theme.Text)
 			->SetTextSize(UISize::Pixels(11))
 			->SetMinSize(Vec2f(ElementSize, 0)));
@@ -99,7 +82,10 @@ void engine::editor::VectorField::UpdateValues()
 {
 	for (size_t i = 0; i < TextFields.size(); i++)
 	{
-		TextFields[i]->SetText(FloatToString(Value[i]));
+		if (!TextFields[i]->GetIsEdited())
+		{
+			TextFields[i]->SetText(str::FloatToString(Value[i], 3));
+		}
 	}
 }
 #endif

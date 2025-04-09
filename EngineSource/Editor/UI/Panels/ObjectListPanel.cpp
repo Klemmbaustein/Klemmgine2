@@ -27,29 +27,36 @@ void engine::editor::ObjectListPanel::Update()
 
 	Scene* Current = Scene::GetMain();
 
-	if (EditorUI::FocusedPanel == this
+	if ((EditorUI::FocusedPanel == this || EditorUI::FocusedPanel == Viewport::Current)
 		&& input::IsKeyDown(input::Key::ESCAPE)
 		&& !Viewport::Current->SelectedObjects.empty())
 	{
 		Viewport::Current->SelectedObjects.clear();
 		DisplayList();
 	}
-	if (EditorUI::FocusedPanel == this
-		&& input::IsKeyDown(input::Key::DELETE)
-		&& !Viewport::Current->SelectedObjects.empty())
-	{
-		Viewport::Current->RemoveSelected();
-		DisplayList();
-	}
 
 	if (!Current && LastLength != SIZE_MAX)
 	{
 		LastLength = SIZE_MAX;
+		LastSelectedLength = 0;
 		DisplayList();
 	}
 	else if (Current && LastLength != Current->Objects.size())
 	{
 		LastLength = Current->Objects.size();
+		LastSelectedLength = Viewport::Current->SelectedObjects.size();
+		DisplayList();
+	}
+
+	if (LastSelectedLength != Viewport::Current->SelectedObjects.size())
+	{
+		LastSelectedLength = Viewport::Current->SelectedObjects.size();
+		LastSelectedObj = LastSelectedLength  ? *Viewport::Current->SelectedObjects.begin() : nullptr;
+		DisplayList();
+	}
+	else if (LastSelectedLength && *Viewport::Current->SelectedObjects.begin() != LastSelectedObj)
+	{
+		LastSelectedObj = *Viewport::Current->SelectedObjects.begin();
 		DisplayList();
 	}
 }
@@ -65,15 +72,32 @@ void engine::editor::ObjectListPanel::DisplayList()
 
 	auto& Objects = Scene::GetMain()->Objects;
 
-	std::vector<ListObject> ObjectTree = {
-		ListObject{.Name = file::FileNameWithoutExt(Current->Name) + " (Scene)"}
-	};
+	string Name = file::FileNameWithoutExt(Current->Name) + " (Scene)";
 
+	std::map<string, ListObject> ObjectTree;
+
+	auto& SceneMap = ObjectTree.insert(
+		{ Name, ListObject{.Name = Name} }
+	).first->second.Children;
+
+
+	size_t Number = 0;
 	for (SceneObject* i : Objects)
 	{
 		if (Current->ObjectDestroyed(i))
 			continue;
-		ObjectTree[0].Children.emplace_back(i->Name, i, Viewport::Current->SelectedObjects.contains(i));
+
+		const Reflection::ObjectInfo& TypeInfo = Reflection::ObjectTypes[i->TypeID];
+
+		auto& Entry = SceneMap[TypeInfo.Path];
+
+		Entry.Children.insert(
+			{ std::to_string(Number++), ListObject(i->Name, i, Viewport::Current->SelectedObjects.contains(i))}
+		);
+		if (Entry.Name.empty())
+		{
+			Entry.Name = TypeInfo.Path;
+		}
 	}
 
 	AddListObjects(ObjectTree, 0);
@@ -81,9 +105,9 @@ void engine::editor::ObjectListPanel::DisplayList()
 	Heading->RedrawElement();
 }
 
-void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObject>& Objects, size_t Depth)
+void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth)
 {
-	for (auto& Obj : Objects)
+	for (auto& [_, Obj] : Objects)
 	{
 		auto* Elem = new ObjectEntryElement();
 
@@ -92,7 +116,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 		Elem->SetColor(Obj.Selected
 			? EditorUI::Theme.Highlight1
 			: (Heading->listBox->GetChildren().size() % 2 == 0
-			? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
+				? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
 
 		Elem->SetTextColor(Obj.Selected ? EditorUI::Theme.HighlightText : EditorUI::Theme.Text);
 		Elem->SetIcon(!Obj.From ? "Engine/Editor/Assets/Folder.png" : "");
@@ -110,25 +134,25 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::vector<ListObjec
 			delete Elem->arrow;
 
 		Elem->button->OnClicked = [this, Obj]()
-		{
-			if (!input::IsKeyDown(input::Key::LSHIFT))
-				Viewport::Current->SelectedObjects.clear();
-
-			if (Obj.From)
-				Viewport::Current->SelectedObjects.insert(Obj.From);
-			else
 			{
-				if (Collapsed.contains(Obj.Name))
-				{
-					Collapsed.erase(Obj.Name);
-				}
+				if (!input::IsKeyDown(input::Key::LSHIFT))
+					Viewport::Current->SelectedObjects.clear();
+
+				if (Obj.From)
+					Viewport::Current->SelectedObjects.insert(Obj.From);
 				else
 				{
-					Collapsed.insert(Obj.Name);
+					if (Collapsed.contains(Obj.Name))
+					{
+						Collapsed.erase(Obj.Name);
+					}
+					else
+					{
+						Collapsed.insert(Obj.Name);
+					}
 				}
-			}
-			DisplayList();
-		};
+				DisplayList();
+			};
 		Heading->listBox->AddChild(Elem);
 
 		if (HasChildren && !IsCollapsed)

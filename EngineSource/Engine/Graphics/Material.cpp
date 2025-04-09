@@ -103,7 +103,11 @@ SerializedValue Material::Serialize()
 		case Field::Type::Texture:
 			if (i.TextureValue.Name)
 			{
-				Val = *i.TextureValue.Name;
+				Val = SerializedValue({
+					SerializedData("file", i.TextureValue.Name->Name),
+					SerializedData("filter", i.TextureValue.Name->Options.Filter),
+					SerializedData("border", i.TextureValue.Name->Options.TextureBorders),
+					});
 			}
 			else
 			{
@@ -178,13 +182,28 @@ void Material::DeSerialize(SerializedValue* From)
 			NewField.Vec3 = Val.GetVector3();
 			break;
 		case Field::Type::Texture:
-			NewField.TextureValue.Name = new std::string(Val.GetString());
+		{
+			if (Val.GetType() == SerializedData::DataType::String)
+			{
+				NewField.TextureValue.Name = new MatTexture(Val.GetString());
+			}
+			else
+			{
+				TextureOptions Options;
+				Options.Filter = TextureOptions::Filtering(Val.At("filter").GetByte());
+				Options.TextureBorders = TextureOptions::BorderType(Val.At("border").GetByte());
+
+				NewField.TextureValue.Name = new MatTexture(
+					Val.At("file").GetString(),
+					Options);
+			}
 			NewField.TextureValue.Value = 0;
 			if (i.Name == "u_texture")
 			{
 				TextureField = it;
 			}
 			break;
+		}
 		case Field::Type::None:
 		default:
 			break;
@@ -200,8 +219,8 @@ void engine::graphics::Material::LoadTexture(Field& From)
 	if (From.TextureValue.Name && !From.TextureValue.Value)
 	{
 		From.TextureValue.Value = TextureLoader::Instance->LoadTextureFile(
-			AssetRef::Convert(*From.TextureValue.Name),
-			TextureLoadOptions{}
+			AssetRef::Convert(From.TextureValue.Name->Name),
+			From.TextureValue.Name->Options
 		);
 	}
 }

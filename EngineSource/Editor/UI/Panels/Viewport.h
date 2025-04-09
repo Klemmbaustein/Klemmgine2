@@ -7,6 +7,7 @@
 #include <set>
 #include <Editor/UI/Elements/Toolbar.h>
 #include <stack>
+#include <Engine/Subsystem/SceneSubsystem.h>
 
 namespace engine::editor
 {
@@ -14,7 +15,7 @@ namespace engine::editor
 	{
 	public:
 		Viewport();
-		~Viewport();
+		~Viewport() override;
 		bool MouseGrabbed = false;
 		bool UnsavedChanges = false;
 
@@ -53,6 +54,8 @@ namespace engine::editor
 		void UndoLast();
 
 	private:
+		physics::HitResult RayAtCursor();
+
 		void UndoChange(Change& Target, Scene* Current);
 		void UpdateSelection();
 		static void HandleKeyPress(kui::Window* w);

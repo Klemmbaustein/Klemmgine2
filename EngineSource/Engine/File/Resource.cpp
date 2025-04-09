@@ -41,7 +41,16 @@ static void LoadArchive(string Name)
 		return;
 
 	Log::Note(str::Format("Loading archive: %s", Name.c_str()));
-	LoadedArchives.insert({ Name, new Archive("Assets/" + Name + ".bin") });
+
+	Archive* NewArchive = new Archive("Assets/" + Name + ".bin");
+
+	auto Files = NewArchive->GetArchiveFiles();
+	for (auto& i : Files)
+	{
+		LoadedAssets.insert({ i, NewArchive->ConvertFileName(i) });
+	}
+
+	LoadedArchives.insert({ Name, NewArchive });
 }
 
 static void UnloadArchive(string Name)

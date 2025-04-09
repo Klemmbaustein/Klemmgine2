@@ -250,6 +250,11 @@ bool kui::systemWM::WindowHasFocus(SysWindow* Target)
 	return SDL_GetKeyboardFocus() == Target->SDLWindow;
 }
 
+bool kui::systemWM::WindowHasMouseFocus(SysWindow* Target)
+{
+	return SDL_GetMouseFocus() == Target->SDLWindow;
+}
+
 kui::Vec2i kui::systemWM::GetCursorPosition(SysWindow* Target)
 {
 	float x, y;

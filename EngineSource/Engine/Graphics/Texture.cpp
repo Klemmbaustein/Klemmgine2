@@ -18,25 +18,29 @@ graphics::TextureLoader::~TextureLoader()
 {
 }
 
-const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureLoadOptions LoadInfo)
+const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureOptions LoadInfo)
 {
 	using namespace engine::resource;
+
+	auto Name = From.FilePath + std::to_string(LoadInfo.Filter) + std::to_string(LoadInfo.TextureBorders);
 
 	{
 		TextureLoadMutex.lock();
 
-		if (LoadedTextures.contains(From.FilePath))
+		// Check if the texture is fully loaded already.
+		if (LoadedTextures.contains(Name))
 		{
-			Texture& tx = LoadedTextures[From.FilePath];
+			Texture& tx = LoadedTextures[Name];
 
 			tx.References++;
 			TextureLoadMutex.unlock();
 			return &tx;
 		}
 
-		LoadInfo.Name = From.FilePath;
+		LoadInfo.Name = Name;
 
-		auto FoundBuffer = TextureBuffers.find(From.FilePath);
+		// Check if the texture is pre-loaded. (Decompressed but not a GL texture)
+		auto FoundBuffer = TextureBuffers.find(Name);
 		if (FoundBuffer != TextureBuffers.end())
 		{
 			TextureLoadMutex.unlock();
@@ -57,7 +61,7 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureLoadOptions 
 	return Result;
 }
 
-const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t BufferSize, TextureLoadOptions LoadInfo)
+const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t BufferSize, TextureOptions LoadInfo)
 {
 	int w, h, ch;
 	stbi_set_flip_vertically_on_load(true);
@@ -67,7 +71,7 @@ const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t B
 	return Out;
 }
 
-const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo)
+const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo)
 {
 	uint32 TextureID = CreateGLTexture(Pixels, Width, Height, LoadInfo);
 	{
@@ -82,20 +86,28 @@ const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uin
 	}
 }
 
-const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, TextureLoadOptions LoadInfo)
+const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, TextureOptions LoadInfo)
 {
 	using namespace engine::resource;
 
 	std::lock_guard g{ TextureLoadMutex };
 
-	if (LoadedTextures.contains(From.FilePath))
-		return &LoadedTextures[From.FilePath];
+	auto Name = From.FilePath + std::to_string(LoadInfo.Filter) + std::to_string(LoadInfo.TextureBorders);
+
+	if (LoadedTextures.contains(Name))
+		return &LoadedTextures[Name];
 
 	int w, h, ch;
 	ReadOnlyBufferStream* Bytes = GetBinaryFile(From.FilePath);
+
+	if (!Bytes)
+	{
+		return nullptr;
+	}
+
 	stbi_set_flip_vertically_on_load(true);
 	auto Pixels = stbi_load_from_memory(Bytes->GetData(), int(Bytes->GetSize()), &w, &h, &ch, 4);
-	const Texture* New = &(*TextureBuffers.insert({ From.FilePath, Texture{
+	const Texture* New = &(*TextureBuffers.insert({ Name, Texture{
 		.Options = LoadInfo,
 		.Pixels = Pixels,
 		.TextureObject = 0,
@@ -112,14 +124,16 @@ void TextureLoader::FreeTexture(const Texture* Tex)
 {
 }
 
-uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureLoadOptions LoadInfo)
+uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo)
 {
 	uint32 TextureID = 0;
 	glGenTextures(1, &TextureID);
 	glBindTexture(GL_TEXTURE_2D, TextureID);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	GLint Filter = LoadInfo.Filter == TextureOptions::Linear ? GL_LINEAR : GL_NEAREST;
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Filter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 

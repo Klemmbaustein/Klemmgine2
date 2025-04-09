@@ -3,16 +3,18 @@
 
 void engine::MeshComponent::Update()
 {
+	if (DrawnModel && DrawnModel->Data)
+		CastShadow = DrawnModel->Data->CastShadow;
 }
 
 void engine::MeshComponent::Draw(graphics::Camera* From)
 {
 	auto Root = GetRootObject();
 
-	DrawBoundingBox.Extents = Root->Scale;
 
-	if (DrawnModel)
+	if (DrawnModel && DrawnModel->Drawable)
 	{
+		DrawBoundingBox = DrawnModel->Data->Bounds;
 		DrawnModel->Drawable->Draw(Root->GetScene(), WorldTransform, From, Materials);
 	}
 }
@@ -57,9 +59,7 @@ void engine::MeshComponent::Load(AssetRef From)
 
 		if (!AlreadyRegistered)
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
-		CastShadow = DrawnModel->Data->CastShadow;
 	}
-	DrawBoundingBox.Position = 0;
 }
 
 engine::MeshComponent::~MeshComponent()

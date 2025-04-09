@@ -75,5 +75,8 @@ namespace engine
 		*/
 		[[nodiscard]]
 		string Format(string Format, ...);
+
+
+		string FloatToString(float Val, size_t Precision = 0);
 	}
 }

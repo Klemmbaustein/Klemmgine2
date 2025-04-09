@@ -34,6 +34,7 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 		glUniformMatrix4fv(Used->ModelUniform, 1, false, &At.Matrix[0][0]);
 		glUniformMatrix4fv(Used->GetUniformLocation("u_view"), 1, false, &With->View[0][0]);
 		glUniformMatrix4fv(Used->GetUniformLocation("u_projection"), 1, false, &With->Projection[0][0]);
+		Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), With->GetPosition());
 
 		ModelVertexBuffers[i]->Draw();
 	}

@@ -1,4 +1,5 @@
 #include "Vector.h"
+#include "Vector.h"
 #include <cmath>
 #include <iostream>
 #include <glm/geometric.hpp>
@@ -26,7 +27,7 @@ engine::Vector3::Vector3(float X, float Y, float Z)
 
 string engine::Vector3::ToString() const
 {
-	return std::to_string(X) + " " + std::to_string(Y) + " " + std::to_string(Z);
+	return str::FloatToString(X) + " " + str::FloatToString(Y) + " " + str::FloatToString(Z);
 }
 
 Vector3 engine::Vector3::Normalize() const
@@ -184,6 +185,14 @@ Vector3 engine::Vector3::operator*(const Vector3& Other) const
 	return Vector3(X * Other.X, Y * Other.Y, Z * Other.Z);
 }
 
+Vector3& engine::Vector3::operator*=(const Vector3& Other)
+{
+	X *= Other.X;
+	Y *= Other.Y;
+	Z *= Other.Z;
+	return *this;
+}
+
 Vector3 engine::Vector3::operator/(const Vector3& Other) const
 {
 	return Vector3(X / Other.X, Y / Other.Y, Z / Other.Z);
@@ -289,7 +298,7 @@ Vector2& engine::Vector2::operator+=(const Vector2& Other)
 
 string engine::Vector2::ToString() const
 {
-	return std::to_string(X) + " " + std::to_string(Y);
+	return str::FloatToString(X) + " " + str::FloatToString(Y);
 }
 
 Vector2 engine::Vector2::FromString(string VectorString)

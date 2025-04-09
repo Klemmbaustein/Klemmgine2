@@ -60,7 +60,7 @@ void engine::ModelData::PreLoadMaterials(Scene* With)
 				continue;
 			}
 
-			auto Asset = AssetRef::Convert(*f.TextureValue.Name);
+			auto Asset = AssetRef::Convert(f.TextureValue.Name->Name);
 
 			if (!Asset.IsValid())
 				continue;
@@ -111,8 +111,15 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 
 	for (SerializedValue& Elem : MeshesArray)
 	{
-		Meshes.emplace_back().DeSerialize(&Elem);
+		Mesh& NewMesh = Meshes.emplace_back();
+		NewMesh.DeSerialize(&Elem);
+		this->Bounds.Position += NewMesh.Bounds.Position;
+		this->Bounds.Extents = Vector3(
+			std::max(NewMesh.Bounds.Extents.X, Bounds.Extents.X),
+			std::max(NewMesh.Bounds.Extents.Y, Bounds.Extents.Y),
+			std::max(NewMesh.Bounds.Extents.Z, Bounds.Extents.Z));
 	}
+	this->Bounds.Position = this->Bounds.Position / MeshesArray.size();
 
 	CastShadow = From->At("shadow").GetBool();
 	HasCollision = From->At("collision").GetBool();
@@ -164,6 +171,7 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	bool HasUV = false;
 
 	Vertices.reserve(InVertices.GetArray().size());
+	Vector3 BoundsMin, BoundsMax;
 	for (auto& i : InVertices.GetArray())
 	{
 		if (!CheckedUV)
@@ -171,13 +179,29 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 
 		if (HasUV)
 		{
-			Vertices.emplace_back(i.At("ps").GetVector3(), i.At("uv").GetVector2(), i.At("nm").GetVector3());
+			auto PosVec = i.At("ps").GetVector3();
+
+			BoundsMin = Vector3(
+				std::min(PosVec.X, BoundsMin.X),
+				std::min(PosVec.Y, BoundsMin.Y),
+				std::min(PosVec.Z, BoundsMin.Z));
+			BoundsMax = Vector3(
+				std::max(PosVec.X, BoundsMax.X),
+				std::max(PosVec.Y, BoundsMax.Y),
+				std::max(PosVec.Z, BoundsMax.Z));
+
+			Vertices.emplace_back(PosVec, i.At("uv").GetVector2(), i.At("nm").GetVector3());
 		}
 		else
 		{
 			Vertices.emplace_back(i.At("ps").GetVector3(), Vector2(-1), i.At("nm").GetVector3());
 		}
 	}
+
+	this->Bounds = BoundingBox{
+		.Position = (BoundsMin + BoundsMax) / 2,
+		.Extents = BoundsMax - BoundsMin
+	};
 
 	Indices.reserve(InIndices.GetArray().size());
 	for (auto& i : InIndices.GetArray())

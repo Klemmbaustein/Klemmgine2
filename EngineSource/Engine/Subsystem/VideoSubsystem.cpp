@@ -147,6 +147,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	{
 		DefaultFont = new Font(DefaultFontName);
 		MainWindow->Markup.SetDefaultFont(DefaultFont);
+		MainWindow->Markup.AddFont("mono", DefaultFont);
 	}
 
 	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
@@ -230,7 +231,6 @@ void engine::subsystem::VideoSubsystem::Update()
 
 	stats::DeltaTime = MainWindow->GetDeltaTime() * TimeScale;
 	stats::Time += stats::DeltaTime;
-
 }
 
 void engine::subsystem::VideoSubsystem::RenderUpdate()
@@ -253,13 +253,19 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 
 	auto PostProcess = MainWindow->Shaders.LoadShader("shader/internal/postProcess.vert", "shader/internal/drawToWindow.frag", "engineToWindow");
 
+	uint32 Texture = 0;
+
+	if (SceneSystem && SceneSystem->Main)
+	{
+		Texture = SceneSystem->Main->GetDrawBuffer();
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	PostProcess->Bind();
 	glActiveTexture(GL_TEXTURE0);
-	if (SceneSystem && SceneSystem->Main)
-		glBindTexture(GL_TEXTURE_2D, SceneSystem->Main->Buffer->Textures[0]);
-	else
-		glBindTexture(GL_TEXTURE_2D, 0);
+
+	glBindTexture(GL_TEXTURE_2D, Texture);
+
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[0]);
 	glActiveTexture(GL_TEXTURE2);

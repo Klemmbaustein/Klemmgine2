@@ -13,12 +13,26 @@ in vec3 v_screenPosition;
 in vec2 v_texCoord;
 #export //!
 in vec3 v_normal;
+in vec3 v_screenNormal;
 
 #export //!
-out vec4 f_color;
+layout(location = 0) out vec4 f_color;
+layout(location = 1) out vec3 f_position;
+layout(location = 2) out vec3 f_normal;
 
 #export //!
 uniform vec3 u_lightDirection = vec3(0, 1, 0);
+
+#export //!
+uniform vec3 u_lightColor = vec3(1);
+#export //!
+uniform vec3 u_ambientColor = vec3(1);
+#export //!
+uniform float u_ambientStrength = 0.2;
+
+#export //!
+uniform vec3 u_cameraPos = vec3(0);
+
 layout (std140) uniform LightSpaceMatrices
 {
 	mat4 lightSpaceMatrices[16];
@@ -133,5 +147,27 @@ float getShadowStrength()
 #export //!
 float getLightStrength()
 {
-	return (getShadowStrength() * max(dot(v_normal, u_lightDirection), 0.0)) * 0.75 + 0.25;
+	return getShadowStrength() * max(dot(v_normal, u_lightDirection), 0.0);
+}
+
+#export //!
+vec3 applyLighting(vec3 color, float specular = 1)
+{
+	vec3 ambient = color * u_ambientStrength * u_ambientColor;
+
+	vec3 viewDir = normalize(u_cameraPos - v_position);
+	vec3 reflectDir = reflect(-u_lightDirection, v_normal);  
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	vec3 spec_color = spec * specular * u_lightColor;  
+	return (color + spec_color) * getLightStrength() + ambient;
+}
+
+vec3 fragment();
+
+void main()
+{
+	f_color.rgb = fragment();
+	f_color.a = 1;
+	f_position = v_screenPosition;
+	f_normal = v_screenNormal != 0 ? normalize(v_screenNormal) : vec3(0, 1, 0);
 }
