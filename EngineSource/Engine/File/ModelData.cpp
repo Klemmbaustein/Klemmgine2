@@ -119,7 +119,7 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 			std::max(NewMesh.Bounds.Extents.Y, Bounds.Extents.Y),
 			std::max(NewMesh.Bounds.Extents.Z, Bounds.Extents.Z));
 	}
-	this->Bounds.Position = this->Bounds.Position / MeshesArray.size();
+	this->Bounds.Position = this->Bounds.Position / float(MeshesArray.size());
 
 	CastShadow = From->At("shadow").GetBool();
 	HasCollision = From->At("collision").GetBool();

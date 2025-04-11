@@ -182,7 +182,7 @@ ENGINE_EXPORT void Update(float Delta)
 
 	if (Time >= 0.5f)
 	{
-		FPS = std::round(float(FPSCounter) / Time);
+		FPS = uint32(std::round(float(FPSCounter) / Time));
 		FPSCounter = 0;
 		Time = 0;
 		UpdateFPS = true;

@@ -18,7 +18,7 @@ engine::subsystem::SceneSubsystem::SceneSubsystem()
 			.Name = "open",
 			.Args = { console::Command::Argument{.Name = "targetScene", .Required = true}},
 			.OnCalled = [this](const console::Command::CallContext& ctx) {
-				LoadSceneAsync(AssetRef::Convert(ctx.ProvidedArguments[0] + ".kts").FilePath);
+				LoadSceneAsync(ctx.ProvidedArguments[0]);
 			}
 			});
 	}

@@ -28,8 +28,8 @@ void engine::graphics::Bloom::OnBufferResized(uint32 Width, uint32 Height)
 		FreeBuffer(BloomBuffers[0]);
 		FreeBuffer(BloomBuffers[1]);
 	}
-	BloomWidth = Width * 0.25f;
-	BloomHeight = Height * 0.25f;
+	BloomWidth = uint32(float(Width) * 0.25f);
+	BloomHeight = uint32(float(Height) * 0.25f);
 	this->Width = Width;
 	this->Height = Height;
 	BloomBuffers[0] = CreateNewBuffer(BloomWidth, BloomHeight, false);
@@ -40,7 +40,7 @@ uint32 engine::graphics::Bloom::Draw(uint32 Texture, PostProcess* With, Framebuf
 {
 	BloomShader->Bind();
 	BloomShader->SetInt(BloomTextureLocation, 0);
-	BloomShader->SetVec2(TextureSizeLocation, Vector2(1.0f) / Vector2(BloomWidth, BloomHeight));
+	BloomShader->SetVec2(TextureSizeLocation, Vector2(1.0f) / Vector2(float(BloomWidth), float(BloomHeight)));
 
 	size_t BloomAmount = 12;
 	bool Horizontal = false;

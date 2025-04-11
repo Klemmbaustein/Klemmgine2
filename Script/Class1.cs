@@ -12,7 +12,6 @@ public class CoolObject : SceneObject
 		MeshComponent c = new();
 		Attach(c);
 		c.Load("cube.kmdl");
-		Log.Info("Object created");
 	}
 
 	public override void Update()

@@ -85,8 +85,8 @@ Functions.push_back(NativeFunction{ \
 		REGISTER_GET_SET(Rotation);
 		REGISTER_GET_SET(Scale);
 
-		//Current = new CSharpLoaderRuntime(Functions);
-		Current = new CSharpLoaderAot(Functions);
+		Current = new CSharpLoaderRuntime(Functions);
+		//Current = new CSharpLoaderAot(Functions);
 	}
 
 }

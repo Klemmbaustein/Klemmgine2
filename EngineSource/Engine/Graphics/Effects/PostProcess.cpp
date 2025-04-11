@@ -1,9 +1,9 @@
+#include "AmbientOcclusion.h"
+#include "Bloom.h"
 #include "PostProcess.h"
 #include "PostProcessEffect.h"
-#include <Engine/Internal/OpenGL.h>
 #include <algorithm>
-#include "Bloom.h"
-#include "AmbientOcclusion.h"
+#include <Engine/Internal/OpenGL.h>
 
 engine::graphics::PostProcess::PostProcess()
 {

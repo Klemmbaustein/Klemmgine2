@@ -1,5 +1,4 @@
 #include "Archive.h"
-#include <filesystem>
 #include "miniz.h"
 #include <Core/File/FileUtil.h>
 
@@ -122,19 +121,19 @@ void engine::Archive::Save(string FilePath)
 
 	ArchiveFile.WriteValue(Streams.size());
 
-	for (auto& i : Streams)
+	for (auto& [Name, Data] : Streams)
 	{
 		// Writes file entry: [name (string)] [compressed size (size_t)] [uncompressed size (size_t)] [file buffer (uByte * compressed size)]
 
-		ArchiveFile.WriteString(i.first);
+		ArchiveFile.WriteString(Name);
 
-		uByte* CompressedFile = new uByte[i.second.Size]();
+		uByte* CompressedFile = new uByte[Data.Size]();
 
-		mz_ulong CompressedSize = mz_ulong(i.second.Size);
-		mz_compress(CompressedFile, &CompressedSize, i.second.Bytes, mz_ulong(i.second.Size));
+		mz_ulong CompressedSize = mz_ulong(Data.Size);
+		mz_compress(CompressedFile, &CompressedSize, Data.Bytes, mz_ulong(Data.Size));
 
 		ArchiveFile.WriteValue(size_t(CompressedSize));
-		ArchiveFile.WriteValue(i.second.Size);
+		ArchiveFile.WriteValue(Data.Size);
 
 		ArchiveFile.Write(CompressedFile, CompressedSize);
 

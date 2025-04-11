@@ -21,7 +21,6 @@ public class MeshComponent : ObjectComponent
 
 	public void Load(string MeshFile)
 	{
-		Log.Info("Object created: " + MeshFile);
 		MeshLoad!(NativePointer, MeshFile);
 	}
 

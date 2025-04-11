@@ -1,5 +1,4 @@
 #include "Platform.h"
-#include <array>
 #ifdef WINDOWS
 #include <Windows.h>
 #include <map>

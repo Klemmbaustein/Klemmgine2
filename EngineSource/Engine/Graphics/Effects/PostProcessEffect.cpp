@@ -1,6 +1,5 @@
 #include "PostProcessEffect.h"
 #include <Engine/Internal/OpenGL.h>
-#include <Core/Log.h>
 
 engine::graphics::PostProcessEffect::PostProcessEffect()
 {

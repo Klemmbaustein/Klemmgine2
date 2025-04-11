@@ -434,7 +434,14 @@ void engine::Scene::LoadInternal(string File, bool Async)
 		}
 		else if (resource::FileExists(File + ".kbs"))
 		{
-			Name = File + ".kbs";
+			if (resource::LoadedAssets.contains(File + ".kbs"))
+			{
+				Name = resource::LoadedAssets[File + ".kbs"];
+			}
+			else
+			{
+				Name = File + ".kbs";
+			}
 			IBinaryStream* SceneFile = resource::GetBinaryFile(Name);
 			SceneData = BinarySerializer::FromStream(SceneFile, "kbs");
 			delete SceneFile;

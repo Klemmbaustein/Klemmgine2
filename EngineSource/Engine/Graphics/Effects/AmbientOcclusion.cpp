@@ -13,14 +13,14 @@ engine::graphics::AmbientOcclusion::AmbientOcclusion()
 {
 	DrawOrder = AO_DRAW_ORDER;
 
-	std::uniform_real_distribution<float> RandomFloats(0.0, 1.0);
+	std::uniform_real_distribution<float> RandomFloats(0.0f, 1.0f);
 	std::default_random_engine RandomGenerator;
 
 	for (size_t i = 0; i < AO_SAMPLES; i++)
 	{
 		Vector3 Sample = Vector3(
-			RandomFloats(RandomGenerator) * 2.0 - 1.0,
-			RandomFloats(RandomGenerator) * 2.0 - 1.0,
+			RandomFloats(RandomGenerator) * 2.0f - 1.0f,
+			RandomFloats(RandomGenerator) * 2.0f - 1.0f,
 			RandomFloats(RandomGenerator)
 		).Normalize();
 
@@ -89,7 +89,7 @@ uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* Wit
 	AoShader->SetInt(AoShader->GetUniformLocation("gPosition"), 0);
 	AoShader->SetInt(AoShader->GetUniformLocation("gNormal"), 1);
 	AoShader->SetInt(AoShader->GetUniformLocation("texNoise"), 2);
-	AoShader->SetVec2(AoShader->GetUniformLocation("noiseScale"), Vector2(Width, Height) / 4.0f);
+	AoShader->SetVec2(AoShader->GetUniformLocation("noiseScale"), Vector2(float(Width), float(Height)) / 4.0f);
 	glUniformMatrix4fv(AoShader->GetUniformLocation("projection"), 1, false, &Cam->Projection[0][0]);
 
 	uint32 AoTexture = DrawBuffer(AoBuffer, this->AoWidth, this->AoHeight);

@@ -1,20 +1,20 @@
 #include "PluginLoader.h"
-#include <Core/Platform/Platform.h>
+#include <Core/File/FileUtil.h>
 #include <Core/File/TextSerializer.h>
+#include <Core/Platform/Platform.h>
+#include <cstring>
+#include <Editor/Editor.h>
+#include <Engine/Console.h>
+#include <Engine/Debug/TimeLogger.h>
+#include <Engine/Input.h>
+#include <Engine/MainThread.h>
+#include <Engine/Objects/Components/MeshComponent.h>
+#include <Engine/Plugins/PluginUI.h>
 #include <Engine/Scene.h>
 #include <Engine/Stats.h>
 #include <Engine/Subsystem/PluginSubsystem.h>
 #include <filesystem>
-#include <cstring>
-#include <Core/File/FileUtil.h>
-#include <Engine/Debug/TimeLogger.h>
-#include <Engine/MainThread.h>
-#include <Engine/Objects/Components/MeshComponent.h>
-#include <Engine/Plugins/PluginUI.h>
 #include <kui/KlemmUI.h>
-#include <Engine/Input.h>
-#include <Engine/Console.h>
-#include <Editor/Editor.h>
 
 #include "InterfaceStruct.hpp"
 
@@ -38,8 +38,6 @@ static char* StrDup(engine::string From)
 	NewString[From.size()] = 0;
 	return NewString;
 }
-
-
 
 static plugin::LogEntry* GetLog(size_t* OutSize)
 {
@@ -144,7 +142,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 
 		string PluginFileName = File.At("binary").GetString();
 
-		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded plugin: %s", New.Name.c_str()), System->GetLogPrefixes()};
+		debug::TimeLogger PluginLoadTime{ str::Format("Successfully loaded plugin: %s", New.Name.c_str()), System->GetLogPrefixes() };
 
 		string PluginPath = file::FilePath(platform::GetExecutablePath());
 

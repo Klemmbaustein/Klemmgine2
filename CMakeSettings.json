@@ -69,7 +69,7 @@
 	{
 	  "name": "x64-Release-NoEditor",
 	  "generator": "Ninja",
-	  "configurationType": "Debug",
+	  "configurationType": "Release",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeCommandArgs": "",
