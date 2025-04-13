@@ -23,15 +23,15 @@ float getAo()
 			float difference = aoValue.y - depth;
 			if (difference < 1 && difference > -1)
 			{
-				result += mix(aoValue.x, 1, min(aoValue.y / 100, 1));
+				result += mix(aoValue.x, 1, min(aoValue.y / 100.0, 1.0));
 				sampled++;
 			}
 		}
 	}
 
-	if (sampled == 0)
+	if (sampled == 0.0)
 	{
-		return 1;
+		return 1.0;
 	}
 
 	return result / sampled;
@@ -41,6 +41,6 @@ void main()
 {
 	float aoStrength = getAo();
 
-	f_color = vec4(texture(u_mainTexture, v_texcoords).xyz * vec3(aoStrength), 1);
+	f_color = vec4(texture(u_mainTexture, v_texcoords).xyz * vec3(aoStrength), 1.0);
 	//f_color.xyz = vec3(abs(difference));
 }

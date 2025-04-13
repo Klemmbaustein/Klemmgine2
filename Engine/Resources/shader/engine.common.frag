@@ -151,7 +151,7 @@ float getLightStrength()
 }
 
 #export //!
-vec3 applyLighting(vec3 color, float specular = 1)
+vec3 applyLightingSpecular(vec3 color, float specular)
 {
 	vec3 ambient = color * u_ambientStrength * u_ambientColor;
 
@@ -162,6 +162,12 @@ vec3 applyLighting(vec3 color, float specular = 1)
 	return (color + spec_color) * getLightStrength() + ambient;
 }
 
+#export //!
+vec3 applyLighting(vec3 color)
+{
+	return applyLightingSpecular(color, 1.0);
+}
+
 vec3 fragment();
 
 void main()
@@ -169,5 +175,5 @@ void main()
 	f_color.rgb = fragment();
 	f_color.a = 1;
 	f_position = v_screenPosition;
-	f_normal = v_screenNormal != 0 ? normalize(v_screenNormal) : vec3(0, 1, 0);
+	f_normal = v_screenNormal != vec3(0) ? normalize(v_screenNormal) : vec3(0, 1, 0);
 }

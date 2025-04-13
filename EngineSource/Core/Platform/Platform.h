@@ -19,4 +19,11 @@ namespace engine::platform
 	SharedLibrary* LoadSharedLibrary(string Path);
 	void* GetLibraryFunction(SharedLibrary* Library, string Name);
 	void UnloadSharedLibrary(SharedLibrary* Library);
+
+	string GetLastErrorString();
+
+#if WINDOWS
+	std::wstring StrToWstr(const std::string& str);
+	std::string WstrToStr(const std::wstring& wstr);
+#endif
 }

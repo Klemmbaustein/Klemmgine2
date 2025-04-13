@@ -33,6 +33,11 @@ else()
 	project("Klemmgine" LANGUAGES C CXX)
 endif()
 
+if(MSVC)
+	# Allow multi processor compilation with MSVC
+	add_compile_options("/FS")
+endif()
+
 function(engine_part_library TARGET_NAME TARGET_PATH)
 	message("Including engine part: EngineSource/${TARGET_PATH} (${TARGET_NAME})")
 
@@ -56,9 +61,10 @@ if(UNIX)
 	add_compile_options("-fPIC")
 endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib$<0:>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin$<0:>)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin$<0:>)
+
 if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
 	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 	set(INTERPROCEDURAL_OPTIMIZATION OFF)
@@ -66,12 +72,13 @@ endif()
 
 engine_part_library(KlemmgineCore "Core")
 engine_part_library(KlemmgineLib "Engine")
-engine_part_library(KlemmgineEditor "Editor")
+if(ENGINE_EDITOR)
+	engine_part_library(KlemmgineEditor "Editor")
+	target_link_libraries(KlemmgineEditor PUBLIC KlemmgineLib)
+endif()
 
 target_compile_definitions(KlemmgineCore PRIVATE ENGINE_CORE)
-
 target_link_libraries(KlemmgineLib PUBLIC KlemmgineCore)
-target_link_libraries(KlemmgineEditor PUBLIC KlemmgineLib)
 
 if(USE_WINDOWS_SUBSYSTEM AND WIN32)
 	add_executable(Klemmgine WIN32 "EngineSource/main.cpp" "EngineSource/Resources.rc")
@@ -175,9 +182,9 @@ target_link_libraries(KlemmgineLib PUBLIC libglew_static)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
 
-target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
+target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI KlemmgineLib)
 
-if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC" AND ENGINE_EDITOR)
 	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
 endif()
 

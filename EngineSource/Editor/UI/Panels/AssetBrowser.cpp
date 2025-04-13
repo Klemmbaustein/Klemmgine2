@@ -89,36 +89,34 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 		auto IconAndColor = EditorUI::GetExtIconAndColor(i.is_directory() ? "dir/" : Extension);
 
-		auto OnRightClick = [this, OnClick, FilePath]()
-			{
-				new DropdownMenu({
-					DropdownMenu::Option{
-						.OnClicked = OnClick,
-						.Name = "Open",
-					},
-					DropdownMenu::Option{
-						.OnClicked = [this, FilePath]()
-					{
-						new RenameWindow(FilePath, [this, FilePath](string NewPath)
-							{
-								std::filesystem::rename(FilePath, NewPath);
-								resource::ScanForAssets();
-								UpdateItems();
-							});
-					},
+		auto OnRightClick = [this, OnClick, FilePath]() {
+			new DropdownMenu({
+				DropdownMenu::Option{
+					.Name = "Open",
+					.OnClicked = OnClick,
+				},
+				DropdownMenu::Option{
 					.Name = "Rename",
-					},
-					DropdownMenu::Option{
-						.OnClicked = [this, FilePath]()
+					.OnClicked = [this, FilePath]()
 					{
-						std::filesystem::remove_all(FilePath);
-						resource::ScanForAssets();
-						UpdateItems();
+					new RenameWindow(FilePath, [this, FilePath](string NewPath)
+						{
+							std::filesystem::rename(FilePath, NewPath);
+							resource::ScanForAssets();
+							UpdateItems();
+						});
 					},
+				},
+				DropdownMenu::Option{
 					.Name = "Delete",
-					}
-					}, kui::Window::GetActiveWindow()->Input.MousePosition);
-
+					.OnClicked = [this, FilePath]()
+					{
+					std::filesystem::remove_all(FilePath);
+					resource::ScanForAssets();
+					UpdateItems();
+					},
+				}
+				}, kui::Window::GetActiveWindow()->Input.MousePosition);
 			};
 
 		Out.push_back(Item{
@@ -256,25 +254,22 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
 	new DropdownMenu(
 		{
-			DropdownMenu::Option{ .OnClicked = [this]() { Import(GetPathDisplayName()); }, .Name = "Import...", .Separator = true },
-			DropdownMenu::Option{ .OnClicked = [this]()
-		{
+			DropdownMenu::Option{.Name = "Import...",.OnClicked = [this]() { Import(GetPathDisplayName()); }, .Separator = true },
+			DropdownMenu::Option{.Name = "New folder", .OnClicked = [this]() {
 			std::filesystem::create_directories(GetPathDisplayName() + "/Folder");
 			UpdateItems();
-		}, .Name = "New folder" },
-		DropdownMenu::Option{ .OnClicked = [this]()
-		{
+		} },
+		DropdownMenu::Option{.Name = "New scene", .OnClicked = [this]() {
 			EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
 			resource::ScanForAssets();
 			UpdateItems();
-		}, .Name = "New scene" },
-		DropdownMenu::Option{ .OnClicked = [this]()
-		{
+		} },
+		DropdownMenu::Option{.Name = "New material", .OnClicked = [this]() {
 			EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
 			resource::ScanForAssets();
 			UpdateItems();
-		}, .Name = "New material", .Separator = true },
-		DropdownMenu::Option{ .OnClicked = [this]()
+		}, .Separator = true },
+		DropdownMenu::Option{.Name = "Open in file explorer", .OnClicked = [this]()
 		{
 			using namespace engine::platform;
 #if WINDOWS
@@ -283,7 +278,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 
 			std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
 #endif
-		}, .Name = "Open in file explorer" },
+		}, },
 		},
 		Position);
 }

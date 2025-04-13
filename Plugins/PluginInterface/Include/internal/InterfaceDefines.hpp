@@ -10,8 +10,8 @@ STRUCT_MEMBER(GameHasFocus, bool, (), return Engine::GameHasFocus)
 STRUCT_MEMBER(ConsoleExecuteCommand, void, (const char* cmd), console::ExecuteCommand(cmd); )
 
 // Objects
-STRUCT_MEMBER(RegisterObj, int32, (std::string Name, SceneObject* (*Func)(void* UserData), void* UserData), \
-{ return Reflection::RegisterObject(Name, [Func, UserData]() -> SceneObject* { return Func(UserData); }); })
+STRUCT_MEMBER(RegisterObj, int32, (const char* Name, SceneObject* (*Func)(void* UserData), void* UserData, const char* Category), \
+return Reflection::RegisterObject(Name, [Func, UserData]() -> SceneObject* { return Func(UserData); }, Category);)
 
 STRUCT_MEMBER(CreateObj, engine::SceneObject*, (engine::Scene* Scn, int32 TypeID, Vector3 pos, Rotation3 rot, Vector3 scl), \
 { \

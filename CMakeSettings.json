@@ -69,7 +69,7 @@
 	{
 	  "name": "x64-Release-NoEditor",
 	  "generator": "Ninja",
-	  "configurationType": "Release",
+	  "configurationType": "RelWithDebInfo",
 	  "buildRoot": "${projectDir}\\out\\build\\${name}",
 	  "installRoot": "${projectDir}\\out\\install\\${name}",
 	  "cmakeCommandArgs": "",

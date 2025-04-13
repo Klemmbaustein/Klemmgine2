@@ -37,10 +37,16 @@ namespace engine::cSharp
 
 	static void RegisterObject(const char* Name, size_t TypeId)
 	{
-		engine::RegisterObject(Name, [TypeId]() -> engine::SceneObject*
+		string FullName = Name;
+
+		size_t Dot = FullName.find_last_of(".");
+
+		string Category = Dot != string::npos ? FullName.substr(0, Dot) : "";
+
+		engine::RegisterObject(FullName.substr(Dot + 1), [TypeId]() -> engine::SceneObject*
 			{
 				return new CSharpObject(TypeId);
-			});
+			}, Category);
 	}
 
 #define GET_SET_FN(name, type) \
@@ -85,8 +91,11 @@ Functions.push_back(NativeFunction{ \
 		REGISTER_GET_SET(Rotation);
 		REGISTER_GET_SET(Scale);
 
+#if USE_AOT_BINARIES
+		Current = new CSharpLoaderAot(Functions);
+#else
 		Current = new CSharpLoaderRuntime(Functions);
-		//Current = new CSharpLoaderAot(Functions);
+#endif
 	}
 
 }

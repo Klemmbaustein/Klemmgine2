@@ -11,8 +11,8 @@ namespace engine::editor
 	public:
 		struct Option
 		{
-			std::function<void()> OnClicked;
 			string Name;
+			std::function<void()> OnClicked;
 			bool Separator = false;
 		};
 

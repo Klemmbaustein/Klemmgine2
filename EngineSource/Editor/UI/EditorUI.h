@@ -2,6 +2,7 @@
 #pragma once
 #include <kui/UI/UIBackground.h>
 #include "Panels/EditorPanel.h"
+#include "DropdownMenu.h"
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 #include "StatusBar.kui.hpp"
 
@@ -10,6 +11,7 @@ namespace engine::editor
 	struct EditorTheme
 	{
 		kui::Vec3f Text = 1;
+		kui::Vec3f DarkText = 0.85f;
 		kui::Vec3f Background = kui::Vec3f(0.11f, 0.11f, 0.12f);
 		kui::Vec3f DarkBackground = 0.05f;
 		kui::Vec3f DarkBackground2 = 0.08f;
@@ -21,6 +23,7 @@ namespace engine::editor
 		kui::Vec3f HighlightText = 0;
 
 		//kui::Vec3f Text = 0;
+		//kui::Vec3f DarkText = 0.2f;
 		//kui::Vec3f Background = kui::Vec3f(0.9f, 0.9f, 0.9f);
 		//kui::Vec3f DarkBackground = 1.0f;
 		//kui::Vec3f DarkBackground2 = 0.8f;
@@ -96,7 +99,7 @@ namespace engine::editor
 		void Update();
 		void UpdateBackgrounds();
 
-		void AddMenuBarItem(std::string Name, std::vector<std::string> Options);
+		void AddMenuBarItem(std::string Name, std::vector<DropdownMenu::Option> Options);
 
 	private:
 		string CurrentStatus;

@@ -2,6 +2,38 @@
 #include <Core/File/TextSerializer.h>
 #include <Core/Log.h>
 #include <Core/File/FileUtil.h>
+#include <Core/LaunchArgs.h>
+using namespace engine;
+
+#if WINDOWS
+static const string DefaultPlatform = "win-x64";
+#elif LINUX
+static const string DefaultPlatform = "linux-x64";
+#endif
+
+static SerializedValue GetPlatformValue(const SerializedValue& Value)
+{
+	string Platform = DefaultPlatform;
+	auto PlatformArg = launchArgs::GetArg("platform");
+
+	if (PlatformArg)
+	{
+		Platform = PlatformArg.value().at(0).AsString();
+	}
+
+	if (Value.GetType() != SerializedData::DataType::Object)
+	{
+		return Value;
+	}
+	for (auto& PlatformDependent : Value.GetObject())
+	{
+		if (PlatformDependent.Name == Platform)
+		{
+			return PlatformDependent.Value;
+		}
+	}
+	return SerializedValue();
+}
 
 void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 {
@@ -15,6 +47,8 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 		}
 	}
 
+	bool IncludeDev = launchArgs::GetArg("devBuild").has_value();
+
 	for (auto& p : FoundPlugins)
 	{
 		try
@@ -23,7 +57,7 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 			auto PluginOutPath = OutPath / "Plugins" / p.filename();
 			auto PluginFile = SerializedValue(TextSerializer::FromFile((p / "Plugin.k2p").string()));
 
-			if (PluginFile.Contains("devOnly") && PluginFile.At("devOnly").GetBool())
+			if (PluginFile.Contains("devOnly") && PluginFile.At("devOnly").GetBool() && !IncludeDev)
 			{
 				Log::Info(str::Format("Skipping plugin %s - marked as devOnly", p.filename().string().c_str()));
 				continue;
@@ -35,17 +69,30 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 			std::filesystem::create_directories(PluginOutPath);
 			if (PluginFile.Contains("include"))
 			{
+				auto CopyStringFile = [&p, &BinaryPath, &PluginBinPath](string FileName) -> bool {
+
+					fs::path PathToTest = BinaryPath / "plugins" / FileName;
+
+					if (fs::exists(PathToTest))
+					{
+						fs::copy(PathToTest, PluginBinPath / file::FileName(FileName));
+						return true;
+					}
+
+					PathToTest = p / FileName;
+					if (fs::exists(PathToTest))
+					{
+						fs::copy(PathToTest, PluginBinPath / file::FileName(FileName));
+						return true;
+					}
+					return false;
+					};
+
 				for (auto& i : PluginFile.At("include").GetArray())
 				{
-					//std::filesystem::create_directories(PluginOutPath / file::FilePath(i.GetString()));
-					if (fs::exists(BinaryPath / "plugins" / i.GetString()))
-					{
-						fs::copy(BinaryPath / "plugins" / i.GetString(), PluginBinPath / file::FileName(i.GetString()));
-					}
-					else
-					{
-						fs::copy(p / i.GetString(), PluginBinPath / file::FileName(i.GetString()));
-					}
+					auto ToInclude = GetPlatformValue(i);
+
+					CopyStringFile(ToInclude.GetString());
 				}
 			}
 
@@ -61,6 +108,10 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 			fs::copy(p / "Plugin.k2p", PluginOutPath / "Plugin.k2p");
 		}
 		catch (SerializeException& e)
+		{
+			Log::Warn(e.what());
+		}
+		catch (std::exception& e)
 		{
 			Log::Warn(e.what());
 		}

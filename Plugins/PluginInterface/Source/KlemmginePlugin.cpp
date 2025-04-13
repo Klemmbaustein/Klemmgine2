@@ -17,16 +17,16 @@ ENGINE_EXPORT void PluginUnload()
 	}
 }
 
-engine::ObjectTypeID engine::RegisterObject(std::string Name, std::function<SceneObject* ()> CreateInstance)
+engine::ObjectTypeID engine::RegisterObject(string Name, std::function<SceneObject* ()> CreateInstance, string Category)
 {
 	auto* FunctionCopy = new std::function(CreateInstance);
 
-	return Context.RegisterObj(Name, [](void* Function)
+	return Context.RegisterObj(Name.c_str(), [](void* Function)
 		{
 			auto* fn = reinterpret_cast<std::function<SceneObject*()>*>(Function);
 			auto val = (*fn)();
 			return val;
-		}, FunctionCopy);
+		}, FunctionCopy, Category.c_str());
 
 	CreateObjectFunctions.push_back(FunctionCopy);
 }

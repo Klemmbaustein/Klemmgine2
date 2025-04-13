@@ -33,7 +33,7 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 {
 	using namespace kui;
 
-	Window::WindowFlag Flags = Window::WindowFlag::AlwaysOnTop;
+	Window::WindowFlag Flags = Window::WindowFlag::None;
 
 	if (!Resizable)
 	{

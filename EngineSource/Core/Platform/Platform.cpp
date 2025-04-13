@@ -26,10 +26,29 @@ void engine::platform::Execute(string Command)
 
 void engine::platform::Open(string File)
 {
-	ShellExecute(NULL, "open", File.c_str(), NULL, NULL, FALSE);
+	ShellExecuteA(NULL, "open", File.c_str(), NULL, NULL, FALSE);
 }
 
-static std::string WstrToStr(const std::wstring& wstr)
+engine::string engine::platform::GetLastErrorString()
+{
+	DWORD ErrorMessageID = GetLastError();
+	if (ErrorMessageID == 0)
+	{
+		return std::string("No error");
+	}
+
+	LPSTR MessageBuffer = nullptr;
+	size_t Size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, ErrorMessageID, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPSTR)&MessageBuffer, 0, NULL);
+
+	std::string Message = std::string(MessageBuffer, Size);
+
+	LocalFree(MessageBuffer);
+
+	return Message;
+}
+
+std::string engine::platform::WstrToStr(const std::wstring& wstr)
 {
 	std::string strTo;
 	char* szTo = new char[wstr.length() + 1];
@@ -40,7 +59,7 @@ static std::string WstrToStr(const std::wstring& wstr)
 	return strTo;
 }
 
-static std::wstring StrToWstr(const std::string& str)
+std::wstring engine::platform::StrToWstr(const std::string& str)
 {
 	int WideLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
 	wchar_t* wstr = new wchar_t[WideLength + 1];
@@ -117,6 +136,7 @@ engine::string engine::platform::GetExecutablePath()
 #include <dlfcn.h>
 #include <cstring>
 #include <errno.h>
+#include <filesystem>
 #include <thread>
 
 void engine::platform::SetConsoleColor(Log::LogColor NewColor)
@@ -139,7 +159,17 @@ void engine::platform::SetConsoleColor(Log::LogColor NewColor)
 
 engine::platform::SharedLibrary* engine::platform::LoadSharedLibrary(string Path)
 {
-	return reinterpret_cast<SharedLibrary*>(dlopen(Path.c_str(), RTLD_LAZY | RTLD_LOCAL));
+	if (std::filesystem::exists(Path))
+		Path = std::filesystem::canonical(Path);
+
+	SharedLibrary* Loaded = reinterpret_cast<SharedLibrary*>(dlopen(Path.c_str(), RTLD_LAZY | RTLD_LOCAL));
+
+	if (!Loaded)
+	{
+		Log::Error(strerror(errno));
+	}
+	return Loaded;
+
 }
 
 void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
@@ -169,6 +199,31 @@ void engine::platform::SetThreadName(string Name)
 engine::string engine::platform::GetThreadName()
 {
 	return "<Unknown thread>";
+}
+engine::string engine::platform::GetExecutablePath()
+{
+	FILE* SelfLinkCommand = popen(("readlink /proc/" + std::to_string(getpid()) + "/exe").c_str(), "r");
+
+	if (SelfLinkCommand == nullptr)
+	{
+		std::cout << "failed to call popen() to read process name." << std::endl;
+		return "";
+	}
+
+	while (!feof(SelfLinkCommand))
+	{
+		char ExecutableBuffer[8000];
+		size_t Read = fread(ExecutableBuffer, 1, sizeof(ExecutableBuffer) - 1, SelfLinkCommand);
+		ExecutableBuffer[Read] = 0;
+		if (Read > 0 && ExecutableBuffer[Read - 1] == '\n')
+		{
+			ExecutableBuffer[Read - 1] = 0;
+		}
+		pclose(SelfLinkCommand);
+		return ExecutableBuffer;
+	}
+	pclose(SelfLinkCommand);
+	return "";
 }
 
 #endif

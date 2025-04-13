@@ -152,13 +152,24 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 		}
 		else
 		{
-			PluginPath.append("/plugins");
+			PluginPath.append("/plugins"); 
 		}
+
+#if LINUX
+		const char* Found = getenv("LD_LIBRARY_PATH");
+
+		if (!Found)
+		{
+			Found = "";
+		}
+
+		setenv("LD_LIBRARY_PATH", str::Format("%s;%s", PluginPath.c_str(), Found).c_str(), true);
+#endif
 
 #if WINDOWS
 		string PluginBinary = str::Format("%s/%s.dll", PluginPath.c_str(), PluginFileName.c_str());
 #else
-		string PluginBinary = str::Format("out/build/WSL-GCC-Release/bin/%s/lib%s.so", PluginPath.c_str(), PluginFileName.c_str());
+		string PluginBinary = str::Format("%s/lib%s.so", PluginPath.c_str(), PluginFileName.c_str());
 #endif
 
 		SharedLibrary* Library = LoadSharedLibrary(PluginBinary);

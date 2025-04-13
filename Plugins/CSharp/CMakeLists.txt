@@ -13,6 +13,8 @@ endif()
 
 klemmgine_plugin_dirs()
 
+option(USE_CSHARP_AOT "Use ahead of time C# binaries" "${ENGINE_EDITOR}")
+
 set(CSHARP_DLL "${CMAKE_CURRENT_SOURCE_DIR}/bin/net8.0/Klemmgine.CSharp.dll")
 
 file(
@@ -48,7 +50,11 @@ file(
 )
 
 add_library(${PLUGIN_NAME} SHARED ${INCLUDES} ${SRCS} "Loader/Resources.rc")
-add_dependencies(${PLUGIN_NAME} CSharpBinaries)
+# add_dependencies(${PLUGIN_NAME} CSharpBinaries)
+
+if(NOT USE_CSHARP_AOT)
+	target_compile_definitions(${PLUGIN_NAME} PRIVATE "USE_AOT_BINARIES")
+endif()
 
 if(WIN32)
 	foreach(LANG  C CXX RC)

@@ -54,5 +54,6 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 		NewButton->SetText(i->Name);
 		ButtonBackground->AddChild(NewButton);
 	}
+	ButtonBackground->RedrawElement();
 }
 #endif

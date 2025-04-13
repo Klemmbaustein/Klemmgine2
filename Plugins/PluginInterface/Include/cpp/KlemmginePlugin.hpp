@@ -21,11 +21,11 @@ namespace engine
 
 namespace engine
 {
-	engine::ObjectTypeID RegisterObject(std::string Name, std::function<SceneObject*()> CreateInstance);
+	engine::ObjectTypeID RegisterObject(string Name, std::function<SceneObject*()> CreateInstance, string Category);
 
 	namespace log
 	{
-		void Info(std::string Message);
+		void Info(string Message);
 	}
 
 	namespace plugin

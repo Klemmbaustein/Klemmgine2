@@ -11,3 +11,4 @@ obj
 .vscode/
 PublishProfiles/
 *.user
+/build/

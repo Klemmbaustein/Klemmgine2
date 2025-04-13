@@ -7,8 +7,11 @@ const string MainFunctionName = "Aot_Main";
 
 engine::cSharp::CSharpLoaderAot::CSharpLoaderAot(const std::vector<NativeFunction>& Functions)
 {
-	//AotLibrary = LoadSharedLibrary(string(plugin::GetInterface()->PluginPath) + "bin/net8.0/win-x64/native/Klemmgine.CSharp.Aot.dll");
+#if WINDOWS
 	AotLibrary = LoadSharedLibrary("Plugins/bin/Klemmgine.CSharp.Aot.dll");
+#else
+	AotLibrary = LoadSharedLibrary("Plugins/bin/Klemmgine.CSharp.Aot.so");
+#endif
 
 	if (!AotLibrary)
 	{

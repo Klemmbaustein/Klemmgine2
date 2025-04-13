@@ -107,9 +107,9 @@ static BufferStream* CopyAndConvertFile(std::fs::path InPath, string& OutPath)
 int main(int argc, char** argv)
 {
 	launchArgs::SetArgs(argc, argv);
-	Log::IsVerbose = true;
+	Log::IsVerbose = launchArgs::GetArg("verbose").has_value();
 
-	string OutPath = "build";
+	string OutPath = "build/dev";
 
 	auto OutputArg = launchArgs::GetArg("out");
 	if (OutputArg && OutputArg->size() == 1)
@@ -154,31 +154,34 @@ int main(int argc, char** argv)
 		auto Archives = engine::build::GetBuildArchives("Assets/");
 		Log::Info(str::Format("Starting %i archive compression jobs...", int(Archives.size())));
 
+		std::atomic<uint32> WrittenArchives;
+
 		SerializedValue MapFile = std::vector<SerializedData>();
 		for (auto& ArchiveFiles : Archives)
 		{
-			std::fs::path ResultPath = std::fs::path(OutPath) / "Assets" / (ArchiveFiles.Name + ".bin");
-			ArchiveThreads.AddJob([ArchiveFiles, ResultPath]()
+			std::fs::path ResultPath = std::fs::relative(std::fs::path(OutPath) / "Assets" / (ArchiveFiles.Name + ".bin"));
+			ArchiveThreads.AddJob([ArchiveFiles, ResultPath, ArchiveSize = Archives.size(), &WrittenArchives]() {
+				Log::Info("Writing archive: "
+					+ ResultPath.string()
+					+ str::Format(" (%i/%i)", uint32(++WrittenArchives), uint32(ArchiveSize)));
+
+				Archive a;
+
+				for (auto& file : ArchiveFiles.Files)
 				{
-					Log::Note("Writing archive: " + ResultPath.string());
+					string Name = str::ReplaceChar(file.string(), '\\', '/');
 
-					Archive a;
-
-					for (auto& file : ArchiveFiles.Files)
+					IBinaryStream* Data = CopyAndConvertFile(file, Name);
+					if (!Data)
 					{
-						string Name = str::ReplaceChar(file.string(), '\\', '/');
-
-						IBinaryStream* Data = CopyAndConvertFile(file, Name);
-						if (!Data)
-						{
-							Data = new FileStream(file.string(), true);
-						}
-
-						a.AddFile(Name, Data);
-						delete Data;
+						Data = new FileStream(file.string(), true);
 					}
-					a.Save(ResultPath.string());
-					Log::Note("Done writing archive: " + ResultPath.string());
+
+					a.AddFile(Name, Data);
+					delete Data;
+				}
+				a.Save(ResultPath.string());
+				Log::Note("Done writing archive: " + ResultPath.string());
 				});
 
 			SerializedValue SceneArray = std::vector<SerializedValue>();

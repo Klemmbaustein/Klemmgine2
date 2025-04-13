@@ -38,6 +38,11 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	}
 
 	OutWindow->SDLWindow = SDL_CreateWindow(Title.c_str(), int(Size.X), int(Size.Y), SDLFlags);
+	if (ActiveWindows.size() && (Flags & Window::WindowFlag::Popup) == Window::WindowFlag::Popup)
+	{
+		SDL_SetWindowParent(OutWindow->SDLWindow, ActiveWindows[0]->SDLWindow);
+		SDL_SetWindowModal(OutWindow->SDLWindow, true);
+	}
 
 	if ((Flags & Window::WindowFlag::Resizable) != Window::WindowFlag::Resizable)
 	{
@@ -476,4 +481,6 @@ void kui::systemWM::SysWindow::UpdateEvents()
 		}
 	}
 }
+#else
+#error Server unsupported right now
 #endif

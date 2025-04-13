@@ -4,12 +4,10 @@
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Engine/Subsystem/VideoSubsystem.h>
-#include <Engine/File/Resource.h>
-#include <Core/Error/StackTrace.h>
 #include "DropdownMenu.h"
 #include <filesystem>
 #include <fstream>
-#include "Windows/MessageWindow.h"
+#include "Windows/BuildWindow.h"
 #include "Elements/DroppableBox.h"
 #include "Panels/Viewport.h"
 #include "Panels/AssetBrowser.h"
@@ -144,11 +142,39 @@ engine::editor::EditorUI::EditorUI()
 		->SetVerticalAlign(UIBox::Align::Centered);
 	Root->AddChild(MenuBar);
 
-	AddMenuBarItem("File", { "New", "Open Project", "Exit" });
-	AddMenuBarItem("Edit", { "Undo", "Settings", "Project settings" });
-	AddMenuBarItem("Scene", { "Save", "Open", "Show collision view" });
-	AddMenuBarItem("Window", { "Save layout", "Load layout" });
-	AddMenuBarItem("Help", { "About", "Source code" });
+	AddMenuBarItem("File",
+		{
+			DropdownMenu::Option("New"),
+			DropdownMenu::Option("Open Project"),
+			DropdownMenu::Option("Build Project", []() {
+				new BuildWindow();
+			}),
+			DropdownMenu::Option("Exit"),
+		});
+
+	AddMenuBarItem("Edit",
+		{
+			DropdownMenu::Option("Undo"),
+			DropdownMenu::Option("Redo"),
+			DropdownMenu::Option("Settings"),
+			DropdownMenu::Option("Project settings"),
+		});
+
+	AddMenuBarItem("Scene",
+		{
+			DropdownMenu::Option("Save"),
+			DropdownMenu::Option("Open"),
+			DropdownMenu::Option("View..."),
+		});
+	AddMenuBarItem("Window",
+		{
+			DropdownMenu::Option("Save layout"),
+			DropdownMenu::Option("Load layout"),
+		});
+
+	AddMenuBarItem("Help",
+		{ DropdownMenu::Option("About"), DropdownMenu::Option("Source code") }
+	);
 
 	MainBackground = new UIBox(true, 0);
 
@@ -289,7 +315,7 @@ void engine::editor::EditorUI::UpdateBackgrounds()
 	MainBackground->GetParent()->UpdateElement();
 }
 
-void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<std::string> Options)
+void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<DropdownMenu::Option> Options)
 {
 	auto* btn = new MenuBarButton();
 	btn->SetName(Name);
@@ -298,9 +324,7 @@ void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<std:
 
 	for (auto& i : Options)
 	{
-		DropdownOptions.push_back(DropdownMenu::Option{
-			.Name = i,
-			});
+		DropdownOptions.push_back(i);
 	}
 
 	btn->button->OnClicked = [btn, DropdownOptions]()
