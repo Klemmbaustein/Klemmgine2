@@ -56,6 +56,26 @@ void engine::editor::BuildWindow::Begin()
 		EditorUI::Theme.DarkBackground, EditorUI::Theme.Text,
 		ConfigOptions, nullptr, DefaultFont);
 
+	ConfigDropdown->OnClicked = [this, ConfigDropdown]() {
+		switch (ConfigDropdown->SelectedIndex)
+		{
+		case 0:
+			this->SelectedConfig = "Debug";
+			break;
+		case 1:
+			this->SelectedConfig = "Release";
+			break;
+		case 2:
+			this->SelectedConfig = "MinSizeRel";
+			break;
+		case 3:
+			this->SelectedConfig = "RelWithDebInfo";
+			break;
+		default:
+			break;
+		}
+		};
+
 	ConfigDropdown->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
 	ConfigDropdown->SetTextSize(11_px, 3_px);
 	ConfigDropdown->SelectOption(0, false);
@@ -196,7 +216,8 @@ void engine::editor::BuildWindow::StartBuildForPlatform(BuildPlatform Platform, 
 		.CompressAssets = CompressAssets,
 		.IncludeDevPlugins = IncludeDevPlugins,
 		.MultiThreaded = MultiThreaded,
-		.OutputPath = "build",
+		.OutputPath = "build/" + SelectedConfig,
+		.BuildConfiguration = SelectedConfig,
 	};
 	NewJob->Parent = this;
 	NewJob->Start();

@@ -1,12 +1,12 @@
 #ifdef EDITOR
 #include "ModelConverter.h"
-#include <Engine/File/ModelData.h>
+#include <assimp/cimport.h>
 #include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <Core/File/FileUtil.h>
-#include <assimp/postprocess.h>
 #include <Core/Log.h>
-#include <assimp/cimport.h>
+#include <Engine/File/ModelData.h>
 #include <fstream>
 using namespace engine;
 using namespace engine::editor::modelConverter;

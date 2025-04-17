@@ -71,7 +71,7 @@ namespace engine::editor
 		bool CompressAssets = true;
 		bool IncludeDevPlugins = false;
 		bool MultiThreaded = true;
-
+		string SelectedConfig = "Debug";
 
 		void StartBuild();
 	};

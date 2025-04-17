@@ -30,6 +30,15 @@ static string CompileArgs(const BuildOptions& Options)
 		OutArgs.append(" --parallel -j " + std::to_string(std::thread::hardware_concurrency()));
 	}
 
+	if (Options.BuildConfiguration.empty())
+	{
+		OutArgs.append(" --config " + Options.BuildConfiguration);
+	}
+	else
+	{
+		OutArgs.append(" --config " + Options.BuildConfiguration);
+	}
+
 	return OutArgs;
 }
 static string ProjectBuildArgs(const BuildOptions& Options)

@@ -30,6 +30,7 @@ void engine::editor::BuildCurrentProject(BuildOptions Options)
 bool engine::editor::BuildProjectExecuteCommand(string Command, BuildOptions& Options, BuildStage Stage)
 {
 #if WINDOWS
+	Log::Info(Command);
 	Pipe CmdPipe = Pipe(Command);
 
 	while (!CmdPipe.Empty())
