@@ -36,7 +36,7 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 	glGenTextures(NUM_TEXTURES, Textures);
 
 	// Color
-	glBindTexture(GL_TEXTURE_2D, Textures[0]);
+	glBindTexture(GL_TEXTURE_2D, Textures[TEXTURE_COLOR]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GLsizei(NewWidth), GLsizei(NewHeight), 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -44,7 +44,7 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	// Depth
-	glBindTexture(GL_TEXTURE_2D, Textures[1]);
+	glBindTexture(GL_TEXTURE_2D, Textures[TEXTURE_DEPTH_STENCIL]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, GLsizei(NewWidth), GLsizei(NewHeight), 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -52,7 +52,7 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 	// Position
-	glBindTexture(GL_TEXTURE_2D, Textures[2]);
+	glBindTexture(GL_TEXTURE_2D, Textures[TEXTURE_POSITION]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, GLsizei(NewWidth), GLsizei(NewHeight), 0, GL_RGB, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -60,7 +60,7 @@ void engine::graphics::Framebuffer::Resize(int64 NewWidth, int64 NewHeight)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	// Normal
-	glBindTexture(GL_TEXTURE_2D, Textures[3]);
+	glBindTexture(GL_TEXTURE_2D, Textures[TEXTURE_NORMAL]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, GLsizei(NewWidth), GLsizei(NewHeight), 0, GL_RGB, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

@@ -303,6 +303,9 @@ void engine::graphics::Material::ApplySimple(graphics::ShaderObject* With)
 	{
 		auto& tx = Fields[TextureField];
 
+		if (tx.FieldType != Field::Type::Texture)
+			return;
+
 		if (!tx.TextureValue.Value)
 			LoadTexture(tx);
 		glActiveTexture(GL_TEXTURE1);
@@ -322,6 +325,7 @@ void engine::graphics::Material::VerifyUniforms()
 {
 	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader), ShaderModule::ShaderType::Fragment);
 
+	bool FoundTexture = false;
 	std::vector<Field> NewFields;
 
 	for (auto& i : Result.ShaderUniforms)
@@ -329,6 +333,11 @@ void engine::graphics::Material::VerifyUniforms()
 		auto Found = FindField(i.Name, i.Type);
 		if (Found)
 		{
+			if (i.Name == "u_texture")
+			{
+				FoundTexture = true;
+				TextureField = NewFields.size();
+			}
 			NewFields.push_back(*Found);
 			continue;
 		}
@@ -359,10 +368,15 @@ void engine::graphics::Material::VerifyUniforms()
 		else if (NewField.FieldType == Field::Type::Texture)
 		{
 			NewField.TextureValue.Name = nullptr;
-			NewField.TextureValue.Value = 0;
+			NewField.TextureValue.Value = nullptr;
 		}
 
 		NewFields.push_back(NewField);
+	}
+	if (!FoundTexture)
+	{
+		TextureField = SIZE_MAX;
+		UseTexture = false;
 	}
 	Fields = NewFields;
 }

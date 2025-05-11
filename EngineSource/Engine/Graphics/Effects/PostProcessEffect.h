@@ -20,7 +20,7 @@ namespace engine::graphics
 		virtual uint32 Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) = 0;
 
 	protected:
-	
+
 		// Framebuffer utility functions
 		uint64 CreateNewBuffer(uint32 Width, uint32 Height, bool FilterNearest);
 

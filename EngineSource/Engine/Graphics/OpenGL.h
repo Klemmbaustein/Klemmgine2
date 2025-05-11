@@ -6,9 +6,9 @@ namespace engine::openGL
 	{
 		/// The supported version is WebGL. Currently unused.
 		WebGL,
-		/// The current OpenGL version is at least 3.3.0
+		/// The current OpenGL version is at least 3.3
 		GL330,
-		/// The current OpenGL version is at least 4.3.0
+		/// The current OpenGL version is at least 4.3
 		GL430,
 	};
 

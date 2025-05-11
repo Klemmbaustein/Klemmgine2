@@ -572,7 +572,7 @@ void engine::editor::EditorPanel::UpdatePanelMove()
 	Vec2f PixelSize = UIBox::PixelSizeToScreenSize(1, Window::GetActiveWindow());
 
 	Move.HighlightBackground->IsVisible = true;
-	
+
 	PreviewPosition += PixelSize * Vec2f(2);
 	PreviewSize = PreviewSize - PixelSize * Vec2f(4);
 	if (!Window::GetActiveWindow()->Input.IsLMBDown)

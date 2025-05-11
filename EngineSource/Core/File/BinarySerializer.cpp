@@ -247,6 +247,8 @@ void engine::BinarySerializer::ReadValue(IBinaryStream* From, SerializedValue& T
 	{
 		To = std::vector<SerializedValue>();
 		int32 Length = From->Get<int32>();
+		if (Length > UINT32_MAX)
+			throw new SerializeReadException("Array too long");
 		To.GetArray().reserve(Length);
 		for (int32 i = 0; i < Length; i++)
 		{
@@ -260,6 +262,9 @@ void engine::BinarySerializer::ReadValue(IBinaryStream* From, SerializedValue& T
 		To = std::vector<SerializedValue>();
 		int32 Length = From->Get<int32>();
 		To.GetArray().reserve(Length);
+		if (Length > UINT32_MAX)
+			throw new SerializeReadException("Array too long");
+
 		auto ArrayType = From->Get<SerializedData::DataType>();
 		for (int32 i = 0; i < Length; i++)
 		{
@@ -273,6 +278,10 @@ void engine::BinarySerializer::ReadValue(IBinaryStream* From, SerializedValue& T
 		To = std::vector<SerializedData>();
 
 		int32 Length = From->Get<int32>();
+
+		if (Length > UINT32_MAX)
+			throw new SerializeReadException("Object too long");
+
 		To.GetObject().reserve(Length);
 		for (int32 i = 0; i < Length; i++)
 		{

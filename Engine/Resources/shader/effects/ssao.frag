@@ -13,7 +13,7 @@ int kernelSize = 24;
 float radius = 0.5;
 float bias = 0.025;
 
-uniform vec2 noiseScale = vec2(1600.0/4.0, 900.0/4.0); 
+uniform vec2 noiseScale = vec2(1600.0/4.0, 900.0/4.0);
 
 uniform mat4 projection;
 
@@ -39,8 +39,8 @@ void main()
 	{
 		// get sample position
 		vec3 samplePos = TBN * samples[i]; // from tangent to view-space
-		samplePos = fragPos + samplePos * radius; 
-		
+		samplePos = fragPos + samplePos * radius;
+
 		// project sample position (to sample texture) (to get position on screen/texture)
 		vec4 offset = vec4(samplePos, 1.0);
 		offset = projection * offset; // from view to clip-space
@@ -49,12 +49,12 @@ void main()
 
 		// get sample depth
 		float sampleDepth = texture(gPosition, offset.xy).z; // get depth value of kernel sample
-		
+
 		// range check & accumulate
 		float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
-		occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;           
+		occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
 	}
 	occlusion = 1.0 - (occlusion / kernelSize);
-	
+
 	FragColor = vec4(occlusion, -fragPos.z, 0, 1);
 }

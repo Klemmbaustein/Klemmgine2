@@ -1,15 +1,16 @@
 #ifdef EDITOR
 #include "Viewport.h"
-#include <Engine/Engine.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
-#include <Engine/Subsystem/EditorSubsystem.h>
-#include <Engine/Input.h>
-#include <kui/UI/UISpinner.h>
 #include <Editor/UI/EditorUI.h>
-#include <Engine/Stats.h>
+#include <Editor/UI/Effects/Outline.h>
 #include <Editor/UI/Elements/DroppableBox.h>
-#include <Toolbar.kui.hpp>
+#include <Engine/Engine.h>
+#include <Engine/Graphics/Effects/PostProcess.h>
+#include <Engine/Input.h>
 #include <Engine/Objects/MeshObject.h>
+#include <Engine/Stats.h>
+#include <Engine/Subsystem/EditorSubsystem.h>
+#include <Engine/Subsystem/VideoSubsystem.h>
+#include <kui/UI/UISpinner.h>
 using namespace engine::subsystem;
 using namespace kui;
 
@@ -161,6 +162,10 @@ engine::editor::Viewport::Viewport()
 	Current = this;
 	if (Scene::GetMain())
 		Scene::GetMain()->UsedCamera = Scene::GetMain()->SceneCamera;
+
+	GizmoMesh = new MeshComponent();
+	GizmoMesh->Load("Engine/Editor/Assets/Models/Arrows.kmdl"_asset);
+	GizmoMesh->Rotation.Y = -90;
 }
 
 engine::editor::Viewport::~Viewport()
@@ -194,6 +199,15 @@ void engine::editor::Viewport::RemoveSelected()
 		i->Destroy();
 	}
 
+	SelectedObjects.clear();
+}
+
+void engine::editor::Viewport::ClearSelected()
+{
+	for (auto& i : SelectedObjects)
+	{
+		HighlightObject(i, false);
+	}
 	SelectedObjects.clear();
 }
 
@@ -235,16 +249,43 @@ void engine::editor::Viewport::Update()
 	}
 	Scene* Current = Scene::GetMain();
 
+	if (bool(Current) != this->SceneLoaded)
+	{
+		this->SceneLoaded = bool(Current);
+		if (this->SceneLoaded)
+		{
+			Current->PostProcess.AddEffect(new EditorOutline());
+			Current->AddDrawnComponent(GizmoMesh);
+		}
+	}
+
 	bool HasFocus = EditorUI::FocusedPanel == this;
+	UpdateSelection();
 
 	if (Engine::IsPlaying)
 	{
 		Engine::GameHasFocus = HasFocus;
 		input::ShowMouseCursor = HasFocus ? false : true;
+		GizmoMesh->IsVisible = false;
 
 		return;
 	}
 	Engine::GameHasFocus = false;
+
+	if (Current)
+	{
+		if (SelectedObjects.size())
+		{
+			GizmoMesh->IsVisible = true;
+			GizmoMesh->Position = (*SelectedObjects.begin())->Position;
+			GizmoMesh->Scale = Vector3::Distance(Current->UsedCamera->Position, GizmoMesh->Position) * 0.075f;
+		}
+		else
+		{
+			GizmoMesh->IsVisible = false;
+		}
+		GizmoMesh->UpdateTransform();
+	}
 
 	if (Current && ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)
 	{
@@ -260,8 +301,6 @@ void engine::editor::Viewport::Update()
 		Win->Input.KeyboardFocusInput = true;
 		MouseGrabbed = false;
 	}
-
-	UpdateSelection();
 
 	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s) && UnsavedChanges && HasFocus)
 	{
@@ -311,7 +350,7 @@ void engine::editor::Viewport::Update()
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current && input::IsLMBClicked)
 	{
-		SelectedObjects.clear();
+		Viewport::Current->ClearSelected();
 		auto hit = RayAtCursor();
 		if (hit.Hit)
 		{
@@ -382,6 +421,31 @@ void engine::editor::Viewport::OnObjectCreated(SceneObject* Target)
 		} });
 
 	SceneChanged();
+}
+
+void engine::editor::Viewport::HighlightObject(SceneObject* Target, bool Highlighted)
+{
+	for (ObjectComponent* i : Target->GetChildComponents())
+	{
+		DrawableComponent* Drawable = dynamic_cast<DrawableComponent*>(i);
+		if (Drawable)
+		{
+			HighlightComponents(Drawable, Highlighted);
+		}
+	}
+}
+
+void engine::editor::Viewport::HighlightComponents(DrawableComponent* Target, bool Highlighted)
+{
+	Target->DrawStencil = Highlighted;
+	for (ObjectComponent* i : Target->Children)
+	{
+		DrawableComponent* Drawable = dynamic_cast<DrawableComponent*>(i);
+		if (Drawable)
+		{
+			HighlightComponents(Drawable, Highlighted);
+		}
+	}
 }
 
 engine::physics::HitResult engine::editor::Viewport::RayAtCursor()
@@ -462,6 +526,7 @@ void engine::editor::Viewport::UpdateSelection()
 		{
 			if (i == obj)
 			{
+				HighlightObject(obj, true);
 				Found = true;
 				break;
 			}

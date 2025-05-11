@@ -21,12 +21,20 @@ engine::graphics::Model::~Model()
 
 void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Camera* With, std::vector<Material*>& UsedMaterials)
 {
+	if (!In)
+	{
+		glStencilMask(0xFF);
+	}
+
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
 		UsedMaterials[i]->Apply();
 		ShaderObject* Used = UsedMaterials[i]->Shader;
 
-		In->Shadows.BindUniforms(Used);
+		if (In)
+			In->Shadows.BindUniforms(Used);
+		else
+			glStencilFunc(GL_ALWAYS, GLint(i) + 2, 0xFF);
 
 		if (Used == nullptr)
 			continue;
@@ -37,6 +45,11 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 		Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), With->GetPosition());
 
 		ModelVertexBuffers[i]->Draw();
+	}
+	if (!In)
+	{
+		glStencilMask(0);
+		glStencilFunc(GL_GEQUAL, 1, 0xFF);
 	}
 }
 

@@ -1,0 +1,24 @@
+{
+	"u_texture": obj = {
+		"type": int = 4;
+		"val": obj = {
+			"file": str = "";
+			"filter": byte = 1;
+			"border": byte = 2;
+		};
+	};
+	"u_useTexture": obj = {
+		"type": int = 5;
+		"val": bool = 0;
+	};
+	"u_color": obj = {
+		"type": int = 3;
+		"val": vec3 = <1 1 1>;
+	};
+	"u_emissive": obj = {
+		"type": int = 3;
+		"val": vec3 = <0 0 0>;
+	};
+	"vertexShader": str = "res:shader/basic.vert";
+	"fragmentShader": str = "res:shader/basic.frag";
+}

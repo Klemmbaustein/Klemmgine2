@@ -28,11 +28,16 @@ void engine::editor::ObjectListPanel::Update()
 	Scene* Current = Scene::GetMain();
 
 	if ((EditorUI::FocusedPanel == this || EditorUI::FocusedPanel == Viewport::Current)
-		&& input::IsKeyDown(input::Key::ESCAPE)
 		&& !Viewport::Current->SelectedObjects.empty())
 	{
-		Viewport::Current->SelectedObjects.clear();
-		DisplayList();
+		if (input::IsKeyDown(input::Key::ESCAPE))
+		{
+			Viewport::Current->ClearSelected();
+		}
+		else if (input::IsKeyDown(input::Key::DELETE))
+		{
+			Viewport::Current->RemoveSelected();
+		}
 	}
 
 	if (!Current && LastLength != SIZE_MAX)
@@ -119,7 +124,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 				? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
 
 		Elem->SetTextColor(Obj.Selected ? EditorUI::Theme.HighlightText : EditorUI::Theme.Text);
-		Elem->SetIcon(!Obj.From ? "Engine/Editor/Assets/Folder.png" : "");
+		Elem->SetIcon(!Obj.From ? "Engine/Editor/Assets/Folder.png" : EditorUI::Instance->ObjectIcons.GetObjectIcon(Obj.From->TypeID));
 
 		bool HasChildren = Obj.Children.size();
 		bool IsCollapsed = false;
@@ -136,7 +141,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		Elem->button->OnClicked = [this, Obj]()
 			{
 				if (!input::IsKeyDown(input::Key::LSHIFT))
-					Viewport::Current->SelectedObjects.clear();
+					Viewport::Current->ClearSelected();
 
 				if (Obj.From)
 					Viewport::Current->SelectedObjects.insert(Obj.From);

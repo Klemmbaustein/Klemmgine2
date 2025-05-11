@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "DropdownMenu.h"
 #include "EditorUI.h"
 #include <kui/UI/UIBlurBackground.h>
@@ -83,4 +82,3 @@ void engine::editor::DropdownMenu::UpdateDropdowns()
 		Clear();
 	}
 }
-#endif

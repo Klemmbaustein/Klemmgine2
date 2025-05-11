@@ -1,13 +1,14 @@
 #ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
+#include <Editor/UI/Elements/Toolbar.h>
+#include <Engine/Objects/Components/MeshComponent.h>
+#include <Engine/Objects/SceneObject.h>
+#include <Engine/Subsystem/SceneSubsystem.h>
 #include <kui/Timer.h>
 #include <kui/UI/UIText.h>
-#include <Engine/Objects/SceneObject.h>
 #include <set>
-#include <Editor/UI/Elements/Toolbar.h>
 #include <stack>
-#include <Engine/Subsystem/SceneSubsystem.h>
 
 namespace engine::editor
 {
@@ -27,6 +28,7 @@ namespace engine::editor
 
 		void OnResized() override;
 		void RemoveSelected();
+		void ClearSelected();
 		void Update() override;
 		kui::UIBackground* ViewportBackground = nullptr;
 		std::set<SceneObject*> SelectedObjects;
@@ -54,6 +56,10 @@ namespace engine::editor
 		void UndoLast();
 
 	private:
+
+		void HighlightObject(SceneObject* Target, bool Highlighted);
+		void HighlightComponents(DrawableComponent* Target, bool Highlighted);
+
 		physics::HitResult RayAtCursor();
 
 		void UndoChange(Change& Target, Scene* Current);
@@ -62,8 +68,10 @@ namespace engine::editor
 
 		bool PolledForText = false;
 		bool Undoing = false;
+		bool SceneLoaded = false;
 
 		Toolbar* ViewportToolbar = nullptr;
+		MeshComponent* GizmoMesh = nullptr;
 
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;

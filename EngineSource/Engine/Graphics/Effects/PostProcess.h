@@ -20,6 +20,7 @@ namespace engine::graphics
 		uint32 Draw(Framebuffer* Buffer, Camera* Cam);
 		void OnBufferResized(uint32 Width, uint32 Height);
 
+		// Returns post process framebuffer and texture objects.
 		std::pair<uint32, uint32> NextBuffer();
 
 	private:

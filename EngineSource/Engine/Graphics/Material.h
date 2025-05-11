@@ -73,12 +73,12 @@ namespace engine::graphics
 		void Apply();
 		void ApplySimple(graphics::ShaderObject* With);
 		void VerifyUniforms();
+		void UpdateShader();
 		Material::Field* FindField(string Name, Field::Type Type);
 	private:
 		bool UseTexture = false;
 		size_t TextureField = SIZE_MAX;
 		bool IsDefault = false;
 		void SetToDefault();
-		void UpdateShader();
 	};
 }

@@ -185,7 +185,7 @@ void engine::editor::BuildWindow::Destroy()
 
 void engine::editor::BuildWindow::StartBuildForPlatform(BuildPlatform Platform, kui::UIScrollBox* ParentScrollBox)
 {
-	auto NewJob = Jobs.emplace_back(std::make_shared<BuildJob>());
+	auto& NewJob = Jobs.emplace_back(std::make_shared<BuildJob>());
 
 	UIBackground* bg = new UIBackground(false, 0, EditorUI::Theme.Background);
 

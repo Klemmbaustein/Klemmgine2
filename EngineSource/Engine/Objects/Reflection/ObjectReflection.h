@@ -6,6 +6,11 @@
 namespace engine
 {
 	class SceneObject;
+
+	/**
+	* * @def ENGINE_OBJECT(Condition, Description)
+
+	*/
 #define ENGINE_OBJECT(name, path) private: static ::engine::SceneObject* Internal_Reflect_CreateNewInst() { \
 	return reinterpret_cast<::engine::SceneObject*>(new name());\
 }\

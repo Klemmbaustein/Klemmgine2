@@ -7,6 +7,8 @@ uniform sampler2D u_texture;
 uniform bool u_useTexture = false;
 #param //!
 uniform vec3 u_color = vec3(1, 1, 1);
+#param //!
+uniform vec3 u_emissive = vec3(0, 0, 0);
 
 vec3 fragment()
 {
@@ -15,5 +17,5 @@ vec3 fragment()
 	if (pixelColor.w < 0.5)
 		discard;
 
-	return applyLighting(pixelColor.xyz * u_color);
+	return applyLighting(pixelColor.xyz * u_color) + u_emissive;
 }

@@ -7,6 +7,7 @@
 #include <Engine/Scene.h>
 #include <PropertyPanel.kui.hpp>
 #include <Editor/UI/Elements/VectorField.h>
+#include <Editor/UI/Elements/Checkbox.h>
 #include <Core/Log.h>
 #include <Editor/UI/Elements/AssetSelector.h>
 using namespace kui;
@@ -82,7 +83,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		/ 2.0);
 
 	bool Compact = PixelSize < 220;
-	float Size = UIBox::PixelSizeToScreenSize(kui::Vec2f(float(PixelSize - (Compact ? 10 : 90))), Background->GetParentWindow()).X;
+	float Size = UIBox::PixelSizeToScreenSize(kui::Vec2f(float(PixelSize - (Compact ? 10 : 100))), Background->GetParentWindow()).X;
 
 	auto CreateNewHeading = [this, ContentBox](string Title, bool HasPadding = true) -> PropertyHeaderElement*
 		{
@@ -190,10 +191,37 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::String:
 		{
 			auto* Ref = static_cast<ObjProperty<string>*>(i);
-			New->valueBox->AddChild((new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr))
+			auto* TextField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+
+			TextField->OnChanged = [Object, TextField, Ref]()
+			{
+				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = TextField->GetText();
+				if (Ref->OnChanged)
+					Ref->OnChanged();
+			};
+
+			New->valueBox->AddChild(TextField
 				->SetText(Ref->Value)
 				->SetTextSize(11_px)
 				->SetMinSize(kui::Vec2f(Size, 0)));
+			break;
+		}
+		case PropertyType::Bool:
+		{
+			auto* Ref = static_cast<ObjProperty<bool>*>(i);
+
+			auto* Checkbox = new UICheckbox(Ref->Value, nullptr);
+			Checkbox->OnClicked = [Object, Checkbox, Ref]()
+			{
+				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = Checkbox->Value;
+				if (Ref->OnChanged)
+					Ref->OnChanged();
+
+			};
+
+			New->valueBox->AddChild(Checkbox);
 			break;
 		}
 		default:

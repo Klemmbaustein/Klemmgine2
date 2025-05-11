@@ -90,7 +90,7 @@ void engine::editor::BuildProjectWinX64(BuildOptions Options)
 	}
 
 	if (BuildProjectExecuteCommand(
-		str::ReplaceChar(OutPath, '/', '\\') 
+		str::ReplaceChar(OutPath, '/', '\\')
 		+ "\\out\\win-x64\\bin\\ProjectCompiler.exe -out "
 		+ OutPath
 		+ "/win-x64"

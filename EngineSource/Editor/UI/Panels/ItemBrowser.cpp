@@ -7,6 +7,7 @@
 #include <Core/Log.h>
 #include <filesystem>
 using namespace kui;
+using namespace engine::editor;
 
 engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	: EditorPanel(Name, InternalName)
@@ -89,6 +90,14 @@ void engine::editor::ItemBrowser::Update()
 
 	if (input::IsRMBClicked && ScrollBoxHovered)
 	{
+		auto Selected = GetSelected();
+
+		if (Selected.size() > 1)
+		{
+			this->OnItemsRightClick(Win->Input.MousePosition);
+			return;
+		}
+
 		auto* Hovered = GetHoveredButton();
 
 		if (Hovered)
@@ -118,6 +127,25 @@ void engine::editor::ItemBrowser::UpdateItems()
 	CurrentItems = GetItems();
 	DisplayList();
 
+}
+
+std::vector<ItemBrowser::Item*> engine::editor::ItemBrowser::GetSelected()
+{
+	std::vector<Item*> Selected;
+
+	for (auto& [Item, _] : Buttons)
+	{
+		if (Item.Selected)
+		{
+			Selected.push_back(&Item);
+		}
+	}
+
+	return Selected;
+}
+
+void engine::editor::ItemBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
+{
 }
 
 void engine::editor::ItemBrowser::SetStatusText(string NewText)

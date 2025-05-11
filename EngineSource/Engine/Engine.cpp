@@ -11,7 +11,6 @@
 #include "Core/ThreadPool.h"
 #include "File/Resource.h"
 #include "Core/Error/EngineError.h"
-#include <Engine/Objects/PlayerObject.h>
 #include <kui/App.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <Core/LaunchArgs.h>
@@ -96,6 +95,20 @@ void Engine::Run()
 
 void Engine::LoadSubsystem(Subsystem* NewSubsystem)
 {
+	if (typeid(*NewSubsystem) == typeid(ConsoleSubsystem))
+	{
+		for (auto& i : LoadedSystems)
+		{
+			i->RegisterCommands(static_cast<ConsoleSubsystem*>(NewSubsystem));
+		}
+		return;
+	}
+
+	ConsoleSubsystem* ConsoleSys = GetSubsystem<ConsoleSubsystem>();
+	if (ConsoleSys)
+	{
+		NewSubsystem->RegisterCommands(ConsoleSys);
+	}
 }
 
 void engine::Engine::InitSystems()

@@ -28,6 +28,8 @@ namespace engine::editor
 
 		void OnChanged() override;
 
+		void CreateTextureField(kui::UIBox* Parent, graphics::Material::Field& Field);
+
 		bool RedrawNextFrame = false;
 		kui::UIBackground* Sidebar = nullptr;
 		kui::UIBackground* PreviewImage = nullptr;

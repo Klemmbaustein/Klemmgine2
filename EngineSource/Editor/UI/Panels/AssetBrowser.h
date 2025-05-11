@@ -11,6 +11,8 @@ namespace engine::editor
 		std::vector<Item> GetItems() override;
 		void Back() override;
 		void OnBackgroundRightClick(kui::Vec2f Position) override;
+		void OnItemsRightClick(kui::Vec2f Position) override;
+
 		string GetPathDisplayName() override;
 	};
 }

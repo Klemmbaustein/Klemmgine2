@@ -11,17 +11,16 @@ void engine::MeshComponent::Draw(graphics::Camera* From)
 {
 	auto Root = GetRootObject();
 
-
-	if (DrawnModel && DrawnModel->Drawable)
+	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
 		DrawBoundingBox = DrawnModel->Data->Bounds;
-		DrawnModel->Drawable->Draw(Root->GetScene(), WorldTransform, From, Materials);
+		DrawnModel->Drawable->Draw(Root ? Root->GetScene() : nullptr, WorldTransform, From, Materials);
 	}
 }
 
 void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 {
-	if (DrawnModel)
+	if (DrawnModel && (RootObject || ParentObject))
 	{
 		DrawnModel->Drawable->SimpleDraw(WorldTransform, With, Materials);
 	}
@@ -57,7 +56,7 @@ void engine::MeshComponent::Load(AssetRef From)
 			}
 		}
 
-		if (!AlreadyRegistered)
+		if (!AlreadyRegistered && (RootObject || ParentObject))
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
 }
@@ -80,7 +79,7 @@ void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 
 	Materials.clear();
 
-	if (RemoveDrawnComponent)
+	if (RemoveDrawnComponent && (RootObject || ParentObject))
 	{
 		GetRootObject()->GetScene()->RemoveDrawnComponent(this);
 	}

@@ -32,6 +32,8 @@ namespace engine::editor
 		void OnResized() override;
 		void UpdateItems();
 
+		std::vector<Item*> GetSelected();
+
 	protected:
 
 		std::vector<std::pair<Item, ItemBrowserButton*>> Buttons;
@@ -39,6 +41,7 @@ namespace engine::editor
 
 		virtual string GetPathDisplayName() = 0;
 		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
+		virtual void OnItemsRightClick(kui::Vec2f MousePosition);
 		virtual std::vector<Item> GetItems() = 0;
 		//virtual void OnItemDopped(EditorUI::Item);
 		virtual void Back() = 0;

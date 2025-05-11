@@ -44,47 +44,47 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 		{
 			Extension = "/dir/";
 			OnClick = [this, i]()
-				{
-					Path.append(i.path().filename().string() + "/");
-					ItemsScrollBox->GetScrollObject()->Scrolled = 0;
-					UpdateItems();
-				};
+			{
+				Path.append(i.path().filename().string() + "/");
+				ItemsScrollBox->GetScrollObject()->Scrolled = 0;
+				UpdateItems();
+			};
 		}
 		else if (Extension == "kts")
 		{
 			OnClick = [this, FilePath]()
-				{
-					if (Scene::AsyncLoads)
-						return;
-					delete Scene::GetMain();
-					subsystem::SceneSubsystem::Current->LoadSceneAsync(FilePath);
-					EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
-				};
+			{
+				if (Scene::AsyncLoads)
+					return;
+				delete Scene::GetMain();
+				subsystem::SceneSubsystem::Current->LoadSceneAsync(FilePath);
+				EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
+			};
 		}
 		else if (Extension == "kmdl")
 		{
 			OnClick = [this, FilePath]()
-				{
-					Viewport::Current->AddChild(new ModelEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
-				};
+			{
+				Viewport::Current->AddChild(new ModelEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
+			};
 		}
 		else if (Extension == "kmt")
 		{
 			OnClick = [this, FilePath]()
-				{
-					Viewport::Current->AddChild(new MaterialEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
-				};
+			{
+				Viewport::Current->AddChild(new MaterialEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
+			};
 		}
 		else if (Extension == "png")
 		{
 			OnClick = [this, FilePath]()
-				{
+			{
 #if WINDOWS
-					platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
+				platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
 #else
-					platform::Open(FilePath);
+				platform::Open(FilePath);
 #endif
-				};
+			};
 		}
 
 		auto IconAndColor = EditorUI::GetExtIconAndColor(i.is_directory() ? "dir/" : Extension);
@@ -117,7 +117,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 					},
 				}
 				}, kui::Window::GetActiveWindow()->Input.MousePosition);
-			};
+		};
 
 		Out.push_back(Item{
 			.Name = file::FileNameWithoutExt(i.path().filename().string()),
@@ -131,13 +131,13 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 	}
 
 	std::sort(Out.begin(), Out.end(), [](const Item& a, const Item& b)
-		{
-			if (a.IsDirectory && !b.IsDirectory)
-				return true;
-			if (!a.IsDirectory && b.IsDirectory)
-				return false;
-			return str::Lower(a.Name) < str::Lower(b.Name);
-		});
+	{
+		if (a.IsDirectory && !b.IsDirectory)
+			return true;
+		if (!a.IsDirectory && b.IsDirectory)
+			return false;
+		return str::Lower(a.Name) < str::Lower(b.Name);
+	});
 
 	SetStatusText(str::Format("%i Items", int(Out.size())));
 
@@ -164,15 +164,15 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 	string Extension = str::Lower(File.substr(File.find_last_of(".") + 1));
 
 	auto Contains = [](string Value, const std::vector<string>& Values) -> bool
+	{
+		bool Found = false;
+		std::ranges::for_each(Values, [&Value, &Found](const string& Current)
 		{
-			bool Found = false;
-			std::ranges::for_each(Values, [&Value, &Found](const string& Current)
-				{
-					if (Current == Value)
-						Found = true;
-				});
-			return Found;
-		};
+			if (Current == Value)
+				Found = true;
+		});
+		return Found;
+	};
 
 	if (Contains(Extension, ModelExtensions))
 	{
@@ -192,8 +192,8 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 			resource::ScanForAssets();
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
 				Browser->UpdateItems();
-				});
 			});
+		});
 	}
 	else
 	{
@@ -202,8 +202,8 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 			resource::ScanForAssets();
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
 				Browser->UpdateItems();
-				});
 			});
+		});
 	}
 }
 
@@ -282,6 +282,26 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		},
 		Position);
 }
+
+void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
+{
+	new DropdownMenu({
+	DropdownMenu::Option{
+		.Name = "Delete",
+		.OnClicked = [this]()
+		{
+			auto Selected = GetSelected();
+			for (Item* i : Selected)
+			{
+				std::filesystem::remove_all(i->Path);
+			}
+			resource::ScanForAssets();
+			UpdateItems();
+		},
+	} }, MousePosition);
+
+}
+
 engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 {
 	return "Assets/" + Path;

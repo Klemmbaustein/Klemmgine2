@@ -1,5 +1,6 @@
 #ifdef EDITOR
 #include "ClassBrowser.h"
+#include <Editor/UI/EditorUI.h>
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 
 engine::editor::ClassBrowser::ClassBrowser()
@@ -19,6 +20,8 @@ std::vector<engine::editor::ItemBrowser::Item> engine::editor::ClassBrowser::Get
 	{
 		Out.push_back(Item{
 			.Name = i.second.Name,
+			.Color = 0.5,
+			.Image = EditorUI::Instance->ObjectIcons.GetObjectIcon(i.second.TypeID),
 			.Type = i.second.TypeID,
 			});
 	}
@@ -32,6 +35,6 @@ void engine::editor::ClassBrowser::Back()
 
 engine::string engine::editor::ClassBrowser::GetPathDisplayName()
 {
-	return "Classes::" + str::ReplaceChar(Path, '/', '.');
+	return "Classes/" + Path;
 }
 #endif

@@ -21,17 +21,9 @@ using namespace kui;
 using namespace engine::subsystem;
 
 static void GLAPIENTRY MessageCallback(
-	GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam
-)
+	GLenum source, GLenum type, GLuint id, GLenum severity,
+	GLsizei length, const GLchar* message, const void* userParam)
 {
-	using namespace engine::subsystem;
-
 	if (type == GL_DEBUG_TYPE_ERROR
 		|| type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR
 		|| type == GL_DEBUG_TYPE_PORTABILITY)
@@ -55,30 +47,16 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 {
 	Current = this;
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
-		{
-			app::MessageBox("kui error: " + Message, "Error", Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
-			Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
-		});
+	{
+		app::MessageBox("kui error: " + Message, "Error", Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
+		Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
+	});
 
 	Print("Initializing SDL", LogType::Note);
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
 	Print("Creating main window", LogType::Note);
 	UIManager::UseAlphaBuffer = true;
-
-	Vec2ui WindowSize = Window::SIZE_DEFAULT;
-
-	auto SizeArg = launchArgs::GetArg("size");
-	if (SizeArg && SizeArg->size() == 2)
-	{
-		WindowSize = Vec2ui(SizeArg->at(0).AsInt(), SizeArg->at(1).AsInt());
-
-		if (WindowSize.X < 600 || WindowSize.Y < 400)
-		{
-			Print("Invalid window size, setting to default: " + WindowSize.ToString(), LogType::Warning);
-			Vec2ui WindowSize = Window::SIZE_DEFAULT;
-		}
-	}
 
 	auto VersionArg = launchArgs::GetArg("gl");
 
@@ -102,15 +80,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		Print(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
 	}
 
-#define STR_INNER(x) # x
-#define STR(x) STR_INNER(x)
-	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", STR(ENGINE_COMPILER_ID), "4.3");
-
-#ifdef EDITOR
-	Title.append(" Editor");
-#endif
-
-	MainWindow = new Window(Title, Window::WindowFlag::Resizable, Window::POSITION_CENTERED, WindowSize);
+	MainWindow = new Window(GetWindowTitle(), Window::WindowFlag::Resizable, Window::POSITION_CENTERED, GetWindowSize());
 	MainWindow->SetMinSize(Vec2ui(600, 400));
 
 	if (openGL::GetGLVersion() < openGL::Version::GL430)
@@ -119,9 +89,9 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	}
 
 	MainWindow->OnResizedCallback = [this](Window*)
-		{
-			OnResized();
-		};
+	{
+		OnResized();
+	};
 
 	MainWindow->UI.DrawToWindow = false;
 
@@ -133,9 +103,9 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	ModulesTime.End();
 
 	MainWindow->Input.RegisterOnKeyDownCallback(Key::F11, [](Window* w)
-		{
-			w->SetMaximized(!w->GetWindowFullScreen());
-		});
+	{
+		w->SetMaximized(!w->GetWindowFullScreen());
+	});
 
 	string WindowsFontPath = "file:C:/Windows/Fonts/seguisb.ttf";
 	if (resource::FileExists(WindowsFontPath))
@@ -149,50 +119,59 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		MainWindow->Markup.SetDefaultFont(DefaultFont);
 		MainWindow->Markup.AddFont("mono", DefaultFont);
 	}
+}
 
-	ConsoleSubsystem* ConsoleSys = Engine::GetSubsystem<ConsoleSubsystem>();
-	if (ConsoleSys)
+engine::string engine::subsystem::VideoSubsystem::GetWindowTitle()
+{
+#define STR_INNER(x) # x
+#define STR(x) STR_INNER(x)
+	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", STR(ENGINE_COMPILER_ID), "4.3");
+
+#ifdef EDITOR
+	Title.append(" Editor");
+#endif
+	return Title;
+}
+
+kui::Vec2ui engine::subsystem::VideoSubsystem::GetWindowSize()
+{
+	Vec2ui WindowSize = Window::SIZE_DEFAULT;
+
+	auto SizeArg = launchArgs::GetArg("size");
+	if (SizeArg && SizeArg->size() == 2)
 	{
-		ConsoleSys->AddCommand(console::Command{
-			.Name = "reload_shaders",
-			.Args = {},
-			.OnCalled = [this](const console::Command::CallContext& ctx) {
-				Print("Reloading shaders...");
-				Shaders.ReloadAll();
-			}
-			});
-		ConsoleSys->AddCommand(console::Command{
-			.Name = "ui_scale",
-			.Args = { console::Command::Argument{
-				.Name = "scale",
-				.Required = true,
-			}, },
-			.OnCalled = [this](const console::Command::CallContext& ctx) {
-				try
-				{
-				MainWindow->DPIMultiplier = std::stof(ctx.ProvidedArguments.at(0));
-				}
-				catch (std::invalid_argument&)
-				{
-					ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
-				}
-				catch (std::out_of_range&)
-				{
-					ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
-				}
-			}
-			});
+		WindowSize = Vec2ui(SizeArg->at(0).AsInt(), SizeArg->at(1).AsInt());
 
-		ConsoleSys->AddCommand(console::Command{
-		.Name = "time_scale",
+		if (WindowSize.X < 600 || WindowSize.Y < 400)
+		{
+			Print("Invalid window size, setting to default: " + WindowSize.ToString(), LogType::Warning);
+			Vec2ui WindowSize = Window::SIZE_DEFAULT;
+		}
+	}
+
+	return WindowSize;
+}
+
+void engine::subsystem::VideoSubsystem::RegisterCommands(ConsoleSubsystem* System)
+{
+	System->AddCommand(console::Command{
+		.Name = "reload_shaders",
+		.Args = {},
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
+			Print("Reloading shaders...");
+			Shaders.ReloadAll();
+		} });
+
+	System->AddCommand(console::Command{
+		.Name = "ui_scale",
 		.Args = { console::Command::Argument{
-			.Name = "value",
+			.Name = "scale",
 			.Required = true,
 		}, },
 		.OnCalled = [this](const console::Command::CallContext& ctx) {
 			try
 			{
-				TimeScale = std::stof(ctx.ProvidedArguments.at(0));
+				MainWindow->DPIMultiplier = std::stof(ctx.ProvidedArguments.at(0));
 			}
 			catch (std::invalid_argument&)
 			{
@@ -203,7 +182,27 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 				ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
 			}
 		} });
-	}
+
+	System->AddCommand(console::Command{
+	.Name = "time_scale",
+	.Args = { console::Command::Argument{
+		.Name = "value",
+		.Required = true,
+	}, },
+	.OnCalled = [this](const console::Command::CallContext& ctx) {
+		try
+		{
+			TimeScale = std::stof(ctx.ProvidedArguments.at(0));
+		}
+		catch (std::invalid_argument&)
+		{
+			ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+		}
+		catch (std::out_of_range&)
+		{
+			ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+		}
+	} });
 }
 
 engine::subsystem::VideoSubsystem::~VideoSubsystem()

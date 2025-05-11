@@ -1,10 +1,7 @@
 #ifdef EDITOR
 #include "AssetSelector.h"
 #include <kui/Window.h>
-#include <Core/Log.h>
 #include <Engine/File/Resource.h>
-#include <Core/Error/EngineError.h>
-#include <Core/Error/EngineAssert.h>
 #include <Editor/UI/EditorUI.h>
 #include <Core/File/FileUtil.h>
 using namespace kui;
@@ -135,8 +132,12 @@ void engine::editor::AssetSelector::UpdateSelection()
 void engine::editor::AssetSelector::UpdateSearchSize()
 {
 	float VerticalSize = (200_px).GetScreen().Y;
-	SearchBackground->SetMinSize(SizeVec(AssetPath->GetUsedSize().X, 200_px));
-	SearchBackground->SetMaxSize(SizeVec(AssetPath->GetUsedSize().X, 200_px));
+	float ScreenPos = AssetPath->GetScreenPosition().Y;
+
+	VerticalSize = std::min(1 + ScreenPos, VerticalSize);
+
+	SearchBackground->SetMinSize(SizeVec(AssetPath->GetUsedSize().X, VerticalSize));
+	SearchBackground->SetMaxSize(SizeVec(AssetPath->GetUsedSize().X, VerticalSize));
 	SearchBackground->SetPosition(AssetPath->GetScreenPosition() - Vec2f(0, VerticalSize));
 }
 

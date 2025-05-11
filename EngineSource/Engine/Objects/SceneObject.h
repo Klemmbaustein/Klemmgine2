@@ -30,6 +30,10 @@ namespace engine
 		{
 			return OriginScene;
 		}
+		const std::vector<ObjectComponent*>& GetChildComponents() const
+		{
+			return this->ChildComponents;
+		}
 
 		std::vector<ObjPropertyBase*> Properties;
 
@@ -43,6 +47,7 @@ namespace engine
 		void Destroy();
 		void CheckTransform();
 		void CheckComponentTransform();
+
 #endif
 
 	protected:
@@ -52,7 +57,6 @@ namespace engine
 		}
 
 		SceneObject(const SceneObject&) = delete;
-
 
 		virtual void Begin() {}
 		virtual void OnDestroyed() {}

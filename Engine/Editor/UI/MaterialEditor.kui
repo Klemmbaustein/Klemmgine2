@@ -17,7 +17,7 @@ element MaterialPropertyElement
 		{
 			text = Description;
 			size = 10px;
-			color = Color_BackgroundHighlight;
+			color = Color_DarkText;
 			wrap = 125px;
 		}
 		width = 125px;

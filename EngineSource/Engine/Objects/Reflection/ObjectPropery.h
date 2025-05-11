@@ -11,7 +11,7 @@ namespace engine
 	/**
 	* @brief
 	* A type that a reflected object property can have.
-	* 
+	*
 	* Used by ObjProperty to define it's type.
 	*/
 	enum class PropertyType
@@ -20,16 +20,17 @@ namespace engine
 		Float,
 		/**
 		* A string property.
-		* 
+		*
 		* @see engine::string
 		*/
 		String,
 		/**
 		* An asset reference property.
-		* 
+		*
 		* @see engine::AssetRef
 		*/
 		AssetRef,
+		Bool,
 		/// Unknown property. Unknown properties can still be serialized and de-serialized, but can't be shown in the editor.
 		Unknown,
 	};
@@ -47,9 +48,9 @@ namespace engine
 	/**
 	* @brief
 	* An object property with an unkown serializable type.
-	* 
+	*
 	* T must derive from ISerializable.
-	* 
+	*
 	* @see ISerializable
 	*/
 	template<typename T>
@@ -102,6 +103,23 @@ namespace engine
 		void DeSerialize(SerializedValue* From) override;
 
 		float Value;
+	};
+
+	template<>
+	struct ObjProperty<bool> : public ObjPropertyBase
+	{
+		ObjProperty(string Name, bool Value, SceneObject* Obj);
+
+		ObjProperty<bool>& operator=(const bool& Target)
+		{
+			this->Value = Target;
+			return *this;
+		}
+
+		SerializedValue Serialize() override;
+		void DeSerialize(SerializedValue* From) override;
+
+		bool Value;
 	};
 
 	template<>

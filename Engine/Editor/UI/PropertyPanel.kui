@@ -20,8 +20,8 @@ element PropertyEntryElement
 			wrap = 80px;
 			downPadding = CompactTextPadding;
 		}
-		minSize = (80, 0)px;
-		maxSize = (80, 200)px;
+		minSize = (90, 0)px;
+		maxSize = (90, 200)px;
 		horizontalAlign = reverse;
 	}
 

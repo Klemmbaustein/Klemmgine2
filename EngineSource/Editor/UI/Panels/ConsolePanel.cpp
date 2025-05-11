@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "ConsolePanel.h"
 #include <Core/Log.h>
 #include <Editor/UI/EditorUI.h>
@@ -90,18 +89,20 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 		Element->logBox->GetChildren()[LastLogSize - 1]->SetPadding(0_px, 0_px, 5_px, 0_px);
 	}
 
+	auto* Colors = EditorUI::Theme.IsLight ? &LogColorValuesLight : &LogColorValues;
+
 	for (size_t i = LastLogSize; i < LogMessages.size(); i++)
 	{
 		std::vector<TextSegment> Segments;
 
 		for (const Log::LogPrefix& i : LogMessages[i].Prefixes)
 		{
-			Segments.push_back(TextSegment("[", LogColorValues[Log::LogColor::Default]));
-			Segments.push_back(TextSegment(i.Text, LogColorValues[i.Color]));
-			Segments.push_back(TextSegment("]: ", LogColorValues[Log::LogColor::Default]));
+			Segments.push_back(TextSegment("[", Colors->at(Log::LogColor::Default)));
+			Segments.push_back(TextSegment(i.Text, Colors->at(i.Color)));
+			Segments.push_back(TextSegment("]: ", Colors->at(Log::LogColor::Default)));
 		}
 
-		Segments.push_back(TextSegment(LogMessages[i].Message, LogColorValues[LogMessages[i].Color]));
+		Segments.push_back(TextSegment(LogMessages[i].Message, Colors->at(LogMessages[i].Color)));
 
 		UIText* txt = new UIText(10_px, Segments, EditorUI::MonospaceFont);
 
@@ -121,4 +122,3 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 	Element->logBox->GetScrollObject()->Scrolled = Element->logBox->GetScrollObject()->MaxScroll;
 	Element->logBox->RedrawElement();
 }
-#endif

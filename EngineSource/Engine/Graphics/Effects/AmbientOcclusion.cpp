@@ -95,7 +95,7 @@ uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* Wit
 	uint32 AoTexture = DrawBuffer(AoBuffer, this->AoWidth, this->AoHeight);
 
 	auto ResultBuffer = With->NextBuffer();
-	
+
 	glViewport(0, 0, Width, Height);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Texture);

@@ -5,12 +5,14 @@
 
 namespace engine::subsystem
 {
+	class ConsoleSubsystem;
+
 	/**
 	* @brief
 	* A subsystem of the engine.
-	* 
+	*
 	* Each subsystem can be loaded and unloaded, and might depend on other subsystems.
-	* 
+	*
 	* @see Engine
 	*/
 	class Subsystem
@@ -32,10 +34,10 @@ namespace engine::subsystem
 		/**
 		* @brief
 		* Creates a new subsystem.
-		* 
+		*
 		* @param Name
 		* The name of this subsystem. All log messages of this subsystem will have this string added as a prefix.
-		* 
+		*
 		* @param Color
 		* The color of this subsystem. This is the color of the prefix of the log messages of this subsystem.
 		*/
@@ -44,6 +46,8 @@ namespace engine::subsystem
 
 		virtual void Update();
 		virtual void RenderUpdate();
+
+		virtual void RegisterCommands(ConsoleSubsystem* System);
 
 		enum class LogType
 		{

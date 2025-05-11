@@ -97,19 +97,26 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 	std::set<fs::path> out;
 	if (FilePath.extension() == ".kts")
 	{
-		std::fstream SceneFile = std::fstream(FilePath, std::ios::in);
-		SerializedValue Scene = TextSerializer::FromStream(SceneFile);
-
-		auto& Objects = Scene.At("objects").GetArray();
-		for (SerializedValue& obj : Objects)
+		try
 		{
-			auto& Properties = obj.At("properties").GetObject();
-			for (auto& property : Properties)
+			std::fstream SceneFile = std::fstream(FilePath, std::ios::in);
+			SerializedValue Scene = TextSerializer::FromStream(SceneFile);
+
+			auto& Objects = Scene.At("objects").GetArray();
+			for (SerializedValue& obj : Objects)
 			{
-				string Path = property.Value.GetString();
-				if (fs::exists(Path))
-					out.insert(fs::path(Path));
+				auto& Properties = obj.At("properties").GetObject();
+				for (auto& property : Properties)
+				{
+					string Path = property.Value.GetString();
+					if (fs::exists(Path))
+						out.insert(fs::path(Path));
+				}
 			}
+		}
+		catch (SerializeReadException e)
+		{
+			Log::Warn(str::Format("%s: %s", FilePath.c_str(), e.what()));
 		}
 	}
 	if (FilePath.extension() == ".kmdl")

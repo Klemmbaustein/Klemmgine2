@@ -1,4 +1,5 @@
 #include "SceneObject.h"
+#include "SceneObject.h"
 #include "MeshObject.h"
 #include "PlayerObject.h"
 #include <Engine/Scene.h>
@@ -72,9 +73,14 @@ void engine::SceneObject::DeSerialize(SerializedValue* From)
 	{
 		for (auto& prop : Properties)
 		{
+			if (prop->Type != PropertyType::AssetRef)
+			{
+				continue;
+			}
+
 			ObjProperty<AssetRef>* Ref = dynamic_cast<ObjProperty<AssetRef>*>(prop);
 
-			if (!PreLoaded.contains(prop->Name))
+			if (Ref && !PreLoaded.contains(prop->Name))
 			{
 				OriginScene->PreLoadAsset(Ref->Value);
 			}

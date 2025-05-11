@@ -35,6 +35,9 @@ endif()
 
 if(MSVC)
 	# Allow multi processor compilation with MSVC
+	if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 17 2022")
+		add_compile_options("/MP")
+	endif()
 	add_compile_options("/FS")
 endif()
 

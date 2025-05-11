@@ -14,9 +14,9 @@ float getAo()
 	vec2 texelSize = 1.0 / vec2(textureSize(u_aoTexture, 0));
 	int sampled = 0;
 	float result = 0;
-	for (int x = -1; x < 1; ++x) 
+	for (int x = -1; x < 1; ++x)
 	{
-		for (int y = -1; y < 1; ++y) 
+		for (int y = -1; y < 1; ++y)
 		{
 			vec2 offset = vec2(float(x), float(y)) * texelSize;
 			vec2 aoValue = texture(u_aoTexture, v_texcoords + offset).xy;
@@ -42,5 +42,4 @@ void main()
 	float aoStrength = getAo();
 
 	f_color = vec4(texture(u_mainTexture, v_texcoords).xyz * vec3(aoStrength), 1.0);
-	//f_color.xyz = vec3(abs(difference));
 }

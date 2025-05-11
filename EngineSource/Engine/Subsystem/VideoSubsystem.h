@@ -16,6 +16,8 @@ namespace engine::subsystem
 		virtual void Update() override;
 		virtual void RenderUpdate() override;
 
+		virtual void RegisterCommands(ConsoleSubsystem* System) override;
+
 		kui::Window* MainWindow = nullptr;
 		kui::Font* DefaultFont = nullptr;
 		graphics::ShaderLoader Shaders;
@@ -26,6 +28,8 @@ namespace engine::subsystem
 		static VideoSubsystem* Current;
 
 		void OnResized();
-
+	private:
+		string GetWindowTitle();
+		kui::Vec2ui GetWindowSize();
 	};
 }

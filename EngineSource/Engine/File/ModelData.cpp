@@ -158,7 +158,7 @@ engine::SerializedValue engine::ModelData::Mesh::Serialize()
 	return std::vector{
 		SerializedData("vrt", OutVertices),
 		SerializedData("ind", OutIndices),
-		SerializedData("mat", file::FileNameWithoutExt(Material))
+		SerializedData("mat", Material)
 	};
 }
 

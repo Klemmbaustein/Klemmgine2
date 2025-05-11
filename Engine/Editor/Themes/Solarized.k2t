@@ -1,0 +1,16 @@
+{
+	"name": str = "Dark";
+	"colors": obj = {
+		"text": vec3 = <0.84, 0.86, 0.86>;
+		"darkText": vec3 = <0.58, 0.63, 0.63>;
+		"background": vec3 = <0.03, 0.21, 0.26>;
+		"darkBackground": vec3 = <0, 0.17, 0.21>;
+		"darkBackground2": vec3 = <0, 0.17, 0.21>;
+		"lightBackground": vec3 = <0, 0.17, 0.21>;
+		"backgroundHighlight": vec3 = <0.4, 0.48, 0.51>;
+		"highlight1": vec3 = <0.93, 0.91, 0.84>;
+		"highlightDark": vec3 = <0.35, 0.43, 0.46>;
+		"highlight2": vec3 = <0.86, 0.2, 0.18>;
+		"highlightText": vec3 = <0, 0.17, 0.21>;
+	};
+}

@@ -1,21 +1,21 @@
-#ifdef EDITOR
-#include "EditorUI.h"
-#include <Engine/Engine.h>
-#include <Engine/Input.h>
-#include <Engine/MainThread.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
 #include "DropdownMenu.h"
-#include <filesystem>
-#include <fstream>
-#include "Windows/BuildWindow.h"
+#include "EditorUI.h"
 #include "Elements/DroppableBox.h"
-#include "Panels/Viewport.h"
 #include "Panels/AssetBrowser.h"
 #include "Panels/ClassBrowser.h"
 #include "Panels/ConsolePanel.h"
 #include "Panels/MessagePanel.h"
 #include "Panels/ObjectListPanel.h"
 #include "Panels/PropertyPanel.h"
+#include "Panels/Viewport.h"
+#include "Windows/BuildWindow.h"
+#include <Engine/Engine.h>
+#include <Engine/Input.h>
+#include <Engine/MainThread.h>
+#include <Engine/Objects/MeshObject.h>
+#include <Engine/Subsystem/VideoSubsystem.h>
+#include <filesystem>
+#include <fstream>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 using namespace engine::editor;
@@ -92,9 +92,9 @@ void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Ty
 	else
 	{
 		thread::ExecuteOnMainThread([NewMessage, Type]()
-			{
-				SetStatusMainThread(NewMessage, Type);
-			});
+		{
+			SetStatusMainThread(NewMessage, Type);
+		});
 	}
 }
 
@@ -114,6 +114,14 @@ engine::editor::EditorUI::EditorUI()
 	using namespace subsystem;
 
 	Instance = this;
+
+	//Theme.LoadFromFile("Light");
+
+	UIScrollBox::BackgroundColor = Theme.LightBackground;
+	UIScrollBox::BackgroundBorderColor = Theme.Background;
+	UIScrollBox::ScrollBarColor = Theme.DarkText;
+
+	ObjectIcons.AddObjectIcon("Engine/Editor/Assets/Model.png", MeshObject::ObjectType);
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	VideoSystem->OnResizedCallbacks.insert({ this, [this](kui::Vec2ui NewSize)
@@ -149,7 +157,9 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("Build Project", []() {
 				new BuildWindow();
 			}),
-			DropdownMenu::Option("Exit"),
+			DropdownMenu::Option("Exit", []() {
+				Engine::Instance->ShouldQuit = true;
+			}),
 		});
 
 	AddMenuBarItem("Edit",
@@ -256,6 +266,7 @@ engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, s
 void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
 {
 	Target->Markup.SetGlobal("Color_Text", Theme.Text);
+	Target->Markup.SetGlobal("Color_DarkText", Theme.DarkText);
 	Target->Markup.SetGlobal("Color_Background", Theme.Background);
 	Target->Markup.SetGlobal("Color_DarkBackground", Theme.DarkBackground);
 	Target->Markup.SetGlobal("Color_DarkBackground2", Theme.DarkBackground2);
@@ -328,10 +339,8 @@ void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<Drop
 	}
 
 	btn->button->OnClicked = [btn, DropdownOptions]()
-		{
-			new DropdownMenu(DropdownOptions, btn->GetPosition());
-		};
+	{
+		new DropdownMenu(DropdownOptions, btn->GetPosition());
+	};
 	MenuBar->AddChild(btn);
 }
-
-#endif

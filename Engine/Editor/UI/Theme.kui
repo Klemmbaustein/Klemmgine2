@@ -1,4 +1,5 @@
 global Color_Text = 1;
+global Color_DarkText = 0.85;
 global Color_Background = 0.1;
 global Color_DarkBackground = 0;
 global Color_DarkBackground2 = 0.05;

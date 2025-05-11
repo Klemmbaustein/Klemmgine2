@@ -16,6 +16,9 @@ namespace engine
 		MeshComponent* Mesh = nullptr;
 		CollisionComponent* Collider = nullptr;
 
+		ObjProperty<bool> CastShadow = ObjProperty<bool>("Shadow", true, this);
+		ObjProperty<bool> LoadCollision = ObjProperty<bool>("Collision", true, this);
+
 		void LoadMesh(AssetRef File);
 
 		void Begin() override;

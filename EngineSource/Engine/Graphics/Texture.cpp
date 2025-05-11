@@ -132,10 +132,26 @@ uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uin
 
 	GLint Filter = LoadInfo.Filter == TextureOptions::Linear ? GL_LINEAR : GL_NEAREST;
 
+	GLint WrapMode = GL_CLAMP_TO_BORDER;
+
+	switch (LoadInfo.TextureBorders)
+	{
+	case TextureOptions::Border:
+		break;
+	case TextureOptions::Repeat:
+		WrapMode = GL_REPEAT;
+		break;
+	case TextureOptions::Clamp:
+		WrapMode = GL_CLAMP_TO_EDGE;
+		break;
+	default:
+		break;
+	}
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Filter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WrapMode);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WrapMode);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei)Width, (GLsizei)Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels);
 	return TextureID;

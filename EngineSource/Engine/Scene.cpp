@@ -118,22 +118,38 @@ void engine::Scene::Draw()
 	}
 
 	Buffer->Bind();
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_STENCIL_TEST);
 	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
+	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+	glClearColor(0, 0, 0, 1);
+	glStencilMask(0xFF);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glStencilMask(0);
+	glStencilFunc(GL_GEQUAL, 1, 0xFF);
 
 	{
+		bool LastDrawStencil = false;
 		std::unique_lock g{ DrawSortMutex };
 
 		for (DrawableComponent* i : DrawnComponents)
 		{
+			if (i->DrawStencil && !LastDrawStencil)
+			{
+				glStencilMask(1);
+				LastDrawStencil = true;
+			}
+			else if (!i->DrawStencil && LastDrawStencil)
+			{
+				glStencilMask(0);
+				LastDrawStencil = false;
+			}
 			i->Draw(UsedCamera);
 		}
 	}
 
 	this->SceneTexture = PostProcess.Draw(Buffer, this->UsedCamera);
-
+	glDisable(GL_STENCIL_TEST);
 	glDisable(GL_CULL_FACE);
 	StartSorting();
 }

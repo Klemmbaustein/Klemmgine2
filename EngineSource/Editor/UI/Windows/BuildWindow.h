@@ -49,7 +49,7 @@ namespace engine::editor
 		};
 
 		void StartBuildForPlatform(BuildPlatform Platform, kui::UIScrollBox* ParentScrollBox);
-		
+
 		std::vector<std::shared_ptr<BuildJob>> Jobs;
 
 		void AddBuildHeader(string Message, kui::UIBox* To);

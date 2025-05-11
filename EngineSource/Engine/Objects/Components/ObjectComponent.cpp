@@ -59,6 +59,8 @@ SceneObject* engine::ObjectComponent::GetRootObject()
 {
 	if (ParentObject)
 		return ParentObject;
+	if (!ParentComponent)
+		return nullptr;
 	return ParentComponent->GetRootObject();
 }
 
@@ -91,8 +93,7 @@ Transform engine::ObjectComponent::GetParentTransform() const
 		return ParentObject->ObjectTransform;
 	if (ParentComponent)
 		return ParentComponent->WorldTransform;
-	ENGINE_UNREACHABLE();
-	return WorldTransform;
+	return Transform();
 }
 
 void engine::ObjectComponent::UpdateLogic()

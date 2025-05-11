@@ -22,6 +22,10 @@ void engine::MeshObject::Begin()
 		LoadMesh(ModelName.Value);
 	};
 	ModelName.OnChanged();
+
+	CastShadow.OnChanged = [this]() {
+
+	};
 }
 
 void engine::MeshObject::OnDestroyed()

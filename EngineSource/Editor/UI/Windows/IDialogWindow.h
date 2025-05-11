@@ -18,9 +18,8 @@ namespace engine::editor
 
 		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size);
 
-
 		virtual void Begin() override;
-		
+
 	protected:
 
 		void SetButtons(std::vector<Option> Options);
