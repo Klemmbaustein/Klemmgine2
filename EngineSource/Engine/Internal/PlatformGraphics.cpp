@@ -49,7 +49,7 @@ void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 
 	if (Flags & int(kui::Window::WindowFlag::Popup))
 	{
-		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION | WS_THICKFRAME);
+		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION);
 	}
 }
 
