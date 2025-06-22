@@ -12,6 +12,7 @@ namespace engine::editor
 		struct Option
 		{
 			string Name;
+			string Icon;
 			std::function<void()> OnClicked;
 			bool Separator = false;
 		};

@@ -12,18 +12,15 @@ namespace engine::graphics
 		CascadedShadows();
 
 		void Init();
-
 		void Update(Camera* From);
-
 		uint32 Draw(std::vector<DrawableComponent*> Components);
+		void BindUniforms(graphics::ShaderObject* Target) const;
 
 		Vector3 LightDirection = Vector3(1, 4, 1).Normalize();
 
 		static uint32 LightDepthMaps;
 
 		bool Enabled = false;
-
-		void BindUniforms(graphics::ShaderObject* Target) const;
 
 	private:
 		float BiasModifier = 0;

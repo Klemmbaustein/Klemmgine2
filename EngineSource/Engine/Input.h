@@ -273,8 +273,9 @@ namespace engine::input
 	};
 
 	/**
-	* @brief
-	*/
+	 * @brief
+	 * Input key types, based on the SDL key enum
+	 */
 	enum class Key
 	{
 		UNKNOWN = 0,
@@ -542,7 +543,19 @@ namespace engine::input
 		ENDCALL = TO_KEYCODE(Key_Scancode::SCANCODE_ENDCALL)
 	};
 
+	/**
+	 * @brief
+	 * Value controlling if the mouse cursor should be visible.
+	 *
+	 * If this is true, the mouse cursor will be shown on the window, and MouseMovement will not be updated.
+	 * If this is false, the mouse cursor will not be shown on the window and MouseMovement will be updated.
+	 */
 	extern bool ShowMouseCursor;
+
+	/**
+	 * @brief
+	 * The mouse movement that happened this frame.
+	 */
 	extern Vector2 MouseMovement;
 
 	extern bool IsLMBDown;
@@ -550,5 +563,13 @@ namespace engine::input
 	extern bool IsRMBDown;
 	extern bool IsRMBClicked;
 
+	/**
+	 * @brief
+	 * Checks if a key is pressed.
+	 * @param k
+	 * The key to check.
+	 * @return
+	 * True if the key is currently being pressed, false if not.
+	 */
 	bool IsKeyDown(Key k);
 }

@@ -5,34 +5,48 @@ element ItemBrowserHeading
 
 	width = 100%;
 	orientation = vertical;
-	child UIBox
+
+	child UIBox container
 	{
 		width = 100%;
 		orientation = horizontal;
-		verticalAlign = centered;
-		child UIButton backButton
+		child UIBox pathButtons
 		{
-			size = 20px;
-			padding = 6px;
-			color = Color_Text;
-			image = "Engine/Editor/Assets/ExitFolder.png"
+			width = 100%;
+			orientation = horizontal;
+			verticalAlign = centered;
+			child UIButton backButton
+			{
+				size = 20px;
+				padding = 6px;
+				color = Color_Text;
+				image = "Engine/Editor/Assets/ExitFolder.png"
+			}
+			child UIText
+			{
+				size = 12px;
+				color = Color_Text;
+				padding = 6px;
+				leftPadding = 0;
+				text = PathText;
+				wrap = PathWrapping;
+				widthOverride = PathWrapping;
+			}
+
+			child UIButton optionsButton
+			{
+				size = 12px;
+				image = "Engine/Editor/Assets/DownArrow.png";
+			}
 		}
-		child UIText
+
+		child EditorTextField searchBox
 		{
-			size = 12px;
-			color = Color_Text;
-			padding = 6px;
-			leftPadding = 0;
-			text = PathText;
-			wrap = PathWrapping;
+			HintText = "Search";
+			Image = "Engine/Editor/Assets/Search.png";
+			Size = 200px;
+			padding = 5px;
 		}
-	}
-	child EditorTextField searchBox
-	{
-		HintText = "Search";
-		Image = "Engine/Editor/Assets/Search.png";
-		Size = 200px;
-		padding = 5px;
 	}
 
 	child UIBackground
@@ -51,19 +65,20 @@ element ItemBrowserButton
 	var BackgroundColor = 0.1;
 	var Image;
 
+	leftPadding = 10px;
+	upPadding = 10px;
+
 	child UIButton button
 	{
-		leftPadding = 10px;
-		upPadding = 10px;
 		color = BackgroundColor;
 		size = (80, 120)px;
 		orientation = vertical;
 
-		corners = 5px;
+		corners = Theme_CornerSize;
 
 		child UIBackground
 		{
-			corners = 5px;
+			corners = Theme_CornerSize;
 			color = Color;
 			size = 72px;
 			padding = 4px;
@@ -85,6 +100,55 @@ element ItemBrowserButton
 			padding = 2px;
 			upPadding = 0;
 			size = 10px;
+			maxWraps = 2;
+		}
+	}
+}
+
+element ItemBrowserListEntry
+{
+	var Name = "Name";
+	var Image;
+	var Color = (1, 0, 0);
+	var BackgroundColor = 0.1;
+
+	padding = 1px;
+	leftPadding = 2px;
+	rightPadding = 2px;
+
+	child UIButton btn
+	{
+		color = BackgroundColor;
+
+		borderColor = Color_Highlight1;
+		corners = 2px;
+
+		verticalAlign = centered;
+		width = 100%;
+
+		child UIBackground
+		{
+			leftPadding = 2px;
+			upPadding = 2px;
+			downPadding = 2px;
+			corners = Theme_CornerSize;
+
+			child UIBackground
+			{
+				size = 18px;
+				image = Image;
+				padding = 2px;
+				color = Color_Text;
+			}
+			color = Color;
+		}
+
+		child UIText text
+		{
+			leftPadding = 5px;
+			color = Color_Text;
+			text = Name;
+			size = 12px;
 			maxWraps = 2;
 		}
 	}

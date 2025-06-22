@@ -2,10 +2,10 @@
 #include <csignal>
 #include <Core/Error/StackTrace.h>
 #include <map>
+#include <Core/Platform/Platform.h>
 #include <Core/Log.h>
 using namespace engine;
 
-static thread_local engine::string ThreadName;
 static thread_local bool Crashed = false;
 static thread_local bool SignalReceived = false;
 
@@ -46,26 +46,19 @@ static void SignalHandler(int Signal)
 	}
 	SignalReceived = true;
 
-	engine::error::Abort(engine::str::Format("Signal raised: %s", SignalTypes[Signal]));
+	error::Abort(str::Format("Signal raised: %s", SignalTypes[Signal]));
 }
 
 void engine::error::InitForThread(string ThreadName)
 {
 	Crashed = false;
-	::ThreadName = ThreadName;
+	platform::SetThreadName(ThreadName);
 	signal(SIGSEGV, &SignalHandler);
 	signal(SIGABRT, &SignalHandler);
 }
 
-engine::string engine::error::GetThreadName()
-{
-	return ::ThreadName;
-}
-
 void engine::error::Abort(string Message)
 {
-	using namespace engine;
-
 	if (Crashed)
 	{
 		return;

@@ -1,3 +1,8 @@
+/// @cond
+
+// Cursed preprocessor logic for the plugin interface struct.
+// I am sorry.
+
 // Core
 STRUCT_MEMBER(Log, void, (const char* Message), Log::Info(Message))
 
@@ -67,3 +72,4 @@ STRUCT_MEMBER_CALL_DIRECT(GetLogSize, size_t, (), \
 
 STRUCT_MEMBER(GetLogMessages, engine::plugin::LogEntry*, (size_t* OutSize), \
 { return ::GetLog(OutSize); })
+/// @endcond

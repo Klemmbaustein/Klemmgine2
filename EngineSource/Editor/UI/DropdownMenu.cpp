@@ -24,32 +24,43 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 	}
 
 	Box = (new UIBlurBackground(false, Position, 1, 0))
-		->SetCorner(5_px);
+		->SetCorner(EditorUI::Theme.CornerSize);
 
 	for (auto i = Options.begin(); i < Options.end(); i++)
 	{
 		auto& OnClicked = i->OnClicked;
 		auto fn = [OnClicked]()
-			{
-				if (OnClicked)
-					OnClicked();
-				Clear();
-			};
+		{
+			if (OnClicked)
+				OnClicked();
+			Clear();
+		};
 
 		bool First = i == Options.begin();
 		bool Last = i == Options.end() - 1;
 
-		Box->AddChild((new UIButton(true, 0, i->Name == "Delete" ? Vec3f(0.5f, 0, 0) : EditorUI::Theme.LightBackground, fn))
+		bool HasImage = !i->Icon.empty();
+
+		auto Button = new UIButton(true, 0, i->Name == "Delete" ? Vec3f(0.5f, 0, 0) : EditorUI::Theme.LightBackground, fn);
+
+		if (HasImage)
+		{
+			Button->AddChild((new UIBackground(true, 0, EditorUI::Theme.Text, 16_px))
+				->SetUseTexture(true, i->Icon)
+				->SetPadding(0, 0, 6_px, 6_px));
+		}
+
+		Box->AddChild(Button
 			->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
 			->SetBorderEdges(First, Last || i->Separator, true, true)
-			->SetCorner(5_px)
+			->SetCorner(EditorUI::Theme.CornerSize)
 			->SetOpacity(0.65f)
 			->SetCorners(First, First, Last, Last)
-			->SetMinSize(SizeVec::Pixels(150, 24))
+			->SetMinSize(SizeVec::Pixels(170, 24))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIText(11_px, EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
-			->SetWrapEnabled(true, 140_px)
-			->SetPadding(3_px, 3_px, 6_px, 3_px)));
+				->SetWrapEnabled(true, 140_px)
+				->SetPadding(3_px, 3_px, HasImage ? 0 : 28_px, 3_px)));
 	}
 
 	Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = Box;
@@ -77,7 +88,7 @@ void engine::editor::DropdownMenu::UpdateDropdowns()
 {
 	if (Current
 		&& (((input::IsLMBClicked || input::IsRMBClicked) && !Current->Box->IsBeingHovered())
-		|| input::IsKeyDown(input::Key::ESCAPE)))
+			|| input::IsKeyDown(input::Key::ESCAPE)))
 	{
 		Clear();
 	}

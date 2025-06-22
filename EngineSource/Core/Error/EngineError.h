@@ -25,15 +25,6 @@ namespace engine::error
 
 	/**
 	* @brief
-	* Gets the thread name of the current thread.
-	*
-	* @see InitForThread
-	*/
-	[[nodiscard]]
-	string GetThreadName();
-
-	/**
-	* @brief
 	* Prints a stack trace, aborts the application.
 	*
 	* @param Message

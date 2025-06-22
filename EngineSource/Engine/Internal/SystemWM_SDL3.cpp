@@ -25,7 +25,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
 
-	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
+	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_MAXIMIZED;
 
 	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
 	{

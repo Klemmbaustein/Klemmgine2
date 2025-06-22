@@ -3,13 +3,14 @@
 #include <Core/Log.h>
 #include <map>
 
+using namespace kui;
+
 void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 {
 	*this = EditorTheme();
 
 	try
 	{
-
 		SerializedValue ThemeData = TextSerializer::FromFile("Engine/Editor/Themes/" + ThemeName + ".k2t");
 
 		std::map<string, kui::Vec3f&> Colors =
@@ -30,6 +31,7 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 		auto ColorData = ThemeData.At("colors");
 
 		this->IsLight = ThemeData.Contains("isLight") && ThemeData.At("isLight").GetBool();
+		this->CornerSize = ThemeData.Contains("cornerSize") ? UISize::Pixels(ThemeData.At("cornerSize").GetInt()) : 5_px;
 
 		for (auto& [Name, Value] : Colors)
 		{

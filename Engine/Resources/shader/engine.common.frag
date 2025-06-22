@@ -156,9 +156,9 @@ vec3 applyLightingSpecular(vec3 color, float specular)
 	vec3 ambient = color * u_ambientStrength * u_ambientColor;
 
 	vec3 viewDir = normalize(u_cameraPos - v_position);
-	vec3 reflectDir = reflect(-u_lightDirection, v_normal);  
+	vec3 reflectDir = reflect(-u_lightDirection, v_normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 spec_color = spec * specular * u_lightColor;  
+	vec3 spec_color = spec * specular * u_lightColor;
 	return (color + spec_color) * getLightStrength() + ambient;
 }
 

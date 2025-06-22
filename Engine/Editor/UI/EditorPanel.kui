@@ -14,8 +14,8 @@ element EditorPanelTab
 
 		border = BorderSize;
 		bottomBorder = false;
-		
-		corners = 5px;
+
+		corners = Theme_CornerSize;
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
 
@@ -52,7 +52,7 @@ element DraggedPanelTab
 		borderColor = Color_BackgroundHighlight;
 		color = Color_Background;
 
-		corners = 5px;
+		corners = Theme_CornerSize;
 
 		child UIBackground
 		{
@@ -71,7 +71,7 @@ element DraggedPanelTab
 		leftPadding = 5px;
 
 		border = 1px;
-		
+
 		corners = 5px;
 
 		rightPadding = 4px;
@@ -95,7 +95,7 @@ element EditorPanelElement
 
 	orientation = vertical;
 	verticalAlign = default;
-	
+
 	child UIBackground panelBackground
 	{
 		orientation = vertical;
@@ -103,17 +103,17 @@ element EditorPanelElement
 		borderColor = BorderColor;
 
 		border = 1px;
-		corners = 5px;
+		corners = Theme_CornerSize;
 		topLeftCorner = false;
 		topRightCorner = false;
-		
+
 		size = Size;
 	}
 
 	child UIBackground tabBox
 	{
 		verticalAlign = default;
-		corners = 5px;
+		corners = Theme_CornerSize;
 		bottomLeftCorner = false;
 		bottomRightCorner = false;
 		height = 24px;

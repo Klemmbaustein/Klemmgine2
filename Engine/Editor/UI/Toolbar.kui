@@ -10,7 +10,7 @@ element ToolBarButton
 	child UIButton btn
 	{
 		color = Color_Background;
-		corners = 5px;
+		corners = Theme_CornerSize;
 		padding = 5px;
 		allAlign = centered;
 

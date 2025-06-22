@@ -1,16 +1,17 @@
 #if !defined(ENGINE_PLUGIN) && !defined(ENGINE_UTILS_LIB)
 #pragma once
-#include "Graphics/Framebuffer.h"
 #include "Graphics/Camera.h"
 #include "Graphics/Effects/CascadedShadows.h"
 #include "Graphics/Effects/PostProcess.h"
-#include "Objects/SceneObject.h"
-#include <kui/Vec2.h>
-#include <atomic>
-#include <set>
-#include <mutex>
-#include <Engine/Physics/Physics.h>
+#include "Graphics/Environment.h"
+#include "Graphics/Framebuffer.h"
 #include "Objects/Components/DrawableComponent.h"
+#include "Objects/SceneObject.h"
+#include <atomic>
+#include <Engine/Physics/Physics.h>
+#include <kui/Vec2.h>
+#include <mutex>
+#include <set>
 
 namespace engine
 {
@@ -199,6 +200,8 @@ namespace engine
 		{
 			return SceneTexture;
 		}
+
+		graphics::Environment Env;
 
 	private:
 		void DeSerializeInternal(SerializedValue* From, bool Async);

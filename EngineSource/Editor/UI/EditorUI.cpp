@@ -115,7 +115,7 @@ engine::editor::EditorUI::EditorUI()
 
 	Instance = this;
 
-	//Theme.LoadFromFile("Light");
+	Theme.LoadFromFile("Dark");
 
 	UIScrollBox::BackgroundColor = Theme.LightBackground;
 	UIScrollBox::BackgroundBorderColor = Theme.Background;
@@ -136,7 +136,9 @@ engine::editor::EditorUI::EditorUI()
 	{
 		EditorFont = VideoSystem->DefaultFont;
 		MonospaceFont = new Font("Engine/Editor/Assets/EditorMono.ttf");
+		MonospaceFont->CharacterSize *= 1.1f;
 		VideoSystem->MainWindow->Markup.AddFont("mono", MonospaceFont);
+		VideoSystem->MainWindow->Markup.SetGetStringFunction(&EditorUI::Asset);
 	}
 
 
@@ -154,10 +156,10 @@ engine::editor::EditorUI::EditorUI()
 		{
 			DropdownMenu::Option("New"),
 			DropdownMenu::Option("Open Project"),
-			DropdownMenu::Option("Build Project", []() {
+			DropdownMenu::Option("Build Project", Asset("Build.png"), []() {
 				new BuildWindow();
 			}),
-			DropdownMenu::Option("Exit", []() {
+			DropdownMenu::Option("Exit", Asset("X.png"), []() {
 				Engine::Instance->ShouldQuit = true;
 			}),
 		});
@@ -276,7 +278,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
 	Target->Markup.SetGlobal("Color_HighlightDark", Theme.HighlightDark);
 	Target->Markup.SetGlobal("Color_Highlight2", Theme.Highlight2);
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
-
+	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
 }
 
 void engine::editor::EditorUI::Update()
@@ -321,12 +323,11 @@ void engine::editor::EditorUI::UpdateBackgrounds()
 	using namespace kui;
 	MainBackground->SetMinSize(Vec2f(
 		2,
-		2 - UIBox::PixelSizeToScreenSize(Vec2f(0, StatusBarSize + MenuBarSize), MainBackground->GetParentWindow()).Y)
-	);
+		2 - UISize::Pixels(StatusBarSize + MenuBarSize).GetScreen().Y));
 	MainBackground->GetParent()->UpdateElement();
 }
 
-void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<DropdownMenu::Option> Options)
+void engine::editor::EditorUI::AddMenuBarItem(string Name, std::vector<DropdownMenu::Option> Options)
 {
 	auto* btn = new MenuBarButton();
 	btn->SetName(Name);
@@ -343,4 +344,9 @@ void engine::editor::EditorUI::AddMenuBarItem(std::string Name, std::vector<Drop
 		new DropdownMenu(DropdownOptions, btn->GetPosition());
 	};
 	MenuBar->AddChild(btn);
+}
+
+engine::string engine::editor::EditorUI::Asset(const string& name)
+{
+	return "Engine/Editor/Assets/" + name;
 }

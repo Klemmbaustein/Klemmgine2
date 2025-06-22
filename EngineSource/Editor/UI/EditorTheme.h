@@ -1,6 +1,7 @@
 #ifdef EDITOR
 #pragma once
 #include <kui/Vec3.h>
+#include <kui/UISize.h>
 #include <Core/Types.h>
 
 namespace engine::editor
@@ -8,6 +9,7 @@ namespace engine::editor
 	struct EditorTheme
 	{
 		bool IsLight = false;
+		kui::UISize CornerSize = 5_px;
 
 		kui::Vec3f Text = 1;
 		kui::Vec3f DarkText = 0.85f;

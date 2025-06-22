@@ -137,6 +137,7 @@ uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uin
 	switch (LoadInfo.TextureBorders)
 	{
 	case TextureOptions::Border:
+		WrapMode = GL_CLAMP_TO_BORDER;
 		break;
 	case TextureOptions::Repeat:
 		WrapMode = GL_REPEAT;

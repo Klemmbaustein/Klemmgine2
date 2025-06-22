@@ -35,14 +35,14 @@ element LoadingBarElement
 			border = 1px;
 			borderColor = Color_HighlightDark;
 
-			corners = 5px;
+			corners = Theme_CornerSize;
 
 			child UIBackground
 			{
 				border = 1px;
 				borderColor = Color_HighlightDark;
 				color = Color_Highlight1;
-				corners = 5px;
+				corners = Theme_CornerSize;
 				size = 1pn;
 				leftPadding = BarLeftPadding;
 				rightPadding = BarRightPadding;

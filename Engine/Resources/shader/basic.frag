@@ -1,4 +1,4 @@
-//? #version 330
+//? #version 330 core
 #using "engine.common" //! #include "engine.common.frag"
 
 #param //!

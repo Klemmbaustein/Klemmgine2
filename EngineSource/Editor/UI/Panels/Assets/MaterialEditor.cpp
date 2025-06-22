@@ -115,7 +115,7 @@ engine::editor::MaterialEditor::~MaterialEditor()
 void engine::editor::MaterialEditor::Update()
 {
 	AssetEditor::Update();
-	PreviewImage->SetUseTexture(true, PreviewScene->GetDrawBuffer());
+	PreviewImage->SetUseImage(true, PreviewScene->GetDrawBuffer());
 
 	if (RedrawNextFrame)
 	{
@@ -253,12 +253,14 @@ void engine::editor::MaterialEditor::OnResized()
 	MainBox->SetMinSize(SizeVec(Size.X, Size.Y - (41_px).GetScreen().Y));
 	LoadUI();
 }
+
 void engine::editor::MaterialEditor::OnChanged()
 {
 	AssetEditor::OnChanged();
 	PreviewScene->Redraw = true;
 	RedrawNextFrame = true;
 }
+
 void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material::Field& Field)
 {
 	Material::MatTexture TextureName;
@@ -274,10 +276,19 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 		TextureName.Name.empty() ? AssetRef{ .Extension = "png" } : AssetRef::Convert(TextureName.Name),
 		UISize(180_px).GetScreen().X, nullptr);
 
-	Selector->OnChanged = [this, Selector, &Field]()
+	Selector->OnChanged = [this, Selector, TexElement, &Field]()
 	{
-		Field.TextureValue.Name->Name = string(file::FileName(Selector->SelectedAsset.FilePath));
-		Field.TextureValue.Value = nullptr;
+		string Name = file::FileName(Selector->SelectedAsset.FilePath);
+
+		if (!Field.TextureValue.Name)
+		{
+			Field.TextureValue.Name = new Material::MatTexture(Name);
+		}
+		else
+		{
+			Field.TextureValue.Name->Name = Name;
+			Field.TextureValue.Value = nullptr;
+		}
 		OnChanged();
 	};
 

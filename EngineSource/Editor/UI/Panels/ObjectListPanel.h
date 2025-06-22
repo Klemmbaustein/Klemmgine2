@@ -31,8 +31,9 @@ namespace engine::editor
 		size_t LastLength = SIZE_MAX;
 		size_t LastSelectedLength = 0;
 		SceneObject* LastSelectedObj = nullptr;
+		string Filter;
 
-		void AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth);
+		void AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth, bool& LastWasSelected);
 	};
 }
 #endif

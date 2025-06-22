@@ -43,7 +43,7 @@ void engine::editor::BuildWindow::Begin()
 #endif
 
 
-	AddBuildHeader("Build settings", Background);
+	AddBuildHeader("Build Settings", Background);
 
 	std::vector ConfigOptions = {
 		UIDropdown::Option("Debug"),

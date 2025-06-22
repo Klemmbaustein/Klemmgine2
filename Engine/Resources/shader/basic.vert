@@ -1,5 +1,5 @@
 //? #version 330
-#using "engine.common" //!
+#using "engine.common" //! #include "engine.common.frag"
 
 void main()
 {

@@ -54,7 +54,7 @@ engine::editor::Viewport::Viewport()
 {
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
-	kui::Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader("shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
+	Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader("shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
 	VideoSystem->MainWindow->Input.RegisterOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 
 	ViewportBackground = new UIBackground(false, 0, 1, 0, HoleShader);
@@ -88,14 +88,7 @@ engine::editor::Viewport::Viewport()
 		});
 
 	ViewportToolbar->AddButton("Run", "file:Engine/Editor/Assets/Run.png",
-		[this]()
-		{
-			using namespace subsystem;
-
-			Engine::GetSubsystem<EditorSubsystem>()->StartProject();
-			SetName("Viewport (playing)");
-			RedrawStats = true;
-		});
+		std::bind(&Viewport::Run, this));
 
 	ViewportStatusText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	ViewportStatusText
@@ -175,7 +168,8 @@ engine::editor::Viewport::~Viewport()
 
 void engine::editor::Viewport::OnResized()
 {
-	ViewportBackground->SetMinSize(Background->GetMinSize().GetScreen() - UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + 42), ViewportBackground->GetParentWindow()));
+	ViewportBackground->SetMinSize(Background->GetMinSize().GetScreen()
+		- UIBox::PixelSizeToScreenSize(Vec2f(2.1f, 25 + 42), ViewportBackground->GetParentWindow()));
 	PanelElement->UpdateElement();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
@@ -302,6 +296,11 @@ void engine::editor::Viewport::Update()
 		MouseGrabbed = false;
 	}
 
+	if (input::IsKeyDown(input::Key::F5))
+	{
+		Run();
+	}
+
 	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s) && UnsavedChanges && HasFocus)
 	{
 		SaveCurrentScene();
@@ -358,6 +357,7 @@ void engine::editor::Viewport::Update()
 		}
 	}
 }
+
 void engine::editor::Viewport::SceneChanged()
 {
 	if (Engine::IsPlaying)
@@ -421,6 +421,15 @@ void engine::editor::Viewport::OnObjectCreated(SceneObject* Target)
 		} });
 
 	SceneChanged();
+}
+
+void engine::editor::Viewport::Run()
+{
+	using namespace subsystem;
+
+	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
+	SetName("Viewport (playing)");
+	RedrawStats = true;
 }
 
 void engine::editor::Viewport::HighlightObject(SceneObject* Target, bool Highlighted)

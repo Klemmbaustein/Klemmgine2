@@ -8,19 +8,23 @@ using namespace kui;
 
 engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width, std::function<void()> OnChanged)
 	: DroppableBox(true, [this](EditorUI::DraggedItem itm)
-		{
-			SelectedAsset = AssetRef::FromPath(itm.Path);
-			this->OnChanged();
-			UpdateSelection();
+{
+	auto ref = AssetRef::FromPath(itm.Path);
+	if (ref.Extension == this->SelectedAsset.Extension || this->SelectedAsset.Extension.empty())
+	{
+		SelectedAsset = ref;
+		this->OnChanged();
+		UpdateSelection();
+	}
 
-		})
+})
 {
 	SelectedAsset = InitialValue;
 	auto c = EditorUI::GetExtIconAndColor(InitialValue.Extension);
 	IconBackground = new UIBackground(true, 0, c.second, 32_px);
 
 	AddChild(IconBackground
-		->SetCorner(5_px)
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->AddChild((new UIBackground(true, 0, 1, 32_px))
 			->SetUseTexture(true, c.first))
 		->SetPadding(UISize(), UISize(), UISize(), 5_px));
@@ -42,9 +46,9 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 		->SetMinWidth(UISize::Parent(1));
 
 	AssetPath->OnChanged = [this]()
-		{
-			ChangedText = true;
-		};
+	{
+		ChangedText = true;
+	};
 
 	RightBox->AddChild(AssetPath);
 
@@ -72,9 +76,9 @@ void engine::editor::AssetSelector::Tick()
 	if (RemoveSearchList)
 	{
 		ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-			{
-				RemoveSearchResults();
-			}, nullptr, 0));
+		{
+			RemoveSearchResults();
+		}, nullptr, 0));
 	}
 	if (ChangedText && !Window::GetActiveWindow()->Input.IsLMBDown)
 	{
@@ -102,11 +106,11 @@ void engine::editor::AssetSelector::Tick()
 		if (LastEnteredText != AssetPath->GetText())
 		{
 			ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-				{
-					SearchBackground->UpdateElement();
-					SearchBackground->RedrawElement();
-					UpdateSearchResults();
-				}, nullptr, 0));
+			{
+				SearchBackground->UpdateElement();
+				SearchBackground->RedrawElement();
+				UpdateSearchResults();
+			}, nullptr, 0));
 			LastEnteredText = AssetPath->GetText();
 			UpdateSearchSize();
 		}
@@ -117,9 +121,9 @@ void engine::editor::AssetSelector::Tick()
 				&& !ParentWindow->UI.HoveredBox->IsChildOf(SearchBackground->GetScrollBarBackground()))))
 	{
 		ParentWindow->UI.ButtonEvents.push_back(kui::UIManager::ButtonEvent([this]()
-			{
-				RemoveSearchList = true;
-			}, nullptr, 0));
+		{
+			RemoveSearchList = true;
+		}, nullptr, 0));
 	}
 }
 
@@ -183,15 +187,15 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 		}
 
 		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Path]()
-			{
-				AssetPath->SetText(Name);
-				SelectedAsset = AssetRef::FromPath(Path);
-				ChangedText = false;
-				if (this->OnChanged)
-					OnChanged();
-				UpdateSelection();
-				RemoveSearchResults();
-			}))
+		{
+			AssetPath->SetText(Name);
+			SelectedAsset = AssetRef::FromPath(Path);
+			ChangedText = false;
+			if (this->OnChanged)
+				OnChanged();
+			UpdateSelection();
+			RemoveSearchResults();
+		}))
 			->SetMinWidth(UISize::Parent(1))
 			->AddChild((new UIText(11_px,
 				{

@@ -42,7 +42,8 @@ namespace engine
 			Write(&Byte, sizeof(Byte));
 		}
 
-		template<typename T> void WriteValue(const T& Value)
+		template<typename T>
+		void WriteValue(const T& Value)
 		{
 			Write((uByte*)&Value, sizeof(Value));
 		}

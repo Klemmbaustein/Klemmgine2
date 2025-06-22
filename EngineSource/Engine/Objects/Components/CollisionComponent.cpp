@@ -12,6 +12,8 @@ engine::CollisionComponent::~CollisionComponent()
 {
 	if (Body)
 	{
+		if (!GetRootObject()->GetScene()->Physics.Active)
+			return;
 		GetRootObject()->GetScene()->Physics.RemoveBody(Body);
 		delete Body;
 	}

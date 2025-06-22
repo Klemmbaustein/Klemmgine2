@@ -53,7 +53,7 @@ engine::string engine::error::GetStackTrace()
 			if (i.source_file().substr(i.source_file().find_last_of(".") + 1) == "inl")
 				continue;
 #endif
-			
+
 			FileName = str::Format("%s(): %s, line %i", FunctionName.c_str(), FileName.c_str(), int(i.source_line()));
 			HasDebugInfo = true;
 		}

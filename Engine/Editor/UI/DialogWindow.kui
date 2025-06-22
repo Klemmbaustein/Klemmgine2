@@ -11,7 +11,7 @@ element DialogWindowButton
 		minSize = (50, 24)px;
 		maxSize = (100, 24)px;
 
-		corners = 5px;
+		corners = Theme_CornerSize;
 
 		allAlign = centered;
 
@@ -37,14 +37,14 @@ element DialogWindowMainElement
 	position = -1;
 
 	orientation = vertical;
-	
+
 	child UIBackground
 	{
 		orientation = vertical;
 		width = 100%;
 		height = MainBackgroundSize;
 		color = Color_Background;
-		
+
 		child UIScrollBox windowMain
 		{
 			size = 100%;
@@ -70,7 +70,7 @@ element RenameWindowElement
 
 	padding = 10px;
 	orientation = vertical;
-	
+
 	child UIText
 	{
 		color = Color_Text;
@@ -96,7 +96,7 @@ element RenameWindowElement
 		{
 			Size = 220px;
 			HintText = "Rename";
-			Image = "Engine/Editor/Assets/Search.png";
+			Image = "Engine/Editor/Assets/Rename.png";
 			padding = 5px;
 		}
 	}

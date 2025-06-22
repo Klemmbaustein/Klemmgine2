@@ -23,7 +23,7 @@ void main()
 	float uiAlpha = texture(u_alpha, v_texcoords).x;
 	if (uiAlpha > 0)
 	{
-		f_color.xyz = mix(f_color.xyz, uiColor.xyz, uiAlpha);
+		f_color.xyz = mix(f_color.xyz, uiColor.xyz / uiAlpha, uiAlpha);
 	}
 	f_color.w = 1;
 }

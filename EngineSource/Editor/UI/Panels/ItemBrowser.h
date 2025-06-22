@@ -34,21 +34,29 @@ namespace engine::editor
 
 		std::vector<Item*> GetSelected();
 
+		enum class DisplayMode
+		{
+			Icons,
+			List,
+		};
+
+		DisplayMode Mode = DisplayMode::List;
+
 	protected:
 
-		std::vector<std::pair<Item, ItemBrowserButton*>> Buttons;
+		std::vector<std::pair<Item, kui::UIBox*>> Buttons;
 		kui::UIScrollBox* ItemsScrollBox = nullptr;
 
 		virtual string GetPathDisplayName() = 0;
 		virtual void OnBackgroundRightClick(kui::Vec2f MousePosition) = 0;
 		virtual void OnItemsRightClick(kui::Vec2f MousePosition);
 		virtual std::vector<Item> GetItems() = 0;
-		//virtual void OnItemDopped(EditorUI::Item);
+		//virtual void OnItemDropped(EditorUI::Item);
 		virtual void Back() = 0;
 		void SetStatusText(string NewText);
 	private:
 		kui::UIText* StatusText;
-		std::pair<Item, ItemBrowserButton*>* GetHoveredButton();
+		std::pair<Item, kui::UIBox*>* GetHoveredButton();
 		std::vector<Item> CurrentItems;
 		void DisplayList();
 	};

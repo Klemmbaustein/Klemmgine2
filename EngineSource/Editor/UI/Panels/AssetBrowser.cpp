@@ -42,7 +42,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 		if (i.is_directory())
 		{
-			Extension = "/dir/";
+			Extension = "dir/";
 			OnClick = [this, i]()
 			{
 				Path.append(i.path().filename().string() + "/");
@@ -93,13 +93,15 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			new DropdownMenu({
 				DropdownMenu::Option{
 					.Name = "Open",
+					.Icon = EditorUI::Asset("TabDrag.png"),
 					.OnClicked = OnClick,
 				},
 				DropdownMenu::Option{
 					.Name = "Rename",
+					.Icon = EditorUI::Asset("Rename.png"),
 					.OnClicked = [this, FilePath]()
 					{
-					new RenameWindow(FilePath, [this, FilePath](string NewPath)
+						new RenameWindow(FilePath, [this, FilePath](string NewPath)
 						{
 							std::filesystem::rename(FilePath, NewPath);
 							resource::ScanForAssets();
@@ -109,11 +111,12 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				},
 				DropdownMenu::Option{
 					.Name = "Delete",
+					.Icon = EditorUI::Asset("X.png"),
 					.OnClicked = [this, FilePath]()
 					{
-					std::filesystem::remove_all(FilePath);
-					resource::ScanForAssets();
-					UpdateItems();
+						std::filesystem::remove_all(FilePath);
+						resource::ScanForAssets();
+						UpdateItems();
 					},
 				}
 				}, kui::Window::GetActiveWindow()->Input.MousePosition);
@@ -166,11 +169,11 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 	auto Contains = [](string Value, const std::vector<string>& Values) -> bool
 	{
 		bool Found = false;
-		std::ranges::for_each(Values, [&Value, &Found](const string& Current)
+		for (auto& Current : Values)
 		{
 			if (Current == Value)
 				Found = true;
-		});
+		}
 		return Found;
 	};
 
@@ -254,29 +257,48 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
 	new DropdownMenu(
 		{
-			DropdownMenu::Option{.Name = "Import...",.OnClicked = [this]() { Import(GetPathDisplayName()); }, .Separator = true },
-			DropdownMenu::Option{.Name = "New folder", .OnClicked = [this]() {
-			std::filesystem::create_directories(GetPathDisplayName() + "/Folder");
-			UpdateItems();
-		} },
-		DropdownMenu::Option{.Name = "New scene", .OnClicked = [this]() {
-			EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
-			resource::ScanForAssets();
-			UpdateItems();
-		} },
-		DropdownMenu::Option{.Name = "New material", .OnClicked = [this]() {
-			EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
-			resource::ScanForAssets();
-			UpdateItems();
-		}, .Separator = true },
-		DropdownMenu::Option{.Name = "Open in file explorer", .OnClicked = [this]()
-		{
-			using namespace engine::platform;
+		DropdownMenu::Option{
+			.Name = "Import...",
+			.Icon = EditorUI::Asset("Object.png"),
+			.OnClicked = [this]() { Import(GetPathDisplayName()); },
+			.Separator = true
+		},
+		DropdownMenu::Option{
+			.Name = "New folder",
+			.Icon = EditorUI::GetExtIconAndColor("dir/").first,
+			.OnClicked = [this]() {
+				std::filesystem::create_directories(GetPathDisplayName() + "/Folder");
+				UpdateItems();
+			}
+		},
+		DropdownMenu::Option{
+			.Name = "New scene",
+			.Icon = EditorUI::GetExtIconAndColor("kts").first,
+			.OnClicked = [this]() {
+				EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
+				resource::ScanForAssets();
+				UpdateItems();
+			}
+		},
+		DropdownMenu::Option{
+			.Name = "New material",
+			.Icon = EditorUI::GetExtIconAndColor("kmt").first,
+			.OnClicked = [this]() {
+				EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
+				resource::ScanForAssets();
+				UpdateItems();
+			},
+			.Separator = true },
+		DropdownMenu::Option{
+			.Name = "Open in file explorer",
+			.Icon = EditorUI::Asset("TabDrag.png"),
+			.OnClicked = [this]()
+			{
+				using namespace engine::platform;
 #if WINDOWS
-			Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
+				Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
 #else
-
-			std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
+				std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
 #endif
 		}, },
 		},

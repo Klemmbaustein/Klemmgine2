@@ -15,7 +15,8 @@ void engine::platform::Execute(string Command)
 	PROCESS_INFORMATION ProcInfo;
 	ZeroMemory(&ProcInfo, sizeof(ProcInfo));
 
-	if (!CreateProcess(NULL, Command.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &Startup, &ProcInfo))
+	if (!CreateProcess(NULL, Command.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW,
+		NULL, NULL, &Startup, &ProcInfo))
 	{
 		return;
 	}
@@ -26,7 +27,7 @@ void engine::platform::Execute(string Command)
 
 void engine::platform::Open(string File)
 {
-	ShellExecuteA(NULL, "open", File.c_str(), NULL, NULL, FALSE);
+	ShellExecuteW(NULL, L"open", StrToWstr(File).c_str(), NULL, NULL, FALSE);
 }
 
 engine::string engine::platform::GetLastErrorString()
@@ -34,18 +35,20 @@ engine::string engine::platform::GetLastErrorString()
 	DWORD ErrorMessageID = GetLastError();
 	if (ErrorMessageID == 0)
 	{
-		return std::string("No error");
+		return "No error";
 	}
 
-	LPSTR MessageBuffer = nullptr;
-	size_t Size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, ErrorMessageID, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPSTR)&MessageBuffer, 0, NULL);
+	LPWSTR MessageBuffer = nullptr;
+	size_t Size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER
+		| FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, ErrorMessageID, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+		(LPWSTR)&MessageBuffer, 0, NULL);
 
-	std::string Message = std::string(MessageBuffer, Size);
+	std::wstring Message = std::wstring(MessageBuffer, Size);
 
 	LocalFree(MessageBuffer);
 
-	return Message;
+	return WstrToStr(Message);
 }
 
 std::string engine::platform::WstrToStr(const std::wstring& wstr)

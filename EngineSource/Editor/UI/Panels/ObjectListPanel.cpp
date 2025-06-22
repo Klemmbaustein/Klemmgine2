@@ -12,6 +12,11 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 	: EditorPanel("Objects", "object_list")
 {
 	Heading = new ObjectListHeader();
+	Heading->search->field->OnChanged = [this]()
+	{
+		Filter = str::Lower(Heading->search->field->GetText());
+		DisplayList();
+	};
 	Background->AddChild(Heading);
 
 	DisplayList();
@@ -92,6 +97,11 @@ void engine::editor::ObjectListPanel::DisplayList()
 		if (Current->ObjectDestroyed(i))
 			continue;
 
+		if (!Filter.empty() && !str::Lower(i->Name).contains(Filter))
+		{
+			continue;
+		}
+
 		const Reflection::ObjectInfo& TypeInfo = Reflection::ObjectTypes[i->TypeID];
 
 		auto& Entry = SceneMap[TypeInfo.Path];
@@ -105,12 +115,13 @@ void engine::editor::ObjectListPanel::DisplayList()
 		}
 	}
 
-	AddListObjects(ObjectTree, 0);
+	bool LastWasSelected = false;
+	AddListObjects(ObjectTree, 0, LastWasSelected);
 	Heading->UpdateElement();
 	Heading->RedrawElement();
 }
 
-void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth)
+void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth, bool& LastWasSelected)
 {
 	for (auto& [_, Obj] : Objects)
 	{
@@ -119,12 +130,20 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		Elem->SetName(Obj.Name);
 		Elem->SetLeftPadding(UISize::Pixels(16 * Depth + (Obj.Children.empty() ? 21 : 5)));
 		Elem->SetColor(Obj.Selected
-			? EditorUI::Theme.Highlight1
+			? EditorUI::Theme.HighlightDark
 			: (Heading->listBox->GetChildren().size() % 2 == 0
 				? EditorUI::Theme.LightBackground : EditorUI::Theme.Background));
 
-		Elem->SetTextColor(Obj.Selected ? EditorUI::Theme.HighlightText : EditorUI::Theme.Text);
-		Elem->SetIcon(!Obj.From ? "Engine/Editor/Assets/Folder.png" : EditorUI::Instance->ObjectIcons.GetObjectIcon(Obj.From->TypeID));
+		Elem->SetTextColor(EditorUI::Theme.Text);
+
+		if (Obj.Selected)
+		{
+			Elem->button->SetBorder(1_px, EditorUI::Theme.Highlight1);
+			Elem->button->SetBorderEdges(!LastWasSelected, true, true, true);
+		}
+		LastWasSelected = Obj.Selected;
+
+		Elem->SetIcon(!Obj.From ? EditorUI::Asset("Folder.png") : EditorUI::Instance->ObjectIcons.GetObjectIcon(Obj.From->TypeID));
 
 		bool HasChildren = Obj.Children.size();
 		bool IsCollapsed = false;
@@ -132,7 +151,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		if (HasChildren)
 		{
 			IsCollapsed = Collapsed.contains(Obj.Name);
-			Elem->SetArrowImage(IsCollapsed ? "Engine/Editor/Assets/LeftArrow.png" : "Engine/Editor/Assets/DownArrow.png");
+			Elem->SetArrowImage(IsCollapsed ? EditorUI::Asset("LeftArrow.png") : EditorUI::Asset("DownArrow.png"));
 		}
 
 		if (Obj.Children.empty())
@@ -162,7 +181,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 
 		if (HasChildren && !IsCollapsed)
 		{
-			AddListObjects(Obj.Children, Depth + 1);
+			AddListObjects(Obj.Children, Depth + 1, LastWasSelected);
 		}
 	}
 }

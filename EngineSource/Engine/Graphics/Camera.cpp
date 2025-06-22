@@ -32,7 +32,7 @@ void engine::graphics::Camera::Update()
 		View = glm::translate(View, -glm::vec3(Position.X, Position.Y, Position.Z));
 	}
 }
-engine::Vector3 engine::graphics::Camera::GetPosition()
+engine::Vector3 engine::graphics::Camera::GetPosition() const
 {
 	if (UseTransform)
 	{

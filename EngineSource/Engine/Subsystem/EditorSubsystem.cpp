@@ -69,7 +69,7 @@ void engine::subsystem::EditorSubsystem::StartProject()
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	Scene::GetMain()->ReloadObjects(nullptr);
-	editor::EditorUI::SetStatusMessage("Running project", editor::EditorUI::StatusType::Info);
+	editor::EditorUI::SetStatusMessage("Running game", editor::EditorUI::StatusType::Info);
 }
 
 void engine::subsystem::EditorSubsystem::StopProject()
@@ -79,7 +79,7 @@ void engine::subsystem::EditorSubsystem::StopProject()
 	{
 		Scene::GetMain()->ReloadObjects(&LastScene);
 	}
-	editor::EditorUI::SetStatusMessage("Stopped project", editor::EditorUI::StatusType::Info);
+	editor::EditorUI::SetStatusMessage("Stopped game", editor::EditorUI::StatusType::Info);
 }
 
 #endif

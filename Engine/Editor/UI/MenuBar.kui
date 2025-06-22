@@ -9,7 +9,7 @@ element MenuBarButton
 		color = Color_LightBackground;
 		verticalAlign = centered;
 
-		corners = 5px;
+		corners = Theme_CornerSize;
 
 		child UIText
 		{

@@ -203,7 +203,7 @@ void engine::editor::ModelEditor::Update()
 		OnModelLoaded();
 	}
 	if (EditorUI::FocusedPanel == this)
-		SceneBackground->SetUseTexture(true, EditorScene->GetDrawBuffer());
+		SceneBackground->SetUseImage(true, EditorScene->GetDrawBuffer());
 }
 
 void engine::editor::ModelEditor::Save()

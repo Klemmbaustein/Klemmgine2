@@ -57,6 +57,8 @@ namespace engine::editor
 
 	private:
 
+		void Run();
+
 		void HighlightObject(SceneObject* Target, bool Highlighted);
 		void HighlightComponents(DrawableComponent* Target, bool Highlighted);
 

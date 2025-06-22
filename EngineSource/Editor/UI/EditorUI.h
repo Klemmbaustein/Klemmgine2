@@ -69,7 +69,9 @@ namespace engine::editor
 		void Update();
 		void UpdateBackgrounds();
 
-		void AddMenuBarItem(std::string Name, std::vector<DropdownMenu::Option> Options);
+		void AddMenuBarItem(string Name, std::vector<DropdownMenu::Option> Options);
+
+		static string Asset(const string& name);
 
 	private:
 		kui::UIBackground* MenuBar = nullptr;

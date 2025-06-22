@@ -20,7 +20,7 @@ element EditorTextField
 		rightBorder = false;
 		borderColor = Color_LightBackground;
 
-		corners = 5px;
+		corners = Theme_CornerSize;
 		topRightCorner = false;
 		bottomRightCorner = false;
 	}
@@ -29,7 +29,7 @@ element EditorTextField
 	{
 		size = 22px;
 		color = Color_DarkBackground;
-		corners = 5px;
+		corners = Theme_CornerSize;
 		topLeftCorner = false;
 		bottomLeftCorner = false;
 
@@ -46,3 +46,5 @@ element EditorTextField
 		}
 	}
 }
+
+global Theme_CornerSize = 5px;

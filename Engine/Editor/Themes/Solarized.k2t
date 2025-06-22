@@ -1,5 +1,6 @@
 {
-	"name": str = "Dark";
+	"name": str = "Solarized Dark";
+	"isDark": bool = 1;
 	"colors": obj = {
 		"text": vec3 = <0.84, 0.86, 0.86>;
 		"darkText": vec3 = <0.58, 0.63, 0.63>;

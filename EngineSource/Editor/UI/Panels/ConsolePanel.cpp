@@ -104,7 +104,7 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 		Segments.push_back(TextSegment(LogMessages[i].Message, Colors->at(LogMessages[i].Color)));
 
-		UIText* txt = new UIText(10_px, Segments, EditorUI::MonospaceFont);
+		UIText* txt = new UIText(11_px, Segments, EditorUI::MonospaceFont);
 
 		txt
 			->SetPadding(0_px, 0_px, 5_px, 0_px);

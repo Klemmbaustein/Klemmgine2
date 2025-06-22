@@ -471,7 +471,6 @@ void engine::internal::JoltInstance::RemoveBody(engine::physics::PhysicsBody* Bo
 	auto JoltShape = static_cast<JPH::BodyCreationSettings*>(Body->ShapeInfo);
 	delete JoltShape;
 	Body->ShapeInfo = nullptr;
-	Info->ID = JPH::BodyID();
 }
 
 void engine::internal::JoltInstance::CreateShape(engine::physics::PhysicsBody* Body)

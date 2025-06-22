@@ -33,7 +33,7 @@ Engine* Engine::Init()
 		return Instance;
 	}
 
-	debug::TimeLogger StartupTime{"Engine started"};
+	debug::TimeLogger StartupTime{ "Engine started" };
 
 	internal::AdjustWorkingDirectory();
 
