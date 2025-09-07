@@ -20,11 +20,6 @@ namespace engine
 	*/
 	class Engine
 	{
-		Engine();
-
-	protected:
-		std::vector<subsystem::Subsystem*> LoadedSystems;
-
 	public:
 
 		bool ShouldQuit = false;
@@ -33,7 +28,8 @@ namespace engine
 		* @brief
 		* Initializes the engine.
 		*
-		* Creates a new engine instance if none exists, otherwise it returns the current engine instance.
+		* Creates a new engine instance if none exists, otherwise it
+		* returns the current engine instance.
 		*/
 		static Engine* Init();
 
@@ -86,7 +82,11 @@ namespace engine
 		static bool GameHasFocus;
 
 	private:
+
+		Engine();
 		void InitSystems();
 		static void ErrorCallback(string Error, string StackTrace);
+
+		std::vector<subsystem::Subsystem*> LoadedSystems;
 	};
 }

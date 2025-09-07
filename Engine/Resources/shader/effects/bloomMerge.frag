@@ -7,7 +7,13 @@ in vec2 v_texcoords;
 
 void main()
 {
+	vec3 bloomColor = texture(u_bloomTexture, v_texcoords).rgb;
+	float bloomStrength = max(length(bloomColor) - 0.75, 0);
+
 	f_color = vec4(
-		mix(texture(u_mainTexture, v_texcoords).rgb, texture(u_bloomTexture, v_texcoords).rgb, 0.15),
+		mix(
+			texture(u_mainTexture, v_texcoords).rgb,
+			bloomColor + bloomStrength / 40,
+			min(0.02 + bloomStrength * 0.2, 1)),
 	1);
 }

@@ -433,6 +433,6 @@ engine::SerializedData::DataType engine::TextSerializer::GetTypeFromString(strin
 		if (i.second == Str)
 			return i.first;
 	}
-	Log::Warn(str::Format("Unkown type: %s", Str.c_str()));
+	Log::Warn(str::Format("Unknown type: %s", Str.c_str()));
 	return SerializedData::DataType::Null;
 }

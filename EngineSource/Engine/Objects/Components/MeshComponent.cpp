@@ -28,8 +28,7 @@ void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 
 void engine::MeshComponent::Load(AssetRef From)
 {
-	bool AlreadyRegistered = DrawnModel;
-	if (AlreadyRegistered)
+	if (IsRegistered)
 	{
 		ClearModel(false);
 	}
@@ -38,6 +37,7 @@ void engine::MeshComponent::Load(AssetRef From)
 
 	if (DrawnModel && DrawnModel->Drawable)
 	{
+		IsRegistered = true;
 		for (auto& m : DrawnModel->Data->Meshes)
 		{
 			if (m.Material.empty())
@@ -56,9 +56,15 @@ void engine::MeshComponent::Load(AssetRef From)
 			}
 		}
 
-		if (!AlreadyRegistered && (RootObject || ParentObject))
+		if (IsRegistered && (RootObject || ParentObject))
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
 	}
+}
+
+void engine::MeshComponent::OnAttached()
+{
+	if (IsRegistered && (RootObject || ParentObject))
+		GetRootObject()->GetScene()->AddDrawnComponent(this);
 }
 
 engine::MeshComponent::~MeshComponent()
@@ -82,5 +88,6 @@ void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 	if (RemoveDrawnComponent && (RootObject || ParentObject))
 	{
 		GetRootObject()->GetScene()->RemoveDrawnComponent(this);
+		IsRegistered = false;
 	}
 }

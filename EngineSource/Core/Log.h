@@ -127,6 +127,16 @@ namespace engine
 		* @ingroup engine-core
 		*/
 		static void Error(string Message, std::vector<LogPrefix> Prefixes = {});
+		/**
+		* @brief
+		* Prints an error message into the log.
+		*
+		* This function works like Log::PrintMsg(), but the [Critical]: prefix is added and the log color is magenta.
+		*
+		* @see Log::PrintMsg()
+		* @ingroup engine-core
+		*/
+		static void Critical(string Message, std::vector<LogPrefix> Prefixes = {});
 
 		static std::vector<Message> GetMessages();
 		static size_t GetLogMessagesCount();

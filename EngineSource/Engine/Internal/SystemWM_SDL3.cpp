@@ -290,6 +290,7 @@ std::string kui::systemWM::GetTextInput(SysWindow* Target)
 
 uint32_t kui::systemWM::GetDesiredRefreshRate(SysWindow* From)
 {
+	return 60;
 	const SDL_DisplayMode* Mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(From->SDLWindow));
 
 	if (!Mode)
@@ -435,6 +436,12 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 {
 	using namespace engine::subsystem;
 	using namespace engine;
+
+	if (k == SDLK_TAB && IsDown)
+	{
+		TextInput += "\t";
+	}
+
 	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
 	Parent->Input.SetKeyDown(Keys[k], IsDown);
 	InputSys->SetKeyDown(input::Key(k), IsDown);

@@ -5,6 +5,7 @@
 #include "Assets/MaterialEditor.h"
 #include <Editor/ModelConverter.h>
 #include <Editor/UI/DropdownMenu.h>
+#include <Editor/UI/Panels/Assets/TextEditorPanel.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/ProgressBar.h>
 #include <Editor/UI/Windows/RenameWindow.h>
@@ -95,6 +96,14 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 					.Name = "Open",
 					.Icon = EditorUI::Asset("TabDrag.png"),
 					.OnClicked = OnClick,
+				},
+				DropdownMenu::Option{
+					.Name = "View raw",
+					.Icon = "",
+					.OnClicked = [FilePath]()
+					{
+						Viewport::Current->AddChild(new TextEditorPanel(AssetRef::FromPath(FilePath)), Align::Tabs, true);
+					},
 				},
 				DropdownMenu::Option{
 					.Name = "Rename",

@@ -97,7 +97,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 		if (Current->ObjectDestroyed(i))
 			continue;
 
-		if (!Filter.empty() && !str::Lower(i->Name).contains(Filter))
+		if (!Filter.empty() && str::Lower(i->Name).find(Filter) != std::string::npos)
 		{
 			continue;
 		}

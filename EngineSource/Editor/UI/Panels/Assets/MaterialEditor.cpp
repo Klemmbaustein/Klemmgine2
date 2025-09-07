@@ -18,8 +18,6 @@ using namespace engine;
 using namespace engine::graphics;
 using engine::subsystem::VideoSubsystem;
 
-const auto number = std::stoi("15");
-
 engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	: AssetEditor("Material: %s", MaterialFile)
 {

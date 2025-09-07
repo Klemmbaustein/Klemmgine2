@@ -13,3 +13,6 @@
 [submodule "Dependencies/JoltPhysics"]
 	path = Dependencies/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "Dependencies/ProgrammingLanguage"]
+	path = Dependencies/ProgrammingLanguage
+	url = https://github.com/Klemmbaustein/ProgrammingLanguage.git

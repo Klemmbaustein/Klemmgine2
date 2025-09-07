@@ -15,17 +15,17 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\r\n"
     "\0"
@@ -40,8 +40,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 2,0,0,1
+ PRODUCTVERSION 2,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -58,12 +58,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Klemmbaustein"
             VALUE "FileDescription", "Klemmgine 2"
-            VALUE "FileVersion", "2.0.0.0"
+            VALUE "FileVersion", "2.0.0"
             VALUE "InternalName", "Klemmgine"
             VALUE "LegalCopyright", "Copyright (C) 2025"
             VALUE "OriginalFilename", "Klemmgine.exe"
             VALUE "ProductName", "Klemmgine 2"
-            VALUE "ProductVersion", "2.0.0.0"
+            VALUE "ProductVersion", "2.0.0"
         END
     END
     BLOCK "VarFileInfo"

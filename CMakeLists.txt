@@ -27,6 +27,8 @@ option(ENGINE_EDITOR "Compile the editor" OFF)
 option(ENGINE_CSHARP "Include the C# plugin" ON)
 option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 
+add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
+
 if(WIN32)
 	project("Klemmgine" LANGUAGES C CXX RC)
 else()
@@ -105,6 +107,7 @@ include("Dependencies/miniz.cmake")
 
 set(KLEMMUI_DYNAMIC_MARKUP ON)
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
+add_subdirectory("Dependencies/ProgrammingLanguage" EXCLUDE_FROM_ALL)
 set(ENABLE_ALL_WARNINGS OFF)
 set(GENERATE_DEBUG_SYMBOLS OFF)
 set(CPP_RTTI_ENABLED ON)
@@ -184,6 +187,7 @@ target_link_libraries(KlemmgineLib PUBLIC KuiDynamicMarkup)
 target_link_libraries(KlemmgineLib PUBLIC libglew_static)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
+target_link_libraries(KlemmgineCore PUBLIC ProgrammingLanguage)
 
 target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI KlemmgineLib)
 

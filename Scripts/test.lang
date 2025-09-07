@@ -1,0 +1,20 @@
+using engine
+
+module game
+
+class MyObject : SceneObject
+{
+	[Export]
+	string message = "hello world!"
+	[Export]
+	string message2 = ""
+
+	override fn begin()
+	{
+		const testMesh = new MeshComponent()
+		testMesh.load("cube")
+		attach(testMesh)
+
+		info(message)
+	}
+}

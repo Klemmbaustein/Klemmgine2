@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Version.h"
 #include "Editor/Editor.h"
 #include "Subsystem/VideoSubsystem.h"
 #include "Subsystem/EditorSubsystem.h"
@@ -6,6 +7,7 @@
 #include "Subsystem/ConsoleSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
 #include "Subsystem/PluginSubsystem.h"
+#include "Script/ScriptSubsystem.h"
 #include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
 #include "Core/ThreadPool.h"
@@ -34,6 +36,7 @@ Engine* Engine::Init()
 	}
 
 	debug::TimeLogger StartupTime{ "Engine started" };
+	Log::Info(VersionInfo::Get().GetDisplayNameAndBuild());
 
 	internal::AdjustWorkingDirectory();
 
@@ -46,6 +49,7 @@ Engine* Engine::Init()
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());
+	Instance->LoadSubsystem(new script::ScriptSubsystem());
 
 #ifdef EDITOR
 	Instance->LoadSubsystem(new EditorSubsystem());
@@ -136,7 +140,12 @@ void engine::Engine::ErrorCallback(string Error, string StackTrace)
 			delete VideoSys->MainWindow;
 		}
 	}
-	kui::app::MessageBox(str::Format("%s!\nStack trace:\n%s", Error.c_str(), StackTrace.c_str()),
+
+	string ErrorMessage = str::Format("%s!\nStack trace:\n%s", Error.c_str(), StackTrace.c_str());
+
+	Log::Critical(ErrorMessage);
+
+	kui::app::MessageBox(ErrorMessage,
 		"Engine error", kui::app::MessageBoxType::Error);
 #endif
 }

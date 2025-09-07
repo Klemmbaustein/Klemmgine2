@@ -48,14 +48,14 @@ namespace engine
 		* @brief
 		* Reads a serialized object from the given stream.
 		*
-		* Will thrów a SerializeReadException when it encounters an error with reading the data.
+		* Will throw a SerializeReadException when it encounters an error with reading the data.
 		*/
 		static std::vector<SerializedData> FromStream(std::istream& Stream);
 		/**
 		* @brief
 		* Reads a serialized object from a file with the given path.
 		*
-		* Will thrów a SerializeReadException when it encounters an error with reading the data.
+		* Will throw a SerializeReadException when it encounters an error with reading the data.
 		*/
 		static std::vector<SerializedData> FromFile(string File);
 	private:

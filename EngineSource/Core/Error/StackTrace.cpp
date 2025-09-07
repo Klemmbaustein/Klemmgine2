@@ -19,7 +19,6 @@
 #include <cxxabi.h>
 #endif
 
-
 engine::string engine::error::GetStackTrace()
 {
 	std::stringstream OutStream;

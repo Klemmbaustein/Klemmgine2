@@ -40,7 +40,7 @@ namespace engine::editor
 			List,
 		};
 
-		DisplayMode Mode = DisplayMode::List;
+		DisplayMode Mode = DisplayMode::Icons;
 
 	protected:
 

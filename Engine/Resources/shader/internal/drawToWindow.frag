@@ -12,8 +12,8 @@ void main()
 {
 	vec2 viewportTexCoords = (v_texcoords - u_pos) / u_size;
 
-	if (viewportTexCoords.x >= 0 && viewportTexCoords.y >= 0
-		&& viewportTexCoords.x <= 1 && viewportTexCoords.y != 1)
+	if (viewportTexCoords.x >= 0.0 && viewportTexCoords.y >= 0.0
+		&& viewportTexCoords.x <= 1.0 && viewportTexCoords.y != 1.0)
 	{
 		f_color.xyz = texture(u_texture, viewportTexCoords).xyz;
 	}
@@ -21,9 +21,9 @@ void main()
 	vec4 uiColor = texture(u_ui, v_texcoords);
 
 	float uiAlpha = texture(u_alpha, v_texcoords).x;
-	if (uiAlpha > 0)
+	if (uiAlpha > 0.0)
 	{
 		f_color.xyz = mix(f_color.xyz, uiColor.xyz / uiAlpha, uiAlpha);
 	}
-	f_color.w = 1;
+	f_color.w = 1.0;
 }

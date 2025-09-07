@@ -28,8 +28,8 @@ void engine::graphics::Bloom::OnBufferResized(uint32 Width, uint32 Height)
 		FreeBuffer(BloomBuffers[0]);
 		FreeBuffer(BloomBuffers[1]);
 	}
-	BloomWidth = uint32(float(Width) * 0.25f);
-	BloomHeight = uint32(float(Height) * 0.25f);
+	BloomWidth = uint32(float(Width) * 0.2f);
+	BloomHeight = uint32(float(Height) * 0.2f);
 	this->Width = Width;
 	this->Height = Height;
 	BloomBuffers[0] = CreateNewBuffer(BloomWidth, BloomHeight, false);

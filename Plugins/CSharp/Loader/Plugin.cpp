@@ -70,6 +70,7 @@ Functions.push_back(NativeFunction{ \
 
 	static void LoadRuntime()
 	{
+		return;
 		engine::plugin::EnginePluginInterface* Interface = engine::plugin::GetInterface();
 
 #undef STRUCT_MEMBER
@@ -111,5 +112,6 @@ ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
 
 ENGINE_EXPORT void Update(float Delta)
 {
+	return;
 	engine::cSharp::Current->Update(Delta);
 }

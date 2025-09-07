@@ -28,7 +28,7 @@ namespace engine
 		 * @return
 		 * A version string in the format Klemmgine-{VersionNumber} ({Platform} {Compiler} {Architecture}-{Configuration}}
 		 *
-		 * Example: Klemmgine-2.0.0 (Windows MSVC AMD64-Debug)
+		 * Example: Klemmgine 2.0.0 (Windows MSVC AMD64-Debug)
 		 */
 		string GetDisplayName() const;
 
@@ -38,7 +38,7 @@ namespace engine
 		 * @return
 		 * A version string in the format Klemmgine-{VersionNumber} ({Platform} {Compiler} {Architecture}-{Configuration}}\nBuild ID: {BuildId}
 		 *
-		 * Example: Klemmgine-2.0.0 (Windows MSVC AMD64-Debug)\\n
+		 * Example: Klemmgine 2.0.0 (Windows MSVC AMD64-Debug)\\n
 		 *
 		 * Build ID: Release-2.0.0 - DD/MM/YYYY
 		 */

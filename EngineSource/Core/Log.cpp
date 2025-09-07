@@ -1,4 +1,5 @@
 #include "Log.h"
+#include "Log.h"
 #include <Core/Platform/Platform.h>
 #include <iostream>
 std::vector<engine::Log::Message> engine::Log::LogMessages;
@@ -48,6 +49,13 @@ void engine::Log::Error(string Message, std::vector<LogPrefix> Prefixes)
 	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Error", .Color = Log::LogColor::Red, });
 
 	PrintMsg(Message, Log::LogColor::Red, Prefixes);
+}
+
+void engine::Log::Critical(string Message, std::vector<LogPrefix> Prefixes)
+{
+	Prefixes.insert(Prefixes.begin(), LogPrefix{ .Text = "Critical", .Color = Log::LogColor::Magenta, });
+
+	PrintMsg(Message, Log::LogColor::Magenta, Prefixes);
 }
 
 std::vector<engine::Log::Message> engine::Log::GetMessages()

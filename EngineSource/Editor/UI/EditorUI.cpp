@@ -5,6 +5,7 @@
 #include "Panels/ClassBrowser.h"
 #include "Panels/ConsolePanel.h"
 #include "Panels/MessagePanel.h"
+#include "Panels/ScriptEditorPanel.h"
 #include "Panels/ObjectListPanel.h"
 #include "Panels/PropertyPanel.h"
 #include "Panels/Viewport.h"
@@ -225,6 +226,7 @@ engine::editor::EditorUI::EditorUI()
 	RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
 
 	FocusedPanel = vp;
+	vp->AddChild(new ScriptEditorPanel(), EditorPanel::Align::Tabs, false);
 
 	SetStatusMainThread("Editor loaded", StatusType::Info);
 	input::ShowMouseCursor = true;
@@ -332,16 +334,9 @@ void engine::editor::EditorUI::AddMenuBarItem(string Name, std::vector<DropdownM
 	auto* btn = new MenuBarButton();
 	btn->SetName(Name);
 
-	std::vector<DropdownMenu::Option> DropdownOptions;
-
-	for (auto& i : Options)
+	btn->button->OnClicked = [btn, Options]()
 	{
-		DropdownOptions.push_back(i);
-	}
-
-	btn->button->OnClicked = [btn, DropdownOptions]()
-	{
-		new DropdownMenu(DropdownOptions, btn->GetPosition());
+		new DropdownMenu(Options, btn->GetPosition());
 	};
 	MenuBar->AddChild(btn);
 }

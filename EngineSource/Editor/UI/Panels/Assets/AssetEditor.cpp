@@ -1,8 +1,8 @@
-#ifdef EDITOR
 #include "AssetEditor.h"
 #include <Engine/Input.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/MessageWindow.h>
+#include "TextEditorPanel.h"
 
 engine::editor::AssetEditor::AssetEditor(string NameFormat, AssetRef Asset)
 	: EditorPanel(str::Format(NameFormat, Asset.DisplayName().c_str()), "")
@@ -28,6 +28,7 @@ void engine::editor::AssetEditor::Save()
 
 void engine::editor::AssetEditor::Update()
 {
+	EditorPanel::Update();
 	if (!Saved && EditorUI::FocusedPanel == this
 		&& input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s))
 	{
@@ -73,4 +74,3 @@ void engine::editor::AssetEditor::UpdateName()
 	else
 		SetName(str::Format(NameFormat, EditedAsset.DisplayName().c_str()) + "*");
 }
-#endif

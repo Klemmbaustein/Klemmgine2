@@ -16,6 +16,7 @@
 #include <Engine/Graphics/OpenGL.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <stdexcept>
+#include <kui/Rendering/OpenGLBackend.h>
 #include <Engine/File/Resource.h>
 using namespace kui;
 using namespace engine::subsystem;
@@ -56,7 +57,8 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
 	Print("Creating main window", LogType::Note);
-	UIManager::UseAlphaBuffer = true;
+
+	render::OpenGLBackend::UseAlphaBuffer = true;
 
 	auto VersionArg = launchArgs::GetArg("gl");
 
@@ -93,7 +95,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 		OnResized();
 	};
 
-	MainWindow->UI.DrawToWindow = false;
+	static_cast<render::OpenGLBackend*>(MainWindow->UI.Render)->CanDrawToWindow = false;
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, this);
@@ -265,21 +267,16 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 
 	glBindTexture(GL_TEXTURE_2D, Texture);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[0]);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, MainWindow->UI.UITextures[1]);
+	auto GlRender = static_cast<render::OpenGLBackend*>(MainWindow->UI.Render);
 
-	if (SceneSystem && SceneSystem->Main)
-	{
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, graphics::CascadedShadows::LightDepthMaps);
-	}
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, GlRender->UITextures[0]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, GlRender->UITextures[1]);
 
 	PostProcess->SetInt("u_texture", 0);
 	PostProcess->SetInt("u_ui", 1);
 	PostProcess->SetInt("u_alpha", 2);
-	PostProcess->SetInt("u_shadowMap", 3);
 
 #if EDITOR
 	if (EditorSubsystem::Active)

@@ -78,9 +78,6 @@ void engine::MoveComponent::Update()
 	}
 
 	InputDirection = 0;
-
-	//auto Hits = physics::HitResult::GetAverageHit(Collider->CollisionTest(physics::Layer::Static, { RootObject }));
-	//ParentObject->Position += Hits.Normal * Hits.Depth;
 }
 
 Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirection, Vector3 Pos, bool GravityPass, uint32 Depth)

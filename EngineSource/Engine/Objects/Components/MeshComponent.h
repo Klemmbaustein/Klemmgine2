@@ -19,8 +19,13 @@ namespace engine
 		virtual void SimpleDraw(graphics::ShaderObject* With) override;
 
 		void Load(AssetRef From);
+
+		void OnAttached() override;
+
 		~MeshComponent() override;
 
 		void ClearModel(bool RemoveDrawnComponent);
+	private:
+		bool IsRegistered = false;
 	};
 }

@@ -344,6 +344,7 @@ void engine::editor::Viewport::Update()
 		{
 			Current->SceneCamera->Position -= Vector3::Right(Current->SceneCamera->Rotation) * Speed;
 		}
+
 		Win->Input.PollForText = false;
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}

@@ -32,12 +32,12 @@ engine::ObjectTypeID engine::Reflection::RegisterObject(string Name, std::functi
 		MacroTypes = new std::vector<ObjectInfo>();
 	}
 
-	ObjectTypes.insert({ ID, ObjectInfo{
+	ObjectTypes[ID] = ObjectInfo{
 		.TypeID = ID,
 		.Name = Name,
 		.Path = Category,
 		.CreateInstance = NewFunc,
-		} });
+		};
 
 	return ID;
 }
