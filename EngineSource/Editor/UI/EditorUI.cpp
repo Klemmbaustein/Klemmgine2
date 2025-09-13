@@ -129,7 +129,8 @@ engine::editor::EditorUI::EditorUI()
 		{
 			UpdateBackgrounds();
 			RootPanel->ShouldUpdate = true;
-		} });
+			RootPanel->UpdatePanel();
+	} });
 
 	UpdateTheme(VideoSystem->MainWindow);
 

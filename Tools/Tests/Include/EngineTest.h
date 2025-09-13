@@ -70,4 +70,6 @@ namespace engine::test
 #define TEST_SUCCESS() return engine::test::Result{.Success = true}
 #define TEST_FAIL(msg) return engine::test::Result{.Success = false, .ErrorMessage = msg}
 #define TEST_EXPECT(value, expect) if (value != expect) TEST_FAIL(engine::str::Format("\n\t%s != %s", # value, # expect))
+#define TEST_EXPECT_STR(value_str, expect) { engine::string _str_expect = (value_str); if (_str_expect != expect) \
+TEST_FAIL(engine::str::Format("\n\t%s != %s - %s is '%s'", # value_str, # expect, # value_str, _str_expect.c_str())); }
 #define TEST_ASSERT(cond) if (!(cond)) TEST_FAIL(engine::str::Format("\n\tAssert failed: %s", # cond))

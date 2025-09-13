@@ -42,7 +42,7 @@ uint32 engine::graphics::Bloom::Draw(uint32 Texture, PostProcess* With, Framebuf
 	BloomShader->SetInt(BloomTextureLocation, 0);
 	BloomShader->SetVec2(TextureSizeLocation, Vector2(1.0f) / Vector2(float(BloomWidth), float(BloomHeight)));
 
-	size_t BloomAmount = 12;
+	size_t BloomAmount = 25;
 	bool Horizontal = false;
 
 	uint32 IterationTexture = Texture;

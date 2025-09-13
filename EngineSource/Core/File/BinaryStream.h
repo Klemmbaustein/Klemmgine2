@@ -4,10 +4,10 @@
 
 namespace engine
 {
-	ENGINE_INTERFACE IBinaryStream
+	class IBinaryStream
 	{
 	public:
-		virtual ~IBinaryStream() {};
+		virtual ~IBinaryStream() = default;
 
 		virtual bool IsReadOnly() const = 0;
 		virtual bool IsWriteOnly() const = 0;
@@ -27,7 +27,8 @@ namespace engine
 			return Out;
 		}
 
-		template<typename T> T Get()
+		template<typename T>
+		T Get()
 		{
 			T Out = T();
 			if (!Read((uByte*)&Out, sizeof(Out)))
@@ -61,6 +62,14 @@ namespace engine
 			{
 				Out.push_back(char(Char));
 			}
+		}
+
+		[[nodiscard]]
+		string ReadString()
+		{
+			string Result;
+			ReadString(Result);
+			return Result;
 		}
 	};
 

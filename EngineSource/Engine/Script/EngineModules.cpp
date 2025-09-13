@@ -1,6 +1,7 @@
 #include "EngineModules.h"
 #include <Engine/Objects/Components/MeshComponent.h>
 #include <Engine/Objects/SceneObject.h>
+#include <Engine/Input.h>
 #include <language.hpp>
 #include <modules/system.hpp>
 #include <native/nativeModule.hpp>
@@ -9,6 +10,7 @@
 #include <Engine/Script/ScriptObject.h>
 
 using namespace lang;
+using namespace engine::input;
 using namespace engine;
 
 class ExportAttribute : public modules::system::ReflectAttribute
@@ -61,6 +63,11 @@ static void Log_Warn(InterpretContext* context)
 	Log::Warn(std::string(message.ptr(), message.length()));
 }
 
+static void Input_IsKeyDown(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsKeyDown(context->popValue<Key>()));
+}
+
 void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
@@ -104,5 +111,20 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 
 	EngineModule.attributes.push_back(new ExportAttribute());
 
+	NativeModule EngineInputModule;
+	EngineInputModule.name = "engine::input";
+	auto KeyType = EngineInputModule.createEnum("Key");
+	EngineInputModule.addEnumValue(KeyType, "a", Key::a);
+	EngineInputModule.addEnumValue(KeyType, "b", Key::b);
+	EngineInputModule.addEnumValue(KeyType, "c", Key::c);
+	EngineInputModule.addEnumValue(KeyType, "d", Key::d);
+	EngineInputModule.addEnumValue(KeyType, "e", Key::e);
+	EngineInputModule.addEnumValue(KeyType, "f", Key::f);
+	EngineInputModule.addEnumValue(KeyType, "g", Key::g);
+	EngineInputModule.addEnumValue(KeyType, "h", Key::h);
+	EngineInputModule.addEnumValue(KeyType, "i", Key::i);
+	EngineInputModule.addFunction(NativeFunction({FunctionArgument(KeyType, "toCheck")}, BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
+
 	ToContext->addNativeModule(EngineModule);
+	ToContext->addNativeModule(EngineInputModule);
 }

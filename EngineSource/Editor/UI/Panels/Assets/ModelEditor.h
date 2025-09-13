@@ -23,7 +23,6 @@ namespace engine::editor
 
 	private:
 		void OnModelLoaded();
-		string GetDisplayName(string Asset);
 
 		void OnModelChanged();
 

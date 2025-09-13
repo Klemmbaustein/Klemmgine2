@@ -506,12 +506,15 @@ void engine::Scene::Init()
 		SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 		UsedCamera = SceneCamera;
 
+		// Editor controls resizing of scenes otherwise
+#if !EDITOR
 		VideoSystem->OnResizedCallbacks.insert({ this,
 			[this](kui::Vec2ui NewSize)
 			{
 				if (Resizable)
 					OnResized(NewSize);
 			} });
+#endif
 
 		PostProcess.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
 		Shadows.Init();

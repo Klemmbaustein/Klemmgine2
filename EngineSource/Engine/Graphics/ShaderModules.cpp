@@ -229,7 +229,7 @@ ShaderUniform engine::graphics::ShaderModuleLoader::ReadUniformDefinition(string
 
 	std::map<string, Material::Field::Type> TypeNames = {
 		{ "int", Material::Field::Type::Int },
-		{ "float", Material::Field::Type::Int },
+		{ "float", Material::Field::Type::Float },
 		{ "sampler2D", Material::Field::Type::Texture },
 		{ "vec3", Material::Field::Type::Vec3 },
 		{ "bool", Material::Field::Type::Bool },

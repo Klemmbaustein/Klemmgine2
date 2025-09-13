@@ -11,7 +11,7 @@ namespace engine
 	public:
 		Archive();
 		Archive(string FileName);
-		Archive(const Archive&) = delete;
+		Archive(IBinaryStream* FromStream);
 		~Archive();
 
 		ReadOnlyBufferStream* GetFile(string Name) const;
@@ -24,7 +24,12 @@ namespace engine
 		std::vector<string> GetArchiveFiles();
 
 		void Save(string FilePath);
+		void Save(IBinaryStream* Stream);
 	private:
+
+		void LoadInternal(IBinaryStream* Stream);
+		Archive(const Archive&) = default;
+
 		struct ArchiveData
 		{
 			uByte* Bytes = nullptr;

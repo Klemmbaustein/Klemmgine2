@@ -14,7 +14,7 @@ void engine::PlayerObject::Begin()
 	Attach(Cam);
 	Cam->Use();
 	Cam->SetFov(70);
-	Cam->Position.Y = 0.4f;
+	Cam->Position.Y = 0.75f;
 
 	auto Mesh = new MeshComponent();
 	Attach(Mesh);

@@ -22,6 +22,8 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 	EditorScene = new Scene();
 	EditorScene->Physics.Active = false;
 	EditorScene->Resizable = false;
+	EditorScene->AlwaysRedraw = false;
+	EditorScene->Redraw = true;
 
 	CurrentObj = EditorScene->CreateObject<MeshObject>();
 
@@ -93,6 +95,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 					EditorScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
 					this->SceneBackground->RedrawElement();
 					this->ModelLoaded = true;
+					this->EditorScene->Redraw = true;
 				});
 		});
 }
@@ -166,10 +169,12 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	auto AddBoolProperty = [this, PropertiesBox, Data](string Name, bool& Value)
 		{
 			auto Checkbox = new UICheckbox(Value, nullptr);
-			Checkbox->OnClicked = [&Value, Checkbox]()
+			Checkbox->OnClicked = [this, &Value, Checkbox]()
 				{
 					Value = Checkbox->Value;
-				};
+					OnChanged();
+					OnModelChanged();
+			};
 			PropertiesBox->AddChild((new UIBox(true))
 				->SetVerticalAlign(UIBox::Align::Centered)
 				->AddChild((new UIText(11_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
@@ -183,14 +188,10 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	AddBoolProperty("Cast shadow", Data->Data->CastShadow);
 }
 
-engine::string engine::editor::ModelEditor::GetDisplayName(string Asset)
-{
-	return "Model: " + Asset;
-}
-
 void engine::editor::ModelEditor::OnModelChanged()
 {
 	CurrentObj->LoadMesh(EditedAsset);
+	EditorScene->Redraw = true;
 	SceneBackground->RedrawElement();
 }
 void engine::editor::ModelEditor::Update()
@@ -227,6 +228,7 @@ void engine::editor::ModelEditor::OnResized()
 	EditorScene->OnResized(EditorScene->BufferSize);
 	SceneBackground->SetMinSize(SizeVec(PixelSize, SizeMode::PixelRelative));
 	SceneBackground->SetMaxSize(SizeVec(PixelSize, SizeMode::PixelRelative));
+	this->EditorScene->Redraw = true;
 	OnModelLoaded();
 }
 #endif

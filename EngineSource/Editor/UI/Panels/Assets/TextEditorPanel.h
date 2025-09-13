@@ -20,6 +20,5 @@ namespace engine::editor
 		string NameFormat;
 		bool Saved = true;
 		void UpdateName();
-		void RunScript();
 	};
 }

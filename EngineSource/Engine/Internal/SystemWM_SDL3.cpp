@@ -4,6 +4,7 @@
 #include <kui/App.h>
 #include <iostream>
 #include <Engine/Engine.h>
+#include <Engine/Subsystem/VideoSubsystem.h>
 #include <Engine/Subsystem/InputSubsystem.h>
 #include "PlatformGraphics.h"
 
@@ -66,6 +67,22 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 		SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE),
 		SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE),
 	};
+
+#if WINDOWS
+
+	auto eventWatch = [](void* userdata, SDL_Event* event) -> bool {
+		if (event->type == SDL_EVENT_WINDOW_RESIZED)
+		{
+			auto win = (SysWindow*)userdata;
+			win->Parent->OnResized();
+			win->Parent->RedrawInternal();
+			engine::Engine::Instance->GetSubsystem<engine::subsystem::VideoSubsystem>()->RenderUpdate();
+		}
+		return true;
+	};
+
+	SDL_AddEventWatch(eventWatch, OutWindow);
+#endif
 
 	return OutWindow;
 }

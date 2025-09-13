@@ -224,7 +224,7 @@ void engine::editor::MaterialEditor::LoadUI()
 			};
 			break;
 		case Material::Field::Type::Float:
-			Field->field->field->SetText(std::to_string(i.Float));
+			Field->field->field->SetText(str::FloatToString(i.Float));
 			Field->field->field->OnChanged = [this, field = Field->field->field, &i]()
 			{
 				try

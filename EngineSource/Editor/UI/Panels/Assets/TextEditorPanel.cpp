@@ -31,9 +31,6 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 	EditorToolbar->AddButton("Save", EditorUI::Asset("Save.png"), [this]() {
 		Save();
 	});
-	EditorToolbar->AddButton("Run", EditorUI::Asset("Run.png"), [this]() {
-		RunScript();
-	});
 	this->Background->SetHorizontal(false);
 
 	this->Background->AddChild(EditorToolbar);
@@ -61,27 +58,4 @@ void engine::editor::TextEditorPanel::Save()
 	std::ofstream out = std::ofstream(this->EditedAsset.FilePath);
 
 	out << this->Provider->GetContent();
-}
-
-void engine::editor::TextEditorPanel::RunScript()
-{
-	using namespace lang;
-
-	auto Language = Engine::GetSubsystem<script::ScriptSubsystem>()->ScriptLanguage;
-
-	ParseContext* Compiler = Language->createCompiler();
-
-	Compiler->errors.writeError = [](std::string str)
-	{
-		Log::Info(str);
-	};
-
-	Compiler->addString(this->Provider->GetContent(), this->EditedAsset.FilePath);
-
-	BytecodeStream Code = Compiler->compile();
-
-	InterpretContext* Interpreter = Language->createInterpreter();
-
-	Interpreter->loadBytecode(&Code);
-	Interpreter->run();
 }

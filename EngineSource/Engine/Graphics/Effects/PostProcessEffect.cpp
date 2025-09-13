@@ -60,5 +60,8 @@ uint32 engine::graphics::PostProcessEffect::DrawBuffer(uint64 Buffer, uint32 Wid
 
 void engine::graphics::PostProcessEffect::FreeBuffer(uint64 Buffer)
 {
+	uint32 FrameBuffer = uint32(Buffer), Texture = uint32(Buffer >> 32);
+	glDeleteFramebuffers(1, &FrameBuffer);
+	glDeleteTextures(1, &Texture);
 }
 

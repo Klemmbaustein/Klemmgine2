@@ -9,6 +9,10 @@ uniform bool u_useTexture = false;
 uniform vec3 u_color = vec3(1, 1, 1);
 #param //!
 uniform vec3 u_emissive = vec3(0, 0, 0);
+#param //!
+uniform float u_specularStrength = 0;
+#param //!
+uniform float u_specularSize = 16;
 
 vec3 fragment()
 {
@@ -17,5 +21,6 @@ vec3 fragment()
 	if (pixelColor.w < 0.5)
 		discard;
 
-	return applyLighting(pixelColor.xyz * u_color) + u_emissive;
+	return applyLightingSpecular(pixelColor.xyz * u_color, u_specularStrength, u_specularSize)
+		+ u_emissive * pixelColor.rgb;
 }

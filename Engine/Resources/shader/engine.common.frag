@@ -151,21 +151,21 @@ float getLightStrength()
 }
 
 #export //!
-vec3 applyLightingSpecular(vec3 color, float specular)
+vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize)
 {
 	vec3 ambient = color * u_ambientStrength * u_ambientColor;
 
 	vec3 viewDir = normalize(u_cameraPos - v_position);
 	vec3 reflectDir = reflect(-u_lightDirection, v_normal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 spec_color = spec * specular * u_lightColor;
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularSize);
+	vec3 spec_color = spec * specularStength * u_lightColor;
 	return (color + spec_color) * getLightStrength() + ambient;
 }
 
 #export //!
 vec3 applyLighting(vec3 color)
 {
-	return applyLightingSpecular(color, 1.0);
+	return applyLightingSpecular(color, 0.0, 1.0);
 }
 
 vec3 fragment();

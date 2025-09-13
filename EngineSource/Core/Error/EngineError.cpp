@@ -2,6 +2,7 @@
 #include <csignal>
 #include <Core/Error/StackTrace.h>
 #include <map>
+#include <exception>
 #include <Core/Platform/Platform.h>
 #include <Core/Log.h>
 using namespace engine;
@@ -45,7 +46,6 @@ static void SignalHandler(int Signal)
 		return;
 	}
 	SignalReceived = true;
-
 	error::Abort(str::Format("Signal raised: %s", SignalTypes[Signal]));
 }
 

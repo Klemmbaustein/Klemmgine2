@@ -10,7 +10,7 @@
 using namespace lang;
 
 engine::script::ScriptSubsystem::ScriptSubsystem()
-	: subsystem::Subsystem("Script", Log::LogColor::Yellow)
+: subsystem::Subsystem("Script", Log::LogColor::Yellow)
 {
 	this->ScriptLanguage = new LanguageContext();
 	modules::registerStandardLibrary(this->ScriptLanguage);
@@ -22,14 +22,6 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 }
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
-{
-}
-
-void engine::script::ScriptSubsystem::Update()
-{
-}
-
-void engine::script::ScriptSubsystem::RenderUpdate()
 {
 }
 
@@ -61,12 +53,16 @@ void engine::script::ScriptSubsystem::Reload()
 		Print(Message, LogType::Error);
 	};
 
-	for (auto& i : std::filesystem::recursive_directory_iterator("Scripts/"))
+	if (std::filesystem::exists("Scripts/"))
 	{
-		Compiler->addFile(i.path().string());
+		for (auto& i : std::filesystem::recursive_directory_iterator("Scripts/"))
+		{
+			Compiler->addFile(i.path().string());
+		}
 	}
 
 	*ScriptInstructions = Compiler->compile();
+	delete Compiler;
 
 	this->Interpreter = this->ScriptLanguage->createInterpreter();
 	this->Interpreter->loadBytecode(ScriptInstructions);

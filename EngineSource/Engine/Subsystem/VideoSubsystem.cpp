@@ -186,25 +186,25 @@ void engine::subsystem::VideoSubsystem::RegisterCommands(ConsoleSubsystem* Syste
 		} });
 
 	System->AddCommand(console::Command{
-	.Name = "time_scale",
-	.Args = { console::Command::Argument{
-		.Name = "value",
-		.Required = true,
-	}, },
-	.OnCalled = [this](const console::Command::CallContext& ctx) {
-		try
-		{
-			TimeScale = std::stof(ctx.ProvidedArguments.at(0));
-		}
-		catch (std::invalid_argument&)
-		{
-			ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
-		}
-		catch (std::out_of_range&)
-		{
-			ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
-		}
-	} });
+		.Name = "time_scale",
+		.Args = { console::Command::Argument{
+			.Name = "value",
+			.Required = true,
+		}, },
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
+			try
+			{
+				TimeScale = std::stof(ctx.ProvidedArguments.at(0));
+			}
+			catch (std::invalid_argument&)
+			{
+				ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+			}
+			catch (std::out_of_range&)
+			{
+				ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
+			}
+		} });
 }
 
 engine::subsystem::VideoSubsystem::~VideoSubsystem()
@@ -252,7 +252,8 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 		glDisable(GL_DEPTH_TEST);
 	}
 
-	auto PostProcess = MainWindow->Shaders.LoadShader("shader/internal/postProcess.vert", "shader/internal/drawToWindow.frag", "engineToWindow");
+	auto PostProcess = MainWindow->Shaders.LoadShader("shader/internal/postProcess.vert",
+		"shader/internal/drawToWindow.frag", "engineToWindow");
 
 	uint32 Texture = 0;
 

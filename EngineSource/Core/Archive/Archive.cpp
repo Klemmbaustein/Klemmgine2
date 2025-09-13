@@ -1,6 +1,7 @@
 #include "Archive.h"
 #include "miniz.h"
 #include <Core/File/FileUtil.h>
+#include <Core/Log.h>
 
 using namespace engine;
 
@@ -14,43 +15,13 @@ engine::Archive::Archive()
 
 engine::Archive::Archive(string FileName)
 {
-	FileStream ArchiveFile = FileStream(FileName, true);
+	FileStream Stream = FileStream(FileName, true);
+	LoadInternal(&Stream);
+}
 
-	// Reads file header: [format string (string)] [file count (size_t)]
-
-	string FileHeader;
-	ArchiveFile.ReadString(FileHeader);
-	if (FileHeader != ARCHIVE_FORMAT_STRING)
-	{
-		return;
-	}
-
-	size_t NumFiles = ArchiveFile.Get<size_t>();
-
-	for (size_t i = 0; i < NumFiles; i++)
-	{
-		// Reads file entry: [name (string)] [compressed size (size_t)] [uncompressed size (size_t)] [file buffer (uByte * compressed size)]
-
-		string FileName;
-		ArchiveFile.ReadString(FileName);
-		size_t CompressedSize = ArchiveFile.Get<size_t>();
-		mz_ulong FileSize = mz_ulong(ArchiveFile.Get<size_t>());
-
-		uByte* CompressedFile = new uByte[CompressedSize]();
-		uByte* DecompressedFile = new uByte[FileSize]();
-		ArchiveFile.Read(CompressedFile, CompressedSize);
-
-		mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
-
-		delete[] CompressedFile;
-
-		Streams.insert({ FileName, ArchiveData{
-			.Bytes = DecompressedFile,
-			.Size = FileSize
-			} });
-
-		FileNames.insert({ file::FileName(FileName), FileName });
-	}
+engine::Archive::Archive(IBinaryStream* FromStream)
+{
+	LoadInternal(FromStream);
 }
 
 engine::Archive::~Archive()
@@ -115,28 +86,89 @@ void engine::Archive::Save(string FilePath)
 {
 	FileStream ArchiveFile = FileStream(FilePath, false);
 
+	Save(&ArchiveFile);
+}
+
+void engine::Archive::Save(IBinaryStream* Stream)
+{
 	// Writes file header: [format string (string)] [file count (size_t)]
 
-	ArchiveFile.WriteString(ARCHIVE_FORMAT_STRING);
+	Stream->WriteString(ARCHIVE_FORMAT_STRING);
 
-	ArchiveFile.WriteValue(Streams.size());
+	Stream->WriteValue(Streams.size());
 
 	for (auto& [Name, Data] : Streams)
 	{
 		// Writes file entry: [name (string)] [compressed size (size_t)] [uncompressed size (size_t)] [file buffer (uByte * compressed size)]
 
-		ArchiveFile.WriteString(Name);
+		Stream->WriteString(Name);
 
 		uByte* CompressedFile = new uByte[Data.Size]();
 
 		mz_ulong CompressedSize = mz_ulong(Data.Size);
-		mz_compress(CompressedFile, &CompressedSize, Data.Bytes, mz_ulong(Data.Size));
+		int Error = mz_compress(CompressedFile, &CompressedSize, Data.Bytes, mz_ulong(Data.Size));
 
-		ArchiveFile.WriteValue(size_t(CompressedSize));
-		ArchiveFile.WriteValue(Data.Size);
+		if (Error != MZ_OK)
+		{
+			Log::Error("Deflate compress error: " + string(mz_error(Error)));
+			break;
+		}
 
-		ArchiveFile.Write(CompressedFile, CompressedSize);
+		Stream->WriteValue(size_t(CompressedSize));
+		Stream->WriteValue(Data.Size);
+
+		Stream->Write(CompressedFile, CompressedSize);
 
 		delete[] CompressedFile;
+	}
+}
+
+void engine::Archive::LoadInternal(IBinaryStream* Stream)
+{
+	// Reads file header: [format string (string)] [file count (size_t)]
+
+	string FileHeader;
+	Stream->ReadString(FileHeader);
+	if (FileHeader != ARCHIVE_FORMAT_STRING)
+	{
+		Log::Error("Format error. Incorrect header.");
+		return;
+	}
+
+	size_t NumFiles = Stream->Get<size_t>();
+
+	for (size_t i = 0; i < NumFiles; i++)
+	{
+		// Reads file entry: [name (string)] [compressed size (size_t)] [uncompressed size (size_t)] [file buffer (uByte * compressed size)]
+
+		string FileName;
+		Stream->ReadString(FileName);
+		size_t CompressedSize = Stream->Get<size_t>();
+		mz_ulong FileSize = mz_ulong(Stream->Get<size_t>());
+
+		uByte* CompressedFile = new uByte[CompressedSize]();
+		uByte* DecompressedFile = new uByte[FileSize]();
+		if (!Stream->Read(CompressedFile, CompressedSize))
+		{
+			Log::Error(str::Format("Format error. Could not read %i bytes", CompressedSize));
+			return;
+		}
+
+		int Error = mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
+
+		if (Error != MZ_OK)
+		{
+			Log::Error("Deflate compress error: " + string(mz_error(Error)));
+			break;
+		}
+
+		delete[] CompressedFile;
+
+		Streams.insert({ FileName, ArchiveData{
+			.Bytes = DecompressedFile,
+			.Size = FileSize
+			} });
+
+		FileNames.insert({ file::FileName(FileName), FileName });
 	}
 }

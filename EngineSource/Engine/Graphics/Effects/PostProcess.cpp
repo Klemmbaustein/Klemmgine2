@@ -21,8 +21,8 @@ engine::graphics::PostProcess::~PostProcess()
 		delete Effect;
 	}
 
-	glDeleteFramebuffers(2, PostProcessBuffers.data());
-	glDeleteTextures(2, PostProcessTextures.data());
+	glDeleteFramebuffers(GLsizei(PostProcessBuffers.size()), PostProcessBuffers.data());
+	glDeleteTextures(GLsizei(PostProcessTextures.size()), PostProcessTextures.data());
 }
 
 void engine::graphics::PostProcess::Init(uint32 Width, uint32 Height)
@@ -40,8 +40,8 @@ void engine::graphics::PostProcess::OnBufferResized(uint32 Width, uint32 Height)
 {
 	this->Width = Width;
 	this->Height = Height;
-	glDeleteFramebuffers(2, PostProcessBuffers.data());
-	glDeleteTextures(2, PostProcessTextures.data());
+	glDeleteFramebuffers(GLsizei(PostProcessBuffers.size()), PostProcessBuffers.data());
+	glDeleteTextures(GLsizei(PostProcessTextures.size()), PostProcessTextures.data());
 	GenerateBuffers();
 
 	for (PostProcessEffect* Effect : this->ActiveEffects)

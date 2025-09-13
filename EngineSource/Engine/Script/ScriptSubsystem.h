@@ -22,9 +22,6 @@ namespace engine::script
 		ScriptSubsystem();
 		virtual ~ScriptSubsystem() override;
 
-		virtual void Update() override;
-		virtual void RenderUpdate() override;
-
 		virtual void RegisterCommands(subsystem::ConsoleSubsystem* System) override;
 
 		void Reload();
