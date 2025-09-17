@@ -5,6 +5,7 @@
 #include <language.hpp>
 #include <modules/standardLibrary.hpp>
 #include <Engine/Debug/TimeLogger.h>
+#include <Engine/Scene.h>
 #include <filesystem>
 
 using namespace lang;
@@ -17,12 +18,15 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 	RegisterEngineModules(this->ScriptLanguage);
 
 	ScriptInstructions = new BytecodeStream();
+	Interpreter = this->ScriptLanguage->createInterpreter();
 
 	Reload();
 }
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
 {
+	delete this->Interpreter;
+	delete this->ScriptLanguage;
 }
 
 void engine::script::ScriptSubsystem::RegisterCommands(subsystem::ConsoleSubsystem* System)
@@ -39,9 +43,18 @@ void engine::script::ScriptSubsystem::RegisterCommands(subsystem::ConsoleSubsyst
 
 void engine::script::ScriptSubsystem::Reload()
 {
-	if (this->Interpreter)
+	auto CurrentScene = Scene::GetMain();
+
+	if (CurrentScene)
 	{
-		delete this->Interpreter;
+		for (auto& i : CurrentScene->Objects)
+		{
+			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
+			if (ScriptObj)
+			{
+				ScriptObj->UnloadScriptData();
+			}
+		}
 	}
 
 	auto Compiler = this->ScriptLanguage->createCompiler();
@@ -53,19 +66,36 @@ void engine::script::ScriptSubsystem::Reload()
 		Print(Message, LogType::Error);
 	};
 
-	if (std::filesystem::exists("Scripts/"))
+	if (std::filesystem::is_directory("Scripts"))
 	{
-		for (auto& i : std::filesystem::recursive_directory_iterator("Scripts/"))
+		for (auto& i : std::filesystem::recursive_directory_iterator("Scripts"))
 		{
 			Compiler->addFile(i.path().string());
 		}
 	}
 
-	*ScriptInstructions = Compiler->compile();
+	auto NewInstructions = Compiler->compile();;
 	delete Compiler;
 
-	this->Interpreter = this->ScriptLanguage->createInterpreter();
+	if (NewInstructions.code.empty())
+	{
+		return;
+	}
+	*ScriptInstructions = NewInstructions;
 	this->Interpreter->loadBytecode(ScriptInstructions);
+
+	if (CurrentScene)
+	{
+		for (auto& i : CurrentScene->Objects)
+		{
+			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
+			if (ScriptObj)
+			{
+				ScriptObj->Class = ScriptInstructions->reflect.types[ScriptObj->Class.hash];
+				ScriptObj->LoadScriptData();
+			}
+		}
+	}
 
 	for (auto& [Id, TypeInfo] : ScriptInstructions->reflect.types)
 	{

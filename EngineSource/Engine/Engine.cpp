@@ -48,8 +48,8 @@ Engine* Engine::Init()
 	Instance->LoadSubsystem(new PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
-	Instance->LoadSubsystem(new SceneSubsystem());
 	Instance->LoadSubsystem(new script::ScriptSubsystem());
+	Instance->LoadSubsystem(new SceneSubsystem());
 
 #ifdef EDITOR
 	Instance->LoadSubsystem(new EditorSubsystem());

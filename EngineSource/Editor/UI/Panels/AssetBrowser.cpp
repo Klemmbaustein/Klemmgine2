@@ -90,45 +90,55 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 		auto IconAndColor = EditorUI::GetExtIconAndColor(i.is_directory() ? "dir/" : Extension);
 
-		auto OnRightClick = [this, OnClick, FilePath]() {
-			new DropdownMenu({
-				DropdownMenu::Option{
-					.Name = "Open",
-					.Icon = EditorUI::Asset("TabDrag.png"),
-					.OnClicked = OnClick,
-				},
-				DropdownMenu::Option{
+		auto OnRightClick = [this, OnClick, FilePath, Extension]() {
+
+			std::vector<DropdownMenu::Option> Options;
+			Options.push_back(DropdownMenu::Option{
+				.Name = "Open",
+				.Icon = EditorUI::Asset("TabDrag.png"),
+				.OnClicked = OnClick,
+				});
+
+			if (Extension != "dir/")
+			{
+				Options.push_back(DropdownMenu::Option{
 					.Name = "View raw",
 					.Icon = "",
-					.OnClicked = [FilePath]()
+					.OnClicked = [FilePath]
 					{
-						Viewport::Current->AddChild(new TextEditorPanel(AssetRef::FromPath(FilePath)), Align::Tabs, true);
+						Viewport::Current->AddChild(
+							new TextEditorPanel(AssetRef::FromPath(FilePath)),
+							Align::Tabs, true);
 					},
-				},
-				DropdownMenu::Option{
-					.Name = "Rename",
-					.Icon = EditorUI::Asset("Rename.png"),
-					.OnClicked = [this, FilePath]()
+					});
+			}
+
+			Options.push_back(DropdownMenu::Option{
+				.Name = "Rename",
+				.Icon = EditorUI::Asset("Rename.png"),
+				.OnClicked = [this, FilePath]()
+				{
+					new RenameWindow(FilePath, [this, FilePath](string NewPath)
 					{
-						new RenameWindow(FilePath, [this, FilePath](string NewPath)
-						{
-							std::filesystem::rename(FilePath, NewPath);
-							resource::ScanForAssets();
-							UpdateItems();
-						});
-					},
-				},
-				DropdownMenu::Option{
-					.Name = "Delete",
-					.Icon = EditorUI::Asset("X.png"),
-					.OnClicked = [this, FilePath]()
-					{
-						std::filesystem::remove_all(FilePath);
+						std::filesystem::rename(FilePath, NewPath);
 						resource::ScanForAssets();
 						UpdateItems();
-					},
-				}
-				}, kui::Window::GetActiveWindow()->Input.MousePosition);
+					});
+				},
+				});
+
+			Options.push_back(DropdownMenu::Option{
+				.Name = "Delete",
+				.Icon = EditorUI::Asset("X.png"),
+				.OnClicked = [this, FilePath]()
+				{
+					std::filesystem::remove_all(FilePath);
+					resource::ScanForAssets();
+					UpdateItems();
+				},
+				});
+
+			new DropdownMenu(Options, kui::Window::GetActiveWindow()->Input.MousePosition);
 		};
 
 		Out.push_back(Item{

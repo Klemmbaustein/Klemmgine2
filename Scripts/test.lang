@@ -1,18 +1,42 @@
 using engine
 using engine::input
+using system::io
 
 module game
 
+fn test()
+{
+}
+
 class MyObject : SceneObject
 {
+	[Export]
+	string message = "hi"
+
+	MoveComponent movement = new MoveComponent()
+
 	override fn begin()
 	{
 		const testMesh = new MeshComponent()
 		testMesh.load("cube")
 		attach(testMesh)
+
+		attach(movement)
+
+		warn(message)
 	}
 
 	override fn update()
 	{
+		if isKeyDown(Key::c)
+		{
+			info("move in some direction")
+			movement.addInput(vec3(1, 0, 0))
+		}
+	}
+
+	override fn destroy()
+	{
+		test()
 	}
 }

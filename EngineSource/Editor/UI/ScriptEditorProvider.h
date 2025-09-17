@@ -45,7 +45,23 @@ namespace engine::editor
 
 	private:
 
+		struct HoverErrorData
+		{
+			ScriptError* Error = nullptr;
+			kui::EditorPosition At;
+		};
+
+		struct HoverSymbolData
+		{
+			lang::ScannedFunction* Symbol = nullptr;
+			kui::EditorPosition At;
+		};
+
+		HoverErrorData GetHoveredError(kui::Vec2f ScreenPosition);
+		HoverSymbolData GetHoveredSymbol(kui::Vec2f ScreenPosition);
 		kui::Timer HoverTime;
+
+		void* HoveredData = nullptr;
 
 		kui::UIBox* HoveredBox = nullptr;
 		kui::Vec2f LastCursorPosition;

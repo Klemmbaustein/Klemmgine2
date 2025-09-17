@@ -7,12 +7,65 @@ engine::script::ScriptObject::ScriptObject(const lang::TypeInfo& Class,
 	lang::InterpretContext* Interpreter)
 	: Class(Class), Interpreter(Interpreter)
 {
+	LoadScriptData();
+}
+
+void engine::script::ScriptObject::Begin()
+{
+	if (!this->ScriptData)
+	{
+		this->ScriptData = Class.create(Interpreter);
+		ClassRef<ScriptObjectData*> Data = this->ScriptData;
+
+		Data.getValue() = new ScriptObjectData{
+			.Parent = this,
+			.Position = this->Position,
+		};
+	}
+
+	for (auto& i : this->Properties)
+	{
+		i->OnChanged();
+	}
+
+	if (ScriptData->vtable[1])
+	{
+		Interpreter->pushValue(this->ScriptData);
+		Interpreter->virtualCall(ScriptData->vtable[1]);
+	}
+}
+
+void engine::script::ScriptObject::Update()
+{
+	if (ScriptData->vtable[3])
+	{
+		auto Data = reinterpret_cast<ScriptObjectData*>(this->ScriptData->getBody());
+		Data->Position = this->Position;
+		Interpreter->pushValue(this->ScriptData);
+		Interpreter->virtualCall(ScriptData->vtable[3]);
+		this->Position = Data->Position;
+	}
+}
+
+void engine::script::ScriptObject::LoadScriptData()
+{
+	if (this->ScriptData)
+	{
+		delete this->ScriptData;
+	}
+
 	this->ScriptData = Class.create(Interpreter);
 	ClassRef<ScriptObjectData*> Data = this->ScriptData;
 
 	Data.getValue() = new ScriptObjectData{
 		.Parent = this
 	};
+
+	for (auto& i : this->Properties)
+	{
+		delete i;
+	}
+	Properties.clear();
 
 	for (auto& i : this->Class.members)
 	{
@@ -30,40 +83,18 @@ engine::script::ScriptObject::ScriptObject(const lang::TypeInfo& Class,
 	}
 }
 
-void engine::script::ScriptObject::Begin()
+void engine::script::ScriptObject::UnloadScriptData()
 {
-	if (!this->ScriptData)
-	{
-		this->ScriptData = Class.create(Interpreter);
-		ClassRef<ScriptObjectData*> Data = this->ScriptData;
-
-		Data.getValue() = new ScriptObjectData{
-			.Parent = this
-		};
-	}
-
-	for (auto& i : this->Properties)
-	{
-		i->OnChanged();
-	}
-
-	Interpreter->pushValue(this->ScriptData);
-	Interpreter->virtualCall(ScriptData->vtable[1]);
-}
-
-void engine::script::ScriptObject::Update()
-{
-	if (ScriptData->vtable[3])
-	{
-		Interpreter->pushValue(this->ScriptData);
-		Interpreter->virtualCall(ScriptData->vtable[3]);
-	}
+	Interpreter->destruct(ScriptData);
+	this->ScriptData = nullptr;
 }
 
 void engine::script::ScriptObject::OnDestroyed()
 {
-	Interpreter->pushValue(this->ScriptData);
-	Interpreter->virtualCall(ScriptData->vtable[2]);
-	Interpreter->destruct(ScriptData);
-	this->ScriptData = nullptr;
+	if (ScriptData->vtable[2])
+	{
+		Interpreter->pushValue(this->ScriptData);
+		Interpreter->virtualCall(ScriptData->vtable[2]);
+	}
+	UnloadScriptData();
 }

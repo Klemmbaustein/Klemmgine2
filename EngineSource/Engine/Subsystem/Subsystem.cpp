@@ -40,7 +40,7 @@ Subsystem::Subsystem(const char* Name, engine::Log::LogColor Color)
 
 Subsystem::~Subsystem()
 {
-	Print("Destroying subsystem: " + string(Name), LogType::Note);
+	Print("Destroyed subsystem: " + string(Name), LogType::Note);
 }
 
 void Subsystem::Update()

@@ -18,9 +18,14 @@ namespace engine::script
 		virtual void Begin();
 		virtual void OnDestroyed();
 		virtual void Update();
+
+		void LoadScriptData();
+		void UnloadScriptData();
 	};
+
 	struct ScriptObjectData
 	{
 		ScriptObject* Parent = nullptr;
+		Vector3 Position = 0;
 	};
 }

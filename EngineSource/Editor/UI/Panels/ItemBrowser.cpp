@@ -65,6 +65,7 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 				.Icon = !IsList ? EditorUI::Asset("Dot.png") : "",
 				.OnClicked = [this]() {
 					this->Mode = DisplayMode::Icons;
+					this->LastItemsPerRow = 0;
 					this->DisplayList();
 				}
 			},
@@ -73,12 +74,13 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 				.Icon = IsList ? EditorUI::Asset("Dot.png") : "",
 				.OnClicked = [this]() {
 					this->Mode = DisplayMode::List;
+					this->LastItemsPerRow = 0;
 					this->DisplayList();
 				}
 			}, }, Heading->optionsButton->GetScreenPosition());
 	};
 
-	Heading->searchBox->field->OnChanged = [this]()
+	Heading->searchBox->field->OnChanged = [this]
 	{
 		Filter = str::Lower(Heading->searchBox->field->GetText());
 		UpdateItems();
@@ -107,6 +109,7 @@ void engine::editor::ItemBrowser::Update()
 			{
 				i.first.Selected = false;
 			}
+			this->LastItemsPerRow = 0;
 			DisplayList();
 		}
 	}
@@ -156,17 +159,18 @@ void engine::editor::ItemBrowser::OnResized()
 		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 60));
 	}
 
-	UpdateItems();
+	Heading->SetPathText(GetPathDisplayName());
+	CurrentItems = GetItems();
+	DisplayList();
 }
 
 void engine::editor::ItemBrowser::UpdateItems()
 {
 	Heading->SetPathText(GetPathDisplayName());
 
-	Buttons.clear();
 	CurrentItems = GetItems();
+	LastItemsPerRow = 0;
 	DisplayList();
-
 }
 
 std::vector<ItemBrowser::Item*> engine::editor::ItemBrowser::GetSelected()
@@ -209,17 +213,26 @@ void engine::editor::ItemBrowser::DisplayList()
 {
 	bool IsList = this->Mode == DisplayMode::List;
 
-	ItemsScrollBox->DeleteChildren();
-	UIBox* CurrentBox = nullptr;
-	CurrentBox = new UIBox(true, 0);
-	ItemsScrollBox->AddChild(CurrentBox);
-
 	size_t ItemsPerRow = size_t(
 		(Background->GetUsedSize().GetPixels().X - 10.0f)
 		/ (IsList ? 220 : 90));
 
-	if (ItemsPerRow == 0 && !IsList)
+	if (!IsList && ItemsPerRow == this->LastItemsPerRow)
+	{
 		return;
+	}
+
+	this->LastItemsPerRow = ItemsPerRow;
+	ItemsScrollBox->DeleteChildren();
+	Buttons.clear();
+
+	if (ItemsPerRow == 0 && !IsList)
+	{
+		return;
+	}
+
+	UIBox* CurrentBox = new UIBox(true, 0);
+	ItemsScrollBox->AddChild(CurrentBox);
 
 	UISize ElementSize = UISize::Pixels(std::round((Background->GetUsedSize().GetPixels().X - 10.0f) / ItemsPerRow) - 5.0f);
 

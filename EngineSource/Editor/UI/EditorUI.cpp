@@ -328,6 +328,7 @@ void engine::editor::EditorUI::UpdateBackgrounds()
 		2,
 		2 - UISize::Pixels(StatusBarSize + MenuBarSize).GetScreen().Y));
 	MainBackground->GetParent()->UpdateElement();
+	MainBackground->GetParent()->UpdateElement();
 }
 
 void engine::editor::EditorUI::AddMenuBarItem(string Name, std::vector<DropdownMenu::Option> Options)

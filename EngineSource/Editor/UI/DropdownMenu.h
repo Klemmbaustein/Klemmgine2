@@ -21,11 +21,10 @@ namespace engine::editor
 		~DropdownMenu();
 
 		static void UpdateDropdowns();
+		static thread_local DropdownMenu* Current;
 
 		kui::UIBox* Box = nullptr;
 		static void Clear();
-	private:
-		static thread_local DropdownMenu* Current;
 	};
 }
 #endif

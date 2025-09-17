@@ -681,7 +681,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 kui::Vec2f engine::editor::EditorPanel::UsedSizeToPanelSize(kui::Vec2f Used)
 {
-	return Used - UIBox::PixelSizeToScreenSize(Vec2f(PANEL_PADDING * 2, PANEL_PADDING * 2 + TABS_SIZE), Window::GetActiveWindow());
+	return Used - SizeVec::Pixels(PANEL_PADDING * 2, PANEL_PADDING * 2 + TABS_SIZE).GetScreen();
 }
 
 kui::Vec2f engine::editor::EditorPanel::PositionToPanelPosition(kui::Vec2f Pos)

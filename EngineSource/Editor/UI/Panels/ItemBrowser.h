@@ -55,6 +55,7 @@ namespace engine::editor
 		virtual void Back() = 0;
 		void SetStatusText(string NewText);
 	private:
+		size_t LastItemsPerRow = 0;
 		kui::UIText* StatusText;
 		std::pair<Item, kui::UIBox*>* GetHoveredButton();
 		std::vector<Item> CurrentItems;

@@ -1,10 +1,12 @@
 #include "EngineModules.h"
 #include <Engine/Objects/Components/MeshComponent.h>
+#include <Engine/Objects/Components/MoveComponent.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Input.h>
 #include <language.hpp>
 #include <modules/system.hpp>
 #include <native/nativeModule.hpp>
+#include <native/nativeStructType.hpp>
 #include <parser/types/stringType.hpp>
 #include <Core/Log.h>
 #include <Engine/Script/ScriptObject.h>
@@ -41,12 +43,27 @@ static void MeshComponent_new(InterpretContext* context)
 	context->pushValue(Component);
 }
 
+static void MoveComponent_new(InterpretContext* context)
+{
+	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new MoveComponent();
+	context->pushValue(Component);
+}
+
 static void MeshComponent_load(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
 	RuntimeStr File = context->popValue<RuntimeStr>();
 
 	Component.getValue()->Load(AssetRef::FromName(File.ptr(), "kmdl"));
+}
+
+static void MoveComponent_addInput(InterpretContext* context)
+{
+	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	Vector3 Direction = context->popValue<Vector3>();
+
+	Component.getValue()->AddMovementInput(Direction);
 }
 
 static void Log_Info(InterpretContext* context)
@@ -68,14 +85,33 @@ static void Input_IsKeyDown(InterpretContext* context)
 	context->pushValue<Bool>(IsKeyDown(context->popValue<Key>()));
 }
 
+static void WriteVec(InterpretContext* context)
+{
+	Log::Info(context->popValue<Vector3>().ToString());
+}
+
+static void Vector3_Length(InterpretContext* context)
+{
+	context->pushValue(context->popValue<Vector3>().Length());
+}
+
 void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
 	EngineModule.name = "engine";
 
 	auto StrType = StringType::getInstance();
+	auto FloatInst = FloatType::getInstance();
 
-	auto ObjectType = EngineModule.createClass<ScriptObject>("SceneObject");
+	auto VecType = LANG_CREATE_STRUCT(Vector3);
+
+	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, X, x, FloatInst);
+	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, Y, y, FloatInst);
+	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, Z, z, FloatInst);
+
+	EngineModule.types.push_back(VecType);
+
+	auto ObjectType = EngineModule.createClass<ScriptObjectData>("SceneObject");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
 
 	EngineModule.addClassVirtualMethod(ObjectType,
@@ -87,12 +123,18 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "update", &SceneObject_empty), 3);
 
+	ObjectType->members.push_back(ClassMember{
+		.name = "position",
+		.offset = offsetof(ScriptObjectData, Position),
+		.type = VecType
+		});
+
 	EngineModule.addClassMethod(ObjectType,
-		NativeFunction({FunctionArgument(ComponentType->nullable, "component")}, nullptr,
+		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
 			"attach", &SceneObject_attach));
 
 	EngineModule.addFunction(
-		NativeFunction({FunctionArgument(StringType::getInstance(), "message")},
+		NativeFunction({ FunctionArgument(StringType::getInstance(), "message") },
 			nullptr, "info", &Log_Info));
 
 	EngineModule.addFunction(
@@ -103,11 +145,30 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 
 	EngineModule.addClassConstructor(MeshComponentType,
 		NativeFunction({ },
-		nullptr, "MeshComponent.new", &MeshComponent_new));
+			nullptr, "MeshComponent.new", &MeshComponent_new));
 
 	EngineModule.addClassMethod(MeshComponentType,
-		NativeFunction({ FunctionArgument(StrType, "file")},
+		NativeFunction({ FunctionArgument(StrType, "file") },
 			nullptr, "load", &MeshComponent_load));
+
+	auto MoveComponentType = EngineModule.createClass<MoveComponent*>("MoveComponent", ComponentType);
+
+	EngineModule.addClassConstructor(MoveComponentType,
+		NativeFunction({ },
+			nullptr, "MoveComponent.new", &MoveComponent_new));
+
+
+	EngineModule.addClassMethod(MoveComponentType,
+		NativeFunction({ FunctionArgument(VecType, "direction") },
+			nullptr, "addInput", &MoveComponent_addInput));
+
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(VecType, "message") },
+			nullptr, "writeVec", &WriteVec));
+
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "z") },
+			VecType, "vec3", [](InterpretContext* context) {}));
 
 	EngineModule.attributes.push_back(new ExportAttribute());
 
@@ -123,7 +184,7 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	EngineInputModule.addEnumValue(KeyType, "g", Key::g);
 	EngineInputModule.addEnumValue(KeyType, "h", Key::h);
 	EngineInputModule.addEnumValue(KeyType, "i", Key::i);
-	EngineInputModule.addFunction(NativeFunction({FunctionArgument(KeyType, "toCheck")}, BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
+	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") }, BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);

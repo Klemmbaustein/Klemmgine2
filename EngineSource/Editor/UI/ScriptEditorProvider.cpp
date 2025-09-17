@@ -12,6 +12,7 @@
 
 using namespace kui;
 using namespace lang;
+using namespace engine::editor;
 
 engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile)
 	: FileEditorProvider(ScriptFile)
@@ -83,70 +84,135 @@ void engine::editor::ScriptEditorProvider::OnLoaded()
 
 void engine::editor::ScriptEditorProvider::Update()
 {
-	auto Window = Window::GetActiveWindow();
-	auto Pos = Window->Input.MousePosition;
+	auto Win = Window::GetActiveWindow();
+
+	auto Pos = Win->Input.MousePosition;
+
+	HoverErrorData NewHoveredError = GetHoveredError(Pos);
+	HoverSymbolData NewHoveredSymbol = GetHoveredSymbol(Pos);
+
+	void* NewHovered = NewHoveredError.Error ? (void*)NewHoveredError.Error : (void*)NewHoveredSymbol.Symbol;
+
+	if (DropdownMenu::Current || !Win->UI.HoveredBox || !Win->UI.HoveredBox->IsChildOf(ParentEditor))
+	{
+		NewHovered = nullptr;
+	}
+
+	float Time = HoverTime.Get();
+
+	if (NewHovered != this->HoveredData || (Time > 0.2f && !HoveredBox && HoveredData))
+	{
+		if (NewHovered != this->HoveredData)
+		{
+			HoverTime.Reset();
+			this->HoveredData = NewHovered;
+			Time = 0;
+			delete this->HoveredBox;
+			this->HoveredBox = nullptr;
+		}
+
+		if (NewHovered && Time > 0.2f)
+		{
+			if (NewHoveredError.Error)
+			{
+				CreateHoverBox((new UIText(12_px, 1, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
+					->SetPadding(5_px), NewHoveredError.At);
+			}
+			else
+			{
+				auto Fn = NewHoveredSymbol.Symbol;
+
+				std::vector<TextSegment> HoverString = {
+					TextSegment("fn ", Vec3f(1.0f, 0.2f, 0.5f)),
+					TextSegment(Fn->name, this->FunctionColor),
+					TextSegment("(", 1)
+				};
+
+				for (auto it = Fn->arguments.begin(); it < Fn->arguments.end(); it++)
+				{
+					HoverString.push_back(TextSegment(it->first + " ", TypeColor));
+					HoverString.push_back(TextSegment(it->second, VariableColor));
+					if (Fn->arguments.end() != it + 1)
+					{
+						HoverString.push_back(TextSegment(", ", 1));
+					}
+				}
+				HoverString.push_back(TextSegment(")", 1));
+
+				if (!Fn->returnType.empty())
+				{
+					HoverString.push_back(TextSegment(" -> ", 1));
+					HoverString.push_back(TextSegment(Fn->returnType, TypeColor));
+				}
+
+				HoverString.push_back(TextSegment(Fn->definition ?
+					"\nDefined in " + Fn->definition->file->name + " at line " + std::to_string(Fn->definition->at.position.line + 1)
+					: "\nDefined in native code.", 1));
+
+				CreateHoverBox((new UIText(12_px, HoverString, EditorUI::MonospaceFont))
+					->SetWrapEnabled(true, 1000_px)
+					->SetPadding(5_px), NewHoveredSymbol.At);
+			}
+		}
+		else if (!NewHovered)
+		{
+			delete this->HoveredBox;
+			this->HoveredBox = nullptr;
+		}
+	}
+
+	if (!NewHovered)
+	{
+		HoverTime.Reset();
+	}
+
 	if (input::IsRMBClicked)
 	{
-		new DropdownMenu({
-			DropdownMenu::Option{
+		std::vector<DropdownMenu::Option> Options;
+
+		if (NewHoveredSymbol.Symbol && NewHoveredSymbol.Symbol->definition)
+		{
+			Options.push_back(DropdownMenu::Option{
+				.Name = "Go to definition",
+				.Icon = EditorUI::Asset("TabDrag.png"),
+				.OnClicked = [this, NewHoveredSymbol]
+				{
+					auto& def = NewHoveredSymbol.Symbol->definition;
+					ParentEditor->SetCursorPosition(EditorPosition(def->at.position.startPos, def->at.position.line));
+					ParentEditor->ScrollTo(ParentEditor->SelectionStart);
+					ParentEditor->Edit();
+				},
+				.Separator = true,
+				});
+		}
+
+		Options.push_back(DropdownMenu::Option{
 				.Name = "Cut",
-			},
-			DropdownMenu::Option{
-				.Name = "Copy",
-			},
-			DropdownMenu::Option{
+			});
+
+		Options.push_back(DropdownMenu::Option{
+				.Name = "Copy" });
+
+		Options.push_back(DropdownMenu::Option{
 				.Name = "Paste",
 				.OnClicked = [this] {
 					ParentEditor->DeleteSelection();
 					ParentEditor->Insert(Window::GetActiveWindow()->Input.GetClipboard(),
 						ParentEditor->GetCursorPosition(), true);
 				}
-			},
-			},
-			Pos);
+			});
+
+		new DropdownMenu(Options, Pos);
 
 		if (ParentEditor->GetSelectedText().empty())
 		{
 			ParentEditor->SetCursorPosition(ParentEditor->ScreenToEditor(Pos));
 		}
-	}
-
-	if (Window->Input.MousePosition == LastCursorPosition)
-	{
-		if (HoverTime.Get() > 0.1f && !this->HoveredBox)
-		{
-			auto HoverPosition = ParentEditor->ScreenToEditor(Pos);
-
-			for (auto& i : this->Errors)
-			{
-				if (HoverPosition.Line == i.At.Line
-					&& (HoverPosition.Column >= i.At.Column && HoverPosition.Column <= i.Length + i.At.Column))
-				{
-					CreateHoverBox((new UIText(12_px, 1, i.Description, EditorUI::MonospaceFont))
-						->SetPadding(5_px), HoverPosition);
-					break;
-				}
-			}
-
-			//for (auto& i : this->ScriptService->files.begin()->second.functions)
-			//{
-			//	if (HoverPosition.Line == i.position.line
-			//		&& (HoverPosition.Column >= i.position.startPos && HoverPosition.Column <= i.position.endPos))
-			//	{
-			//		CreateHoverBox((new UIText(12_px, 1, i.string, EditorUI::EditorFont))
-			//			->SetPadding(5_px), HoverPosition);
-			//		break;
-			//	}
-			//}
-		}
-	}
-	else if (this->HoveredBox)
-	{
-		HoverTime.Reset();
 		delete this->HoveredBox;
 		this->HoveredBox = nullptr;
 	}
-	LastCursorPosition = Window->Input.MousePosition;
+
+	LastCursorPosition = Win->Input.MousePosition;
 }
 
 UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content, EditorPosition At)
@@ -159,10 +225,47 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 	this->HoveredBox = new UIBackground(true, 0, 0.2f);
 	this->HoveredBox->AddChild(Content);
 	this->HoveredBox->UpdateElement();
+	this->HoveredBox->HasMouseCollision = true;
+	this->HoveredBox->SetCurrentScrollObject(ParentEditor->EditorScrollBox->GetScrollObject());
 
 	this->HoveredBox->SetPosition(ParentEditor->EditorToScreen(At)
-		- Vec2f(0, this->HoveredBox->GetUsedSize().GetScreen().Y));
+		- Vec2f(0, this->HoveredBox->GetUsedSize().GetScreen().Y) + Vec2f(0, (1_px).GetScreen().Y));
 	return this->HoveredBox;
+}
+
+ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHoveredError(Vec2f ScreenPosition)
+{
+	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
+
+	for (auto& i : this->Errors)
+	{
+		if (HoverPosition.Line == i.At.Line
+			&& (HoverPosition.Column >= i.At.Column && HoverPosition.Column <= i.Length + i.At.Column))
+		{
+			return HoverErrorData{
+				.Error = &i,
+				.At = HoverPosition,
+			};
+		}
+	}
+	return HoverErrorData();
+}
+ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetHoveredSymbol(kui::Vec2f ScreenPosition)
+{
+	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
+
+	for (auto& i : this->ScriptService->files.begin()->second.functions)
+	{
+		if (HoverPosition.Line == i.at.position.line
+			&& (HoverPosition.Column >= i.at.position.startPos && HoverPosition.Column <= i.at.position.endPos))
+		{
+			return HoverSymbolData{
+				.Symbol = &i,
+				.At = HoverPosition,
+			};
+		}
+	}
+	return HoverSymbolData();
 }
 
 void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
@@ -211,18 +314,18 @@ void engine::editor::ScriptEditorProvider::ScanFile()
 	{
 		for (auto& i : this->ScriptService->files.begin()->second.functions)
 		{
-			size_t ActualStart = i.position.startPos;
+			size_t ActualStart = i.at.position.startPos;
 
-			size_t Colon = i.string.find_last_of(':');
+			size_t Colon = i.at.string.find_last_of(':');
 
 			if (Colon != std::string::npos)
 			{
 				ActualStart += Colon + 1;
 			}
 
-			Highlights[i.position.line].push_back(ScriptSyntaxHighlight{
+			Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
 				.Start = ActualStart,
-				.Length = i.position.endPos - ActualStart,
+				.Length = i.at.position.endPos - ActualStart,
 				.Color = FunctionColor,
 				});
 		}
