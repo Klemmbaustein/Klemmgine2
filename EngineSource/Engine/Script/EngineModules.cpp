@@ -53,9 +53,9 @@ static void MoveComponent_new(InterpretContext* context)
 static void MeshComponent_load(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
-	RuntimeStr File = context->popValue<RuntimeStr>();
+	ClassPtr<AssetRef*> File = context->popValue<RuntimeClass*>();
 
-	Component.getValue()->Load(AssetRef::FromName(File.ptr(), "kmdl"));
+	Component.getValue()->Load(**File.get());
 }
 
 static void MoveComponent_addInput(InterpretContext* context)
@@ -95,6 +95,27 @@ static void Vector3_Length(InterpretContext* context)
 	context->pushValue(context->popValue<Vector3>().Length());
 }
 
+static void AssetRef_delete(InterpretContext* context)
+{
+	ClassPtr<AssetRef*> Ref = context->popValue<RuntimeClass*>();
+	auto ref = *Ref.get();
+	delete ref;
+}
+
+static VTableEntry AssetRef_vTable = VTableEntry{
+	.nativeFn = &AssetRef_delete
+};
+
+static void AssetRef_new(InterpretContext* context)
+{
+	ClassRef<AssetRef*> NewAssetRef = context->popValue<RuntimeClass*>();
+	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
+	RuntimeStr FilePath = context->popValue<RuntimeClass*>();
+
+	NewAssetRef.getValue() = new AssetRef(AssetRef::FromPath(string(FilePath.ptr(), FilePath.length())));
+	context->pushValue(NewAssetRef);
+}
+
 void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
@@ -110,6 +131,13 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, Z, z, FloatInst);
 
 	EngineModule.types.push_back(VecType);
+
+	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
+
+	EngineModule.addClassConstructor(AssetRefType, NativeFunction{
+		{FunctionArgument(StrType, "path")}, nullptr, "AssetRef.new",
+		&AssetRef_new
+		});
 
 	auto ObjectType = EngineModule.createClass<ScriptObjectData>("SceneObject");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
@@ -148,7 +176,7 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 			nullptr, "MeshComponent.new", &MeshComponent_new));
 
 	EngineModule.addClassMethod(MeshComponentType,
-		NativeFunction({ FunctionArgument(StrType, "file") },
+		NativeFunction({ FunctionArgument(AssetRefType, "file") },
 			nullptr, "load", &MeshComponent_load));
 
 	auto MoveComponentType = EngineModule.createClass<MoveComponent*>("MoveComponent", ComponentType);

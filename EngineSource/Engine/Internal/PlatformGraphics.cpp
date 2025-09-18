@@ -34,7 +34,9 @@ static std::wstring StrToWstr(const std::string& str)
 
 void engine::platform::Init()
 {
+#ifdef NTDDI_WIN10
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+#endif
 }
 
 void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
@@ -60,9 +62,9 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 	{
 		return {};
 	}
+
 	IFileOpenDialog* pFileOpen = nullptr;
 
-	// Create the FileOpenDialog object.
 	hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
 		IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 

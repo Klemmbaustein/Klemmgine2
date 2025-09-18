@@ -37,7 +37,7 @@ void engine::script::ScriptObject::Begin()
 
 void engine::script::ScriptObject::Update()
 {
-	if (ScriptData->vtable[3])
+	if (ScriptData && ScriptData->vtable[3])
 	{
 		auto Data = reinterpret_cast<ScriptObjectData*>(this->ScriptData->getBody());
 		Data->Position = this->Position;

@@ -1,9 +1,12 @@
 #include "ScriptEditorPanel.h"
 #include <Editor/UI/Elements/Toolbar.h>
+#include <Engine/Engine.h>
+#include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/UI/EditorUI.h>
 #include <fstream>
 
 using namespace kui;
+using namespace engine::script;
 
 engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	: EditorPanel("Scripts", "scripts")
@@ -94,6 +97,9 @@ void engine::editor::ScriptEditorPanel::Save()
 	std::ofstream out = std::ofstream(Provider->ScriptFile);
 
 	out << this->Provider->GetContent();
+	out.close();
+
+	Engine::Instance->GetSubsystem<ScriptSubsystem>()->Reload();
 }
 
 void engine::editor::ScriptEditorPanel::OnResized()

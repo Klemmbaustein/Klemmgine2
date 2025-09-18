@@ -18,20 +18,19 @@ class MyObject : SceneObject
 	override fn begin()
 	{
 		const testMesh = new MeshComponent()
-		testMesh.load("cube")
+		testMesh.load(new AssetRef("Assets/cube.kmdl"))
 		attach(testMesh)
 
 		attach(movement)
 
-		warn(message)
+		warn("cool message: " + message)
 	}
 
 	override fn update()
 	{
-		if isKeyDown(Key::c)
+		if isKeyDown(Key::e)
 		{
-			info("move in some direction")
-			movement.addInput(vec3(1, 0, 0))
+			movement.addInput(vec3(0, 0, 1))
 		}
 	}
 

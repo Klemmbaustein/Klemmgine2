@@ -70,18 +70,26 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 #if WINDOWS
 
-	auto eventWatch = [](void* userdata, SDL_Event* event) -> bool {
-		if (event->type == SDL_EVENT_WINDOW_RESIZED)
-		{
+	if (OutWindow->IsMain)
+	{
+		auto eventWatch = [](void* userdata, SDL_Event* event) -> bool {
 			auto win = (SysWindow*)userdata;
-			win->Parent->OnResized();
-			win->Parent->RedrawInternal();
-			engine::Engine::Instance->GetSubsystem<engine::subsystem::VideoSubsystem>()->RenderUpdate();
-		}
-		return true;
-	};
+			if (event->window.windowID != SDL_GetWindowID(win->SDLWindow))
+			{
+				return true;
+			}
+			if (event->type == SDL_EVENT_WINDOW_RESIZED)
+			{
+				win->Parent->OnResized();
+				win->Parent->RedrawInternal();
+				engine::Engine::Instance->GetSubsystem<engine::subsystem::VideoSubsystem>()->RenderUpdate();
+			}
+			return true;
+		};
 
-	SDL_AddEventWatch(eventWatch, OutWindow);
+		SDL_AddEventWatch(eventWatch, OutWindow);
+	}
+
 #endif
 
 	return OutWindow;

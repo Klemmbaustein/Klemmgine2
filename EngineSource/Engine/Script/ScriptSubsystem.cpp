@@ -11,7 +11,7 @@
 using namespace lang;
 
 engine::script::ScriptSubsystem::ScriptSubsystem()
-: subsystem::Subsystem("Script", Log::LogColor::Yellow)
+	: subsystem::Subsystem("Script", Log::LogColor::Yellow)
 {
 	this->ScriptLanguage = new LanguageContext();
 	modules::registerStandardLibrary(this->ScriptLanguage);
