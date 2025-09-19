@@ -1,5 +1,4 @@
 #include "SceneObject.h"
-#include "SceneObject.h"
 #include "MeshObject.h"
 #include "PlayerObject.h"
 #include <Engine/Scene.h>

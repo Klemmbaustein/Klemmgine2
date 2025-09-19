@@ -70,14 +70,14 @@ static void Log_Info(InterpretContext* context)
 {
 	auto message = context->popRuntimeString();
 
-	Log::Info(std::string(message.ptr(), message.length()));
+	Log::Info(string(message.ptr(), message.length()));
 }
 
 static void Log_Warn(InterpretContext* context)
 {
 	auto message = context->popRuntimeString();
 
-	Log::Warn(std::string(message.ptr(), message.length()));
+	Log::Warn(string(message.ptr(), message.length()));
 }
 
 static void Input_IsKeyDown(InterpretContext* context)
@@ -114,6 +114,16 @@ static void AssetRef_new(InterpretContext* context)
 
 	NewAssetRef.getValue() = new AssetRef(AssetRef::FromPath(string(FilePath.ptr(), FilePath.length())));
 	context->pushValue(NewAssetRef);
+}
+
+static void AssetRef_emptyExtension(InterpretContext* context)
+{
+	RuntimeStr Extension = context->popRuntimeString();
+
+	ClassRef<AssetRef*> Asset = script::CreateAssetRef();
+	Asset.getValue()->Extension = string(Extension.ptr(), Extension.length());
+	Asset.classPtr->addRef();
+	context->pushValue(Asset);
 }
 
 void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
@@ -198,6 +208,10 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "z") },
 			VecType, "vec3", [](InterpretContext* context) {}));
 
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(StrType, "extension") },
+			AssetRefType, "emptyExtension", AssetRef_emptyExtension));
+
 	EngineModule.attributes.push_back(new ExportAttribute());
 
 	NativeModule EngineInputModule;
@@ -212,8 +226,18 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	EngineInputModule.addEnumValue(KeyType, "g", Key::g);
 	EngineInputModule.addEnumValue(KeyType, "h", Key::h);
 	EngineInputModule.addEnumValue(KeyType, "i", Key::i);
-	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") }, BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
+	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
+		BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);
+}
+
+lang::RuntimeClass* engine::script::CreateAssetRef()
+{
+	ClassRef<AssetRef*> NewAssetRef = RuntimeClass::allocateClass(sizeof(AssetRef*), &AssetRef_vTable);
+	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
+
+	NewAssetRef.getValue() = new AssetRef();
+	return NewAssetRef.classPtr;
 }

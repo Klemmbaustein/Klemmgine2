@@ -391,6 +391,7 @@ void engine::Scene::UnloadAsset(AssetRef Target)
 	}
 	if (Target.Extension == "png")
 	{
+		// TODO: Unload textures again
 	}
 }
 

@@ -14,39 +14,42 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	Provider = new ScriptEditorProvider("Scripts/test.lang");
 
 	Provider->Keywords = {
-	"int",
-	"float",
-	"bool",
-	"string",
-	"if",
-	"else",
-	"for",
-	"while",
-	"null",
-	"true",
-	"false",
-	"new",
-	"break",
-	"continue",
-	"using",
-	"module",
-	"_",
-	"virtual",
-	"override",
-	"var",
-	"class",
-	"struct",
-	"return",
-	"in",
-	"const",
-	"fn",
-	"enum",
+		"int",
+		"float",
+		"bool",
+		"string",
+		"if",
+		"else",
+		"for",
+		"while",
+		"null",
+		"true",
+		"false",
+		"new",
+		"break",
+		"continue",
+		"using",
+		"module",
+		"_",
+		"virtual",
+		"override",
+		"var",
+		"class",
+		"struct",
+		"return",
+		"in",
+		"const",
+		"fn",
+		"enum",
 	};
 
 	Toolbar* EditorToolbar = new Toolbar();
 	EditorToolbar->AddButton("Save", EditorUI::Asset("Save.png"), [this]() {
 		Save();
 	});
+
+	EditorToolbar->SetLeftPadding(0);
+
 	Background->SetHorizontal(true);
 	CenterBox = new UIBox(false);
 	TabBox = new UIScrollBox(false, 0, true);

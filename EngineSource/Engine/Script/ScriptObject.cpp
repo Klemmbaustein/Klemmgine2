@@ -1,4 +1,5 @@
 #include "ScriptObject.h"
+#include "EngineModules.h"
 #include <interpreter.hpp>
 
 using namespace lang;
@@ -69,16 +70,28 @@ void engine::script::ScriptObject::LoadScriptData()
 
 	for (auto& i : this->Class.members)
 	{
-		RuntimeStrRef MemberValue = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
+		auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
 
-		auto p = new ObjProperty<string>(i.name, MemberValue.ptr(), this);
+		RuntimeClass::unref(member);
+		if (!member)
+		{
+			member = engine::script::CreateAssetRef();
+		}
+
+		ClassRef<AssetRef*> MemberValue = member;
+
+		auto p = new ObjProperty<AssetRef>(i.name, *MemberValue.getValue(), this);
 
 		p->OnChanged = [this, i, p]
 		{
-			RuntimeClass*& MemberValue = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
+			auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
+			if (!member)
+			{
+				member = engine::script::CreateAssetRef();
+			}
 
-			RuntimeStrRef NewString = RuntimeStrRef(p->Value.data(), p->Value.size());
-			MemberValue = NewString.classPtr;
+			ClassRef<AssetRef*> MemberValue = member;
+			*MemberValue.getValue() = p->Value;
 		};
 	}
 }

@@ -11,19 +11,17 @@ fn test()
 class MyObject : SceneObject
 {
 	[Export]
-	string message = "hi"
+	AssetRef testModel = emptyExtension("kmdl")
 
 	MoveComponent movement = new MoveComponent()
 
 	override fn begin()
 	{
 		const testMesh = new MeshComponent()
-		testMesh.load(new AssetRef("Assets/cube.kmdl"))
+		testMesh.load(testModel)
 		attach(testMesh)
 
 		attach(movement)
-
-		warn("cool message: " + message)
 	}
 
 	override fn update()

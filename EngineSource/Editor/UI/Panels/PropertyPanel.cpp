@@ -177,7 +177,8 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 			Selector->OnChanged = [Object, Selector, Ref]()
 				{
-					if (Selector->SelectedAsset.Extension != Ref->Value.Extension)
+					if (!Ref->Value.Extension.empty()
+						&& Selector->SelectedAsset.Extension != Ref->Value.Extension)
 						return;
 					Viewport::Current->OnObjectChanged(Object);
 					Ref->Value = Selector->SelectedAsset;
