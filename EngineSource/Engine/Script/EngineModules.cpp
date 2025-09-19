@@ -116,7 +116,7 @@ static void AssetRef_new(InterpretContext* context)
 	context->pushValue(NewAssetRef);
 }
 
-static void AssetRef_emptyExtension(InterpretContext* context)
+static void AssetRef_emptyAsset(InterpretContext* context)
 {
 	RuntimeStr Extension = context->popRuntimeString();
 
@@ -210,7 +210,7 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "extension") },
-			AssetRefType, "emptyExtension", AssetRef_emptyExtension));
+			AssetRefType, "emptyAsset", AssetRef_emptyAsset));
 
 	EngineModule.attributes.push_back(new ExportAttribute());
 

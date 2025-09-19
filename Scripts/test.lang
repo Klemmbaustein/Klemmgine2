@@ -11,7 +11,7 @@ fn test()
 class MyObject : SceneObject
 {
 	[Export]
-	AssetRef testModel = emptyExtension("kmdl")
+	AssetRef testModel = emptyAsset("kmdl")
 
 	MoveComponent movement = new MoveComponent()
 
