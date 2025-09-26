@@ -222,8 +222,11 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 		delete this->HoveredBox;
 	}
 
-	this->HoveredBox = new UIBackground(true, 0, 0.2f);
-	this->HoveredBox->AddChild(Content);
+	this->HoveredBox = (new UIBackground(true, 0, 0.2f))
+		->SetCorner(5_px)
+		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
+	this->HoveredBox
+		->AddChild(Content);
 	this->HoveredBox->UpdateElement();
 	this->HoveredBox->HasMouseCollision = true;
 	this->HoveredBox->SetCurrentScrollObject(ParentEditor->EditorScrollBox->GetScrollObject());

@@ -1,12 +1,7 @@
 using engine
 using engine::input
-using system::io
 
 module game
-
-fn test()
-{
-}
 
 class MyObject : SceneObject
 {
@@ -14,6 +9,7 @@ class MyObject : SceneObject
 	AssetRef testModel = emptyAsset("kmdl")
 
 	MoveComponent movement = new MoveComponent()
+	CameraComponent camera = new CameraComponent()
 
 	override fn begin()
 	{
@@ -21,19 +17,38 @@ class MyObject : SceneObject
 		testMesh.load(testModel)
 		attach(testMesh)
 
+		attach(camera)
 		attach(movement)
+		camera.use()
+		camera.setFOV(80)
 	}
 
 	override fn update()
 	{
-		if isKeyDown(Key::e)
+		if isKeyDown(Key::w)
 		{
-			movement.addInput(vec3(0, 0, 1))
+			movement.addInput(forward(rotation))
 		}
+		if isKeyDown(Key::s)
+		{
+			movement.addInput(-forward(rotation))
+		}
+		if isKeyDown(Key::d)
+		{
+			movement.addInput(right(rotation))
+		}
+		if isKeyDown(Key::a)
+		{
+			movement.addInput(-right(rotation))
+		}
+
+		Vector2 mouseMovement = getMouseMovement()
+
+		rotation.y -= mouseMovement.x
+		rotation.p -= mouseMovement.y
 	}
 
 	override fn destroy()
 	{
-		test()
 	}
 }

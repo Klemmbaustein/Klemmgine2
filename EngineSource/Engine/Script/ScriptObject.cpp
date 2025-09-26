@@ -1,5 +1,6 @@
 #include "ScriptObject.h"
 #include "EngineModules.h"
+#include "Engine/Engine.h"
 #include <interpreter.hpp>
 
 using namespace lang;
@@ -38,13 +39,15 @@ void engine::script::ScriptObject::Begin()
 
 void engine::script::ScriptObject::Update()
 {
-	if (ScriptData && ScriptData->vtable[3])
+	if (Engine::IsPlaying && ScriptData && ScriptData->vtable[3])
 	{
 		auto Data = reinterpret_cast<ScriptObjectData*>(this->ScriptData->getBody());
 		Data->Position = this->Position;
+		Data->Rotation = this->Rotation;
 		Interpreter->pushValue(this->ScriptData);
 		Interpreter->virtualCall(ScriptData->vtable[3]);
 		this->Position = Data->Position;
+		this->Rotation = Data->Rotation;
 	}
 }
 

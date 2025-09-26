@@ -1,5 +1,5 @@
 #include "Vector.h"
-#include "Vector.h"
+#include "Transform.h"
 #include <cmath>
 #include <iostream>
 #include <glm/geometric.hpp>
@@ -47,17 +47,23 @@ float engine::Vector3::Length() const
 
 Vector3 engine::Vector3::Forward(Vector3 EulerRotation)
 {
-	return GetScaledAxis(EulerRotation, 2);
+	Transform t;
+	t.Rotate(Rotation3(EulerRotation));
+	return t.Forward();
 }
 
 Vector3 engine::Vector3::Right(Vector3 EulerRotation)
 {
-	return GetScaledAxis(EulerRotation, 0);
+	Transform t;
+	t.Rotate(Rotation3(EulerRotation));
+	return t.Right();
 }
 
 Vector3 engine::Vector3::Up(Vector3 EulerRotation)
 {
-	return GetScaledAxis(EulerRotation, 1);
+	Transform t;
+	t.Rotate(Rotation3(EulerRotation));
+	return t.Up();
 }
 
 Vector3 engine::Vector3::Cross(Vector3 a, Vector3 b)
@@ -110,9 +116,9 @@ static void mul(Axes& mat, Axes& b)
 
 Vector3 Vector3::GetScaledAxis(Vector3 Rot, uint32 Dir)
 {
-	float x = -Rot.X;
+	float x = Rot.X;
 	float y = Rot.Y;
-	float z = -Rot.Z;
+	float z = Rot.Z;
 	Axes matX = {
 		{1,     0,     0 },
 		{0, cosf(x),sinf(x)},

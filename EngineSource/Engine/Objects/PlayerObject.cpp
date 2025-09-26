@@ -27,9 +27,9 @@ void engine::PlayerObject::Update()
 	if (!Engine::IsPlaying)
 		return;
 
-	Cam->Rotation = Cam->Rotation.EulerVector() - Vector3(input::MouseMovement.Y, 0, 0) * 70;
+	Cam->Rotation = Cam->Rotation.EulerVector() - Vector3(input::MouseMovement.Y, 0, 0);
 
-	this->Rotation.Y -= input::MouseMovement.X * 70;
+	this->Rotation.Y -= input::MouseMovement.X;
 
 	float Speed = 5 * stats::DeltaTime;
 

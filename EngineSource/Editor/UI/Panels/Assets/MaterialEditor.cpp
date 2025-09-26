@@ -27,8 +27,8 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 
 	PreviewScene = new Scene();
 	PreviewScene->Physics.Active = false;
-	PreviewScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
-	PreviewScene->SceneCamera->Position = Vector3(3, 3, 3);
+	PreviewScene->SceneCamera->Rotation = Vector3(-37.5f, 45, 0);
+	PreviewScene->SceneCamera->Position = Vector3(2.25f);
 	PreviewScene->Resizable = false;
 	PreviewScene->AlwaysRedraw = false;
 	PreviewScene->Redraw = true;
@@ -46,13 +46,11 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 
 	Toolbar* MaterialToolbar = new Toolbar();
 	MaterialToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
-		[this]()
-	{
+		[this] {
 		Save();
 	});
 	MaterialToolbar->AddButton("Reload shaders", "file:Engine/Editor/Assets/Reload.png",
-		[this]()
-	{
+		[this] {
 		Engine::GetSubsystem<VideoSubsystem>()->Shaders.ReloadAll();
 	});
 
@@ -79,8 +77,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 			->SetText(Value)
 			->SetTextColor(EditorUI::Theme.Text)
 			->SetMinSize(SizeVec(130_px, UISize::Parent(1)));
-		ShaderField->OnChanged = [this, ShaderField, &Value]()
-		{
+		ShaderField->OnChanged = [this, ShaderField, &Value] {
 			if (Value == ShaderField->GetText())
 				return;
 			Value = ShaderField->GetText();

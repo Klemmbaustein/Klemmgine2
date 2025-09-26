@@ -1,6 +1,7 @@
 #include "ScriptSubsystem.h"
 #include "ScriptObject.h"
 #include "EngineModules.h"
+#include "ScriptSerializer.h"
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <language.hpp>
 #include <modules/standardLibrary.hpp>
@@ -81,7 +82,12 @@ void engine::script::ScriptSubsystem::Reload()
 	{
 		return;
 	}
+
+	//auto Stream = FileStream("scripts.bin", true);
+	//script::serialize::SerializeBytecode(&NewInstructions, &Stream);
+
 	*ScriptInstructions = NewInstructions;
+	//script::serialize::DeSerializeBytecode(ScriptInstructions, &Stream);
 	this->Interpreter->loadBytecode(ScriptInstructions);
 
 	if (CurrentScene)

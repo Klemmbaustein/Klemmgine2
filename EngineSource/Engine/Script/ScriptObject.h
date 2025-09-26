@@ -27,5 +27,6 @@ namespace engine::script
 	{
 		ScriptObject* Parent = nullptr;
 		Vector3 Position = 0;
+		Rotation3 Rotation = 0;
 	};
 }

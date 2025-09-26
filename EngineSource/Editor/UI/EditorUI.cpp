@@ -105,7 +105,7 @@ void engine::editor::EditorUI::SetStatusMainThread(string NewMessage, StatusType
 
 	Instance->CurrentStatus = NewMessage;
 	Instance->StatsBarElement->SetText(NewMessage);
-	Instance->StatsBarElement->SetIcon("Engine/Editor/Assets/" + IconTypes[int(Type)]);
+	Instance->StatsBarElement->SetIcon(Asset(IconTypes[int(Type)]));
 	Instance->StatsBarElement->RedrawElement();
 }
 
@@ -122,14 +122,13 @@ engine::editor::EditorUI::EditorUI()
 	UIScrollBox::BackgroundBorderColor = Theme.Background;
 	UIScrollBox::ScrollBarColor = Theme.DarkText;
 
-	ObjectIcons.AddObjectIcon("Engine/Editor/Assets/Model.png", MeshObject::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	VideoSystem->OnResizedCallbacks.insert({ this, [this](kui::Vec2ui NewSize)
-		{
-			UpdateBackgrounds();
-			RootPanel->ShouldUpdate = true;
-			RootPanel->UpdatePanel();
+	VideoSystem->OnResizedCallbacks.insert({ this, [this](kui::Vec2ui NewSize) {
+		UpdateBackgrounds();
+		RootPanel->ShouldUpdate = true;
+		RootPanel->UpdatePanel();
 	} });
 
 	UpdateTheme(VideoSystem->MainWindow);
@@ -137,7 +136,7 @@ engine::editor::EditorUI::EditorUI()
 	if (!MonospaceFont)
 	{
 		EditorFont = VideoSystem->DefaultFont;
-		MonospaceFont = new Font("Engine/Editor/Assets/EditorMono.ttf");
+		MonospaceFont = new Font(Asset("EditorMono.ttf"));
 		MonospaceFont->CharacterSize *= 1.1f;
 		VideoSystem->MainWindow->Markup.AddFont("mono", MonospaceFont);
 		VideoSystem->MainWindow->Markup.SetGetStringFunction(&EditorUI::Asset);
@@ -156,7 +155,7 @@ engine::editor::EditorUI::EditorUI()
 
 	AddMenuBarItem("File",
 		{
-			DropdownMenu::Option("New"),
+			DropdownMenu::Option("New", Asset("Plus.png")),
 			DropdownMenu::Option("Open Project"),
 			DropdownMenu::Option("Build Project", Asset("Build.png"), []() {
 				new BuildWindow();

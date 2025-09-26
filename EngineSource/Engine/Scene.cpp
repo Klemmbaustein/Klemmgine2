@@ -502,7 +502,7 @@ void engine::Scene::Init()
 
 		SceneCamera = new Camera(1);
 		SceneCamera->Position.Z = 2;
-		SceneCamera->Rotation.Y = 3.14f / -2.0f;
+		SceneCamera->Rotation.Y = -90;
 
 		SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 		UsedCamera = SceneCamera;

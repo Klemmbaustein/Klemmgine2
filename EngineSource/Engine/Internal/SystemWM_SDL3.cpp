@@ -506,7 +506,7 @@ void kui::systemWM::SysWindow::UpdateEvents()
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
 			if (WindowHasFocus(this) && !input::ShowMouseCursor)
-				input::MouseMovement = input::MouseMovement + Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.0008f, 0.0008f);
+				input::MouseMovement = input::MouseMovement + Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.05f, 0.05f);
 			break;
 		default:
 			break;

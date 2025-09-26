@@ -346,7 +346,7 @@ void engine::editor::Viewport::Update()
 		}
 
 		Win->Input.PollForText = false;
-		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation + Vector3(-input::MouseMovement.Y, input::MouseMovement.X, 0);
+		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation - Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current && input::IsLMBClicked)
 	{

@@ -103,7 +103,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			{
 				Options.push_back(DropdownMenu::Option{
 					.Name = "View raw",
-					.Icon = "",
+					.Icon = EditorUI::Asset("Code.png"),
 					.OnClicked = [FilePath]
 					{
 						Viewport::Current->AddChild(
@@ -278,7 +278,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		{
 		DropdownMenu::Option{
 			.Name = "Import...",
-			.Icon = EditorUI::Asset("Object.png"),
+			.Icon = EditorUI::Asset("Plus.png"),
 			.OnClicked = [this]() { Import(GetPathDisplayName()); },
 			.Separator = true
 		},

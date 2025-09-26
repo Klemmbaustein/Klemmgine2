@@ -41,10 +41,9 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 	auto ModelToolbar = new Toolbar(false);
 
 	ModelToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
-		[this]()
-		{
-			Save();
-		});
+		[this] {
+		Save();
+	});
 
 	MainBox->AddChild(ModelToolbar);
 
@@ -63,41 +62,39 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetPadding(8_px, 3_px, 3_px, 3_px));
 
-	LoadModelThread = std::thread([this, ModelFile, CancelLoadShared]()
+	LoadModelThread = std::thread([this, ModelFile, CancelLoadShared] {
+		auto Loaded = GraphicsModel::RegisterModel(ModelFile);
+
+		if (!Loaded)
 		{
-			auto Loaded = GraphicsModel::RegisterModel(ModelFile);
+			FailedLoading = true;
+			return;
+		}
 
-			if (!Loaded)
-			{
-				FailedLoading = true;
-				return;
-			}
-
-			Loaded->Data->PreLoadMaterials(EditorScene);
+		Loaded->Data->PreLoadMaterials(EditorScene);
+		if (*CancelLoadShared)
+		{
+			GraphicsModel::UnloadModel(ModelFile);
+			return;
+		}
+		thread::ExecuteOnMainThread([this, ModelFile, CancelLoadShared] {
 			if (*CancelLoadShared)
 			{
 				GraphicsModel::UnloadModel(ModelFile);
 				return;
 			}
-			thread::ExecuteOnMainThread([this, ModelFile, CancelLoadShared]()
-				{
-					if (*CancelLoadShared)
-					{
-						GraphicsModel::UnloadModel(ModelFile);
-						return;
-					}
-					this->CurrentObj->LoadMesh(ModelFile);
+			this->CurrentObj->LoadMesh(ModelFile);
 
-					Vector3 Pos = Vector3(0.75f) * CurrentObj->Mesh->DrawnModel->Data->Bounds.Extents.Length()
-						+ CurrentObj->Mesh->DrawnModel->Data->Bounds.Position;
+			Vector3 Pos = Vector3(0.75f) * CurrentObj->Mesh->DrawnModel->Data->Bounds.Extents.Length()
+				+ CurrentObj->Mesh->DrawnModel->Data->Bounds.Position;
 
-					EditorScene->SceneCamera->Position = Pos;
-					EditorScene->SceneCamera->Rotation = Vector3(-0.7f, -2.4f, 0);
-					this->SceneBackground->RedrawElement();
-					this->ModelLoaded = true;
-					this->EditorScene->Redraw = true;
-				});
+			EditorScene->SceneCamera->Position = Pos;
+			EditorScene->SceneCamera->Rotation = Vector3(-35, 45, 0);
+			this->SceneBackground->RedrawElement();
+			this->ModelLoaded = true;
+			this->EditorScene->Redraw = true;
 		});
+	});
 }
 
 engine::editor::ModelEditor::~ModelEditor()
@@ -144,16 +141,16 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		auto* NewSelector = new AssetSelector(AssetRef::FromName(m.Material, "kmt"), Width, nullptr);
 		NewSelector->SelectedAsset.Extension = "kmt";
 		NewSelector->OnChanged = [this, &m, NewSelector]()
-			{
-				auto NewMaterial = NewSelector->SelectedAsset.DisplayName();
+		{
+			auto NewMaterial = NewSelector->SelectedAsset.DisplayName();
 
-				if (NewMaterial == m.Material)
-					return;
+			if (NewMaterial == m.Material)
+				return;
 
-				m.Material = NewMaterial;
-				OnChanged();
-				OnModelChanged();
-			};
+			m.Material = NewMaterial;
+			OnChanged();
+			OnModelChanged();
+		};
 
 		NewSelector->SetPadding(10_px, 10_px, 20_px, 20_px);
 
@@ -167,22 +164,21 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	PropertiesBox->AddChild(new UIText(14_px, EditorUI::Theme.Text, "Properties", EditorUI::EditorFont));
 
 	auto AddBoolProperty = [this, PropertiesBox, Data](string Name, bool& Value)
-		{
-			auto Checkbox = new UICheckbox(Value, nullptr);
-			Checkbox->OnClicked = [this, &Value, Checkbox]()
-				{
-					Value = Checkbox->Value;
-					OnChanged();
-					OnModelChanged();
-			};
-			PropertiesBox->AddChild((new UIBox(true))
-				->SetVerticalAlign(UIBox::Align::Centered)
-				->AddChild((new UIText(11_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
-					->SetTextWidthOverride(100_px)
-					->SetPadding(5_px))
-				->AddChild(Checkbox
-					->SetPadding(5_px)));
+	{
+		auto Checkbox = new UICheckbox(Value, nullptr);
+		Checkbox->OnClicked = [this, &Value, Checkbox] {
+			Value = Checkbox->Value;
+			OnChanged();
+			OnModelChanged();
 		};
+		PropertiesBox->AddChild((new UIBox(true))
+			->SetVerticalAlign(UIBox::Align::Centered)
+			->AddChild((new UIText(11_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
+				->SetTextWidthOverride(100_px)
+				->SetPadding(5_px))
+			->AddChild(Checkbox
+				->SetPadding(5_px)));
+	};
 
 	AddBoolProperty("Has collision", Data->Data->HasCollision);
 	AddBoolProperty("Cast shadow", Data->Data->CastShadow);
