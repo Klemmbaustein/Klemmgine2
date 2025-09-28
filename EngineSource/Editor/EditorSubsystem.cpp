@@ -1,6 +1,5 @@
-#ifdef EDITOR
 #include "EditorSubsystem.h"
-#include "ConsoleSubsystem.h"
+#include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/Engine.h>
 #include <Engine/Scene.h>
 #include <Engine/Debug/TimeLogger.h>
@@ -81,5 +80,3 @@ void engine::subsystem::EditorSubsystem::StopProject()
 	}
 	editor::EditorUI::SetStatusMessage("Stopped game", editor::EditorUI::StatusType::Info);
 }
-
-#endif

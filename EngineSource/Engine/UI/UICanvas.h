@@ -1,7 +1,7 @@
 #pragma once
 #include <kui/UI/UIBox.h>
 #include <Engine/Engine.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 
 namespace engine
 {

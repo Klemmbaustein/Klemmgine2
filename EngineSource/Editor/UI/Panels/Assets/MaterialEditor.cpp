@@ -9,7 +9,7 @@
 #include <Core/File/FileUtil.h>
 #include <stdexcept>
 #include <kui/Window.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
 #include <kui/UI/UIDropdown.h>
 

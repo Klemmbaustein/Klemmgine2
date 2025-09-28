@@ -7,7 +7,7 @@
 #include <Engine/MainThread.h>
 #include <Engine/Scene.h>
 #include <Engine/File/Resource.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 
 using namespace engine::graphics;
 

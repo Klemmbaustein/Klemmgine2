@@ -2,7 +2,7 @@
 #include "IPopupWindow.h"
 #include <Editor/UI/EditorUI.h>
 #include <thread>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
 
 void engine::editor::IPopupWindow::Open()

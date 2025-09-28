@@ -4,7 +4,7 @@
 void engine::MeshComponent::Update()
 {
 	if (DrawnModel && DrawnModel->Data)
-		CastShadow = DrawnModel->Data->CastShadow;
+		DrawnModel->Data->CastShadow = CastShadow;
 }
 
 void engine::MeshComponent::Draw(graphics::Camera* From)
@@ -58,6 +58,7 @@ void engine::MeshComponent::Load(AssetRef From)
 
 		if (IsRegistered && (RootObject || ParentObject))
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
+		this->CastShadow = DrawnModel->Data->CastShadow;
 	}
 }
 

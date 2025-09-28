@@ -1,12 +1,11 @@
 #include "Engine.h"
 #include "Version.h"
 #include "Editor/Editor.h"
-#include "Subsystem/VideoSubsystem.h"
-#include "Subsystem/EditorSubsystem.h"
+#include "Graphics/VideoSubsystem.h"
 #include "Subsystem/InputSubsystem.h"
 #include "Subsystem/ConsoleSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
-#include "Subsystem/PluginSubsystem.h"
+#include "Plugins/PluginSubsystem.h"
 #include "Script/ScriptSubsystem.h"
 #include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
@@ -16,6 +15,11 @@
 #include <kui/App.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <Core/LaunchArgs.h>
+
+#ifdef EDITOR
+#include <Editor/EditorSubsystem.h>
+#endif
+
 using namespace engine;
 using namespace engine::subsystem;
 

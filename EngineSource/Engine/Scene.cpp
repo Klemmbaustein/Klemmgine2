@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "Internal/OpenGL.h"
 #include "Subsystem/SceneSubsystem.h"
-#include "Subsystem/VideoSubsystem.h"
+#include "Graphics/VideoSubsystem.h"
 #include <algorithm>
 #include <Core/File/BinarySerializer.h>
 #include <Core/File/TextSerializer.h>
@@ -15,7 +15,7 @@
 #include <Engine/UI/UICanvas.h>
 
 #if EDITOR
-#include <Engine/Subsystem/EditorSubsystem.h>
+#include <Editor/EditorSubsystem.h>
 #include <Editor/UI/Panels/Viewport.h>
 #endif
 

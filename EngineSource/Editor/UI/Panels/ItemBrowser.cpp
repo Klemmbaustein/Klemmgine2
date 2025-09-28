@@ -230,6 +230,10 @@ void engine::editor::ItemBrowser::DisplayList()
 	{
 		return;
 	}
+	else if (ItemsPerRow == 0)
+	{
+		ItemsPerRow++;
+	}
 
 	UIBox* CurrentBox = new UIBox(true, 0);
 	ItemsScrollBox->AddChild(CurrentBox);

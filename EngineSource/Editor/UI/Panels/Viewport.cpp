@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "Viewport.h"
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Effects/Outline.h>
@@ -8,8 +7,8 @@
 #include <Engine/Input.h>
 #include <Engine/Objects/MeshObject.h>
 #include <Engine/Stats.h>
-#include <Engine/Subsystem/EditorSubsystem.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Editor/EditorSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <kui/UI/UISpinner.h>
 using namespace engine::subsystem;
 using namespace kui;
@@ -567,4 +566,3 @@ void engine::editor::Viewport::UndoLast()
 	}
 	ObjectChanges.pop();
 }
-#endif

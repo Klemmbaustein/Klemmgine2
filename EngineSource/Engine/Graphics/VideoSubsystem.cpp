@@ -1,10 +1,9 @@
 #include "VideoSubsystem.h"
-#include "SceneSubsystem.h"
-#include "ConsoleSubsystem.h"
+#include <Engine/Subsystem/SceneSubsystem.h>
+#include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <kui/App.h>
 #include <SDL3/SDL.h>
 #include <Engine/Internal/OpenGL.h>
-#include "EditorSubsystem.h"
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
@@ -18,6 +17,11 @@
 #include <stdexcept>
 #include <kui/Rendering/OpenGLBackend.h>
 #include <Engine/File/Resource.h>
+
+#ifdef EDITOR
+#include <Editor/EditorSubsystem.h>
+#endif
+
 using namespace kui;
 using namespace engine::subsystem;
 
@@ -205,6 +209,25 @@ void engine::subsystem::VideoSubsystem::RegisterCommands(ConsoleSubsystem* Syste
 				ctx.Context->Print("Invalid ui scale: " + ctx.ProvidedArguments.at(0), LogType::Error);
 			}
 		} });
+
+	System->AddCommand(console::Command{
+		.Name = "vsync",
+		.Args = { console::Command::Argument{
+			.Name = "value",
+			.Required = true,
+		}, },
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
+		auto& val = ctx.ProvidedArguments.at(0);
+
+		if (val != "true" && val != "false")
+		{
+			ctx.Context->Print("Invalid vsync value", LogType::Error);
+			return;
+		}
+
+		this->VSyncEnabled = val == "true";
+
+		} });
 }
 
 engine::subsystem::VideoSubsystem::~VideoSubsystem()
@@ -295,7 +318,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	}
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(this->VSyncEnabled ? 1 : 0);
 	SDL_GL_SwapWindow(GetSysWindow(MainWindow)->SDLWindow);
 }
 

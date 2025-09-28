@@ -12,7 +12,7 @@
 #include <Engine/Plugins/PluginUI.h>
 #include <Engine/Scene.h>
 #include <Engine/Stats.h>
-#include <Engine/Subsystem/PluginSubsystem.h>
+#include <Engine/Plugins/PluginSubsystem.h>
 #include <filesystem>
 #include <kui/KlemmUI.h>
 
@@ -152,7 +152,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 		}
 		else
 		{
-			PluginPath.append("/plugins"); 
+			PluginPath.append("/plugins");
 		}
 
 #if LINUX

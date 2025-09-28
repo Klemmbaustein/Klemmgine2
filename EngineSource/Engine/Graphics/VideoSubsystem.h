@@ -1,5 +1,5 @@
 #pragma once
-#include "Subsystem.h"
+#include <Engine/Subsystem/Subsystem.h>
 #include <kui/Window.h>
 #include <Engine/Graphics/ShaderLoader.h>
 #include <Engine/Graphics/Texture.h>
@@ -22,6 +22,8 @@ namespace engine::subsystem
 		kui::Font* DefaultFont = nullptr;
 		graphics::ShaderLoader Shaders;
 		graphics::TextureLoader Textures;
+
+		bool VSyncEnabled = true;
 
 		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
 		static string DefaultFontName;

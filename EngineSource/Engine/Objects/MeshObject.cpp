@@ -24,7 +24,7 @@ void engine::MeshObject::Begin()
 	ModelName.OnChanged();
 
 	CastShadow.OnChanged = [this]() {
-
+		Mesh->CastShadow = this->CastShadow.Value;
 	};
 }
 

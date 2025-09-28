@@ -4,7 +4,7 @@
 #include <kui/App.h>
 #include <iostream>
 #include <Engine/Engine.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Subsystem/InputSubsystem.h>
 #include "PlatformGraphics.h"
 

@@ -14,7 +14,7 @@
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/MeshObject.h>
-#include <Engine/Subsystem/VideoSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <filesystem>
 #include <fstream>
 #include <ItemBrowser.kui.hpp>

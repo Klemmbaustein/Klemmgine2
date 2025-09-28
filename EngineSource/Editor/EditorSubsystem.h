@@ -1,6 +1,5 @@
-#ifdef EDITOR
 #pragma once
-#include "Subsystem.h"
+#include <Engine/Subsystem/Subsystem.h>
 #include <Editor/UI/EditorUI.h>
 
 namespace engine::subsystem
@@ -12,7 +11,7 @@ namespace engine::subsystem
 		virtual ~EditorSubsystem() override;
 
 		virtual void Update() override;
-		
+
 		void StartProject();
 		void StopProject();
 
@@ -21,4 +20,3 @@ namespace engine::subsystem
 		static bool Active;
 	};
 }
-#endif

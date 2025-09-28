@@ -1,5 +1,5 @@
 #include "InputSubsystem.h"
-#include "VideoSubsystem.h"
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <SDL3/SDL.h>

@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt : CMake project for Klemmgine2, include source and define
 # project specific logic here.
 #
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.20)
 
 if(WIN32)
 	set(CMAKE_CXX_STANDARD 23)
@@ -117,6 +117,7 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory("Dependencies/glm" EXCLUDE_FROM_ALL)
 set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF)
 set(PROFILER_IN_DEBUG_AND_RELEASE OFF)
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
 add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
 target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
