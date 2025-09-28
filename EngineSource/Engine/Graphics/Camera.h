@@ -25,7 +25,7 @@ namespace engine::graphics
 		Vector3 Rotation;
 		Transform CameraTransform;
 
-		Environment* UsedEnvironment = nullptr;
+		Environment* UsedEnvironment = new Environment();
 		bool UseTransform = false;
 	};
 }

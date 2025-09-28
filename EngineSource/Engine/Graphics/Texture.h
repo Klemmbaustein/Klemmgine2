@@ -21,7 +21,7 @@ namespace engine::graphics
 		Filtering Filter = Linear;
 		BorderType TextureBorders = Repeat;
 
-		bool MipMaps = false;
+		bool MipMaps = true;
 	private:
 		string Name;
 		friend class TextureLoader;

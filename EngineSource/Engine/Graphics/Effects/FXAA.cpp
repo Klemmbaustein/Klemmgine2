@@ -30,13 +30,16 @@ uint32 engine::graphics::FXAA::Draw(uint32 Texture, PostProcess* With, Framebuff
 	EffectShader->Bind();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Texture);
-	glActiveTexture(GL_TEXTURE1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	EffectShader->SetInt(EffectShader->GetUniformLocation("u_texture"), 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, OutlineBuffer.first);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	return OutlineBuffer.second;
 }

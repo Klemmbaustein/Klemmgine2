@@ -33,7 +33,7 @@ void engine::graphics::PostProcess::Init(uint32 Width, uint32 Height)
 
 	AddEffect(new Bloom());
 	AddEffect(new AmbientOcclusion());
-	//AddEffect(new FXAA());
+	AddEffect(new FXAA());
 }
 
 void engine::graphics::PostProcess::OnBufferResized(uint32 Width, uint32 Height)

@@ -6,7 +6,7 @@
 #include <Core/File/FileUtil.h>
 using namespace kui;
 
-engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width, std::function<void()> OnChanged)
+engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, kui::UISize Width, std::function<void()> OnChanged)
 	: DroppableBox(true, [this](EditorUI::DraggedItem itm)
 {
 	auto ref = AssetRef::FromPath(itm.Path);
@@ -31,7 +31,7 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, float Width,
 
 	float PaddingSize = (5_px).GetScreen().X;
 
-	float BoxSize = Width - (32_px).GetScreen().X - PaddingSize;
+	float BoxSize = Width.GetScreen().X - (32_px).GetScreen().X - PaddingSize;
 
 	UIBox* RightBox = new UIBox(false);
 	RightBox->SetMinSize(kui::Vec2f(BoxSize, 0));

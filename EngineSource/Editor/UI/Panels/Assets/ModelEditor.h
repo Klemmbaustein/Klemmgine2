@@ -6,6 +6,7 @@
 #include <thread>
 #include <Engine/Objects/MeshObject.h>
 #include <memory>
+#include <Editor/UI/Elements/PropertyMenu.h>
 
 namespace engine::editor
 {
@@ -28,7 +29,7 @@ namespace engine::editor
 
 		bool ModelLoaded = false;
 		kui::UIBackground* SceneBackground = nullptr;
-		kui::UIBox* SidebarBox = nullptr;
+		PropertyMenu* Sidebar = nullptr;
 		kui::UIBox* MainBox = nullptr;
 		Scene* EditorScene = nullptr;
 		MeshObject* CurrentObj = nullptr;

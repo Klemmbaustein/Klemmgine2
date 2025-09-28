@@ -57,6 +57,7 @@ namespace engine
 		* @see CameraComponent
 		*/
 		graphics::Camera* UsedCamera = nullptr;
+		graphics::Environment SceneEnvironment;
 
 		/**
 		* @brief
@@ -200,8 +201,6 @@ namespace engine
 		{
 			return SceneTexture;
 		}
-
-		graphics::Environment Env;
 
 	private:
 		void DeSerializeInternal(SerializedValue* From, bool Async);

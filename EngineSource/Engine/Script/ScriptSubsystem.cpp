@@ -46,18 +46,6 @@ void engine::script::ScriptSubsystem::Reload()
 {
 	auto CurrentScene = Scene::GetMain();
 
-	if (CurrentScene)
-	{
-		for (auto& i : CurrentScene->Objects)
-		{
-			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
-			if (ScriptObj)
-			{
-				ScriptObj->UnloadScriptData();
-			}
-		}
-	}
-
 	auto Compiler = this->ScriptLanguage->createCompiler();
 
 	debug::TimeLogger CompileTime = { "Compiled scripts", this->GetLogPrefixes() };
@@ -83,6 +71,17 @@ void engine::script::ScriptSubsystem::Reload()
 		return;
 	}
 
+	if (CurrentScene)
+	{
+		for (auto& i : CurrentScene->Objects)
+		{
+			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
+			if (ScriptObj)
+			{
+				ScriptObj->UnloadScriptData();
+			}
+		}
+	}
 	//auto Stream = FileStream("scripts.bin", true);
 	//script::serialize::SerializeBytecode(&NewInstructions, &Stream);
 

@@ -30,6 +30,7 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 	{
 		UsedMaterials[i]->Apply();
 		ShaderObject* Used = UsedMaterials[i]->Shader;
+		With->UsedEnvironment->ApplyTo(Used);
 
 		if (In)
 			In->Shadows.BindUniforms(Used);

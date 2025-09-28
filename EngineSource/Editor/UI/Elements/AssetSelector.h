@@ -11,7 +11,7 @@ namespace engine::editor
 	class AssetSelector : public DroppableBox
 	{
 	public:
-		AssetSelector(AssetRef InitialValue, float Width, std::function<void()> OnChanged);
+		AssetSelector(AssetRef InitialValue, kui::UISize Width, std::function<void()> OnChanged);
 		virtual ~AssetSelector() override;
 
 		std::function<void()> OnChanged;

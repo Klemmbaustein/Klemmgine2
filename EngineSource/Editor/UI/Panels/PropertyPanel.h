@@ -2,6 +2,7 @@
 #pragma once
 #include "EditorPanel.h"
 #include <Engine/Objects/SceneObject.h>
+#include <Editor/UI/Elements/PropertyMenu.h>
 
 namespace engine::editor
 {
@@ -18,8 +19,8 @@ namespace engine::editor
 		SceneObject* SelectedObj = nullptr;
 
 	private:
+		PropertyMenu* Properties = nullptr;
 		Transform OldObjectTransform;
-		std::vector<std::function<void()>> UpdateProperties;
 	};
 }
 #endif

@@ -400,6 +400,13 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 	if (From->GetType() != SerializedData::DataType::Object || From->GetObject().empty())
 		return;
 
+	auto& SceneInfo = From->At("scene");
+
+	if (SceneInfo.Contains("sunColor"))
+	{
+		this->SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
+	}
+
 	for (auto& i : From->At("objects").GetArray())
 	{
 		try
@@ -503,6 +510,7 @@ void engine::Scene::Init()
 		SceneCamera = new Camera(1);
 		SceneCamera->Position.Z = 2;
 		SceneCamera->Rotation.Y = -90;
+		SceneCamera->UsedEnvironment = &this->SceneEnvironment;
 
 		SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 		UsedCamera = SceneCamera;
@@ -528,7 +536,7 @@ void engine::Scene::Init()
 engine::SerializedValue engine::Scene::GetSceneInfo()
 {
 	return std::vector{
-		SerializedData("sunColor", Vector3(1, 0.5f, 0)),
+		SerializedData("sunColor", this->SceneEnvironment.SunColor),
 	};
 }
 

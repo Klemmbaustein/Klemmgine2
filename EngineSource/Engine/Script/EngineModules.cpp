@@ -68,6 +68,13 @@ static void MoveComponent_addInput(InterpretContext* context)
 	Component.getValue()->AddMovementInput(Direction);
 }
 
+static void MoveComponent_jump(InterpretContext* context)
+{
+	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Component.getValue()->Jump();
+}
+
 static void CameraComponent_new(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
@@ -107,6 +114,8 @@ static void Stats_GetDelta(InterpretContext* context)
 	context->pushValue(stats::DeltaTime);
 }
 
+#pragma region Input
+
 static void Input_IsKeyDown(InterpretContext* context)
 {
 	context->pushValue<Bool>(IsKeyDown(context->popValue<Key>()));
@@ -116,6 +125,28 @@ static void Input_GetMouseMovement(InterpretContext* context)
 {
 	context->pushValue<Vector2>(MouseMovement);
 }
+
+static void Input_IsLMBDown(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsLMBDown);
+}
+
+static void Input_IsLMBClicked(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsLMBClicked);
+}
+
+static void Input_IsRMBDown(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsRMBDown);
+}
+
+static void Input_IsRMBClicked(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsRMBClicked);
+}
+
+#pragma endregion
 
 static void WriteVec(InterpretContext* context)
 {
@@ -158,6 +189,8 @@ static void AssetRef_emptyAsset(InterpretContext* context)
 	context->pushValue(Asset);
 }
 
+#pragma region Vector3
+
 static void Vector3_Forward(InterpretContext* context)
 {
 	context->pushValue(Vector3::Forward(context->popValue<Rotation3>().EulerVector()));
@@ -196,6 +229,13 @@ static void Vector3_UnaryMinus(InterpretContext* context)
 {
 	context->pushValue(-context->popValue<Vector3>());
 }
+
+static void Vector3_length(InterpretContext* context)
+{
+	context->pushValue(context->popValue<Vector3>().Length());
+}
+
+#pragma endregion
 
 void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 {
@@ -240,6 +280,9 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 		EngineModule.addFunction(NativeFunction({FunctionArgument(VecType, "a")},
 			VecType, "Vector3.unaryMinus", &Vector3_UnaryMinus))
 		});
+
+	VecType->methods.insert({ "length", EngineModule.addFunction(NativeFunction({},
+			FloatInst, "Vector3.length", &Vector3_length)) });
 
 	auto Vec2Type = LANG_CREATE_STRUCT(Vector2);
 
@@ -323,6 +366,10 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 		NativeFunction({ FunctionArgument(VecType, "direction") },
 			nullptr, "addInput", &MoveComponent_addInput));
 
+	EngineModule.addClassMethod(MoveComponentType,
+		NativeFunction({ },
+			nullptr, "jump", &MoveComponent_jump));
+
 	auto CameraComponentType = EngineModule.createClass<MoveComponent*>("CameraComponent", ComponentType);
 
 	EngineModule.addClassConstructor(CameraComponentType,
@@ -334,8 +381,8 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 			nullptr, "use", &CameraComponent_use));
 
 	EngineModule.addClassMethod(CameraComponentType,
-		NativeFunction({ FunctionArgument(FloatInst, "fov")},
-			nullptr, "setFOV", & CameraComponent_setFOV));
+		NativeFunction({ FunctionArgument(FloatInst, "fov") },
+			nullptr, "setFOV", &CameraComponent_setFOV));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(VecType, "message") },
@@ -351,7 +398,7 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(RotType, "rotation") },
-			VecType, "right", & Vector3_Right));
+			VecType, "right", &Vector3_Right));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "p"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "r") },
@@ -399,6 +446,18 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	EngineInputModule.addEnumValue(KeyType, "right", Key::RIGHT);
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
 		BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
+
+	EngineInputModule.addFunction(NativeFunction({},
+		BoolType::getInstance(), "isLMBDown", & Input_IsLMBDown));
+
+	EngineInputModule.addFunction(NativeFunction({},
+		BoolType::getInstance(), "isRMBDown", & Input_IsRMBDown));
+
+	EngineInputModule.addFunction(NativeFunction({},
+		BoolType::getInstance(), "isLMBClicked", & Input_IsLMBClicked));
+
+	EngineInputModule.addFunction(NativeFunction({},
+		BoolType::getInstance(), "isRMBClicked", & Input_IsRMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({ },
 		Vec2Type, "getMouseMovement", &Input_GetMouseMovement));

@@ -36,7 +36,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 	MainBox = new UIBox(false);
 
 	Background->AddChild(MainBox
-		->SetPadding(1_px, 5_px, 1_px, 5_px));
+		->SetPadding(1_px, 5_px, 1_px, 3_px));
 
 	auto ModelToolbar = new Toolbar(false);
 
@@ -54,13 +54,12 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->AddChild(new UISpinner(0, EditorUI::Theme.Highlight1)));
 
-	SidebarBox = new UIScrollBox(false, 0, true);
+	Sidebar = new PropertyMenu();
 
-	Background->AddChild(SidebarBox
-		->SetMinSize(SizeVec(280_px, UISize::Parent(1)))
-		->SetMaxSize(SizeVec(280_px, UISize::Parent(1)))
-		->SetHorizontalAlign(UIBox::Align::Centered)
-		->SetPadding(8_px, 3_px, 3_px, 3_px));
+	Background->AddChild(Sidebar
+		->SetMinSize(SizeVec(290_px, UISize::Parent(1)))
+		->SetMaxSize(SizeVec(290_px, UISize::Parent(1)))
+		->SetPadding(8_px, 3_px, 0, 0));
 
 	LoadModelThread = std::thread([this, ModelFile, CancelLoadShared] {
 		auto Loaded = GraphicsModel::RegisterModel(ModelFile);
@@ -108,14 +107,14 @@ engine::editor::ModelEditor::~ModelEditor()
 
 void engine::editor::ModelEditor::OnModelLoaded()
 {
-	SidebarBox->DeleteChildren();
+	Sidebar->Clear();
 	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 
 	if (!Data)
 	{
 		if (!FailedLoading)
 		{
-			SidebarBox->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
+			Sidebar->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
 				->SetBackgroundColor(EditorUI::Theme.HighlightDark));
 		}
 		else
@@ -129,16 +128,14 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		}
 		return;
 	}
-	float Width = UIBox::PixelSizeToScreenSize(245, Background->GetParentWindow()).X;
 
-	SidebarBox->AddChild((new UIBox(true))
-		->SetMinWidth(UISize::Parent(1))
-		->AddChild(new UIText(14_px, EditorUI::Theme.Text, "Materials", EditorUI::EditorFont)));
+	Sidebar->CreateNewHeading("Materials");
 
-
+	size_t it = 0;
 	for (ModelData::Mesh& m : Data->Data->Meshes)
 	{
-		auto* NewSelector = new AssetSelector(AssetRef::FromName(m.Material, "kmt"), Width, nullptr);
+		auto NewEntry = Sidebar->CreateNewEntry(std::to_string(it++));
+		auto* NewSelector = new AssetSelector(AssetRef::FromName(m.Material, "kmt"), Sidebar->ElementSize, nullptr);
 		NewSelector->SelectedAsset.Extension = "kmt";
 		NewSelector->OnChanged = [this, &m, NewSelector]()
 		{
@@ -152,36 +149,20 @@ void engine::editor::ModelEditor::OnModelLoaded()
 			OnModelChanged();
 		};
 
-		NewSelector->SetPadding(10_px, 10_px, 20_px, 20_px);
-
-		SidebarBox->AddChild(NewSelector);
+		NewEntry->valueBox->AddChild(NewSelector);
 	}
 
 	UIBox* PropertiesBox = new UIBox(false);
-	SidebarBox->AddChild(PropertiesBox
-		->SetMinWidth(UISize::Parent(1)));
 
-	PropertiesBox->AddChild(new UIText(14_px, EditorUI::Theme.Text, "Properties", EditorUI::EditorFont));
+	Sidebar->CreateNewHeading("Properties");
 
-	auto AddBoolProperty = [this, PropertiesBox, Data](string Name, bool& Value)
-	{
-		auto Checkbox = new UICheckbox(Value, nullptr);
-		Checkbox->OnClicked = [this, &Value, Checkbox] {
-			Value = Checkbox->Value;
-			OnChanged();
-			OnModelChanged();
-		};
-		PropertiesBox->AddChild((new UIBox(true))
-			->SetVerticalAlign(UIBox::Align::Centered)
-			->AddChild((new UIText(11_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
-				->SetTextWidthOverride(100_px)
-				->SetPadding(5_px))
-			->AddChild(Checkbox
-				->SetPadding(5_px)));
+	auto ModelChanged = [this] {
+		OnChanged();
+		OnModelChanged();
 	};
 
-	AddBoolProperty("Has collision", Data->Data->HasCollision);
-	AddBoolProperty("Cast shadow", Data->Data->CastShadow);
+	Sidebar->AddBooleanEntry("Has collision", Data->Data->HasCollision, ModelChanged);
+	Sidebar->AddBooleanEntry("Cast shadow", Data->Data->CastShadow, ModelChanged);
 }
 
 void engine::editor::ModelEditor::OnModelChanged()

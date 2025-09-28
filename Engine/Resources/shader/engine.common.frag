@@ -24,9 +24,11 @@ layout(location = 2) out vec3 f_normal;
 uniform vec3 u_lightDirection = vec3(0, 1, 0);
 
 #export //!
-uniform vec3 u_lightColor = vec3(1);
+uniform vec3 u_sunColor = vec3(1);
 #export //!
-uniform vec3 u_ambientColor = vec3(1);
+uniform vec3 u_skyColor = vec3(1);
+#export //!
+uniform vec3 u_groundColor = vec3(1);
 #export //!
 uniform float u_ambientStrength = 0.2;
 
@@ -47,6 +49,11 @@ uniform float u_shadowBiasModifier = 0;
 #define PCF_HALF_SIZE 2
 
 float shadowValues[PCF_SIZE][PCF_SIZE];
+
+vec3 getAmbient(vec3 normal)
+{
+	return mix(u_groundColor, u_skyColor, normal.y / 2.0 + 0.5);
+}
 
 float rand(vec2 n)
 {
@@ -153,13 +160,13 @@ float getLightStrength()
 #export //!
 vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize)
 {
-	vec3 ambient = color * u_ambientStrength * u_ambientColor;
+	vec3 ambient = color * u_ambientStrength * getAmbient(v_normal);
 
 	vec3 viewDir = normalize(u_cameraPos - v_position);
 	vec3 reflectDir = reflect(-u_lightDirection, v_normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularSize);
-	vec3 spec_color = spec * specularStength * u_lightColor;
-	return (color + spec_color) * getLightStrength() + ambient;
+	vec3 spec_color = spec * specularStength * u_sunColor;
+	return (color * u_sunColor + spec_color) * getLightStrength() + ambient;
 }
 
 #export //!
