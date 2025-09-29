@@ -112,10 +112,12 @@ void engine::editor::ModelEditor::OnModelLoaded()
 
 	if (!Data)
 	{
+		Sidebar->SetMode(PropertyMenu::Mode::DisplayText);
 		if (!FailedLoading)
 		{
 			Sidebar->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
-				->SetBackgroundColor(EditorUI::Theme.HighlightDark));
+				->SetBackgroundColor(EditorUI::Theme.HighlightDark)
+				->SetPadding(10_px));
 		}
 		else
 		{
@@ -129,6 +131,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		return;
 	}
 
+	Sidebar->SetMode(PropertyMenu::Mode::DisplayEntries);
 	Sidebar->CreateNewHeading("Materials");
 
 	size_t it = 0;
@@ -161,8 +164,24 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		OnModelChanged();
 	};
 
-	Sidebar->AddBooleanEntry("Has collision", Data->Data->HasCollision, ModelChanged);
-	Sidebar->AddBooleanEntry("Cast shadow", Data->Data->CastShadow, ModelChanged);
+	size_t Vertices = 0;
+	size_t Indices = 0;
+
+	for (auto& i : Data->Data->Meshes)
+	{
+		Vertices += i.Vertices.size();
+		Indices += i.Indices.size();
+	}
+
+	Sidebar->AddBooleanEntry("Collision", Data->Data->HasCollision, ModelChanged);
+	Sidebar->AddBooleanEntry("Shadow", Data->Data->CastShadow, ModelChanged);
+
+	Sidebar->CreateNewHeading("Statistics");
+	Sidebar->AddInfoEntry("Vertices", std::to_string(Vertices));
+	Sidebar->AddInfoEntry("Triangles", std::to_string(Indices / 3));
+	Sidebar->AddInfoEntry("Center", Data->Data->Bounds.Position.ToString());
+	Sidebar->AddInfoEntry("Extents", Data->Data->Bounds.Extents.ToString());
+	Sidebar->AddInfoEntry("RefCount", std::to_string(Data->References));
 }
 
 void engine::editor::ModelEditor::OnModelChanged()

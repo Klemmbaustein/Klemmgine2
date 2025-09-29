@@ -42,11 +42,6 @@ class MyObject : SceneObject
 			movement.addInput(-right(rotation))
 		}
 
-		if isLMBClicked()
-		{
-			movement.jump()
-		}
-
 		const mouseMovement = getMouseMovement()
 
 		rotation.y -= mouseMovement.x

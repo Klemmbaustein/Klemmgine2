@@ -23,6 +23,13 @@ namespace engine::graphics
 		bool Enabled = false;
 
 	private:
+		bool EnvironmentHasShadows = true;
+
+		bool ShouldRender() const
+		{
+			return Enabled && EnvironmentHasShadows;
+		}
+
 		float BiasModifier = 0;
 		static graphics::ShaderObject* ShadowShader;
 		static uint32 MatricesBuffer;

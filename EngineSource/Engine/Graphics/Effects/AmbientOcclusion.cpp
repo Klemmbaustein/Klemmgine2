@@ -78,6 +78,11 @@ void engine::graphics::AmbientOcclusion::OnBufferResized(uint32 Width, uint32 He
 
 uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
 {
+	if (!Cam->UsedEnvironment->RenderSettings.AmbientOcclusion)
+	{
+		return Texture;
+	}
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Buffer->Textures[2]);
 	glActiveTexture(GL_TEXTURE1);

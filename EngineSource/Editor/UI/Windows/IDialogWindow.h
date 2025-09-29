@@ -1,4 +1,4 @@
-#ifdef EDITOR
+#pragma once
 #include "IPopupWindow.h"
 #include <kui/UI/UIBackground.h>
 #include <functional>
@@ -31,4 +31,3 @@ namespace engine::editor
 		kui::UIBox* ButtonBackground = nullptr;
 	};
 }
-#endif

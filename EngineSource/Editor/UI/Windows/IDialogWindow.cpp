@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "IDialogWindow.h"
 #include <Core/Log.h>
 #include <DialogWindow.kui.hpp>
@@ -56,4 +55,3 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 	}
 	ButtonBackground->RedrawElement();
 }
-#endif

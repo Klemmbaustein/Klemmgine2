@@ -38,11 +38,18 @@ void engine::graphics::Bloom::OnBufferResized(uint32 Width, uint32 Height)
 
 uint32 engine::graphics::Bloom::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
 {
+	if (!Cam->UsedEnvironment->RenderSettings.Bloom)
+	{
+		return Texture;
+	}
+
+	auto& Render = Cam->UsedEnvironment->RenderSettings;
+
 	BloomShader->Bind();
 	BloomShader->SetInt(BloomTextureLocation, 0);
 	BloomShader->SetVec2(TextureSizeLocation, Vector2(1.0f) / Vector2(float(BloomWidth), float(BloomHeight)));
 
-	size_t BloomAmount = 25;
+	size_t BloomAmount = Cam->UsedEnvironment->RenderSettings.BloomSamples;
 	bool Horizontal = false;
 
 	uint32 IterationTexture = Texture;
@@ -52,7 +59,7 @@ uint32 engine::graphics::Bloom::Draw(uint32 Texture, PostProcess* With, Framebuf
 
 	for (size_t i = 0; i < BloomAmount; i++)
 	{
-		BloomShader->SetInt(HorizontalLocation, Horizontal);
+		BloomShader->SetInt(HorizontalLocation, (i % Render.BloomShape));
 		glBindTexture(GL_TEXTURE_2D, IterationTexture);
 		IterationTexture = DrawBuffer(BloomBuffers[Horizontal], BloomWidth, BloomHeight);
 		Horizontal = !Horizontal;
@@ -67,6 +74,8 @@ uint32 engine::graphics::Bloom::Draw(uint32 Texture, PostProcess* With, Framebuf
 	BloomMergeShader->Bind();
 	BloomMergeShader->SetInt(BloomMergeShader->GetUniformLocation("u_mainTexture"), 1);
 	BloomMergeShader->SetInt(BloomMergeShader->GetUniformLocation("u_bloomTexture"), 0);
+	BloomMergeShader->SetFloat(BloomMergeShader->GetUniformLocation("u_bloomStrength"), Render.BloomStrength);
+	BloomMergeShader->SetFloat(BloomMergeShader->GetUniformLocation("u_bloomThreshold"), Render.BloomThreshold);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, ResultBuffer.first);
 	glDrawArrays(GL_TRIANGLES, 0, 3);

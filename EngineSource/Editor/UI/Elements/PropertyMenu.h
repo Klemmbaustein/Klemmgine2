@@ -11,6 +11,12 @@ namespace engine::editor
 	{
 	public:
 
+		enum class Mode
+		{
+			DisplayText,
+			DisplayEntries,
+		};
+
 		PropertyMenu();
 
 		void Update() override;
@@ -25,7 +31,12 @@ namespace engine::editor
 		void AddVecEntry(string Name, Vector3& Value, std::function<void()> OnChanged);
 		void AddStringEntry(string Name, string& Value, std::function<void()> OnChanged);
 		void AddBooleanEntry(string Name, bool& Value, std::function<void()> OnChanged);
+		void AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged);
+		void AddFloatEntry(string Name, int32& Value, std::function<void()> OnChanged);
 		void AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged);
+		void AddInfoEntry(string Name, string Value);
+
+		void SetMode(Mode NewMode);
 
 		void UpdateProperties();
 

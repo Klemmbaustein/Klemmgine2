@@ -58,7 +58,7 @@ element PropertyHeaderElement
 		upPadding = UpPadding;
 		color = Color_Text;
 		text = Title;
-		size = 12px;
+		size = 13px;
 	}
 
 	child UIBackground

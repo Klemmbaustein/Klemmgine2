@@ -101,6 +101,62 @@ void engine::editor::PropertyMenu::AddBooleanEntry(string Name, bool& Value, std
 	New->valueBox->AddChild(Checkbox);
 }
 
+void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged)
+{
+	auto* NameEntry = CreateNewEntry(Name);
+
+	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+
+	NameField->OnChanged = [OnChanged, &Value, NameField] {
+		try
+		{
+			Value = std::stoi(NameField->GetText());
+		}
+		catch (std::exception&)
+		{
+			NameField->SetText(std::to_string(Value));
+		}
+		if (OnChanged)
+			OnChanged();
+	};
+
+	NameEntry->valueBox->AddChild(NameField
+		->SetText(std::to_string(Value))
+		->SetTextColor(EditorUI::Theme.Text)
+		->SetTextSize(11_px)
+		->SetMinSize(SizeVec(ElementSize, 0)));
+}
+
+void engine::editor::PropertyMenu::AddFloatEntry(string Name, int32& Value, std::function<void()> OnChanged)
+{
+	auto* NameEntry = CreateNewEntry(Name);
+
+	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+
+	NameField->OnChanged = [OnChanged, &Value, NameField] {
+		try
+		{
+			Value = std::stof(NameField->GetText());
+		}
+		catch (std::exception&)
+		{
+			NameField->SetText(str::FloatToString(Value));
+		}
+		if (OnChanged)
+			OnChanged();
+	};
+
+	NameEntry->valueBox->AddChild(NameField
+		->SetText(str::FloatToString(Value))
+		->SetTextColor(EditorUI::Theme.Text)
+		->SetTextSize(11_px)
+		->SetMinSize(SizeVec(ElementSize, 0)));
+}
+void engine::editor::PropertyMenu::SetMode(Mode NewMode)
+{
+	this->HorizontalBoxAlign = NewMode == Mode::DisplayText ? UIBox::Align::Centered : UIBox::Align::Default;
+}
+
 void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged)
 {
 	auto* New = CreateNewEntry(Name);
@@ -116,6 +172,14 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 	};
 
 	New->valueBox->AddChild(Selector);
+}
+
+void engine::editor::PropertyMenu::AddInfoEntry(string Name, string Value)
+{
+	auto* New = CreateNewEntry(Name);
+
+	New->valueBox->AddChild((new UIText(11_px, EditorUI::Theme.Text, Value, EditorUI::EditorFont))
+		->SetWrapEnabled(true, this->ElementSize));
 }
 
 void engine::editor::PropertyMenu::UpdateProperties()

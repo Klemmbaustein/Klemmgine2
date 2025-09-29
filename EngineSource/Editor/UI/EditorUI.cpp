@@ -10,6 +10,7 @@
 #include "Panels/PropertyPanel.h"
 #include "Panels/Viewport.h"
 #include "Windows/BuildWindow.h"
+#include "Windows/SettingsWindow.h"
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
@@ -169,7 +170,9 @@ engine::editor::EditorUI::EditorUI()
 		{
 			DropdownMenu::Option("Undo"),
 			DropdownMenu::Option("Redo"),
-			DropdownMenu::Option("Settings"),
+			DropdownMenu::Option("Settings", Asset("Settings.png"), []() {
+				new SettingsWindow();
+			}),
 			DropdownMenu::Option("Project settings"),
 		});
 

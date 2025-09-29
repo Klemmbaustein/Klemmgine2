@@ -22,10 +22,8 @@ graphics::ShaderObject* CascadedShadows::ShadowShader = nullptr;
 
 CascadedShadows::CascadedShadows()
 {
-	if (openGL::GetGLVersion() >= openGL::Version::GL430 || glewIsSupported("GL_ARB_uniform_buffer_object"))
-	{
-		Enabled = true;
-	}
+	Enabled = openGL::GetGLVersion() >= openGL::Version::GL430
+		|| glewIsSupported("GL_ARB_uniform_buffer_object");
 }
 
 void CascadedShadows::Init()
@@ -90,7 +88,8 @@ void CascadedShadows::Init()
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
 {
-	if (!Enabled)
+	EnvironmentHasShadows = From->UsedEnvironment->RenderSettings.SunShadows;
+	if (!ShouldRender())
 		return;
 	LightMatrices = GetLightSpaceMatrices(From);
 	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
@@ -106,7 +105,7 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 
 uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 {
-	if (!Enabled)
+	if (!ShouldRender())
 		return 0;
 
 	glEnable(GL_CULL_FACE);
@@ -125,7 +124,7 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 
 void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Target) const
 {
-	if (!Target || !Enabled)
+	if (!Target || !ShouldRender())
 		return;
 
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)

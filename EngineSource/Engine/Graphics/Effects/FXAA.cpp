@@ -25,6 +25,11 @@ void engine::graphics::FXAA::OnBufferResized(uint32 Width, uint32 Height)
 
 uint32 engine::graphics::FXAA::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
 {
+	if (!Cam->UsedEnvironment->RenderSettings.AntiAlias)
+	{
+		return Texture;
+	}
+
 	std::pair<uint32, uint32> OutlineBuffer = With->NextBuffer();
 
 	EffectShader->Bind();
