@@ -73,6 +73,11 @@ void engine::editor::ConsolePanel::OnResized()
 	UpdateLog(false);
 }
 
+void engine::editor::ConsolePanel::OnThemeChanged()
+{
+	UpdateLog(true);
+}
+
 void engine::editor::ConsolePanel::UpdateLog(bool Full)
 {
 	using namespace kui;

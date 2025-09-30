@@ -65,8 +65,9 @@ namespace engine::editor
 		EditorUI();
 		~EditorUI();
 		static string CreateAsset(string Path, string Name, string Extension);
-		static void UpdateTheme(kui::Window* Target);
+		static void UpdateTheme(kui::Window* Target, bool Full);
 		void Update();
+		void ReloadUI();
 		void UpdateBackgrounds();
 
 		void AddMenuBarItem(string Name, std::vector<DropdownMenu::Option> Options);
@@ -74,6 +75,7 @@ namespace engine::editor
 		static string Asset(const string& name);
 
 	private:
+		kui::UIBackground* Root = nullptr;
 		kui::UIBackground* MenuBar = nullptr;
 		kui::UIBackground* StatusBar = nullptr;
 

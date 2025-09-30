@@ -11,7 +11,7 @@ engine::editor::GraphicsSettingsPage::~GraphicsSettingsPage()
 {
 }
 
-void engine::editor::GraphicsSettingsPage::Generate(PropertyMenu* Target)
+void engine::editor::GraphicsSettingsPage::Generate(PropertyMenu* Target, SettingsWindow* TargetWindow)
 {
 	Target->CreateNewHeading("Graphics");
 	Target->AddBooleanEntry("Anti aliasing", AntiAliasing, nullptr);

@@ -71,6 +71,11 @@ void engine::editor::ObjectListPanel::Update()
 	}
 }
 
+void engine::editor::ObjectListPanel::OnThemeChanged()
+{
+	DisplayList();
+}
+
 void engine::editor::ObjectListPanel::DisplayList()
 {
 	Heading->listBox->DeleteChildren();

@@ -3,15 +3,15 @@
 
 namespace engine::editor
 {
-	class GraphicsSettingsPage : public SettingsPage
+	class ConsoleSettingsPage : public SettingsPage
 	{
 	public:
-		GraphicsSettingsPage();
-		~GraphicsSettingsPage() override;
+		ConsoleSettingsPage();
+		~ConsoleSettingsPage() override;
 
 		void Generate(PropertyMenu* Target, SettingsWindow* TargetWindow) override;
 
 	private:
-		bool AntiAliasing = false;
+		bool VerboseLog = false;
 	};
 }

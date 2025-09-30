@@ -30,6 +30,7 @@ namespace engine::editor
 
 		void Update() override;
 		void OnResized() override;
+		void OnThemeChanged() override;
 		void UpdateItems();
 
 		std::vector<Item*> GetSelected();

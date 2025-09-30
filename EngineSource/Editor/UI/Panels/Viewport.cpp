@@ -358,6 +358,25 @@ void engine::editor::Viewport::Update()
 	}
 }
 
+void engine::editor::Viewport::OnThemeChanged()
+{
+	ViewportStatusText->SetColor(EditorUI::Theme.Text);
+	delete LoadingScreenBox;
+	LoadingScreenBox = new UIBackground(true, 0, EditorUI::Theme.Background);
+
+	LoadingScreenBox
+		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
+		->SetCorner(5_px)
+		->SetVerticalAlign(UIBox::Align::Centered)
+		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
+			->SetBackgroundColor(EditorUI::Theme.HighlightDark)
+			->SetPadding(15_px, 15_px, 15_px, 5_px))
+		->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
+			->SetPadding(10_px))
+		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
+			->SetPadding(5_px, 5_px, 5_px, 15_px));
+}
+
 void engine::editor::Viewport::SceneChanged()
 {
 	if (Engine::IsPlaying)

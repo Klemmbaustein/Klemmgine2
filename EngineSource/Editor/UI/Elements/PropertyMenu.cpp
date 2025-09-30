@@ -3,6 +3,7 @@
 #include "Checkbox.h"
 #include "AssetSelector.h"
 #include <Editor/UI/EditorUI.h>
+#include <DialogWindow.kui.hpp>
 
 using namespace kui;
 
@@ -101,6 +102,17 @@ void engine::editor::PropertyMenu::AddBooleanEntry(string Name, bool& Value, std
 	New->valueBox->AddChild(Checkbox);
 }
 
+void engine::editor::PropertyMenu::AddButtonEntry(string Name, string Label, std::function<void()> OnClicked)
+{
+	auto* NameEntry = CreateNewEntry(Name);
+
+	auto* Button = new DialogWindowButton();
+	Button->btn->OnClicked = OnClicked;
+	Button->btn->SetPadding(0);
+	Button->SetText(Label);
+	NameEntry->AddChild(Button);
+}
+
 void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged)
 {
 	auto* NameEntry = CreateNewEntry(Name);
@@ -174,12 +186,38 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 	New->valueBox->AddChild(Selector);
 }
 
+void engine::editor::PropertyMenu::AddDropdownEntry(string Name,
+	std::vector<kui::UIDropdown::Option> Values,
+	std::function<void(kui::UIDropdown::Option)> OnChanged, size_t DefaultIndex)
+{
+	auto* New = CreateNewEntry(Name);
+	auto* Dropdown = new UIDropdown(0, ElementSize, EditorUI::Theme.DarkBackground,
+		EditorUI::Theme.Text, Values,
+		[Values, OnChanged](int i) {
+		OnChanged(Values[i]);
+	}, EditorUI::EditorFont);
+
+	Dropdown->SetTextSize(11_px, 3_px);
+	Dropdown->SetDropdownColor(EditorUI::Theme.LightBackground, EditorUI::Theme.Text);
+	Dropdown->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
+
+	Dropdown->SelectOption(DefaultIndex, false);
+
+	New->valueBox->AddChild(Dropdown);
+}
+
 void engine::editor::PropertyMenu::AddInfoEntry(string Name, string Value)
 {
 	auto* New = CreateNewEntry(Name);
 
-	New->valueBox->AddChild((new UIText(11_px, EditorUI::Theme.Text, Value, EditorUI::EditorFont))
-		->SetWrapEnabled(true, this->ElementSize));
+	New->valueBox->AddChild((new UITextField(0, 0, EditorUI::EditorFont, nullptr))
+		->SetCanEdit(false)
+		->SetText(Value)
+		->SetTextSize(11_px)
+		->SetTextColor(EditorUI::Theme.Text)
+		->SetOpacity(0)
+		->SetMinSize(SizeVec(ElementSize, 15_px))
+		->SetMaxSize(SizeVec(ElementSize, UISize::Largest())));
 }
 
 void engine::editor::PropertyMenu::UpdateProperties()

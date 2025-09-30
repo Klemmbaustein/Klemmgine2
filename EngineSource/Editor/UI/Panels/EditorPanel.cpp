@@ -314,6 +314,10 @@ void engine::editor::EditorPanel::SetName(string NewName)
 	}
 }
 
+void engine::editor::EditorPanel::OnThemeChanged()
+{
+}
+
 bool engine::editor::EditorPanel::OnClosed()
 {
 	return true;
@@ -665,6 +669,8 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 		NewTab->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
 		NewTab->SetBorderSize(1_px);
 		NewTab->SetPaddingSize(UISize::Pixels(-1));
+		NewTab->mainButton->SetMinHeight(25_px);
+		NewTab->mainButton->SetMaxHeight(25_px);
 	}
 	else
 	{
@@ -674,7 +680,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 	}
 
 	if (!Target->CanClose)
-		delete NewTab->closeButton;
+		NewTab->closeButton->IsCollapsed = true;
 	PanelElement->tabBox->AddChild(NewTab);
 	TabElements.push_back(NewTab);
 }

@@ -66,13 +66,14 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	if (!Object)
 	{
-		//ContentBox->SetHorizontalAlign(UIBox::Align::Centered);
-		//ContentBox->AddChild((new UIText(11_px, EditorUI::Theme.Text, "Nothing selected", EditorUI::EditorFont))
-		//	->SetPadding(10_px));
+		Properties->SetMode(PropertyMenu::Mode::DisplayText);
+		Properties->AddChild((new UIText(11_px, EditorUI::Theme.Text, "Nothing selected", EditorUI::EditorFont))
+			->SetPadding(10_px));
 		return;
 	}
 
-	Properties->CreateNewHeading("Object: " + Object->Name + "\nClass: " + Reflection::ObjectTypes[Object->TypeID].Name + "", false);
+	Properties->SetMode(PropertyMenu::Mode::DisplayEntries);
+	Properties->CreateNewHeading("Object: " + Object->Name, false);
 
 	Properties->CreateNewHeading("Object");
 
@@ -85,6 +86,8 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	Properties->AddVecEntry("Scale", *(Vector3*)&Object->Scale, OnObjectChanged);
 
 	Properties->AddStringEntry("Name", Object->Name, OnObjectChanged);
+
+	Properties->AddInfoEntry("Class", Reflection::ObjectTypes[Object->TypeID].Name);
 
 	Properties->CreateNewHeading(Reflection::ObjectTypes[Object->TypeID].Name);
 

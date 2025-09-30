@@ -13,6 +13,7 @@ namespace engine::editor
 
 		ObjectListHeader* Heading = nullptr;
 		virtual void Update() override;
+		virtual void OnThemeChanged() override;
 
 		void DisplayList();
 

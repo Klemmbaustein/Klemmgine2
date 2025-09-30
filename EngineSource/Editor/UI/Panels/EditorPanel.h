@@ -60,6 +60,8 @@ namespace engine::editor
 		void SetFocused();
 		void SetName(string NewName);
 
+		virtual void OnThemeChanged();
+
 	protected:
 
 		bool CanClose = true;
@@ -69,7 +71,7 @@ namespace engine::editor
 		static EditorPanel* DraggedPanel;
 		static bool DraggingHorizontal;
 		static float DragStartPosition;
-		
+
 		virtual bool OnClosed();
 
 		struct MoveOperation
@@ -104,7 +106,7 @@ namespace engine::editor
 		std::vector<EditorPanelTab*> TabElements;
 		string Name, TypeName;
 		Align ChildrenAlign = Align::Horizontal;
-		
+
 		kui::Vec2f UsedSize;
 		kui::Vec2f Position;
 		kui::Vec2f UsedSizeToPanelSize(kui::Vec2f Used);

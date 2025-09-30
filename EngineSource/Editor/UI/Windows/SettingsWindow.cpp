@@ -1,6 +1,8 @@
 #include "SettingsWindow.h"
 #include <Editor/UI/Settings/GraphicsSettingsPage.h>
 #include <Editor/UI/Settings/InterfaceSettingsPage.h>
+#include <Editor/UI/Settings/ScriptEditorSettingsPage.h>
+#include <Editor/UI/Settings/ConsoleSettingsPage.h>
 #include <Editor/UI/Elements/PropertyMenu.h>
 #include <kui/UI/UIButton.h>
 #include <kui/UI/UIText.h>
@@ -24,7 +26,9 @@ void engine::editor::SettingsWindow::Begin()
 	IDialogWindow::Begin();
 
 	Pages.push_back(new InterfaceSettingsPage());
+	Pages.push_back(new ScriptEditorSettingsPage());
 	Pages.push_back(new GraphicsSettingsPage());
+	Pages.push_back(new ConsoleSettingsPage());
 
 	Background->SetHorizontal(true);
 
@@ -82,5 +86,5 @@ void engine::editor::SettingsWindow::ShowPage(SettingsPage* Page)
 	ActivePage = Page;
 	GenerateTabs();
 	SettingsMenu->Clear();
-	Page->Generate(SettingsMenu);
+	Page->Generate(SettingsMenu, this);
 }

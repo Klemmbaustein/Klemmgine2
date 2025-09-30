@@ -87,6 +87,11 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	};
 }
 
+void engine::editor::ItemBrowser::OnThemeChanged()
+{
+	UpdateItems();
+}
+
 void engine::editor::ItemBrowser::Update()
 {
 	if (!Visible)

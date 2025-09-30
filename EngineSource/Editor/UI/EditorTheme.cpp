@@ -9,6 +9,8 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 {
 	*this = EditorTheme();
 
+	this->Name = ThemeName;
+
 	try
 	{
 		SerializedValue ThemeData = TextSerializer::FromFile("Engine/Editor/Themes/" + ThemeName + ".k2t");

@@ -9,7 +9,7 @@ namespace engine::editor
 		InterfaceSettingsPage();
 		~InterfaceSettingsPage() override;
 
-		void Generate(PropertyMenu* Target) override;
+		void Generate(PropertyMenu* Target, SettingsWindow* TargetWindow) override;
 
 	private:
 		bool AntiAliasing = false;

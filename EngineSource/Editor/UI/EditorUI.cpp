@@ -21,26 +21,29 @@
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 using namespace engine::editor;
+using namespace engine::subsystem;
+using namespace engine;
+using namespace kui;
 
 static const float StatusBarSize = 24;
 static const float MenuBarSize = 24;
 
 EditorUI* EditorUI::Instance = nullptr;
-kui::Font* EditorUI::EditorFont = nullptr;
-kui::Font* EditorUI::MonospaceFont = nullptr;
+Font* EditorUI::EditorFont = nullptr;
+Font* EditorUI::MonospaceFont = nullptr;
 EditorTheme EditorUI::Theme;
 EditorPanel* EditorUI::FocusedPanel = nullptr;
 
-static std::map<engine::string, kui::Vec3f> FileNameColors =
+static std::map<engine::string, Vec3f> FileNameColors =
 {
-	{ "", kui::Vec3f(0.5f) },
-	{ "png", kui::Vec3f(0.5f, 0.1f, 0.8f) },
-	{ "kmt", kui::Vec3f(0.3f, 0.8f, 0.1f) },
-	{ "kts", kui::Vec3f(0.6f, 0.1f, 0.3f) },
-	{ "kmdl", kui::Vec3f(0.2f, 0.4f, 0.8f) },
-	{ "dir/", kui::Vec3f(0.8f, 0.5f, 0) },
+	{ "", Vec3f(0.5f) },
+	{ "png", Vec3f(0.5f, 0.1f, 0.8f) },
+	{ "kmt", Vec3f(0.3f, 0.8f, 0.1f) },
+	{ "kts", Vec3f(0.6f, 0.1f, 0.3f) },
+	{ "kmdl", Vec3f(0.2f, 0.4f, 0.8f) },
+	{ "dir/", Vec3f(0.8f, 0.5f, 0) },
 };
-static std::map<engine::string, engine::string> FileNameIcons =
+static std::map<string, string> FileNameIcons =
 {
 	{ "", "Engine/Editor/Assets/Document.png" },
 	{ "png", "Engine/Editor/Assets/Texture.png" },
@@ -112,27 +115,20 @@ void engine::editor::EditorUI::SetStatusMainThread(string NewMessage, StatusType
 
 engine::editor::EditorUI::EditorUI()
 {
-	using namespace kui;
-	using namespace subsystem;
-
 	Instance = this;
 
 	Theme.LoadFromFile("Dark");
 
-	UIScrollBox::BackgroundColor = Theme.LightBackground;
-	UIScrollBox::BackgroundBorderColor = Theme.Background;
-	UIScrollBox::ScrollBarColor = Theme.DarkText;
-
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	VideoSystem->OnResizedCallbacks.insert({ this, [this](kui::Vec2ui NewSize) {
+	VideoSystem->OnResizedCallbacks.insert({ this, [this](Vec2ui NewSize) {
 		UpdateBackgrounds();
 		RootPanel->ShouldUpdate = true;
 		RootPanel->UpdatePanel();
 	} });
 
-	UpdateTheme(VideoSystem->MainWindow);
+	UpdateTheme(VideoSystem->MainWindow, false);
 
 	if (!MonospaceFont)
 	{
@@ -144,7 +140,7 @@ engine::editor::EditorUI::EditorUI()
 	}
 
 
-	UIBackground* Root = new UIBackground(false, -1, Theme.Background, 2);
+	Root = new UIBackground(false, -1, Theme.Background, 2);
 	Root
 		->SetMinSize(2)
 		->SetMaxSize(2);
@@ -270,7 +266,7 @@ engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, s
 	return NewPath;
 }
 
-void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
+void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 {
 	Target->Markup.SetGlobal("Color_Text", Theme.Text);
 	Target->Markup.SetGlobal("Color_DarkText", Theme.DarkText);
@@ -284,6 +280,24 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target)
 	Target->Markup.SetGlobal("Color_Highlight2", Theme.Highlight2);
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
 	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
+
+	UIScrollBox::BackgroundColor = Theme.LightBackground;
+	UIScrollBox::BackgroundBorderColor = Theme.Background;
+	UIScrollBox::ScrollBarColor = Theme.DarkText;
+
+	if (Full && thread::IsMainThread)
+	{
+		Instance->Root->SetColor(Theme.Background);
+		Instance->StatusBar->SetColor(Theme.DarkBackground);
+		Instance->MenuBar->SetColor(Theme.LightBackground);
+
+		ForEachPanel<EditorPanel>([](EditorPanel* p) {
+			p->OnThemeChanged();
+		});
+
+		Instance->RootPanel->ShouldUpdate = true;
+		Instance->RootPanel->UpdatePanel();
+	}
 }
 
 void engine::editor::EditorUI::Update()
@@ -321,6 +335,10 @@ void engine::editor::EditorUI::Update()
 	RootPanel->UpdatePanel();
 
 	DropdownMenu::UpdateDropdowns();
+}
+
+void engine::editor::EditorUI::ReloadUI()
+{
 }
 
 void engine::editor::EditorUI::UpdateBackgrounds()

@@ -27,11 +27,10 @@ namespace engine::editor
 		static Viewport* Current;
 
 		void OnResized() override;
+		void Update() override;
+		void OnThemeChanged() override;
 		void RemoveSelected();
 		void ClearSelected();
-		void Update() override;
-		kui::UIBackground* ViewportBackground = nullptr;
-		std::set<SceneObject*> SelectedObjects;
 
 		void SceneChanged();
 		void SaveCurrentScene();
@@ -52,6 +51,8 @@ namespace engine::editor
 		};
 
 		std::stack<Changes> ObjectChanges;
+		std::set<SceneObject*> SelectedObjects;
+		kui::UIBackground* ViewportBackground = nullptr;
 
 		void UndoLast();
 

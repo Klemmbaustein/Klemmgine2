@@ -1,5 +1,6 @@
 #pragma once
 #include <kui/UI/UIScrollBox.h>
+#include <kui/UI/UIDropdown.h>
 #include <PropertyPanel.kui.hpp>
 #include <Core/Types.h>
 #include <Core/Vector.h>
@@ -31,9 +32,14 @@ namespace engine::editor
 		void AddVecEntry(string Name, Vector3& Value, std::function<void()> OnChanged);
 		void AddStringEntry(string Name, string& Value, std::function<void()> OnChanged);
 		void AddBooleanEntry(string Name, bool& Value, std::function<void()> OnChanged);
+		void AddButtonEntry(string Name, string Label, std::function<void()> OnClicked);
 		void AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged);
 		void AddFloatEntry(string Name, int32& Value, std::function<void()> OnChanged);
 		void AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged);
+		void AddDropdownEntry(string Name,
+			std::vector<kui::UIDropdown::Option> Values,
+			std::function<void(kui::UIDropdown::Option)> OnChanged,
+			size_t DefaultIndex);
 		void AddInfoEntry(string Name, string Value);
 
 		void SetMode(Mode NewMode);

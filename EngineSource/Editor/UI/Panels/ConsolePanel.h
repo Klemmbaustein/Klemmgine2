@@ -17,6 +17,7 @@ namespace engine::editor
 
 		virtual void Update() override;
 		virtual void OnResized() override;
+		virtual void OnThemeChanged() override;
 	private:
 		size_t LastLogSize = 0;
 		void UpdateLog(bool Full);

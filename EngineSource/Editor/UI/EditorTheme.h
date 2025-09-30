@@ -9,6 +9,7 @@ namespace engine::editor
 	struct EditorTheme
 	{
 		bool IsLight = false;
+		string Name;
 		kui::UISize CornerSize = 5_px;
 
 		kui::Vec3f Text = 1;
