@@ -16,6 +16,3 @@
 [submodule "Dependencies/ProgrammingLanguage"]
 	path = Dependencies/ProgrammingLanguage
 	url = https://github.com/Klemmbaustein/ProgrammingLanguage.git
-[submodule "Dependencies/libwebsockets"]
-	path = Dependencies/libwebsockets
-	url = https://libwebsockets.org/repo/libwebsockets.git
