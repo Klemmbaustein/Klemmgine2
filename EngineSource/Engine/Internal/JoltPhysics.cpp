@@ -9,6 +9,7 @@
 #include <Core/ThreadPool.h>
 #include <Engine/MainThread.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 
 using namespace engine;
@@ -373,6 +374,34 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 			ToJPHQuat(Rotation),
 			JPH::EMotionType::Static,
 			JPH::ObjectLayer(MeshPtr->CollisionLayers));
+	}
+	case PhysicsBody::BodyType::HeightMap:
+	{
+		HeightMapBody* MapPtr = static_cast<HeightMapBody*>(Body);
+
+		std::lock_guard g{ LoadedModelsMutex };
+
+		Vector3 Position, Scale;
+		Rotation3 Rotation;
+		Body->BodyTransform.Decompose(Position, Rotation, Scale);
+
+		Log::Info(Position.ToString());
+
+		JPH::HeightFieldShapeSettings Settings = JPH::HeightFieldShapeSettings(MapPtr->Samples.data(),
+			ToJPHVec3(Position), ToJPHVec3(Scale), MapPtr->Size);
+		JPH::ShapeSettings::ShapeResult r;
+		JPH::HeightFieldShape* Shape = new JPH::HeightFieldShape(Settings, r);
+
+		if (r.HasError())
+		{
+			Log::Error(string(r.GetError()));
+		}
+
+		return JPH::BodyCreationSettings(Shape,
+			ToJPHVec3(Position),
+			ToJPHQuat(Rotation),
+			JPH::EMotionType::Static,
+			JPH::ObjectLayer(MapPtr->CollisionLayers));
 	}
 	}
 	ENGINE_UNREACHABLE();

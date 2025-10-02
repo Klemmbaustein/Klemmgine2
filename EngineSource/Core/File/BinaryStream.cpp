@@ -72,6 +72,13 @@ BufferStream::BufferStream()
 {
 }
 
+BufferStream::BufferStream(const uByte* Data, size_t Size)
+{
+	this->Buffer = std::vector<uByte>();
+	this->Buffer.resize(Size);
+	memcpy(this->Buffer.data(), Data, Size);
+}
+
 BufferStream::~BufferStream()
 {
 }

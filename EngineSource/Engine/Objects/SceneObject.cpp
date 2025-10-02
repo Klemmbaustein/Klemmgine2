@@ -1,6 +1,7 @@
 #include "SceneObject.h"
 #include "MeshObject.h"
 #include "PlayerObject.h"
+#include "LandscapeObject.h"
 #include <Engine/Scene.h>
 #include <Core/Error/EngineAssert.h>
 #include <Core/Log.h>
@@ -27,6 +28,7 @@ SerializedValue engine::SceneObject::Serialize()
 		});
 	&MeshObject::Begin;
 	&PlayerObject::Begin;
+	&LandscapeObject::Begin;
 }
 
 void engine::SceneObject::DeSerialize(SerializedValue* From)

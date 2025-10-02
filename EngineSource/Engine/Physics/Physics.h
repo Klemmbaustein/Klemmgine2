@@ -5,6 +5,7 @@
 #include <Engine/File/ModelData.h>
 #include <set>
 #include <utility>
+#include <vector>
 
 namespace engine
 {
@@ -116,6 +117,7 @@ namespace engine::physics
 			Sphere,
 			Capsule,
 			Mesh,
+			HeightMap,
 		};
 
 		PhysicsManager* Manager = nullptr;
@@ -311,8 +313,17 @@ namespace engine::physics
 		* @param Parent
 		* The component this collider belongs to. Can be nullptr.
 		*/
-		MeshBody(GraphicsModel* Mesh, Transform MeshTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
+		MeshBody(GraphicsModel* Mesh, Transform MeshTransform,
+			MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
 		GraphicsModel* Model = nullptr;
+	};
+
+	struct HeightMapBody : public PhysicsBody
+	{
+		std::vector<float> Samples;
+		uint32 Size;
+		HeightMapBody(const std::vector<float>& Samples, uint32 Size,
+			Transform MeshTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
 	};
 
 

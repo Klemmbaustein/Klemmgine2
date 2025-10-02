@@ -16,7 +16,7 @@ namespace engine::graphics
 		uint32 Draw(std::vector<DrawableComponent*> Components);
 		void BindUniforms(graphics::ShaderObject* Target) const;
 
-		Vector3 LightDirection = Vector3(1, 4, 1).Normalize();
+		Vector3 LightDirection = Vector3(1, 2, 1).Normalize();
 
 		static uint32 LightDepthMaps;
 

@@ -101,7 +101,7 @@ void Engine::Run()
 	delete this;
 }
 
-void Engine::LoadSubsystem(Subsystem* NewSubsystem)
+subsystem::Subsystem* Engine::LoadSubsystem(Subsystem* NewSubsystem)
 {
 	if (typeid(*NewSubsystem) == typeid(ConsoleSubsystem))
 	{
@@ -109,7 +109,7 @@ void Engine::LoadSubsystem(Subsystem* NewSubsystem)
 		{
 			i->RegisterCommands(static_cast<ConsoleSubsystem*>(NewSubsystem));
 		}
-		return;
+		return NewSubsystem;
 	}
 
 	ConsoleSubsystem* ConsoleSys = GetSubsystem<ConsoleSubsystem>();
@@ -117,6 +117,8 @@ void Engine::LoadSubsystem(Subsystem* NewSubsystem)
 	{
 		NewSubsystem->RegisterCommands(ConsoleSys);
 	}
+
+	return NewSubsystem;
 }
 
 void engine::Engine::InitSystems()

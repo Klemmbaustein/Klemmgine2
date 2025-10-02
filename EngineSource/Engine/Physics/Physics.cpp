@@ -155,6 +155,13 @@ MeshBody::MeshBody(GraphicsModel* Mesh, Transform MeshTransform, MotionType Coll
 	this->Model = Mesh;
 }
 
+HeightMapBody::HeightMapBody(const std::vector<float>& Samples, uint32 Size, Transform MeshTransform,
+	MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
+	: PhysicsBody(BodyType::HeightMap, MeshTransform, ColliderMovability, CollisionLayers, Parent)
+{
+	this->Samples = Samples;
+	this->Size = Size;
+}
 std::vector<HitResult> engine::physics::PhysicsBody::CollisionTest(Transform At, Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
 {
 	return Manager->PhysicsSystem->CollisionTest(At, this, Layers, ObjectsToIgnore);

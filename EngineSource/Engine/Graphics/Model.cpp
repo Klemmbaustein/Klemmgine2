@@ -56,12 +56,10 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 
 void engine::graphics::Model::SimpleDraw(const Transform& At, ShaderObject* Shader, std::vector<Material*>& UsedMaterials)
 {
-	glDisable(GL_CULL_FACE);
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
 		UsedMaterials[i]->ApplySimple(Shader);
 		glUniformMatrix4fv(Shader->ModelUniform, 1, false, &At.Matrix[0][0]);
 		ModelVertexBuffers[i]->Draw();
 	}
-	glEnable(GL_CULL_FACE);
 }

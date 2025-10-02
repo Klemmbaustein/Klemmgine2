@@ -168,7 +168,7 @@ uint32 engine::graphics::ShaderObject::GetUniformLocation(string Name) const
 	auto Found = Uniforms.find(Name);
 	if (Found != Uniforms.end())
 		return Found->second;
-	
+
 	uint32 Location = glGetUniformLocation(ShaderID, Name.c_str());
 
 	Uniforms.insert({Name, Location});

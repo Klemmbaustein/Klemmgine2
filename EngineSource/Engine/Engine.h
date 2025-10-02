@@ -45,7 +45,7 @@ namespace engine
 		*
 		* @see subsystem::Subsystem
 		*/
-		void LoadSubsystem(subsystem::Subsystem* NewSubsystem);
+		subsystem::Subsystem* LoadSubsystem(subsystem::Subsystem* NewSubsystem);
 
 		/**
 		 * @brief

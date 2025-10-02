@@ -10,7 +10,7 @@ namespace engine::graphics
 		bool SunShadows = true;
 		bool AmbientOcclusion = true;
 		bool Bloom  = true;
-		bool AntiAlias = false;
+		bool AntiAlias = true;
 
 		float BloomStrength = 1.0f;
 		float BloomThreshold = 0.75f;

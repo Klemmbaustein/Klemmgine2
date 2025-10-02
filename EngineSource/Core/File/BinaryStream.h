@@ -98,6 +98,7 @@ namespace engine
 	{
 	public:
 		BufferStream();
+		BufferStream(const uByte* Data, size_t Size);
 		~BufferStream() override;
 
 		virtual bool IsReadOnly() const override;
