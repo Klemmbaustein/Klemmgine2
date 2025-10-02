@@ -8,6 +8,11 @@ engine::http::WebSocketConnection::WebSocketConnection(string Url)
 	ix::initNetSystem();
 	ix::WebSocket* Socket = new ix::WebSocket();
 
+	ix::SocketTLSOptions Options;
+
+	Options.caFile = "NONE";
+
+	Socket->setTLSOptions(Options);
 	Socket->setUrl(Url);
 
 	Socket->setOnMessageCallback([](const ix::WebSocketMessagePtr& Message) {

@@ -172,14 +172,23 @@ elseif(ENGINE_EDITOR)
 
 	target_link_libraries(KlemmgineLib PUBLIC assimp::assimp)
 	target_compile_definitions(KlemmgineLib PUBLIC EDITOR)
+	set(BUILD_SHARED_LIBS OFF)
 
 	set(USE_ZLIB OFF)
-	set(USE_SECURE_TRANSPORT ON)
+	set(USE_TLS ON)
+	set(IXWEBSOCKET_INSTALL OFF)
+	set(${MBEDTLS_LIBRARIES} mbedtls)
+	set(MBEDTLS_FOUND ON)
+	set(MB)
+	# These all really should be the default when importing as a subdirectory.
+	set(ENABLE_PROGRAMS OFF)
+	set(ENABLE_TESTING OFF)
+	set(MBEDTLS_FATAL_WARNINGS OFF)
 	add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
 	add_subdirectory("Dependencies/IXWebSocket" EXCLUDE_FROM_ALL)
+    target_compile_definitions(ixwebsocket PRIVATE IXWEBSOCKET_USE_MBED_TLS_MIN_VERSION_3)
 	target_link_libraries(KlemmgineCore PUBLIC ixwebsocket)
 
-	set(BUILD_SHARED_LIBS OFF)
 	klemmui_markup(KlemmgineLib "Engine/Editor/UI")
 endif()
 
