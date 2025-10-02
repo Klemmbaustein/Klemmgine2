@@ -16,3 +16,6 @@
 [submodule "Dependencies/ProgrammingLanguage"]
 	path = Dependencies/ProgrammingLanguage
 	url = https://github.com/Klemmbaustein/ProgrammingLanguage.git
+[submodule "Dependencies/IXWebSocket"]
+	path = Dependencies/IXWebSocket
+	url = https://github.com/machinezone/IXWebSocket.git

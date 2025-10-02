@@ -1,19 +1,31 @@
 #include "HttpWebSocket.h"
+#include <ixwebsocket/IXWebSocket.h>
+#include <ixwebsocket/IXNetSystem.h>
+#include <Core/Log.h>
 
 engine::http::WebSocketConnection::WebSocketConnection(string Url)
 {
-	using namespace websocketpp;
+	ix::initNetSystem();
+	ix::WebSocket* Socket = new ix::WebSocket();
 
-	client<config::core_client> c;
+	Socket->setUrl(Url);
 
-	std::error_code errs;
-
-	auto connection = c.get_connection(Url, errs);
-
-	c.connect(connection);
-
-	c.set_message_handler([](auto a, auto b)
-	{
-		a;
+	Socket->setOnMessageCallback([](const ix::WebSocketMessagePtr& Message) {
+		switch (Message->type)
+		{
+		case ix::WebSocketMessageType::Message:
+		{
+			Log::Info(Message->str);
+			break;
+		}
+		case ix::WebSocketMessageType::Open:
+		{
+			Log::Info("Connection opened.");
+			break;
+		}
+		}
+		Log::Info(std::to_string(int(Message->type)));
 	});
+
+	Socket->start();
 }

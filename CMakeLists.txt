@@ -173,7 +173,11 @@ elseif(ENGINE_EDITOR)
 	target_link_libraries(KlemmgineLib PUBLIC assimp::assimp)
 	target_compile_definitions(KlemmgineLib PUBLIC EDITOR)
 
-	add_subdirectory("Dependencies/")
+	set(USE_ZLIB OFF)
+	set(USE_SECURE_TRANSPORT ON)
+	add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
+	add_subdirectory("Dependencies/IXWebSocket" EXCLUDE_FROM_ALL)
+	target_link_libraries(KlemmgineCore PUBLIC ixwebsocket)
 
 	set(BUILD_SHARED_LIBS OFF)
 	klemmui_markup(KlemmgineLib "Engine/Editor/UI")
