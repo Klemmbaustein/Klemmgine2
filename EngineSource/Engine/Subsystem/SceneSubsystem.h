@@ -8,9 +8,9 @@ namespace engine::subsystem
 	/**
 	* @brief
 	* Scene subsystem.
-	* 
-	* Subsystem that manages scenes 
-	* 
+	*
+	* Subsystem that manages scenes
+	*
 	* @see engine::Scene
 	*/
 	class SceneSubsystem : public Subsystem
@@ -26,6 +26,7 @@ namespace engine::subsystem
 		std::vector<Scene*> LoadedScenes;
 
 		Scene* Main = nullptr;
+		bool IsLoading = false;
 
 		static SceneSubsystem* Current;
 

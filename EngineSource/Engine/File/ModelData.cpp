@@ -1,4 +1,5 @@
 #include "ModelData.h"
+#include "ModelData.h"
 #include "Core/File/BinarySerializer.h"
 #include "Core/File/FileUtil.h"
 #include <filesystem>
@@ -71,7 +72,13 @@ void engine::ModelData::PreLoadMaterials(Scene* With)
 
 void engine::ModelData::ToFile(string FilePath)
 {
-	BinarySerializer::ToFile({ SerializedData("meshes", Serialize()) }, FilePath, FormatName);
+	FileStream TargetFile = FileStream(FilePath, false);
+	ToBinary(&TargetFile);
+}
+
+void engine::ModelData::ToBinary(IBinaryStream* To)
+{
+	BinarySerializer::ToBinaryData({ SerializedData("meshes", Serialize()) }, To, FormatName);
 }
 
 engine::SerializedValue engine::ModelData::Serialize()
@@ -301,7 +308,7 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 	auto Found = Models.find(Asset.FilePath);
 	if (Found == Models.end())
 	{
-		if (std::filesystem::exists(Asset.FilePath))
+		if (resource::FileExists(Asset.FilePath))
 		{
 			RegisterModel(Asset, false);
 			Found = Models.find(Asset.FilePath);

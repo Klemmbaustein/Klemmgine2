@@ -159,6 +159,11 @@ namespace engine
 		* Saves this scene to a file.
 		*/
 		void Save(string FileName);
+		/**
+		* @brief
+		* Saves this scene to a file.
+		*/
+		string SaveToString(string FileName);
 
 		bool ObjectDestroyed(SceneObject* Target) const;
 

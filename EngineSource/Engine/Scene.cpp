@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Scene.h"
 #include "Core/ThreadPool.h"
 #include "Engine.h"
 #include "Internal/OpenGL.h"
@@ -324,6 +325,17 @@ void engine::Scene::Save(string FileName)
 	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), Subsystem::LogType::Info);
 
 	TextSerializer::ToFile(Serialize().GetObject(), FileName);
+}
+
+engine::string engine::Scene::SaveToString(string FileName)
+{
+	using namespace subsystem;
+
+	std::stringstream Stream;
+	SceneSubsystem::Current->Print(str::Format("Saving scene: %s", FileName.c_str()), Subsystem::LogType::Info);
+
+	TextSerializer::ToStream(Serialize().GetObject(), Stream);
+	return Stream.str();
 }
 
 bool engine::Scene::ObjectDestroyed(SceneObject* Target) const

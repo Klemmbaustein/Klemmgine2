@@ -30,6 +30,10 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 	auto Items = EditorUI::Instance->AssetsProvider->GetFiles(GetPathDisplayName());
 
+	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
+		UpdateItems();
+	});
+
 	for (auto& File : Items)
 	{
 		auto FilePath = File.Path;
@@ -127,9 +131,8 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				.Icon = EditorUI::Asset("X.png"),
 				.OnClicked = [this, FilePath]()
 				{
-					std::filesystem::remove_all(FilePath);
+					EditorUI::Instance->AssetsProvider->DeleteFile(FilePath);
 					resource::ScanForAssets();
-					UpdateItems();
 				},
 				});
 
@@ -281,8 +284,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			.Name = "New folder",
 			.Icon = EditorUI::GetExtIconAndColor("dir/").first,
 			.OnClicked = [this]() {
-				std::filesystem::create_directories(GetPathDisplayName() + "/Folder");
-				UpdateItems();
+				EditorUI::Instance->AssetsProvider->NewDirectory(GetPathDisplayName() + "/Folder");
 			}
 		},
 		DropdownMenu::Option{
@@ -291,7 +293,6 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			.OnClicked = [this]() {
 				EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
 				resource::ScanForAssets();
-				UpdateItems();
 			}
 		},
 		DropdownMenu::Option{
@@ -300,7 +301,6 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			.OnClicked = [this]() {
 				EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
 				resource::ScanForAssets();
-				UpdateItems();
 			},
 			.Separator = true },
 		DropdownMenu::Option{
@@ -329,7 +329,7 @@ void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
 			auto Selected = GetSelected();
 			for (Item* i : Selected)
 			{
-				std::filesystem::remove_all(i->Path);
+				EditorUI::Instance->AssetsProvider->DeleteFile(i->Path);
 			}
 			resource::ScanForAssets();
 			UpdateItems();

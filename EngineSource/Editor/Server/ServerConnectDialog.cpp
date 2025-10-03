@@ -46,7 +46,7 @@ ConnectResult engine::editor::ServerConnectDialog::Show()
 		};
 	}
 
-	auto c = new ServerConnection("localhost:7274");
+	auto c = new ServerConnection("localhost:5000");
 	std::condition_variable cv;
 	std::mutex m;
 	bool GotResult = false;

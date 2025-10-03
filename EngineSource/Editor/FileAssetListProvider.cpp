@@ -1,5 +1,6 @@
 #include "FileAssetListProvider.h"
 #include <filesystem>
+#include <fstream>
 
 using namespace engine;
 
@@ -26,4 +27,28 @@ std::vector<editor::AssetFile> editor::FileAssetListProvider::GetFiles(string Pa
 	}
 
 	return Files;
+}
+
+void engine::editor::FileAssetListProvider::DeleteFile(string Path)
+{
+	std::filesystem::remove_all(Path);
+	OnChanged.Invoke();
+}
+
+void engine::editor::FileAssetListProvider::NewFile(string Path)
+{
+	std::ofstream File = std::ofstream(Path);
+	File.close();
+	OnChanged.Invoke();
+}
+
+void engine::editor::FileAssetListProvider::NewDirectory(string Path)
+{
+	std::filesystem::create_directories(Path);
+	OnChanged.Invoke();
+}
+
+IBinaryStream* engine::editor::FileAssetListProvider::GetFileSaveStream(string Path)
+{
+	return new FileStream(Path, false);
 }

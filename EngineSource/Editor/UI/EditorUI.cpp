@@ -15,9 +15,9 @@
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/MeshObject.h>
+#include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <filesystem>
-#include <fstream>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 using namespace engine::editor;
@@ -249,19 +249,23 @@ engine::editor::EditorUI::~EditorUI()
 
 engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)
 {
-	string FileName = Path + "/" + Name;
+	if (*Path.rbegin() != '/')
+	{
+		Path.push_back('/');
+	}
+
+	string FileName = Path + Name;
 	string FileNumber = "";
 	int32 FileNumberValue = 0;
 
-	while (std::filesystem::exists(FileName + FileNumber + "." + Extension))
+	while (resource::FileExists(FileName + FileNumber + "." + Extension))
 	{
 		FileNumber = str::Format(" (%i)", ++FileNumberValue);
 	}
 
 	string NewPath = FileName + FileNumber + "." + Extension;
 
-	std::ofstream File = std::ofstream(NewPath);
-	File.close();
+	Instance->AssetsProvider->NewFile(NewPath);
 
 	return NewPath;
 }

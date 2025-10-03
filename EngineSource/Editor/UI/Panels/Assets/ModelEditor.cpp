@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "ModelEditor.h"
 #include <Engine/MainThread.h>
 #include <Editor/UI/EditorUI.h>
@@ -208,7 +207,21 @@ void engine::editor::ModelEditor::Save()
 	AssetEditor::Save();
 	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 	Log::Info("Writing model data to file: " + EditedAsset.FilePath);
-	Data->Data->ToFile(EditedAsset.FilePath);
+
+	auto Path = EditorUI::Instance->AssetsProvider->GetFileSaveStream(EditedAsset.FilePath);
+
+	if (Path)
+	{
+		Data->Data->ToBinary(Path);
+		delete Path;
+	}
+	else
+	{
+		BufferStream Buffer;
+		Data->Data->ToBinary(&Buffer);
+		Buffer.ResetStreamPosition();
+		EditorUI::Instance->AssetsProvider->SaveToFile(EditedAsset.FilePath, &Buffer, Buffer.GetSize());
+	}
 }
 
 void engine::editor::ModelEditor::OnResized()
@@ -227,4 +240,3 @@ void engine::editor::ModelEditor::OnResized()
 	this->EditorScene->Redraw = true;
 	OnModelLoaded();
 }
-#endif

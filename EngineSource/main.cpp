@@ -20,7 +20,6 @@ int32 EngineMain(int argc, char** argv)
 	{
 		auto ServerInterface = new editor::EditorServerSubsystem(res.Connection);
 		Instance->LoadSubsystem(ServerInterface);
-		// "wss://localhost:7274/ws"
 	}
 
 	//Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync("Assets/Test");

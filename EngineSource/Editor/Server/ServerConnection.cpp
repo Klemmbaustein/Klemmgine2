@@ -1,16 +1,20 @@
 #include "ServerConnection.h"
+#include "ServerConnection.h"
+#include "ServerConnection.h"
 #include <Core/Error/EngineAssert.h>
 #include <Core/File/JsonSerializer.h>
 #include <Core/Log.h>
 #include <Core/Platform/Platform.h>
+#include <Editor/UI/EditorUI.h>
 #include <Engine/Version.h>
+#include <Engine/MainThread.h>
 #include <Engine/File/Resource.h>
 #include <sstream>
 #include <fstream>
 
 engine::editor::ServerConnection::ServerConnection(string Url)
 {
-	this->Connection = new http::WebSocketConnection("wss://" + Url + "/ws");
+	this->Connection = new http::WebSocketConnection("ws://" + Url + "/ws");
 
 	this->Connection->OnOpened = [&] {
 		SendMessage("tryConnect", {});
@@ -56,7 +60,7 @@ engine::editor::ServerConnection::ServerConnection(string Url)
 
 			auto& Callbacks = FileCallbacks[Path];
 
-			auto b =  new ReadOnlyBufferStream(Data->data(), Data->size(), true);
+			auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), true);
 
 			for (auto& i : Callbacks)
 			{
@@ -107,6 +111,25 @@ void engine::editor::ServerConnection::SendMessage(string Type, SerializedValue 
 		}));
 }
 
+void engine::editor::ServerConnection::SendFile(string Path, IBinaryStream* Stream, size_t Length)
+{
+	BufferStream OutStream;
+	OutStream.WriteValue(MessageType::FileUpload);
+	OutStream.WriteString(Path);
+
+	uByte Buffer[2048];
+	size_t ToWrite = Length;
+	while (ToWrite > 0)
+	{
+		size_t ChunkSize = std::min(sizeof(Buffer), ToWrite);
+		Stream->Read(Buffer, ChunkSize);
+		OutStream.Write(Buffer, ChunkSize);
+		ToWrite -= ChunkSize;
+	}
+
+	Connection->Send(OutStream.GetBuffer().data(), OutStream.GetSize(), true);
+}
+
 void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 {
 	string Type = Json.At("type").GetString();
@@ -118,6 +141,10 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 	else if (Type == "initialized")
 	{
 		HandleInitializedParams(Json);
+	}
+	else if (Type == "listFiles")
+	{
+		HandleFileList(Json.At("data").GetArray());
 	}
 	else if (Type == "connectDeny")
 	{
@@ -153,14 +180,7 @@ void engine::editor::ServerConnection::HandleConnectParams(SerializedValue Json)
 
 void engine::editor::ServerConnection::HandleInitializedParams(SerializedValue Json)
 {
-	auto& files = Json.At("data").At("fileSystem").GetArray();
-	this->Files.clear();
-
-	for (auto& i : files)
-	{
-		this->Files.push_back(i.GetString());
-	}
-	resource::ScanForAssets();
+	HandleFileList(Json.At("data").At("fileSystem").GetArray());
 }
 
 void engine::editor::ServerConnection::GetFile(string Name, std::function<void(ReadOnlyBufferStream*)> Callback)
@@ -169,4 +189,19 @@ void engine::editor::ServerConnection::GetFile(string Name, std::function<void(R
 
 	FileCallbacks[Name].push_back(Callback);
 	SendMessage("getFile", Name);
+}
+
+void engine::editor::ServerConnection::HandleFileList(std::vector<SerializedValue> Values)
+{
+	this->Files.clear();
+
+	for (auto& i : Values)
+	{
+		this->Files.push_back(i.GetString());
+	}
+
+	thread::ExecuteOnMainThread([] {
+		resource::ScanForAssets();
+		EditorUI::Instance->AssetsProvider->OnChanged.Invoke();
+	});
 }

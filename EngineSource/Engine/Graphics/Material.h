@@ -63,6 +63,7 @@ namespace engine::graphics
 		ShaderObject* Shader = nullptr;
 
 		void ToFile(string Path);
+		void ToStream(std::ostream& Stream);
 
 		virtual SerializedValue Serialize() override;
 		virtual void DeSerialize(SerializedValue* From) override;

@@ -211,7 +211,7 @@ void engine::editor::Viewport::Update()
 	Window* Win = VideoSystem->MainWindow;
 	FameCount++;
 
-	LoadingScreenBox->IsVisible = !SceneSubsystem::Current->Main;
+	LoadingScreenBox->IsVisible = !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
 	PolledForText = Win->Input.PollForText;
 
 	if (StatsRedrawTimer.Get() > 1 || RedrawStats)
@@ -403,7 +403,12 @@ void engine::editor::Viewport::SaveCurrentScene()
 	if (!Current)
 		return;
 
-	Current->Save(Current->Name);
+	BufferStream Buffer;
+	Buffer.WriteStringNoNull(Current->SaveToString(Current->Name));
+	Buffer.ResetStreamPosition();
+
+	EditorUI::Instance->AssetsProvider->SaveToFile(Current->Name, &Buffer, Buffer.GetSize());
+
 	UnsavedChanges = false;
 	SetName("Viewport");
 }

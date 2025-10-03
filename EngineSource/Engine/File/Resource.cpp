@@ -31,36 +31,6 @@ static std::map<string, std::function<string(string, string)>> KnownFilePaths =
 
 static std::set<ResourceSource*> Sources;
 
-static bool UseArchives = false;
-
-static std::mutex ArchiveMutex;
-static std::map<string, Archive*> LoadedArchives;
-static std::map<string, std::vector<string>> SceneArchives;
-
-static void LoadArchive(string Name)
-{
-	if (LoadedArchives.contains(Name))
-		return;
-
-	Log::Note(str::Format("Loading archive: %s", Name.c_str()));
-
-	Archive* NewArchive = new Archive("Assets/" + Name + ".bin");
-
-	auto Files = NewArchive->GetArchiveFiles();
-	for (auto& i : Files)
-	{
-		LoadedAssets.insert({ i, NewArchive->ConvertFileName(i) });
-	}
-
-	LoadedArchives.insert({ Name, NewArchive });
-}
-
-static void UnloadArchive(string Name)
-{
-	Log::Note(str::Format("Unloading archive: %s", Name.c_str()));
-	LoadedArchives.erase(Name);
-}
-
 string engine::resource::GetTextFile(string EnginePath)
 {
 	auto f = GetBinaryFile(EnginePath);
@@ -113,17 +83,6 @@ bool engine::resource::FileExists(string EnginePath)
 		}
 	}
 
-	if (UseArchives)
-	{
-		for (auto& i : LoadedArchives)
-		{
-			if (i.second->HasFile(Converted))
-			{
-				return true;
-			}
-		}
-	}
-
 	return kui::resource::FileExists(EnginePath) || std::filesystem::exists(Converted);
 }
 
@@ -149,17 +108,6 @@ ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
 	if (FoundPrefix == "asset:" || FoundPrefix.empty())
 	{
 		std::string FilePath = ConvertFilePath(EnginePath);
-
-		// TODO: refactor archives to be a ResourceSource
-		if (UseArchives)
-		{
-			for (auto& i : LoadedArchives)
-			{
-				ReadOnlyBufferStream* f = i.second->GetFile(FilePath);
-				if (f)
-					return f;
-			}
-		}
 
 		for (auto& i : Sources)
 		{
@@ -191,83 +139,15 @@ ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
 
 void resource::LoadSceneFiles(string ScenePath)
 {
-	if (!UseArchives)
+	for (auto& i : Sources)
 	{
-		return;
-	}
-
-	std::set<string> ArchivesToLoad;
-
-	for (auto& [Archive, DependentScenes] : SceneArchives)
-	{
-		for (auto& scn : DependentScenes)
-		{
-			if (scn == ScenePath)
-			{
-				ArchivesToLoad.insert(Archive);
-			}
-		}
-	}
-
-	std::vector<string> ArchivesToRemove;
-	for (auto& [Name, _] : LoadedArchives)
-	{
-		// The scenes archive is always loaded.
-		if (Name == "scenes")
-			continue;
-
-		if (!ArchivesToLoad.contains(Name))
-		{
-			ArchivesToRemove.push_back(Name);
-		}
-		else
-		{
-			ArchivesToLoad.erase(Name);
-		}
-	}
-
-	for (const string& i : ArchivesToRemove)
-	{
-		UnloadArchive(i);
-	}
-
-	for (const string& i : ArchivesToLoad)
-	{
-		LoadArchive(i);
+		i->LoadSceneFiles(ScenePath);
 	}
 }
 
 void resource::ScanForAssets()
 {
 	using std::filesystem::recursive_directory_iterator;
-
-	UseArchives = std::filesystem::exists("Assets/archmap.bin");
-
-	if (UseArchives)
-	{
-		if (LoadedArchives.empty())
-		{
-			LoadArchive("scenes");
-		}
-
-		SceneArchives.clear();
-
-		auto ArchiveMap = BinarySerializer::FromFile("Assets/archmap.bin", "archm");
-
-		for (auto& i : ArchiveMap)
-		{
-			std::vector<string> Scenes;
-
-			for (auto& scn : i.Value.GetArray())
-			{
-				Scenes.push_back(scn.GetString());
-			}
-
-			SceneArchives.insert({ i.Name, Scenes });
-		}
-
-		return;
-	}
 
 	LoadedAssets.clear();
 

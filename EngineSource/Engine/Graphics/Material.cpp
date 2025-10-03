@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "Material.h"
 #include "ShaderLoader.h"
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
@@ -78,6 +79,11 @@ engine::graphics::Material::~Material()
 void engine::graphics::Material::ToFile(string Path)
 {
 	TextSerializer::ToFile(Serialize().GetObject(), Path);
+}
+
+void engine::graphics::Material::ToStream(std::ostream& Stream)
+{
+	TextSerializer::ToStream(Serialize().GetObject(), Stream);
 }
 
 SerializedValue Material::Serialize()

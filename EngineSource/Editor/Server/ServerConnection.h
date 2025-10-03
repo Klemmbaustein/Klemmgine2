@@ -27,6 +27,7 @@ namespace engine::editor
 
 		void SendMessageData(SerializedValue Json);
 		void SendMessage(string Type, SerializedValue Json);
+		void SendFile(string Path, IBinaryStream* Stream, size_t Length);
 
 		void HandleMessage(SerializedValue Json);
 		void HandleConnectParams(SerializedValue Json);
@@ -37,5 +38,9 @@ namespace engine::editor
 		std::mutex FilesMutex;
 
 		std::map<string, std::vector<std::function<void(ReadOnlyBufferStream*)>>> FileCallbacks;
+
+	private:
+
+		void HandleFileList(std::vector<SerializedValue> Values);
 	};
 }

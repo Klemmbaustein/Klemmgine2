@@ -49,10 +49,15 @@ namespace engine
 			Write((uByte*)&Value, sizeof(Value));
 		}
 
-		void WriteString(string Str)
+		void WriteString(const string& Str)
 		{
 			Write((uByte*)Str.data(), Str.size());
 			WriteByte(0);
+		}
+
+		void WriteStringNoNull(const string& Str)
+		{
+			Write((uByte*)Str.data(), Str.size());
 		}
 
 		void ReadString(string& Out)

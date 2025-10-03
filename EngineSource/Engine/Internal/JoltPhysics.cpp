@@ -385,8 +385,6 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 		Rotation3 Rotation;
 		Body->BodyTransform.Decompose(Position, Rotation, Scale);
 
-		Log::Info(Position.ToString());
-
 		JPH::HeightFieldShapeSettings Settings = JPH::HeightFieldShapeSettings(MapPtr->Samples.data(),
 			ToJPHVec3(Position), ToJPHVec3(Scale), MapPtr->Size);
 		JPH::ShapeSettings::ShapeResult r;

@@ -12,6 +12,7 @@ namespace engine::resource
 		virtual bool FileExists(string Path) = 0;
 		virtual ReadOnlyBufferStream* GetFile(string Path) = 0;
 		virtual std::map<string, string> GetFiles() = 0;
+		virtual void LoadSceneFiles(string ScenePath) {};
 	};
 
 	[[nodiscard]]

@@ -7,6 +7,7 @@
 #include <Engine/Graphics/Model.h>
 #include <unordered_map>
 #include "AssetRef.h"
+#include <Core/File/BinaryStream.h>
 
 namespace engine
 {
@@ -35,6 +36,7 @@ namespace engine
 		void PreLoadMaterials(Scene* With);
 
 		void ToFile(string FilePath);
+		void ToBinary(IBinaryStream* To);
 
 		virtual SerializedValue Serialize() override;
 		virtual void DeSerialize(SerializedValue* From) override;

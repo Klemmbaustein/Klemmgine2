@@ -13,7 +13,10 @@ EditorServerSubsystem::EditorServerSubsystem(ServerConnection* Connection)
 
 	this->Connection->SendMessage("initialize", "");
 
+	auto OldEvent = EditorUI::Instance->AssetsProvider->OnChanged;
+
 	EditorUI::Instance->AssetsProvider = new ServerAssetsProvider(Connection);
+	EditorUI::Instance->AssetsProvider->OnChanged = OldEvent;
 	resource::AddResourceSource(new ServerResourceSource(Connection));
 }
 

@@ -11,6 +11,7 @@
 #include <kui/Window.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
+#include <sstream>
 #include <kui/UI/UIDropdown.h>
 
 using namespace kui;
@@ -241,7 +242,17 @@ void engine::editor::MaterialEditor::LoadUI()
 void engine::editor::MaterialEditor::Save()
 {
 	AssetEditor::Save();
-	LoadedMaterial->ToFile(EditedAsset.FilePath);
+
+	std::stringstream FileString;
+	LoadedMaterial->ToStream(FileString);
+
+	auto Path = EditorUI::Instance->AssetsProvider->GetFileSaveStream(EditedAsset.FilePath);
+
+	BufferStream Buffer;
+	Buffer.WriteStringNoNull(FileString.str());
+	Buffer.ResetStreamPosition();
+	EditorUI::Instance->AssetsProvider->SaveToFile(EditedAsset.FilePath, &Buffer, Buffer.GetSize());
+
 }
 void engine::editor::MaterialEditor::OnResized()
 {

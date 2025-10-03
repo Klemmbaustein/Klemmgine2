@@ -54,6 +54,7 @@ void engine::subsystem::SceneSubsystem::Update()
 
 void engine::subsystem::SceneSubsystem::LoadSceneThread(string SceneName)
 {
+	IsLoading = true;
 	Scene* New = new Scene(true);
 
 	New->LoadAsync(SceneName);
@@ -64,6 +65,7 @@ void engine::subsystem::SceneSubsystem::LoadSceneThread(string SceneName)
 			delete Main;
 			Main = nullptr;
 		}
+		IsLoading = false;
 
 		Print(str::Format("Finished loading scene: %s", SceneName.c_str()));
 		New->LoadAsyncFinish();
