@@ -4,6 +4,7 @@
 #include <map>
 #include <filesystem>
 #include <iostream>
+#include <Lmcons.h>
 
 #undef DELETE
 void engine::platform::Execute(string Command)
@@ -116,6 +117,16 @@ engine::platform::SharedLibrary* engine::platform::LoadSharedLibrary(string Path
 		NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR));
 }
 
+engine::string engine::platform::GetSystemUserName()
+{
+	wchar_t UserName[UNLEN + 1];
+	DWORD Length = sizeof(UserName) / sizeof(wchar_t);
+
+	GetUserNameW(UserName, &Length);
+
+	return WstrToStr(std::wstring(UserName, Length));
+}
+
 void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
 {
 	return GetProcAddress(HMODULE(Library), Name.c_str());
@@ -199,6 +210,12 @@ void engine::platform::SetThreadName(string Name)
 {
 
 }
+
+engine::string engine::platform::GetSystemUserName()
+{
+	return getenv("USER");
+}
+
 engine::string engine::platform::GetThreadName()
 {
 	return "<Unknown thread>";

@@ -1,5 +1,4 @@
 #include "Material.h"
-#include "Material.h"
 #include "ShaderLoader.h"
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
@@ -7,7 +6,7 @@
 #include <Core/File/BinarySerializer.h>
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/MainThread.h>
-#include <Engine/File/Resource.h>
+#include <sstream>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -20,7 +19,9 @@ engine::graphics::Material::Material(AssetRef File)
 
 		if (File.Extension == "kmt")
 		{
-			FileData = TextSerializer::FromFile(File.FilePath);
+			std::stringstream Stream;
+			Stream << resource::GetTextFile(File.FilePath);
+			FileData = TextSerializer::FromStream(Stream);
 		}
 		else
 		{

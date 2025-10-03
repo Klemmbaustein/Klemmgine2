@@ -69,8 +69,8 @@ void engine::editor::ConsolePanel::OnResized()
 {
 	using namespace kui;
 
-	Element->SetLogSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 34), Element->GetParentWindow()));
-	UpdateLog(false);
+	Element->SetLogSize(Size - SizeVec(2_px, 34_px).GetScreen());
+	UpdateLog(true);
 }
 
 void engine::editor::ConsolePanel::OnThemeChanged()
@@ -111,13 +111,15 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 		UIText* txt = new UIText(11_px, Segments, EditorUI::MonospaceFont);
 
+		txt->SetWrapEnabled(true, Size.X - (40_px).GetScreen().X);
+
 		txt
 			->SetPadding(0_px, 0_px, 5_px, 0_px);
 
 		Element->logBox->AddChild(txt);
 	}
 
-	if (LastLogSize > 0)
+	if (!LogMessages.empty())
 	{
 		Element->logBox->GetChildren()[LogMessages.size() - 1]->SetPadding(0_px, 15_px, 5_px, 0_px);
 	}

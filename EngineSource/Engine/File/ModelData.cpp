@@ -42,7 +42,7 @@ void engine::ModelData::PreLoadMaterials(Scene* With)
 	{
 		auto Asset = AssetRef::FromName(i.Material, "kmt");
 
-		if (!Asset.Exists())
+		if (!resource::FileExists(Asset.FilePath))
 		{
 			Asset = AssetRef::FromName(i.Material, "kbm");
 		}

@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "AssetBrowser.h"
 #include "Viewport.h"
 #include "Assets/ModelEditor.h"
@@ -29,24 +28,20 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 {
 	std::vector<Item> Out;
 
-	if (!std::filesystem::exists("Assets/"))
-	{
-		std::filesystem::create_directories("Assets/");
-	}
+	auto Items = EditorUI::Instance->AssetsProvider->GetFiles(GetPathDisplayName());
 
-	for (auto& i : std::filesystem::directory_iterator(GetPathDisplayName()))
+	for (auto& File : Items)
 	{
-		string FilePath = i.path().string();
-
-		string Extension = i.path().has_extension() ? i.path().extension().string().substr(1) : "";
+		auto FilePath = File.Path;
+		string Extension = file::Extension(File.Path);
 		std::function<void()> OnClick = nullptr;
 
-		if (i.is_directory())
+		if (File.IsDirectory)
 		{
 			Extension = "dir/";
-			OnClick = [this, i]()
+			OnClick = [this, File]()
 			{
-				Path.append(i.path().filename().string() + "/");
+				Path.append(file::FileName(File.Path) + "/");
 				ItemsScrollBox->GetScrollObject()->Scrolled = 0;
 				UpdateItems();
 			};
@@ -88,7 +83,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			};
 		}
 
-		auto IconAndColor = EditorUI::GetExtIconAndColor(i.is_directory() ? "dir/" : Extension);
+		auto IconAndColor = EditorUI::GetExtIconAndColor(Extension);
 
 		auto OnRightClick = [this, OnClick, FilePath, Extension]() {
 
@@ -142,9 +137,9 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 		};
 
 		Out.push_back(Item{
-			.Name = file::FileNameWithoutExt(i.path().filename().string()),
-			.Path = i.path().string(),
-			.IsDirectory = bool(i.is_directory()),
+			.Name = file::FileNameWithoutExt(File.Path),
+			.Path = File.Path,
+			.IsDirectory = File.IsDirectory,
 			.Color = IconAndColor.second,
 			.OnRightClick = OnRightClick,
 			.OnClick = OnClick,
@@ -347,4 +342,3 @@ engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 {
 	return "Assets/" + Path;
 }
-#endif

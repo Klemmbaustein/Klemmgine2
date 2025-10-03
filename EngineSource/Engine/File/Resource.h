@@ -5,6 +5,15 @@
 
 namespace engine::resource
 {
+	class ResourceSource
+	{
+	public:
+		virtual ~ResourceSource() = default;
+		virtual bool FileExists(string Path) = 0;
+		virtual ReadOnlyBufferStream* GetFile(string Path) = 0;
+		virtual std::map<string, string> GetFiles() = 0;
+	};
+
 	[[nodiscard]]
 	string GetTextFile(string EnginePath);
 	[[nodiscard]]
@@ -20,4 +29,6 @@ namespace engine::resource
 
 	void LoadSceneFiles(string ScenePath);
 	void ScanForAssets();
+	void AddResourceSource(ResourceSource* Source);
+	void RemoveResourceSource(ResourceSource* Source);
 }

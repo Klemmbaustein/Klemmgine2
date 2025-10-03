@@ -29,6 +29,8 @@ static std::map<string, std::function<string(string, string)>> KnownFilePaths =
 	} },
 };
 
+static std::set<ResourceSource*> Sources;
+
 static bool UseArchives = false;
 
 static std::mutex ArchiveMutex;
@@ -61,30 +63,14 @@ static void UnloadArchive(string Name)
 
 string engine::resource::GetTextFile(string EnginePath)
 {
-	string FoundPrefix;
+	auto f = GetBinaryFile(EnginePath);
 
-	for (const auto& [Prefix, Convert] : KnownFilePaths)
+	if (!f)
 	{
-		if (EnginePath.substr(0, Prefix.size()) != Prefix)
-		{
-			continue;
-		}
-		FoundPrefix = Prefix;
+		return "";
 	}
 
-	if (FoundPrefix == "res:")
-	{
-		return kui::resource::GetStringResource(EnginePath.substr(FoundPrefix.size()));
-	}
-	if (FoundPrefix == "asset:" || FoundPrefix.empty())
-	{
-		std::ifstream in = std::ifstream(ConvertFilePath(EnginePath));
-		std::stringstream instr;
-		instr << in.rdbuf();
-		return instr.str();
-	}
-
-	return "";
+	return string((char*)f->GetData(), f->GetSize());
 }
 
 string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)
@@ -118,6 +104,14 @@ string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)
 bool engine::resource::FileExists(string EnginePath)
 {
 	string Converted = ConvertFilePath(EnginePath);
+
+	for (auto& i : Sources)
+	{
+		if (i->FileExists(EnginePath))
+		{
+			return true;
+		}
+	}
 
 	if (UseArchives)
 	{
@@ -156,6 +150,7 @@ ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
 	{
 		std::string FilePath = ConvertFilePath(EnginePath);
 
+		// TODO: refactor archives to be a ResourceSource
 		if (UseArchives)
 		{
 			for (auto& i : LoadedArchives)
@@ -163,6 +158,14 @@ ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
 				ReadOnlyBufferStream* f = i.second->GetFile(FilePath);
 				if (f)
 					return f;
+			}
+		}
+
+		for (auto& i : Sources)
+		{
+			if (i->FileExists(EnginePath))
+			{
+				return i->GetFile(EnginePath);
 			}
 		}
 
@@ -267,6 +270,16 @@ void resource::ScanForAssets()
 	}
 
 	LoadedAssets.clear();
+
+	for (auto& i : Sources)
+	{
+		auto SourceAssets = i->GetFiles();
+
+		for (auto& asset : SourceAssets)
+		{
+			LoadedAssets.insert(asset);
+		}
+	}
 	for (const auto& i : recursive_directory_iterator("Assets/"))
 	{
 		if (i.is_regular_file())
@@ -276,6 +289,16 @@ void resource::ScanForAssets()
 					str::ReplaceChar(i.path().string(), '\\', '/')
 				});
 	}
+}
+
+void resource::AddResourceSource(ResourceSource* Source)
+{
+	Sources.insert(Source);
+}
+
+void resource::RemoveResourceSource(ResourceSource* Source)
+{
+	Sources.erase(Source);
 }
 
 std::map<string, string> resource::LoadedAssets;

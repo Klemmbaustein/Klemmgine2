@@ -6,31 +6,58 @@
 engine::http::WebSocketConnection::WebSocketConnection(string Url)
 {
 	ix::initNetSystem();
-	ix::WebSocket* Socket = new ix::WebSocket();
-
-	ix::SocketTLSOptions Options;
-
-	Options.caFile = "NONE";
-
-	Socket->setTLSOptions(Options);
+	Socket = new ix::WebSocket();
 	Socket->setUrl(Url);
 
-	Socket->setOnMessageCallback([](const ix::WebSocketMessagePtr& Message) {
+	Socket->setOnMessageCallback([this](const ix::WebSocketMessagePtr& Message) {
 		switch (Message->type)
 		{
 		case ix::WebSocketMessageType::Message:
 		{
-			Log::Info(Message->str);
+			auto EngineMessage = WebSocketMessage{
+				.Type = Message->binary ? WebSocketMessageType::Binary : WebSocketMessageType::Text,
+				.Data = new BufferStream((uByte*)Message->str.data(), Message->str.size()),
+			};
+			if (OnMessage)
+				OnMessage(EngineMessage);
+			delete EngineMessage.Data;
 			break;
 		}
 		case ix::WebSocketMessageType::Open:
 		{
-			Log::Info("Connection opened.");
+			if (OnOpened)
+				OnOpened();
+			break;
+		}
+		case ix::WebSocketMessageType::Close:
+		{
+			if (OnClosed)
+				OnClosed();
+			break;
+		}
+		case ix::WebSocketMessageType::Error:
+		{
+			Log::Error(Message->errorInfo.reason);
 			break;
 		}
 		}
-		Log::Info(std::to_string(int(Message->type)));
 	});
 
 	Socket->start();
+}
+
+engine::http::WebSocketConnection::~WebSocketConnection()
+{
+	Socket->stop();
+	delete Socket;
+}
+
+void engine::http::WebSocketConnection::Send(const uByte* Data, size_t DataSize, bool IsBinary)
+{
+	if (IsBinary)
+	{
+		Socket->sendBinary(ix::IXWebSocketSendData((char*)Data, DataSize));
+		return;
+	}
+	Socket->send(string((char*)Data, DataSize), IsBinary);
 }

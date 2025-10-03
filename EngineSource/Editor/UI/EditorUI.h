@@ -7,6 +7,7 @@
 #include "StatusBar.kui.hpp"
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 #include <kui/UI/UIBackground.h>
+#include <Editor/FileAssetListProvider.h>
 
 namespace engine::editor
 {
@@ -73,6 +74,7 @@ namespace engine::editor
 		void AddMenuBarItem(string Name, std::vector<DropdownMenu::Option> Options);
 
 		static string Asset(const string& name);
+		AssetListProvider* AssetsProvider = new FileAssetListProvider();
 
 	private:
 		kui::UIBackground* Root = nullptr;

@@ -1,5 +1,8 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
+#include <Core/Networking/HttpWebSocket.h>
+#include <Core/File/SerializedData.h>
+#include "ServerConnection.h"
 
 namespace engine::editor
 {
@@ -7,8 +10,9 @@ namespace engine::editor
 	{
 	public:
 
-		EditorServerSubsystem();
+		EditorServerSubsystem(ServerConnection* Connection);
+		~EditorServerSubsystem() override;
 
-		void Connect(string Url);
+		ServerConnection* Connection = nullptr;
 	};
 }

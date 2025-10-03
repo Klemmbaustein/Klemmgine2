@@ -78,7 +78,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 			{
 				return true;
 			}
-			if (event->type == SDL_EVENT_WINDOW_RESIZED)
+			if (event->type == SDL_EVENT_WINDOW_RESIZED && engine::Engine::Instance)
 			{
 				win->Parent->OnResized();
 				win->Parent->RedrawInternal();
@@ -220,7 +220,7 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 
 void kui::systemWM::SwapWindow(SysWindow* Target)
 {
-	if (!Target->IsMain)
+	if (!Target->IsMain || !engine::Engine::Instance)
 	{
 		SDL_GL_SetSwapInterval(1);
 		SDL_GL_SwapWindow(Target->SDLWindow);
@@ -315,7 +315,7 @@ std::string kui::systemWM::GetTextInput(SysWindow* Target)
 
 uint32_t kui::systemWM::GetDesiredRefreshRate(SysWindow* From)
 {
-	return 60;
+	return 120;
 	const SDL_DisplayMode* Mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(From->SDLWindow));
 
 	if (!Mode)

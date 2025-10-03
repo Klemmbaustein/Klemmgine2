@@ -376,7 +376,8 @@ engine::string engine::TextSerializer::ReadWord(std::istream& Stream)
 		if (New == EOF)
 			break;
 
-		if (New == '\n' || New == '\t' || New == ' ' || New == '\r' || New == ',' || New == ';' || New == ':')
+		if (New == '\n' || New == '\t' || New == ' ' || New == '\r'
+			|| New == ',' || New == ';' || New == ':' || New == '}' || New == ']')
 			break;
 
 		Out.push_back(char(New));

@@ -22,6 +22,8 @@ namespace engine::platform
 
 	string GetLastErrorString();
 
+	string GetSystemUserName();
+
 #if WINDOWS
 	std::wstring StrToWstr(const std::string& str);
 	std::string WstrToStr(const std::wstring& wstr);

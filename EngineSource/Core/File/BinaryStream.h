@@ -112,9 +112,9 @@ namespace engine
 		const std::vector<uByte>& GetBuffer() const;
 
 		void ResetStreamPosition();
+		size_t StreamPosition = 0;
 
 	private:
-		size_t StreamPosition = 0;
 		std::vector<uByte> Buffer;
 	};
 
