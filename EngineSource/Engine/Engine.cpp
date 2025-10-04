@@ -139,7 +139,7 @@ void engine::Engine::ErrorCallback(string Error, string StackTrace)
 #ifndef SERVER
 	if (thread::IsMainThread)
 	{
-		subsystem::VideoSubsystem* VideoSys = Engine::GetSubsystem<subsystem::VideoSubsystem>();
+		VideoSubsystem* VideoSys = Engine::GetSubsystem<VideoSubsystem>();
 
 		if (VideoSys)
 		{

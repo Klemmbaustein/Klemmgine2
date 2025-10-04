@@ -5,9 +5,9 @@
 #include <Engine/Graphics/Texture.h>
 #include <map>
 
-namespace engine::subsystem
+namespace engine
 {
-	class VideoSubsystem : public Subsystem
+	class VideoSubsystem : public subsystem::Subsystem
 	{
 	public:
 		VideoSubsystem();
@@ -16,7 +16,7 @@ namespace engine::subsystem
 		virtual void Update() override;
 		virtual void RenderUpdate() override;
 
-		virtual void RegisterCommands(ConsoleSubsystem* System) override;
+		virtual void RegisterCommands(subsystem::ConsoleSubsystem* System) override;
 
 		kui::Window* MainWindow = nullptr;
 		kui::Font* DefaultFont = nullptr;

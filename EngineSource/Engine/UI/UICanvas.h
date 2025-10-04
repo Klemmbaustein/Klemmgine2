@@ -18,7 +18,7 @@ namespace engine
 		template<typename T>
 		static T* CreateNew()
 		{
-			if (!Engine::IsPlaying || !subsystem::VideoSubsystem::Current)
+			if (!Engine::IsPlaying || !VideoSubsystem::Current)
 				return nullptr;
 			T* New = new T();
 			RegisterSelf(New);

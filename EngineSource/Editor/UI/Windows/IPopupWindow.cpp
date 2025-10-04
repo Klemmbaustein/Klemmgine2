@@ -48,7 +48,7 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	Popup->DPIMultiplier = EditorUI::Instance->MainBackground->GetParentWindow()->DPIMultiplier;
 	EditorUI::UpdateTheme(Popup, false);
 
-	DefaultFont = new kui::Font(Engine::GetSubsystem<subsystem::VideoSubsystem>()->DefaultFontName);
+	DefaultFont = new kui::Font(Engine::GetSubsystem<VideoSubsystem>()->DefaultFontName);
 	Popup->Markup.SetDefaultFont(DefaultFont);
 
 	this->Begin();

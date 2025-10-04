@@ -1,5 +1,4 @@
 #include "ModelData.h"
-#include "ModelData.h"
 #include "Core/File/BinarySerializer.h"
 #include "Core/File/FileUtil.h"
 #include <filesystem>
@@ -27,6 +26,7 @@ engine::ModelData::ModelData(string FilePath)
 
 	BinarySerializer::FromStream(BinaryFile, File, FormatName);
 	DeSerialize(&File.at(0).Value);
+	delete BinaryFile;
 }
 
 engine::ModelData::ModelData()
@@ -323,7 +323,7 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 		Found->second.References++;
 	}
 
-	if (Found->second.Drawable == nullptr && subsystem::VideoSubsystem::Current)
+	if (Found->second.Drawable == nullptr && VideoSubsystem::Current)
 	{
 		Found->second.Drawable = new Model(Found->second.Data);
 	}
@@ -368,7 +368,6 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 		}
 		return;
 	}
-	Log::Warn("Failed to unload model");
 }
 
 void engine::GraphicsModel::UnloadModel(AssetRef Asset)
@@ -394,5 +393,60 @@ void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 		}
 		return;
 	}
-	Log::Warn("Failed to unload model");
+}
+
+engine::GraphicsModel* engine::GraphicsModel::UnitCube()
+{
+	GraphicsModel* Cube = nullptr;
+
+	if (!Cube)
+	{
+		Cube = new GraphicsModel();
+		Cube->Data = new ModelData();
+
+		auto& m = Cube->Data->Meshes.emplace_back();
+
+		auto MakeFace = [&](Vector3 Dir, Vector3 Up, Vector3 Right) {
+
+			uint32 InitialLength = m.Vertices.size();
+			m.Vertices.push_back(Vertex({
+					.Position = Dir - Up - Right,
+					.UV = Vector2(0, 0),
+					.Normal = Dir,
+				}));
+			m.Vertices.push_back(Vertex({
+					.Position = Dir - Up + Right,
+					.UV = Vector2(1, 0),
+					.Normal = Dir,
+				}));
+			m.Vertices.push_back(Vertex({
+					.Position = Dir + Up - Right,
+					.UV = Vector2(0, 1),
+					.Normal = Dir,
+				}));
+			m.Vertices.push_back(Vertex({
+					.Position = Dir + Up + Right,
+					.UV = Vector2(1, 1),
+					.Normal = Dir,
+				}));
+
+			m.Indices.push_back(InitialLength);
+			m.Indices.push_back(InitialLength + 1);
+			m.Indices.push_back(InitialLength + 2);
+			m.Indices.push_back(InitialLength + 1);
+			m.Indices.push_back(InitialLength + 3);
+			m.Indices.push_back(InitialLength + 2);
+		};
+
+		MakeFace(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		MakeFace(Vector3(0, -1, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1));
+		MakeFace(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 1));
+		MakeFace(Vector3(-1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1));
+		MakeFace(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(1, 0, 0));
+		MakeFace(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(1, 0, 0));
+
+		Cube->Drawable = new graphics::Model(Cube->Data);
+	}
+
+	return Cube;
 }

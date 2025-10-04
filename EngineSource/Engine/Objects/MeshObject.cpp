@@ -10,6 +10,15 @@ void engine::MeshObject::LoadMesh(AssetRef File)
 	}
 }
 
+void engine::MeshObject::LoadData(GraphicsModel* Data)
+{
+	Mesh->Load(Data);
+	if (Mesh->DrawnModel && Mesh->DrawnModel->Data->HasCollision)
+	{
+		Collider->Load(Data);
+	}
+}
+
 void engine::MeshObject::Begin()
 {
 	Mesh = new MeshComponent();

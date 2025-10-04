@@ -1,6 +1,4 @@
 #include "ServerConnection.h"
-#include "ServerConnection.h"
-#include "ServerConnection.h"
 #include <Core/Error/EngineAssert.h>
 #include <Core/File/JsonSerializer.h>
 #include <Core/Log.h>
@@ -49,6 +47,8 @@ engine::editor::ServerConnection::ServerConnection(string Url)
 			string Path = msg.Data->ReadString();
 
 			std::vector<uByte>* Data = new std::vector<uByte>();
+			size_t* References = new size_t();
+
 			Data->resize(msg.Data->GetBuffer().size() - msg.Data->StreamPosition);
 
 			if (Data->size())
@@ -60,11 +60,19 @@ engine::editor::ServerConnection::ServerConnection(string Url)
 
 			auto& Callbacks = FileCallbacks[Path];
 
-			auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), true);
-
 			for (auto& i : Callbacks)
 			{
+				auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), true);
+				b->OnClose.Add(References, [=] {
+					(*References)--;
+					if (*References == 0)
+					{
+						delete Data;
+						delete References;
+					}
+				});
 				i(b);
+				(*References)++;
 			}
 
 			Callbacks.clear();

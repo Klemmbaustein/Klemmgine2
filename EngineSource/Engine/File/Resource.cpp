@@ -40,7 +40,11 @@ string engine::resource::GetTextFile(string EnginePath)
 		return "";
 	}
 
-	return string((char*)f->GetData(), f->GetSize());
+	string FileContent = string((char*)f->GetData(), f->GetSize());
+
+	delete f;
+
+	return FileContent;
 }
 
 string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)

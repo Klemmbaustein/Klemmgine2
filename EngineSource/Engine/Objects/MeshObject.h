@@ -20,6 +20,7 @@ namespace engine
 		ObjProperty<bool> LoadCollision = ObjProperty<bool>("Collision", true, this);
 
 		void LoadMesh(AssetRef File);
+		void LoadData(GraphicsModel* Data);
 
 		void Begin() override;
 		void OnDestroyed() override;

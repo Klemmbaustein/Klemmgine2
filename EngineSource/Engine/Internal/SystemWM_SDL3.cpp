@@ -82,7 +82,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 			{
 				win->Parent->OnResized();
 				win->Parent->RedrawInternal();
-				engine::Engine::Instance->GetSubsystem<engine::subsystem::VideoSubsystem>()->RenderUpdate();
+				engine::VideoSubsystem::Current->RenderUpdate();
 			}
 			return true;
 		};

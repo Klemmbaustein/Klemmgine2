@@ -28,12 +28,17 @@ void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 
 void engine::MeshComponent::Load(AssetRef From)
 {
+	Load(GraphicsModel::GetModel(From));
+}
+
+void engine::MeshComponent::Load(GraphicsModel* From)
+{
 	if (IsRegistered)
 	{
 		ClearModel(false);
 	}
 
-	DrawnModel = GraphicsModel::GetModel(From);
+	DrawnModel = From;
 
 	if (DrawnModel && DrawnModel->Drawable)
 	{

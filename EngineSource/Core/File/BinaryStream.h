@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/Types.h>
+#include <Core/Event.h>
 #include <cstdio>
 
 namespace engine
@@ -140,6 +141,8 @@ namespace engine
 		virtual void Write(uByte* Buffer, size_t Size) override;
 
 		const uByte* GetData();
+
+		Event<> OnClose;
 
 	private:
 		bool FreeOnClose = false;

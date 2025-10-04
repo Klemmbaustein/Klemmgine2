@@ -10,15 +10,6 @@ else()
 endif()
 set(CMAKE_C_STANDARD 17)
 
-# Enable Hot Reload for MSVC compilers if supported.
-if(POLICY CMP0141)
-	cmake_policy(SET CMP0141 NEW)
-	set(
-		CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
-		"$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
-	)
-endif()
-
 option(USE_ENGINEMAIN "Use EngineMain() function as a replacement for main() or WinMain()" ON)
 option(USE_WINDOWS_SUBSYSTEM "Use the Windows subsystem on windows. When this is off, a console will be allocated for the program." ON)
 option(ENGINE_DYNAMIC_SYMBOLS "Link with -rdynamic on linux for more descriptive stack traces" OFF)

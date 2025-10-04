@@ -14,6 +14,7 @@ namespace engine
 		void Update() override;
 
 		void Load(AssetRef File, bool StartCollisionEnabled = true);
+		void Load(GraphicsModel* Model, bool StartCollisionEnabled = true);
 		physics::MeshBody* Body = nullptr;
 
 		void SetCollisionEnabled(bool NewEnabled);

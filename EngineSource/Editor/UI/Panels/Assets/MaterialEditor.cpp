@@ -17,7 +17,6 @@
 using namespace kui;
 using namespace engine;
 using namespace engine::graphics;
-using engine::subsystem::VideoSubsystem;
 
 engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	: AssetEditor("Material: %s", MaterialFile)
@@ -37,7 +36,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	PreviewScene->OnResized(PreviewScene->BufferSize);
 
 	auto CurrentObj = PreviewScene->CreateObject<MeshObject>();
-	CurrentObj->LoadMesh("cube.kmdl"_asset);
+	CurrentObj->LoadData(GraphicsModel::UnitCube());
 	CurrentObj->Mesh->Materials[0] = LoadedMaterial;
 
 	MaterialParamsBox = new UIScrollBox(false, 0, true);

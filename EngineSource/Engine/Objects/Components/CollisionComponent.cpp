@@ -77,12 +77,17 @@ bool engine::CollisionComponent::GetCollisionEnabled() const
 
 void engine::CollisionComponent::Load(AssetRef File, bool StartCollisionEnabled)
 {
+	Load(GraphicsModel::GetModel(File), StartCollisionEnabled);
+}
+
+void engine::CollisionComponent::Load(GraphicsModel* Model, bool StartCollisionEnabled)
+{
 	if (!GetRootObject()->GetScene()->Physics.Active)
 		return;
 
 	GetRootObject()->CheckTransform();
 	GetRootComponent()->UpdateTransform();
-	this->LoadedModel = GraphicsModel::GetModel(File);
+	this->LoadedModel = Model;
 
 	if (!LoadedModel || LoadedModel->Data->Meshes.empty())
 		return;

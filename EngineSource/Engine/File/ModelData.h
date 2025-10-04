@@ -60,6 +60,9 @@ namespace engine
 		static void ReferenceModel(GraphicsModel* Target);
 		static void UnloadModel(GraphicsModel* Target);
 		static void UnloadModel(AssetRef Asset);
+
+		static GraphicsModel* UnitCube();
+
 	private:
 		static std::unordered_map<string, GraphicsModel> Models;
 	};

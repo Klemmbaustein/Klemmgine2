@@ -144,6 +144,7 @@ engine::ReadOnlyBufferStream::ReadOnlyBufferStream(const uByte* Data, size_t Siz
 }
 engine::ReadOnlyBufferStream::~ReadOnlyBufferStream()
 {
+	OnClose.Invoke();
 	if (FreeOnClose)
 		delete[] Data;
 }

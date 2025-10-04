@@ -23,6 +23,7 @@
 #endif
 
 using namespace kui;
+using namespace engine;
 using namespace engine::subsystem;
 
 static void GLAPIENTRY MessageCallback(
@@ -47,7 +48,7 @@ VideoSubsystem* VideoSubsystem::Current = nullptr;
 
 static float TimeScale = 1;
 
-engine::subsystem::VideoSubsystem::VideoSubsystem()
+engine::VideoSubsystem::VideoSubsystem()
 	: Subsystem("Video", Log::LogColor::Cyan)
 {
 	Current = this;
@@ -127,7 +128,7 @@ engine::subsystem::VideoSubsystem::VideoSubsystem()
 	}
 }
 
-engine::string engine::subsystem::VideoSubsystem::GetWindowTitle()
+engine::string engine::VideoSubsystem::GetWindowTitle()
 {
 #define STR_INNER(x) # x
 #define STR(x) STR_INNER(x)
@@ -139,7 +140,7 @@ engine::string engine::subsystem::VideoSubsystem::GetWindowTitle()
 	return Title;
 }
 
-kui::Vec2ui engine::subsystem::VideoSubsystem::GetWindowSize()
+kui::Vec2ui engine::VideoSubsystem::GetWindowSize()
 {
 	Vec2ui WindowSize = Window::SIZE_DEFAULT;
 
@@ -158,7 +159,7 @@ kui::Vec2ui engine::subsystem::VideoSubsystem::GetWindowSize()
 	return WindowSize;
 }
 
-void engine::subsystem::VideoSubsystem::RegisterCommands(ConsoleSubsystem* System)
+void engine::VideoSubsystem::RegisterCommands(ConsoleSubsystem* System)
 {
 	System->AddCommand(console::Command{
 		.Name = "reload_shaders",
@@ -230,13 +231,13 @@ void engine::subsystem::VideoSubsystem::RegisterCommands(ConsoleSubsystem* Syste
 		} });
 }
 
-engine::subsystem::VideoSubsystem::~VideoSubsystem()
+engine::VideoSubsystem::~VideoSubsystem()
 {
 	Current = nullptr;
 	delete MainWindow;
 }
 
-void engine::subsystem::VideoSubsystem::Update()
+void engine::VideoSubsystem::Update()
 {
 	if (!MainWindow->UpdateWindow())
 	{
@@ -257,7 +258,7 @@ void engine::subsystem::VideoSubsystem::Update()
 	stats::Time += stats::DeltaTime;
 }
 
-void engine::subsystem::VideoSubsystem::RenderUpdate()
+void engine::VideoSubsystem::RenderUpdate()
 {
 	SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
 
@@ -322,7 +323,7 @@ void engine::subsystem::VideoSubsystem::RenderUpdate()
 	SDL_GL_SwapWindow(GetSysWindow(MainWindow)->SDLWindow);
 }
 
-void engine::subsystem::VideoSubsystem::OnResized()
+void engine::VideoSubsystem::OnResized()
 {
 	for (auto& [_, Callback] : OnResizedCallbacks)
 	{
