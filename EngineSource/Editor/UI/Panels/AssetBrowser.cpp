@@ -284,7 +284,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			.Name = "New folder",
 			.Icon = EditorUI::GetExtIconAndColor("dir/").first,
 			.OnClicked = [this]() {
-				EditorUI::Instance->AssetsProvider->NewDirectory(GetPathDisplayName() + "/Folder");
+				EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
 			}
 		},
 		DropdownMenu::Option{

@@ -270,6 +270,29 @@ engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, s
 	return NewPath;
 }
 
+string engine::editor::EditorUI::CreateDirectory(string Path)
+{
+	while (!Path.empty() && *Path.rbegin() == '/')
+	{
+		Path.pop_back();
+	}
+
+	string FileName = Path;
+	string FileNumber = "";
+	int32 FileNumberValue = 0;
+
+	while (resource::FileExists(FileName + FileNumber + "/"))
+	{
+		FileNumber = str::Format(" (%i)", ++FileNumberValue);
+	}
+
+	string NewPath = FileName + FileNumber;
+
+	Instance->AssetsProvider->NewDirectory(NewPath);
+
+	return NewPath;
+}
+
 void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 {
 	Target->Markup.SetGlobal("Color_Text", Theme.Text);

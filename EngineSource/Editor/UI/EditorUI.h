@@ -66,6 +66,7 @@ namespace engine::editor
 		EditorUI();
 		~EditorUI();
 		static string CreateAsset(string Path, string Name, string Extension);
+		static string CreateDirectory(string Path);
 		static void UpdateTheme(kui::Window* Target, bool Full);
 		void Update();
 		void ReloadUI();
