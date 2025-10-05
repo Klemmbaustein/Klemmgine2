@@ -1,19 +1,20 @@
 #pragma once
 #include <Engine/Objects/SceneObject.h>
-#include <class.hpp>
-#include <reflection.hpp>
+#include <ds/class.hpp>
+#include <ds/reflection.hpp>
 
 namespace engine::script
 {
+	// Object running script logic
 	class ScriptObject : public SceneObject
 	{
 	public:
 
-		ScriptObject(const lang::TypeInfo& Class, lang::InterpretContext* Interpreter);
+		ScriptObject(const ds::TypeInfo& Class, ds::InterpretContext* Interpreter);
 
-		lang::TypeInfo Class;
-		lang::RuntimeClass* ScriptData = nullptr;
-		lang::InterpretContext* Interpreter = nullptr;
+		ds::TypeInfo Class;
+		ds::RuntimeClass* ScriptData = nullptr;
+		ds::InterpretContext* Interpreter = nullptr;
 
 		virtual void Begin();
 		virtual void OnDestroyed();

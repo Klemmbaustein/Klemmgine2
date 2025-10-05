@@ -3,13 +3,13 @@
 #include "EngineModules.h"
 #include "ScriptSerializer.h"
 #include <Engine/Subsystem/ConsoleSubsystem.h>
-#include <language.hpp>
-#include <modules/standardLibrary.hpp>
+#include <ds/language.hpp>
+#include <ds/modules/standardLibrary.hpp>
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/Scene.h>
 #include <filesystem>
 
-using namespace lang;
+using namespace ds;
 
 engine::script::ScriptSubsystem::ScriptSubsystem()
 	: subsystem::Subsystem("Script", Log::LogColor::Yellow)

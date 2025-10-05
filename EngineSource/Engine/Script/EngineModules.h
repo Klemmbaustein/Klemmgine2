@@ -1,6 +1,6 @@
 #pragma once
 
-namespace lang
+namespace ds
 {
 	struct LanguageContext;
 	struct RuntimeClass;
@@ -8,7 +8,7 @@ namespace lang
 
 namespace engine::script
 {
-	void RegisterEngineModules(lang::LanguageContext* ToContext);
+	void RegisterEngineModules(ds::LanguageContext* ToContext);
 
-	lang::RuntimeClass* CreateAssetRef();
+	ds::RuntimeClass* CreateAssetRef();
 }

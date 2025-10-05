@@ -12,7 +12,7 @@ using namespace engine::script;
 engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	: EditorPanel("Scripts", "scripts")
 {
-	Provider = new ScriptEditorProvider("Scripts/test.lang");
+	Provider = new ScriptEditorProvider("Scripts/test.ds");
 
 	Provider->Keywords = {
 		"int",
@@ -87,7 +87,7 @@ void engine::editor::ScriptEditorPanel::UpdateTabs()
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->SetMinWidth(UISize::Parent(1))
 		->SetPadding(5_px)
-		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "test.lang", EditorUI::EditorFont))
+		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "test.ds", EditorUI::EditorFont))
 			->SetTextWidthOverride(152_px)
 			->SetPadding(4_px))
 		->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, nullptr))

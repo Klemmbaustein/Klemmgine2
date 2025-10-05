@@ -1,6 +1,6 @@
 #pragma once
 #include <kui/UI/FileEditorProvider.h>
-#include <language.hpp>
+#include <ds/language.hpp>
 #include <kui/Timer.h>
 #include <Editor/Server/ServerConnection.h>
 
@@ -26,7 +26,7 @@ namespace engine::editor
 		ScriptEditorProvider(std::string ScriptFile);
 
 		std::string ScriptFile;
-		lang::LanguageService* ScriptService = nullptr;
+		ds::LanguageService* ScriptService = nullptr;
 		std::vector<ScriptError> Errors;
 
 		void GetHighlightsForRange(size_t Begin, size_t Length) override;
@@ -57,7 +57,7 @@ namespace engine::editor
 
 		struct HoverSymbolData
 		{
-			lang::ScannedFunction* Symbol = nullptr;
+			ds::ScannedFunction* Symbol = nullptr;
 			kui::EditorPosition At;
 		};
 

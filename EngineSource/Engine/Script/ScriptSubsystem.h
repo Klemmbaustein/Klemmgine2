@@ -1,7 +1,7 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
 
-namespace lang
+namespace ds
 {
 	class InterpretContext;
 	struct LanguageContext;
@@ -14,10 +14,10 @@ namespace engine::script
 	{
 	public:
 
-		lang::InterpretContext* Interpreter = nullptr;
-		lang::LanguageContext* ScriptLanguage = nullptr;
+		ds::InterpretContext* Interpreter = nullptr;
+		ds::LanguageContext* ScriptLanguage = nullptr;
 
-		lang::BytecodeStream* ScriptInstructions = nullptr;
+		ds::BytecodeStream* ScriptInstructions = nullptr;
 
 		ScriptSubsystem();
 		virtual ~ScriptSubsystem() override;

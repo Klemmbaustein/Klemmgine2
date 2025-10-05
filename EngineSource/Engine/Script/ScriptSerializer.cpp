@@ -1,6 +1,6 @@
 #include "ScriptSerializer.h"
 #include <Core/File/BinarySerializer.h>
-using namespace lang;
+using namespace ds;
 using namespace engine;
 
 static const string SCRIPT_FORMAT_ID = "k2script";
@@ -62,7 +62,7 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 	BinarySerializer::ToBinaryData(BytecodeData.GetObject(), ToStream, SCRIPT_FORMAT_ID);
 }
 
-void engine::script::serialize::DeSerializeBytecode(lang::BytecodeStream* ToStream, IBinaryStream* FromStream)
+void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream, IBinaryStream* FromStream)
 {
 	SerializedValue Obj = BinarySerializer::FromStream(FromStream, SCRIPT_FORMAT_ID);
 

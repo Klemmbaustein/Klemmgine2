@@ -1,12 +1,12 @@
 #include "ScriptObject.h"
 #include "EngineModules.h"
 #include "Engine/Engine.h"
-#include <interpreter.hpp>
+#include <ds/interpreter.hpp>
 
-using namespace lang;
+using namespace ds;
 
-engine::script::ScriptObject::ScriptObject(const lang::TypeInfo& Class,
-	lang::InterpretContext* Interpreter)
+engine::script::ScriptObject::ScriptObject(const ds::TypeInfo& Class,
+	ds::InterpretContext* Interpreter)
 	: Class(Class), Interpreter(Interpreter)
 {
 	LoadScriptData();

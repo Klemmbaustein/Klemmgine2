@@ -2,8 +2,8 @@
 #include <Core/Log.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Elements/Toolbar.h>
-#include <language.hpp>
-#include <modules/standardLibrary.hpp>
+#include <ds/language.hpp>
+#include <ds/modules/standardLibrary.hpp>
 #include <Engine/Engine.h>
 #include <Engine/Script/ScriptSubsystem.h>
 

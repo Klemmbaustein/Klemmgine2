@@ -5,15 +5,15 @@
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
-#include <language.hpp>
-#include <modules/system.hpp>
-#include <native/nativeModule.hpp>
-#include <native/nativeStructType.hpp>
-#include <parser/types/stringType.hpp>
+#include <ds/language.hpp>
+#include <ds/modules/system.hpp>
+#include <ds/native/nativeModule.hpp>
+#include <ds/native/nativeStructType.hpp>
+#include <ds/parser/types/stringType.hpp>
 #include <Core/Log.h>
 #include <Engine/Script/ScriptObject.h>
 
-using namespace lang;
+using namespace ds;
 using namespace engine::input;
 using namespace engine;
 
@@ -237,7 +237,7 @@ static void Vector3_length(InterpretContext* context)
 
 #pragma endregion
 
-void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
+void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
 	EngineModule.name = "engine";
@@ -245,11 +245,11 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	auto StrType = StringType::getInstance();
 	auto FloatInst = FloatType::getInstance();
 
-	auto VecType = LANG_CREATE_STRUCT(Vector3);
+	auto VecType = DS_CREATE_STRUCT(Vector3);
 
-	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, X, x, FloatInst);
-	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, Y, y, FloatInst);
-	LANG_STRUCT_MEMBER_NAME(VecType, Vector3, Z, z, FloatInst);
+	DS_STRUCT_MEMBER_NAME(VecType, Vector3, X, x, FloatInst);
+	DS_STRUCT_MEMBER_NAME(VecType, Vector3, Y, y, FloatInst);
+	DS_STRUCT_MEMBER_NAME(VecType, Vector3, Z, z, FloatInst);
 
 	VecType->operators.push_back({
 		Operator::add,
@@ -284,16 +284,16 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	VecType->methods.insert({ "length", EngineModule.addFunction(NativeFunction({},
 			FloatInst, "Vector3.length", &Vector3_length)) });
 
-	auto Vec2Type = LANG_CREATE_STRUCT(Vector2);
+	auto Vec2Type = DS_CREATE_STRUCT(Vector2);
 
-	LANG_STRUCT_MEMBER_NAME(Vec2Type, Vector2, X, x, FloatInst);
-	LANG_STRUCT_MEMBER_NAME(Vec2Type, Vector2, Y, y, FloatInst);
+	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, X, x, FloatInst);
+	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, Y, y, FloatInst);
 
-	auto RotType = LANG_CREATE_STRUCT(Rotation3);
+	auto RotType = DS_CREATE_STRUCT(Rotation3);
 
-	LANG_STRUCT_MEMBER_NAME(RotType, Rotation3, P, p, FloatInst);
-	LANG_STRUCT_MEMBER_NAME(RotType, Rotation3, Y, y, FloatInst);
-	LANG_STRUCT_MEMBER_NAME(RotType, Rotation3, R, r, FloatInst);
+	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, P, p, FloatInst);
+	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, Y, y, FloatInst);
+	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, R, r, FloatInst);
 
 	EngineModule.types.push_back(RotType);
 	EngineModule.types.push_back(VecType);
@@ -466,7 +466,7 @@ void engine::script::RegisterEngineModules(lang::LanguageContext* ToContext)
 	ToContext->addNativeModule(EngineInputModule);
 }
 
-lang::RuntimeClass* engine::script::CreateAssetRef()
+ds::RuntimeClass* engine::script::CreateAssetRef()
 {
 	ClassRef<AssetRef*> NewAssetRef = RuntimeClass::allocateClass(sizeof(AssetRef*), &AssetRef_vTable);
 	NewAssetRef.classPtr->vtable = &AssetRef_vTable;

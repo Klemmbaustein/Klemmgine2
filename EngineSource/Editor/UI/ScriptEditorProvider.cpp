@@ -3,8 +3,8 @@
 #include <kui/UI/UITextEditor.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/Server/EditorServerSubsystem.h>
-#include <modules/standardLibrary.hpp>
-#include <service/languageService.hpp>
+#include <ds/modules/standardLibrary.hpp>
+#include <ds/service/languageService.hpp>
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Editor/UI/DropdownMenu.h>
@@ -13,7 +13,7 @@
 #include <Editor/UI/EditorUI.h>
 
 using namespace kui;
-using namespace lang;
+using namespace ds;
 using namespace engine::editor;
 
 engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile)
@@ -269,7 +269,7 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 
 void engine::editor::ScriptEditorProvider::LoadRemoteFile()
 {
-	Connection->GetFile("Scripts/test.lang", [=](ReadOnlyBufferStream* Stream)
+	Connection->GetFile("Scripts/test.ds", [=](ReadOnlyBufferStream* Stream)
 	{
 		string Content = Stream->ReadString();
 
