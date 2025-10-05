@@ -91,6 +91,7 @@ engine::editor::ServerConnection::ServerConnection(string Url)
 
 engine::editor::ServerConnection::~ServerConnection()
 {
+	OnClosed.Invoke();
 	delete this->Connection;
 }
 
@@ -154,6 +155,28 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 	{
 		HandleFileList(Json.At("data").GetArray());
 	}
+	else if (Type == "chatMessage")
+	{
+		auto& MessageData = Json.At("data");
+
+		this->Chat.push_back(ChatMessage{
+			.Sender = MessageData.At("sender").GetString(),
+			.Message = MessageData.At("content").GetString(),
+			});
+		thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke, &OnChatMessage));
+	}
+	else if (Type == "listUsers")
+	{
+		auto& MessageData = Json.At("data").At("users");
+
+		this->Users.clear();
+
+		for (auto& i : MessageData.GetArray())
+		{
+			this->Users.push_back(i.GetString());
+		}
+		thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke, &OnUsersChanged));
+	}
 	else if (Type == "connectDeny")
 	{
 		Log::Warn("Connection from server was denied.");
@@ -179,16 +202,29 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 
 void engine::editor::ServerConnection::HandleConnectParams(SerializedValue Json)
 {
+	srand(time(NULL));
+	this->ThisUserName = "User " + std::to_string(std::rand() % 256);
 	SendMessage("connect", SerializedValue({
 		SerializedData("password", "hello"),
 		SerializedData("version", VersionInfo::Get().VersionName),
-		SerializedData("userName", platform::GetSystemUserName()),
+		SerializedData("userName", this->ThisUserName),
 		}));
 }
 
 void engine::editor::ServerConnection::HandleInitializedParams(SerializedValue Json)
 {
 	HandleFileList(Json.At("data").At("fileSystem").GetArray());
+
+	auto& UserJson = Json.At("data").At("users").GetArray();
+
+	this->Users.clear();
+
+	for (auto& i : UserJson)
+	{
+		this->Users.push_back(i.At("name").GetString());
+	}
+
+	thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke , &OnUsersChanged));
 }
 
 void engine::editor::ServerConnection::GetFile(string Name, std::function<void(ReadOnlyBufferStream*)> Callback)

@@ -1,11 +1,18 @@
 #pragma once
 #include <Core/Networking/HttpWebSocket.h>
 #include <Core/File/SerializedData.h>
+#include <Core/Event.h>
 #include <map>
 #include <mutex>
 
 namespace engine::editor
 {
+	struct ChatMessage
+	{
+		string Sender;
+		string Message;
+	};
+
 	class ServerConnection
 	{
 	public:
@@ -24,6 +31,14 @@ namespace engine::editor
 		bool IsClosed = false;
 
 		std::vector<string> Files;
+		std::vector<string> Users;
+		std::vector<ChatMessage> Chat;
+
+		Event<> OnUsersChanged;
+		Event<> OnChatMessage;
+		Event<> OnClosed;
+
+		string ThisUserName;
 
 		void SendMessageData(SerializedValue Json);
 		void SendMessage(string Type, SerializedValue Json);

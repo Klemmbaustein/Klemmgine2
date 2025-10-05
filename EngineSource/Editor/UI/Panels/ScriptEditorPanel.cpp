@@ -3,6 +3,7 @@
 #include <Engine/Engine.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/UI/EditorUI.h>
+#include <Editor/Server/EditorServerSubsystem.h>
 #include <fstream>
 
 using namespace kui;
@@ -113,4 +114,10 @@ void engine::editor::ScriptEditorPanel::OnResized()
 
 void engine::editor::ScriptEditorPanel::Update()
 {
+	auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
+	if (sys && !Provider->Connection)
+	{
+		Provider->Connection = sys->Connection;
+		Provider->LoadRemoteFile();
+	}
 }

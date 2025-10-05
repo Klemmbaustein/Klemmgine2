@@ -32,6 +32,7 @@ namespace engine::editor
 				size_t ChunkSize = std::min(sizeof(Buffer), ToWrite);
 				Stream->Read(Buffer, ChunkSize);
 				OutStream->Write(Buffer, ChunkSize);
+				ToWrite -= ChunkSize;
 			}
 			delete OutStream;
 		}

@@ -3,6 +3,19 @@ using engine::input
 
 module game
 
+class Callback : fn() -> int
+{
+	override fn call() -> int
+	{
+		return 15
+	}
+
+	fn delete()
+	{
+		info("woah")
+	}
+}
+
 class MyObject : SceneObject
 {
 	[Export]
@@ -50,5 +63,7 @@ class MyObject : SceneObject
 
 	override fn destroy()
 	{
+		fn() -> int x = new Callback()
+		info($"{x.call()}")
 	}
 }

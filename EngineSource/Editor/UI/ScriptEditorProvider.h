@@ -2,6 +2,7 @@
 #include <kui/UI/FileEditorProvider.h>
 #include <language.hpp>
 #include <kui/Timer.h>
+#include <Editor/Server/ServerConnection.h>
 
 namespace engine::editor
 {
@@ -42,6 +43,9 @@ namespace engine::editor
 		kui::Vec3f FunctionColor = kui::Vec3f(0.27f, 0.88f, 0.65f);
 
 		kui::UIBox* CreateHoverBox(kui::UIBox* Content, kui::EditorPosition At);
+		ServerConnection* Connection = nullptr;
+
+		void LoadRemoteFile();
 
 	private:
 

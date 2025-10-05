@@ -144,6 +144,10 @@ engine::string engine::JsonSerializer::EscapeString(string In)
 		{
 			Out.append("\\n");
 		}
+		else if (c == '\t')
+		{
+			Out.append("\\t");
+		}
 		else if (c == '\\')
 		{
 			Out.append("\\\\");

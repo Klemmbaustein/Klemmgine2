@@ -2,9 +2,11 @@
 #include <Engine/Engine.h>
 #include <kui/UI/UITextEditor.h>
 #include <Engine/Script/ScriptSubsystem.h>
+#include <Editor/Server/EditorServerSubsystem.h>
 #include <modules/standardLibrary.hpp>
 #include <service/languageService.hpp>
 #include <Engine/Input.h>
+#include <Engine/MainThread.h>
 #include <Editor/UI/DropdownMenu.h>
 #include <algorithm>
 #include <kui/Window.h>
@@ -56,6 +58,15 @@ void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Leng
 {
 	FileEditorProvider::RemoveLines(Start, Length);
 	UpdateFile();
+	if (Connection)
+	{
+		Connection->SendMessage("scriptEdit", SerializedValue({
+			SerializedData("editType", "delete"),
+			SerializedData("file", this->ScriptFile),
+			SerializedData("line", int32(Start)),
+			SerializedData("length", int32(Length)),
+			}));
+	}
 }
 
 void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vector<TextSegment>& NewLine)
@@ -63,6 +74,16 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 	FileEditorProvider::SetLine(Index, NewLine);
 	UpdateFile();
 	UpdateLineColorization(Index);
+
+	if (Connection)
+	{
+		Connection->SendMessage("scriptEdit", SerializedValue({
+			SerializedData("editType", "modify"),
+			SerializedData("file", this->ScriptFile),
+			SerializedData("line", int32(Index)),
+			SerializedData("newContent", TextSegment::CombineToString(NewLine)),
+			}));
+	}
 }
 
 void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::vector<TextSegment>& Content)
@@ -70,6 +91,16 @@ void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::v
 	FileEditorProvider::InsertLine(Index, Content);
 	UpdateFile();
 	UpdateLineColorization(Index);
+
+	if (Connection)
+	{
+		Connection->SendMessage("scriptEdit", SerializedValue({
+			SerializedData("editType", "insert"),
+			SerializedData("file", this->ScriptFile),
+			SerializedData("line", int32(Index)),
+			SerializedData("newContent", TextSegment::CombineToString(Content)),
+			}));
+	}
 }
 
 void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector<TextSegment>& To)
@@ -236,6 +267,45 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 	return this->HoveredBox;
 }
 
+void engine::editor::ScriptEditorProvider::LoadRemoteFile()
+{
+	Connection->GetFile("Scripts/test.lang", [=](ReadOnlyBufferStream* Stream)
+	{
+		string Content = Stream->ReadString();
+
+		string NextLine;
+
+		this->Lines.clear();
+
+		for (auto c : Content)
+		{
+			if (c == '\r')
+			{
+				continue;
+			}
+			if (c == '\n')
+			{
+				this->Lines.push_back(NextLine);
+				NextLine.clear();
+			}
+			else
+			{
+				NextLine.push_back(c);
+			}
+		}
+
+		this->Lines.push_back(NextLine);
+		delete Stream;
+
+		thread::ExecuteOnMainThread([=]
+		{
+			this->UpdateFile();
+			this->UpdateBracketAreas();
+			this->ParentEditor->FullRefresh();
+		});
+	});
+}
+
 ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHoveredError(Vec2f ScreenPosition)
 {
 	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
@@ -256,6 +326,11 @@ ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHo
 ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetHoveredSymbol(kui::Vec2f ScreenPosition)
 {
 	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
+
+	if (this->ScriptService->files.empty())
+	{
+		return HoverSymbolData();
+	}
 
 	for (auto& i : this->ScriptService->files.begin()->second.functions)
 	{

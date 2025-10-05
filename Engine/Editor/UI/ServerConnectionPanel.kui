@@ -1,0 +1,76 @@
+element ServerConnectionPanelElement
+{
+	var Height = 100px;
+	var Width = 100px;
+
+	width = 100%;
+	height = 100%;
+
+	child UIBox
+	{
+		orientation = vertical;
+		width = 200px;
+
+		child UIText
+		{
+			size = 12px;
+			text = "Users";
+
+			upPadding = 5px;
+			downPadding = 10px;
+			leftPadding = 10px;
+		}
+
+		child UIScrollBox users
+		{
+			orientation = vertical;
+
+			height = Height;
+			width = 100%;
+
+			leftPadding = 10px;
+		}
+	}
+
+	child UIBox
+	{
+		orientation = vertical;
+
+		child UIBackground
+		{
+			upPadding = 1px;
+
+			color = Color_DarkBackground;
+
+			border = 1px;
+			borderColor = Color_BackgroundHighlight;
+			topBorder = false;
+			rightBorder = false;
+
+			child UIScrollBox chat
+			{
+				orientation = vertical;
+				height = Height;
+				width = Width;
+			}
+		}
+
+		child UIBackground
+		{
+			color = Color_Background;
+			border = 1px;
+			borderColor = Color_BackgroundHighlight;
+			topBorder = false;
+			rightBorder = false;
+			bottomBorder = false;
+
+			child EditorTextField chatField
+			{
+				Size = 600px;
+				HintText = "Chat";
+				Image = "Engine/Editor/Assets/LeftArrow.png";
+				padding = 5px;
+			}
+		}
+	}
+}
