@@ -272,33 +272,32 @@ void engine::editor::ScriptEditorProvider::LoadRemoteFile()
 	Connection->GetFile("Scripts/test.ds", [=](ReadOnlyBufferStream* Stream)
 	{
 		string Content = Stream->ReadString();
-
-		string NextLine;
-
-		this->Lines.clear();
-
-		for (auto c : Content)
-		{
-			if (c == '\r')
-			{
-				continue;
-			}
-			if (c == '\n')
-			{
-				this->Lines.push_back(NextLine);
-				NextLine.clear();
-			}
-			else
-			{
-				NextLine.push_back(c);
-			}
-		}
-
-		this->Lines.push_back(NextLine);
-		delete Stream;
-
 		thread::ExecuteOnMainThread([=]
 		{
+			string NextLine;
+
+			this->Lines.clear();
+
+			for (auto c : Content)
+			{
+				if (c == '\r')
+				{
+					continue;
+				}
+				if (c == '\n')
+				{
+					this->Lines.push_back(NextLine);
+					NextLine.clear();
+				}
+				else
+				{
+					NextLine.push_back(c);
+				}
+			}
+
+			this->Lines.push_back(NextLine);
+			delete Stream;
+
 			this->UpdateFile();
 			this->UpdateBracketAreas();
 			this->ParentEditor->FullRefresh();

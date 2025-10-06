@@ -9,11 +9,6 @@ class Callback : fn() -> int
 	{
 		return 15
 	}
-
-	fn delete()
-	{
-		info("woah")
-	}
 }
 
 class MyObject : SceneObject

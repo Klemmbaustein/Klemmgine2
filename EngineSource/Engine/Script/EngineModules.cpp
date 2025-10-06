@@ -284,6 +284,19 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	VecType->methods.insert({ "length", EngineModule.addFunction(NativeFunction({},
 			FloatInst, "Vector3.length", &Vector3_length)) });
 
+	auto Vec3Function = EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "z") },
+			VecType, "vec3", [](InterpretContext* context) {}));
+
+	VecType->addConstructor(Vec3Function);
+	VecType->addConstructor(EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(FloatInst, "xyz")},
+			VecType, "Vector3.new.xyz", [](InterpretContext* context) {
+		float xyz = context->popValue<Float>();
+
+		context->pushValue(Vector3(xyz));
+	})));
+
 	auto Vec2Type = DS_CREATE_STRUCT(Vector2);
 
 	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, X, x, FloatInst);
@@ -387,10 +400,6 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(VecType, "message") },
 			nullptr, "writeVec", &WriteVec));
-
-	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "z") },
-			VecType, "vec3", [](InterpretContext* context) {}));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(RotType, "rotation") },
