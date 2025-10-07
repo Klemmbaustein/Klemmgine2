@@ -70,7 +70,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 #if WINDOWS
 
-	if (OutWindow->IsMain)
+	if (OutWindow->IsMain && engine::Engine::Instance)
 	{
 		auto eventWatch = [](void* userdata, SDL_Event* event) -> bool {
 			auto win = (SysWindow*)userdata;
@@ -78,7 +78,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 			{
 				return true;
 			}
-			if (event->type == SDL_EVENT_WINDOW_RESIZED && engine::Engine::Instance)
+			if (event->type == SDL_EVENT_WINDOW_RESIZED)
 			{
 				win->Parent->OnResized();
 				win->Parent->RedrawInternal();

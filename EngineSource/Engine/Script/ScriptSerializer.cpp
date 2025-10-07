@@ -47,7 +47,7 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 
 	SerializedValue VTable = std::vector<SerializedValue>{};
 
-	for (const VTableEntry& i : Stream->virtualTable)
+	for (const RuntimeFunction& i : Stream->virtualTable)
 	{
 		VTable.Append(int32(i.codeOffset));
 	}
@@ -84,7 +84,7 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 	ToStream->virtualTable.clear();
 	for (auto& i : VirtualData)
 	{
-		ToStream->virtualTable.push_back(VTableEntry(i.GetInt()));
+		ToStream->virtualTable.push_back(RuntimeFunction(i.GetInt()));
 	}
 
 	auto& ReflectData = Obj.At("reflect").GetArray();

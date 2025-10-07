@@ -165,7 +165,7 @@ static void AssetRef_delete(InterpretContext* context)
 	delete ref;
 }
 
-static VTableEntry AssetRef_vTable = VTableEntry{
+static RuntimeFunction AssetRef_vTable = RuntimeFunction{
 	.nativeFn = &AssetRef_delete
 };
 
