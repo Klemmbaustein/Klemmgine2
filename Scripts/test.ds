@@ -11,7 +11,7 @@ class MyObject : SceneObject
 	MoveComponent movement = new MoveComponent()
 	CameraComponent camera = new CameraComponent()
 
-	override fn begin()
+	override async fn begin()
 	{
 		const testMesh = new MeshComponent()
 		testMesh.load(testModel)
@@ -21,6 +21,15 @@ class MyObject : SceneObject
 		attach(movement)
 		camera.use()
 		camera.setFOV(80)
+
+		int i = 0
+
+		while i < 10
+		{
+			info($"{i}")
+			await wait(0.25)
+			i += 1
+		}
 	}
 
 	override fn update()

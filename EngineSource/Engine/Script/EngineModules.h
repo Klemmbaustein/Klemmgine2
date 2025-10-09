@@ -11,4 +11,6 @@ namespace engine::script
 	void RegisterEngineModules(ds::LanguageContext* ToContext);
 
 	ds::RuntimeClass* CreateAssetRef();
+
+	void UpdateWaitTasks();
 }

@@ -2,13 +2,17 @@
 #include "ScriptObject.h"
 #include "EngineModules.h"
 #include "ScriptSerializer.h"
+#include <Engine/Stats.h>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <ds/language.hpp>
 #include <ds/modules/standardLibrary.hpp>
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/Scene.h>
+#include <Core/ThreadPool.h>
 #include <filesystem>
+#include <ds/modules/system.async.hpp>
 
+using namespace ds::modules::system::async;
 using namespace ds;
 
 engine::script::ScriptSubsystem::ScriptSubsystem()
@@ -19,14 +23,19 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 	RegisterEngineModules(this->ScriptLanguage);
 
 	ScriptInstructions = new BytecodeStream();
-	Interpreter = this->ScriptLanguage->createInterpreter();
+	Runtime = this->ScriptLanguage->createRuntime();
+	Runtime->createBackgroundThread = [](std::function<void()> function) {
+		ThreadPool::Main()->AddJob(function);
+	};
 
 	Reload();
 }
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
 {
-	delete this->Interpreter;
+	Log::Info(std::to_string(RuntimeClass::classRefCount));
+
+	delete this->Runtime;
 	delete this->ScriptLanguage;
 }
 
@@ -41,9 +50,30 @@ void engine::script::ScriptSubsystem::RegisterCommands(subsystem::ConsoleSubsyst
 		}
 		});
 }
+void engine::script::ScriptSubsystem::Update()
+{
+	std::vector<std::list<WaitTask>::iterator> ToRemove;
+
+	for (auto it = WaitTasks.begin(); it != WaitTasks.end(); it++)
+	{
+		it->Time -= stats::DeltaTime;
+
+		if (it->Time <= 0)
+		{
+			completeTask(it->TaskObject, &this->Runtime->baseContext);
+			ToRemove.push_back(it);
+		}
+	}
+
+	for (auto& i : ToRemove)
+	{
+		WaitTasks.erase(i);
+	}
+}
 
 void engine::script::ScriptSubsystem::Reload()
 {
+	ThreadPool::Main()->AwaitJoin();
 	auto CurrentScene = Scene::GetMain();
 
 	auto Compiler = this->ScriptLanguage->createCompiler();
@@ -87,7 +117,7 @@ void engine::script::ScriptSubsystem::Reload()
 
 	*ScriptInstructions = NewInstructions;
 	//script::serialize::DeSerializeBytecode(ScriptInstructions, &Stream);
-	this->Interpreter->loadBytecode(ScriptInstructions);
+	this->Runtime->loadBytecode(ScriptInstructions);
 
 	if (CurrentScene)
 	{
@@ -105,7 +135,7 @@ void engine::script::ScriptSubsystem::Reload()
 	for (auto& [Id, TypeInfo] : ScriptInstructions->reflect.types)
 	{
 		Reflection::RegisterObject(TypeInfo.name, [&TypeInfo, this] -> SceneObject* {
-			return new ScriptObject(TypeInfo, this->Interpreter);
+			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
 		});
 	}
 }

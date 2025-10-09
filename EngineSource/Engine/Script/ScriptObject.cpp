@@ -1,9 +1,11 @@
 #include "ScriptObject.h"
 #include "EngineModules.h"
 #include "Engine/Engine.h"
+#include <ds/modules/system.async.hpp>
 #include <ds/interpreter.hpp>
 
 using namespace ds;
+using ds::modules::system::async::Task;
 
 engine::script::ScriptObject::ScriptObject(const ds::TypeInfo& Class,
 	ds::InterpretContext* Interpreter)
@@ -30,10 +32,15 @@ void engine::script::ScriptObject::Begin()
 		i->OnChanged();
 	}
 
-	if (ScriptData->vtable[1])
+	ClassPtr<Task> task = { Interpreter->callVirtualMethod<RuntimeClass*>(ScriptData, 1), Interpreter };
+
+	if (task)
 	{
-		Interpreter->pushValue(this->ScriptData);
-		Interpreter->virtualCall(ScriptData->vtable[1]);
+		task->awaitNative = [](ClassRef<Task>, InterpretContext*, void*) {
+			Log::Info("Woah awaited");
+		};
+
+		Log::Info(task->completed ? "Yay already completed" : "Still waiting :(");
 	}
 }
 
@@ -75,7 +82,6 @@ void engine::script::ScriptObject::LoadScriptData()
 	{
 		auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
 
-		RuntimeClass::unref(member);
 		if (!member)
 		{
 			member = engine::script::CreateAssetRef();

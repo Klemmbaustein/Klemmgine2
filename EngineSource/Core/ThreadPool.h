@@ -84,6 +84,8 @@ namespace engine
 		*/
 		string GetName() const;
 
+		void AwaitJoin();
+
 	private:
 
 		void ThreadMain(size_t ThreadId);

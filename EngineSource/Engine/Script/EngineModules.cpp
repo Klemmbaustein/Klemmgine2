@@ -3,13 +3,17 @@
 #include <Engine/Objects/Components/MoveComponent.h>
 #include <Engine/Objects/Components/CameraComponent.h>
 #include <Engine/Objects/SceneObject.h>
+#include <Engine/Script/ScriptSubsystem.h>
 #include <Engine/Input.h>
+#include <Engine/Engine.h>
 #include <Engine/Stats.h>
 #include <ds/language.hpp>
 #include <ds/modules/system.hpp>
+#include <ds/modules/system.async.hpp>
 #include <ds/native/nativeModule.hpp>
 #include <ds/native/nativeStructType.hpp>
 #include <ds/parser/types/stringType.hpp>
+#include <ds/parser/types/taskType.hpp>
 #include <Core/Log.h>
 #include <Engine/Script/ScriptObject.h>
 
@@ -34,8 +38,8 @@ static void SceneObject_empty(InterpretContext* context)
 static void SceneObject_attach(InterpretContext* context)
 {
 	ClassRef<script::ScriptObjectData*> Data = context->popValue<RuntimeClass*>();
-	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
-	Data.getValue()->Parent->Attach(Component.getValue());
+	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
+	Data.getValue()->Parent->Attach(*Component);
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -48,9 +52,9 @@ static void MeshComponent_new(InterpretContext* context)
 static void MeshComponent_load(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
-	ClassPtr<AssetRef*> File = context->popValue<RuntimeClass*>();
+	ClassPtr<AssetRef*> File = context->popPtr<AssetRef*>();
 
-	Component.getValue()->Load(**File.get());
+	Component.getValue()->Load(**File);
 }
 
 static void MoveComponent_new(InterpretContext* context)
@@ -160,9 +164,31 @@ static void Vector3_Length(InterpretContext* context)
 
 static void AssetRef_delete(InterpretContext* context)
 {
-	ClassPtr<AssetRef*> Ref = context->popValue<RuntimeClass*>();
+	ClassPtr<AssetRef*> Ref = context->popPtr<AssetRef*>();
 	auto ref = *Ref.get();
 	delete ref;
+}
+
+static void Wait(InterpretContext* context)
+{
+	using namespace ds::modules::system::async;
+
+	Float time = context->popValue<Float>();
+
+	if (time <= 0)
+	{
+		context->pushValue(completedTask());
+		return;
+	}
+
+	auto t = emptyTask();
+
+	Engine::GetSubsystem<script::ScriptSubsystem>()->WaitTasks.push_back(script::WaitTask{
+		.TaskObject = t,
+		.Time = time,
+		});
+
+	context->pushValue(t);
 }
 
 static RuntimeFunction AssetRef_vTable = RuntimeFunction{
@@ -185,7 +211,6 @@ static void AssetRef_emptyAsset(InterpretContext* context)
 
 	ClassRef<AssetRef*> Asset = script::CreateAssetRef();
 	Asset.getValue()->Extension = string(Extension.ptr(), Extension.length());
-	Asset.classPtr->addRef();
 	context->pushValue(Asset);
 }
 
@@ -290,7 +315,7 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 
 	VecType->addConstructor(Vec3Function);
 	VecType->addConstructor(EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "xyz")},
+		NativeFunction({ FunctionArgument(FloatInst, "xyz") },
 			VecType, "Vector3.new.xyz", [](InterpretContext* context) {
 		float xyz = context->popValue<Float>();
 
@@ -323,7 +348,7 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "begin", &SceneObject_empty), 1);
+		NativeFunction({}, TaskType::getInstance(nullptr), "begin", &SceneObject_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "destroy", &SceneObject_empty), 2);
@@ -354,6 +379,10 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StringType::getInstance(), "message") },
 			nullptr, "warn", &Log_Warn));
+
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds")},
+			TaskType::getInstance(nullptr), "wait", &Wait));
 
 	EngineModule.addFunction(
 		NativeFunction({ },
@@ -457,16 +486,16 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 		BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isLMBDown", & Input_IsLMBDown));
+		BoolType::getInstance(), "isLMBDown", &Input_IsLMBDown));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isRMBDown", & Input_IsRMBDown));
+		BoolType::getInstance(), "isRMBDown", &Input_IsRMBDown));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isLMBClicked", & Input_IsLMBClicked));
+		BoolType::getInstance(), "isLMBClicked", &Input_IsLMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isRMBClicked", & Input_IsRMBClicked));
+		BoolType::getInstance(), "isRMBClicked", &Input_IsRMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({ },
 		Vec2Type, "getMouseMovement", &Input_GetMouseMovement));
@@ -482,4 +511,8 @@ ds::RuntimeClass* engine::script::CreateAssetRef()
 
 	NewAssetRef.getValue() = new AssetRef();
 	return NewAssetRef.classPtr;
+}
+
+void engine::script::UpdateWaitTasks()
+{
 }

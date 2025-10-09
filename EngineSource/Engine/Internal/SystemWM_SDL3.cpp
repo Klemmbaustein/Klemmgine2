@@ -467,8 +467,14 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 		TextInput += "\t";
 	}
 
-	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
 	Parent->Input.SetKeyDown(Keys[k], IsDown);
+
+	if (!Engine::Instance)
+	{
+		return;
+	}
+
+	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
 	InputSys->SetKeyDown(input::Key(k), IsDown);
 }
 

@@ -82,6 +82,28 @@ ThreadPool::ThreadFunction engine::ThreadPool::FindFunction()
 	return Found;
 }
 
+void ThreadPool::AwaitJoin()
+{
+	{
+		std::unique_lock<std::mutex> g{ JobQueueMutex };
+		ShouldQuit = true;
+	}
+	ThreadCondition.notify_all();
+	for (std::thread& Thread : Threads)
+	{
+		Thread.join();
+	}
+
+	ShouldQuit = false;
+	size_t i = 0;
+
+	for (std::thread& Thread : Threads)
+	{
+		Thread = std::thread(&ThreadPool::ThreadMain, this, i++);
+	}
+
+}
+
 void engine::ThreadPool::ThreadMain(size_t ThreadId)
 {
 	string ThreadName = str::Format("%s - %i", Name.c_str(), int(ThreadId));

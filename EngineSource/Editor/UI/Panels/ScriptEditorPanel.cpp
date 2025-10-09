@@ -44,6 +44,8 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		"const",
 		"fn",
 		"enum",
+		"async",
+		"await"
 	};
 
 	Toolbar* EditorToolbar = new Toolbar();
