@@ -59,18 +59,5 @@ class MyObject : SceneObject
 
 	override fn destroy()
 	{
-		fn() -> float x = testing
-		info($"{x.call()}")
-
-		int[] array = [1, 2, 3]
-
-		for const i = array {
-			info($"{i}")
-		}
 	}
-}
-
-fn testing() -> float
-{
-	return 25
 }

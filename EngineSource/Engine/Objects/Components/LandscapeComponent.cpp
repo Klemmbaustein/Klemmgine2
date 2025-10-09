@@ -148,15 +148,16 @@ void engine::LandscapeComponent::OnAttached()
 
 	LandscapeMesh = new VertexBuffer(Vertices, Indices);
 
-	auto HeightMapCollider = new physics::HeightMapBody(Samples, SIZE, WorldTransform,
+	Collider = new physics::HeightMapBody(Samples, SIZE, WorldTransform,
 		physics::MotionType::Static, physics::Layer::Static, this);
 
-	GetRootObject()->GetScene()->Physics.AddBody(HeightMapCollider, true, true);
+	GetRootObject()->GetScene()->Physics.AddBody(Collider, true, true);
 	GetRootObject()->GetScene()->AddDrawnComponent(this);
 }
 
 void engine::LandscapeComponent::OnDetached()
 {
+	GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
 	GetRootObject()->GetScene()->RemoveDrawnComponent(this);
 }
 

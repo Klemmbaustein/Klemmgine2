@@ -2,12 +2,15 @@
 #include "DrawableComponent.h"
 #include <Engine/Graphics/VertexBuffer.h>
 #include <Engine/Graphics/Material.h>
+#include <Engine/Physics/Physics.h>
 
 namespace engine
 {
 	class LandscapeComponent : public DrawableComponent
 	{
 	public:
+
+		physics::PhysicsBody* Collider = nullptr;
 
 		void OnAttached() override;
 		void OnDetached() override;
