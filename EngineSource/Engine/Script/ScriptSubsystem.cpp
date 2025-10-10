@@ -61,6 +61,7 @@ void engine::script::ScriptSubsystem::Update()
 		if (it->Time <= 0)
 		{
 			completeTask(it->TaskObject, &this->Runtime->baseContext);
+			this->Runtime->baseContext.destruct(it->TaskObject);
 			ToRemove.push_back(it);
 		}
 	}

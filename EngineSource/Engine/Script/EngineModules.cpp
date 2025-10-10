@@ -183,6 +183,8 @@ static void Wait(InterpretContext* context)
 
 	auto t = emptyTask();
 
+	t->addRef();
+
 	Engine::GetSubsystem<script::ScriptSubsystem>()->WaitTasks.push_back(script::WaitTask{
 		.TaskObject = t,
 		.Time = time,
