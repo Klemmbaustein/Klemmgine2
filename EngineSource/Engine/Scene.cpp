@@ -452,7 +452,6 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 
 void engine::Scene::LoadInternal(string File, bool Async)
 {
-
 	Physics.Init();
 
 	SerializedValue SceneData;

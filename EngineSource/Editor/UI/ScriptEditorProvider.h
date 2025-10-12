@@ -45,6 +45,10 @@ namespace engine::editor
 		kui::UIBox* CreateHoverBox(kui::UIBox* Content, kui::EditorPosition At);
 		ServerConnection* Connection = nullptr;
 
+		void UpdateAutoComplete();
+
+		void ShowAutoComplete();
+
 		void LoadRemoteFile();
 
 	private:
@@ -57,8 +61,10 @@ namespace engine::editor
 
 		struct HoverSymbolData
 		{
-			ds::ScannedFunction* Symbol = nullptr;
+			void* Symbol = nullptr;
 			kui::EditorPosition At;
+			std::function<kui::UIBox* ()> GetHoverData;
+			std::function<kui::EditorPosition()> GetDefinition;
 		};
 
 		HoverErrorData GetHoveredError(kui::Vec2f ScreenPosition);

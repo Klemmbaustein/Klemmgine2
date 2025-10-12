@@ -75,6 +75,31 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 	UpdateFile();
 	UpdateLineColorization(Index);
 
+	auto& Input = Window::GetActiveWindow()->Input;
+
+	if (ParentEditor->SelectionStart.Line == Index)
+	{
+		const TextSegment* Nearest = nullptr;
+
+		size_t Pos = 0;
+
+		for (auto& i : NewLine)
+		{
+			Pos += i.Text.size();
+
+			if (Pos >= ParentEditor->SelectionStart.Column)
+			{
+				Nearest = &i;
+				Log::Info(Nearest->Text);
+			}
+		}
+	}
+
+	if (Input.Text == ".")
+	{
+		ShowAutoComplete();
+	}
+
 	if (Connection)
 	{
 		Connection->SendMessage("scriptEdit", SerializedValue({
@@ -131,6 +156,8 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	float Time = HoverTime.Get();
 
+	UpdateAutoComplete();
+
 	if (NewHovered != this->HoveredData || (Time > 0.2f && !HoveredBox && HoveredData))
 	{
 		if (NewHovered != this->HoveredData)
@@ -151,38 +178,7 @@ void engine::editor::ScriptEditorProvider::Update()
 			}
 			else
 			{
-				auto Fn = NewHoveredSymbol.Symbol;
-
-				std::vector<TextSegment> HoverString = {
-					TextSegment("fn ", Vec3f(1.0f, 0.2f, 0.5f)),
-					TextSegment(Fn->name, this->FunctionColor),
-					TextSegment("(", 1)
-				};
-
-				for (auto it = Fn->arguments.begin(); it < Fn->arguments.end(); it++)
-				{
-					HoverString.push_back(TextSegment(it->first + " ", TypeColor));
-					HoverString.push_back(TextSegment(it->second, VariableColor));
-					if (Fn->arguments.end() != it + 1)
-					{
-						HoverString.push_back(TextSegment(", ", 1));
-					}
-				}
-				HoverString.push_back(TextSegment(")", 1));
-
-				if (!Fn->returnType.empty())
-				{
-					HoverString.push_back(TextSegment(" -> ", 1));
-					HoverString.push_back(TextSegment(Fn->returnType, TypeColor));
-				}
-
-				HoverString.push_back(TextSegment(Fn->definition ?
-					"\nDefined in " + Fn->definition->file->name + " at line " + std::to_string(Fn->definition->at.position.line + 1)
-					: "\nDefined in native code.", 1));
-
-				CreateHoverBox((new UIText(12_px, HoverString, EditorUI::MonospaceFont))
-					->SetWrapEnabled(true, 1000_px)
-					->SetPadding(5_px), NewHoveredSymbol.At);
+				CreateHoverBox(NewHoveredSymbol.GetHoverData(), NewHoveredSymbol.At);
 			}
 		}
 		else if (!NewHovered)
@@ -201,15 +197,15 @@ void engine::editor::ScriptEditorProvider::Update()
 	{
 		std::vector<DropdownMenu::Option> Options;
 
-		if (NewHoveredSymbol.Symbol && NewHoveredSymbol.Symbol->definition)
+		if (NewHoveredSymbol.GetDefinition)
 		{
 			Options.push_back(DropdownMenu::Option{
 				.Name = "Go to definition",
 				.Icon = EditorUI::Asset("TabDrag.png"),
 				.OnClicked = [this, NewHoveredSymbol]
 				{
-					auto& def = NewHoveredSymbol.Symbol->definition;
-					ParentEditor->SetCursorPosition(EditorPosition(def->at.position.startPos, def->at.position.line));
+					auto def = NewHoveredSymbol.GetDefinition();
+					ParentEditor->SetCursorPosition(def);
 					ParentEditor->ScrollTo(ParentEditor->SelectionStart);
 					ParentEditor->Edit();
 				},
@@ -265,6 +261,83 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 	this->HoveredBox->SetPosition(ParentEditor->EditorToScreen(At)
 		- Vec2f(0, this->HoveredBox->GetUsedSize().GetScreen().Y) + Vec2f(0, (1_px).GetScreen().Y));
 	return this->HoveredBox;
+}
+
+void engine::editor::ScriptEditorProvider::UpdateAutoComplete()
+{
+	auto& Input = Window::GetActiveWindow()->Input;
+
+	if (!Input.IsKeyDown(Key::SPACE) || !Input.IsKeyDown(Key::LCTRL) || HoveredBox)
+	{
+		return;
+	}
+
+	ShowAutoComplete();
+}
+
+void engine::editor::ScriptEditorProvider::ShowAutoComplete()
+{
+	auto pos = ParentEditor->SelectionStart;
+
+	ScannedFunction* FoundFunction = nullptr;
+	ScannedVariable* Found = nullptr;
+	size_t NearestLine = 0;
+
+	for (auto& i : this->ScriptService->files.begin()->second.variables)
+	{
+		if (i.at.position.line == pos.Line && i.at.position.endPos <= pos.Column
+			&& i.at.position.startPos <= pos.Column
+			&& NearestLine < i.at.position.endPos)
+		{
+			NearestLine = i.at.position.endPos;
+			Found = &i;
+		}
+	}
+
+	for (auto& i : this->ScriptService->files.begin()->second.functions)
+	{
+		if (i.at.position.line == pos.Line && i.argEnd.endPos <= pos.Column
+			&& i.at.position.startPos <= pos.Column
+			&& NearestLine < i.argEnd.endPos)
+		{
+			NearestLine = i.argEnd.endPos;
+			Found = nullptr;
+			FoundFunction = &i;
+		}
+	}
+
+	TypeId typeToList = 0;
+
+	if (Found)
+	{
+		typeToList = Found->typeId;
+	}
+	else if (FoundFunction)
+	{
+		typeToList = FoundFunction->returnTypeId;
+	}
+
+	if (typeToList == 0)
+	{
+		return;
+	}
+
+	auto t = this->ScriptService->types.find(typeToList);
+
+	if (t == this->ScriptService->types.end())
+	{
+		return;
+	}
+
+	UIBox* content = new UIBox(false);
+
+	for (auto& i : t->second.members)
+	{
+		content->AddChild((new UIText(12_px, EditorUI::Theme.Text, i.name, EditorUI::EditorFont))
+			->SetPadding(3_px));
+	}
+
+	auto box = CreateHoverBox(content, pos);
 }
 
 void engine::editor::ScriptEditorProvider::LoadRemoteFile()
@@ -336,12 +409,110 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 		if (HoverPosition.Line == i.at.position.line
 			&& (HoverPosition.Column >= i.at.position.startPos && HoverPosition.Column <= i.at.position.endPos))
 		{
+			auto Callback = [this, Fn = &i] {
+				std::vector<TextSegment> HoverString = {
+					TextSegment("fn ", Vec3f(1.0f, 0.2f, 0.5f)),
+					TextSegment(Fn->name, this->FunctionColor),
+					TextSegment("(", 1)
+				};
+
+				for (auto it = Fn->arguments.begin(); it < Fn->arguments.end(); it++)
+				{
+					HoverString.push_back(TextSegment(it->first + " ", TypeColor));
+					HoverString.push_back(TextSegment(it->second, VariableColor));
+					if (Fn->arguments.end() != it + 1)
+					{
+						HoverString.push_back(TextSegment(", ", 1));
+					}
+				}
+				HoverString.push_back(TextSegment(")", 1));
+
+				if (!Fn->returnType.empty())
+				{
+					HoverString.push_back(TextSegment(" -> ", 1));
+					HoverString.push_back(TextSegment(Fn->returnType, TypeColor));
+				}
+
+				HoverString.push_back(TextSegment(Fn->definition ?
+					"\nDefined in " + Fn->definition->file->name + " at line " + std::to_string(Fn->definition->at.position.line + 1)
+					: "\nDefined in native code.", 1));
+
+				return (new UIText(12_px, HoverString, EditorUI::MonospaceFont))
+					->SetWrapEnabled(true, 1000_px)
+					->SetPadding(5_px);
+			};
+
+			std::function<EditorPosition()> GetDefinition;
+
+			if (i.definition)
+			{
+				GetDefinition = [i] {
+					return EditorPosition(
+						i.definition->at.position.startPos,
+						i.definition->at.position.line);
+				};
+			}
+
 			return HoverSymbolData{
 				.Symbol = &i,
 				.At = HoverPosition,
+				.GetHoverData = Callback,
+				.GetDefinition = GetDefinition,
 			};
 		}
 	}
+
+	for (auto& i : this->ScriptService->files.begin()->second.variables)
+	{
+		if (HoverPosition.Line == i.at.position.line
+			&& (HoverPosition.Column >= i.at.position.startPos && HoverPosition.Column <= i.at.position.endPos))
+		{
+			auto Callback = [this, i] {
+				auto DefaultColor = EditorUI::Theme.Text;
+
+				std::vector<TextSegment> HoverString = {
+					TextSegment(i.kind == ScannedVariable::Kind::localVariable ? "(local variable) " : "(member) ", DefaultColor),
+					TextSegment(i.type + " ", this->TypeColor),
+				};
+
+				if (!i.inClass.empty())
+				{
+					HoverString.push_back(TextSegment(i.inClass, this->TypeColor));
+					HoverString.push_back(TextSegment(".", DefaultColor));
+				}
+
+				HoverString.push_back(TextSegment(i.name, this->VariableColor));
+
+				if (!i.defaultValue.empty())
+				{
+					HoverString.push_back(TextSegment(" = " + i.defaultValue, DefaultColor));
+				}
+
+				return (new UIText(12_px, HoverString, EditorUI::MonospaceFont))
+					->SetWrapEnabled(true, 1000_px)
+					->SetPadding(5_px);
+			};
+
+			std::function<EditorPosition()> GetDefinition;
+
+			if (i.definition)
+			{
+				GetDefinition = [i] {
+					return EditorPosition(
+						i.definition->at.position.startPos,
+						i.definition->at.position.line);
+				};
+			}
+
+			return HoverSymbolData{
+				.Symbol = &i,
+				.At = HoverPosition,
+				.GetHoverData = Callback,
+				.GetDefinition = GetDefinition,
+			};
+		}
+	}
+
 	return HoverSymbolData();
 }
 
@@ -427,9 +598,9 @@ void engine::editor::ScriptEditorProvider::ScanFile()
 
 		for (auto& i : this->ScriptService->files.begin()->second.variables)
 		{
-			Highlights[i.position.line].push_back(ScriptSyntaxHighlight{
-				.Start = i.position.startPos,
-				.Length = i.position.endPos - i.position.startPos,
+			Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
+				.Start = i.at.position.startPos,
+				.Length = i.at.position.endPos - i.at.position.startPos,
 				.Color = VariableColor,
 				});
 		}

@@ -329,6 +329,13 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, X, x, FloatInst);
 	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, Y, y, FloatInst);
 
+
+	auto Vec2Function = EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y") },
+			Vec2Type, "vec2", [](InterpretContext* context) {}));
+
+	Vec2Type->addConstructor(Vec2Function);
+
 	auto RotType = DS_CREATE_STRUCT(Rotation3);
 
 	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, P, p, FloatInst);
@@ -350,7 +357,7 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, TaskType::getInstance(nullptr), "begin", &SceneObject_empty), 1);
+		NativeFunction({}, nullptr, "begin", &SceneObject_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "destroy", &SceneObject_empty), 2);

@@ -496,7 +496,10 @@ void kui::systemWM::SysWindow::UpdateEvents()
 			Parent->OnResized();
 			break;
 		case SDL_EVENT_TEXT_INPUT:
-			TextInput += ev.text.text;
+			if (!this->Parent->Input.IsKeyDown(Key::LCTRL))
+			{
+				TextInput += ev.text.text;
+			}
 			break;
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 			Parent->Close();

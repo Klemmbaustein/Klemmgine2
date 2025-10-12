@@ -32,20 +32,7 @@ void engine::script::ScriptObject::Begin()
 		i->OnChanged();
 	}
 
-	ClassPtr<Task> task = { Interpreter->callVirtualMethod<RuntimeClass*>(ScriptData, 1), Interpreter };
-
-	if (!task->completed)
-	{
-		task->awaitNative = [](ClassRef<Task>, InterpretContext*, void*) {
-			Log::Info("Woah awaited");
-		};
-
-		Log::Info("Still waiting :(");
-	}
-	else
-	{
-		Log::Info("Yay already done");
-	}
+	Interpreter->callVirtualMethod<void>(ScriptData, 1);
 }
 
 void engine::script::ScriptObject::Update()
