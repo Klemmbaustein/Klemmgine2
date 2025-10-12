@@ -15,19 +15,18 @@ EditorServerSubsystem::EditorServerSubsystem(ServerConnection* Connection)
 
 	this->Connection->SendMessage("initialize", "");
 
-	auto OldEvent = EditorUI::Instance->AssetsProvider->OnChanged;
+	auto UI = EditorUI::Instance;
 
-	bool Found = false;
-
-	EditorUI::Instance->ForEachPanel<MessagePanel>([&](MessagePanel* p) {
-		Found = true;
-		p->AddChild(new ServerConnectionPanel(this->Connection), EditorPanel::Align::Tabs, true);
+	UI->ForEachPanel<MessagePanel>([&](MessagePanel* p) {
+		p->AddChild(new ServerConnectionPanel(this->Connection), EditorPanel::Align::Tabs, true, 0);
 	});
 
-	EditorUI::Instance->Update();
 
-	EditorUI::Instance->AssetsProvider = new ServerAssetsProvider(Connection);
-	EditorUI::Instance->AssetsProvider->OnChanged = OldEvent;
+	UI->Update();
+
+	Event<> OldEvent = UI->AssetsProvider->OnChanged;
+	UI->AssetsProvider = new ServerAssetsProvider(Connection);
+	UI->AssetsProvider->OnChanged = OldEvent;
 	resource::AddResourceSource(new ServerResourceSource(Connection));
 }
 

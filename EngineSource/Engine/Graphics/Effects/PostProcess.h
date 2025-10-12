@@ -23,6 +23,19 @@ namespace engine::graphics
 		// Returns post process framebuffer and texture objects.
 		std::pair<uint32, uint32> NextBuffer();
 
+		template<typename T>
+		T* GetEffect()
+		{
+			for (PostProcessEffect* i : ActiveEffects)
+			{
+				if (typeid(*i) == typeid(T))
+				{
+					return static_cast<T*>(i);
+				}
+			}
+			return nullptr;
+		}
+
 	private:
 
 		void SortEffectsByPriority();

@@ -1,6 +1,5 @@
 #include "Physics.h"
-#include "Physics.h"
-#include "Physics.h"
+#include <Engine/Objects/Components/CollisionComponent.h>
 #include <Engine/Scene.h>
 #include <Engine/Internal/JoltPhysics.h>
 using namespace engine::physics;
@@ -12,8 +11,19 @@ PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform, MotionTyp
 	this->ColliderMovability = ColliderMovability;
 	this->CollisionLayers = CollisionLayers;
 	this->Parent = Parent;
+
 	if (Parent)
-		this->Manager = &Parent->GetRootObject()->GetScene()->Physics;
+	{
+		auto Collider = dynamic_cast<CollisionComponent*>(Parent);
+		if (Collider)
+		{
+			this->Manager = Collider->GetManager();
+		}
+		else
+		{
+			this->Manager = &Parent->GetRootObject()->GetScene()->Physics;
+		}
+	}
 }
 
 engine::Vector3 engine::physics::PhysicsBody::GetPosition()

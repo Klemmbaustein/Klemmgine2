@@ -4,6 +4,7 @@ layout(location = 0) out vec4 f_color;
 in vec2 v_texcoords;
 uniform sampler2D u_texture;
 uniform usampler2D u_depthStencil;
+uniform bool u_isHovered = false;
 
 void main()
 {
@@ -28,13 +29,13 @@ void main()
 		switch (highest)
 		{
 		case 2u:
-			f_color.xyz = vec3(1, 0, 0);
+			f_color.xyz = vec3(1, 0, 0) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		case 3u:
-			f_color.xyz = vec3(0, 1, 0);
+			f_color.xyz = vec3(0, 1, 0) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		case 4u:
-			f_color.xyz = vec3(0, 0, 1);
+			f_color.xyz = vec3(0, 0, 1) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		}
 	}

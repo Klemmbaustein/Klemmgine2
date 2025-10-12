@@ -20,6 +20,10 @@ namespace engine
 		void SetCollisionEnabled(bool NewEnabled);
 		bool GetCollisionEnabled() const;
 
+		physics::PhysicsManager* GetManager();
+
+		physics::PhysicsManager* Manager = nullptr;
+
 	private:
 		bool IsCollisionEnabled = true;
 		Transform OldTransform;

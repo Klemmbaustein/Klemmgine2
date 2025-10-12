@@ -2,7 +2,7 @@
 #pragma once
 #include "EditorPanel.h"
 #include <Editor/UI/Elements/Toolbar.h>
-#include <Engine/Objects/Components/MeshComponent.h>
+#include <Editor/UI/Gizmos/TranslateGizmo.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <kui/Timer.h>
@@ -55,6 +55,9 @@ namespace engine::editor
 		kui::UIBackground* ViewportBackground = nullptr;
 
 		void UndoLast();
+		physics::HitResult RayAtCursor();
+
+		Vector3 GetCursorDirection();
 
 	private:
 
@@ -62,8 +65,6 @@ namespace engine::editor
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
 		void HighlightComponents(DrawableComponent* Target, bool Highlighted);
-
-		physics::HitResult RayAtCursor();
 
 		void UndoChange(Change& Target, Scene* Current);
 		void UpdateSelection();
@@ -74,7 +75,8 @@ namespace engine::editor
 		bool SceneLoaded = false;
 
 		Toolbar* ViewportToolbar = nullptr;
-		MeshComponent* GizmoMesh = nullptr;
+
+		TranslateGizmo* Translate = nullptr;
 
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;

@@ -412,11 +412,21 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 	if (From->GetType() != SerializedData::DataType::Object || From->GetObject().empty())
 		return;
 
-	auto& SceneInfo = From->At("scene");
-
-	if (SceneInfo.Contains("sunColor"))
+	try
 	{
-		this->SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
+		auto& SceneInfo = From->At("scene");
+
+		if (SceneInfo.Contains("sunColor"))
+		{
+			this->SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
+		}
+	}
+	catch (SerializeException& SerializeError)
+	{
+		subsystem::SceneSubsystem::Current->Print(
+			str::Format("Failed to read scene metadata: '%s'", SerializeError.what()),
+			subsystem::Subsystem::LogType::Warning
+		);
 	}
 
 	for (auto& i : From->At("objects").GetArray())
@@ -433,10 +443,10 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 
 			this->Objects.push_back(Object);
 		}
-		catch (SerializeException& SerializeErr)
+		catch (SerializeException& SerializeError)
 		{
 			subsystem::SceneSubsystem::Current->Print(
-				str::Format("Failed to DeSerialize object in scene: '%s'", SerializeErr.what()),
+				str::Format("Failed to DeSerialize object in scene: '%s'", SerializeError.what()),
 				subsystem::Subsystem::LogType::Warning
 			);
 		}

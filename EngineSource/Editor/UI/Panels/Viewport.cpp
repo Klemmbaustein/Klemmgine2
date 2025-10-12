@@ -12,6 +12,7 @@
 #include <kui/UI/UISpinner.h>
 using namespace engine::subsystem;
 using namespace kui;
+using namespace engine;
 
 engine::editor::Viewport* engine::editor::Viewport::Current = nullptr;
 
@@ -155,9 +156,7 @@ engine::editor::Viewport::Viewport()
 	if (Scene::GetMain())
 		Scene::GetMain()->UsedCamera = Scene::GetMain()->SceneCamera;
 
-	GizmoMesh = new MeshComponent();
-	GizmoMesh->Load("Engine/Editor/Assets/Models/Arrows.kmdl"_asset);
-	GizmoMesh->Rotation.Y = -90;
+	Translate = new TranslateGizmo();
 }
 
 engine::editor::Viewport::~Viewport()
@@ -214,7 +213,7 @@ void engine::editor::Viewport::Update()
 	LoadingScreenBox->IsVisible = !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
 	PolledForText = Win->Input.PollForText;
 
-	if (StatsRedrawTimer.Get() > 1 || RedrawStats)
+	if ((StatsRedrawTimer.Get() > 1 || RedrawStats))
 	{
 		SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
 		uint64 Fps = uint64(std::round(float(FameCount) / StatsRedrawTimer.Get()));
@@ -248,7 +247,7 @@ void engine::editor::Viewport::Update()
 		if (this->SceneLoaded)
 		{
 			Current->PostProcess.AddEffect(new EditorOutline());
-			Current->AddDrawnComponent(GizmoMesh);
+			Current->AddDrawnComponent(Translate->GizmoMesh);
 		}
 	}
 
@@ -259,7 +258,7 @@ void engine::editor::Viewport::Update()
 	{
 		Engine::GameHasFocus = HasFocus;
 		input::ShowMouseCursor = HasFocus ? false : true;
-		GizmoMesh->IsVisible = false;
+		Translate->SetVisible(false);
 
 		return;
 	}
@@ -269,15 +268,17 @@ void engine::editor::Viewport::Update()
 	{
 		if (SelectedObjects.size())
 		{
-			GizmoMesh->IsVisible = true;
-			GizmoMesh->Position = (*SelectedObjects.begin())->Position;
-			GizmoMesh->Scale = Vector3::Distance(Current->UsedCamera->Position, GizmoMesh->Position) * 0.075f;
+			Translate->SetVisible(true);
+			Translate->GizmoMesh->Position = (*SelectedObjects.begin())->Position;
+			Translate->Collider->Position = (*SelectedObjects.begin())->Position;
+			Translate->GizmoMesh->Scale = Vector3::Distance(Current->UsedCamera->Position, Translate->GizmoMesh->Position) * 0.075f;
+			Translate->Collider->Scale = Vector3::Distance(Current->UsedCamera->Position, Translate->GizmoMesh->Position) * 0.075f;
 		}
 		else
 		{
-			GizmoMesh->IsVisible = false;
+			Translate->SetVisible(false);
 		}
-		GizmoMesh->UpdateTransform();
+		Translate->Update(this);
 	}
 
 	if (Current && ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)
@@ -347,7 +348,8 @@ void engine::editor::Viewport::Update()
 		Win->Input.PollForText = false;
 		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation - Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
-	else if (ViewportBackground == Win->UI.HoveredBox && Current && input::IsLMBClicked)
+	else if (ViewportBackground == Win->UI.HoveredBox && Current
+		&& input::IsLMBClicked && !Translate->HasGrabbedClick)
 	{
 		Viewport::Current->ClearSelected();
 		auto hit = RayAtCursor();
@@ -481,14 +483,11 @@ void engine::editor::Viewport::HighlightComponents(DrawableComponent* Target, bo
 	}
 }
 
-engine::physics::HitResult engine::editor::Viewport::RayAtCursor()
+physics::HitResult engine::editor::Viewport::RayAtCursor()
 {
-	Window* Win = Window::GetActiveWindow();
 	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
 
-	kui::Vec2f MousePos = ((Win->Input.MousePosition - PanelPosition) / Size) * 2 - 1;
-
-	Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
+	Vector3 Direction = GetCursorDirection();
 	Vector3 EndPosition = Cam->Position + Direction * 30;
 
 	auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic);
@@ -497,6 +496,20 @@ engine::physics::HitResult engine::editor::Viewport::RayAtCursor()
 		hit.ImpactPoint = Cam->Position + Direction * 10;
 	}
 	return hit;
+}
+
+Vector3 engine::editor::Viewport::GetCursorDirection()
+{
+	Window* Win = Window::GetActiveWindow();
+	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
+
+	Vec2f Pos = ViewportBackground->GetScreenPosition();
+	Vec2f Size = ViewportBackground->GetUsedSize().GetScreen();
+
+	Vec2f MousePos = (((Win->Input.MousePosition - Pos) / Size) * 2 - 1).Clamp(-1, 1);
+
+	Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
+	return Direction;
 }
 
 void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)

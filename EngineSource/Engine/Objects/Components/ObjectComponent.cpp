@@ -68,7 +68,7 @@ ObjectComponent* engine::ObjectComponent::GetRootComponent()
 {
 	if (ParentObject)
 		return this;
-	return ParentComponent->GetRootComponent();
+	return ParentComponent ? ParentComponent->GetRootComponent() : nullptr;
 }
 
 void engine::ObjectComponent::Attach(ObjectComponent* Child)

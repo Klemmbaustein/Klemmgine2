@@ -3,6 +3,7 @@
 #include <Engine/Input.h>
 #include <Core/Log.h>
 using namespace engine::physics;
+using namespace engine;
 
 void engine::CollisionComponent::OnAttached()
 {
@@ -12,9 +13,9 @@ engine::CollisionComponent::~CollisionComponent()
 {
 	if (Body)
 	{
-		if (!GetRootObject()->GetScene()->Physics.Active)
+		if (!GetManager()->Active)
 			return;
-		GetRootObject()->GetScene()->Physics.RemoveBody(Body);
+		GetManager()->RemoveBody(Body);
 		delete Body;
 	}
 	if (LoadedModel)
@@ -70,6 +71,11 @@ void engine::CollisionComponent::SetCollisionEnabled(bool NewEnabled)
 	}
 }
 
+physics::PhysicsManager* engine::CollisionComponent::GetManager()
+{
+	return this->Manager ? this->Manager : &GetRootObject()->GetScene()->Physics;
+}
+
 bool engine::CollisionComponent::GetCollisionEnabled() const
 {
 	return IsCollisionEnabled;
@@ -82,18 +88,26 @@ void engine::CollisionComponent::Load(AssetRef File, bool StartCollisionEnabled)
 
 void engine::CollisionComponent::Load(GraphicsModel* Model, bool StartCollisionEnabled)
 {
-	if (!GetRootObject()->GetScene()->Physics.Active)
+	if (!GetManager()->Active)
 		return;
 
-	GetRootObject()->CheckTransform();
-	GetRootComponent()->UpdateTransform();
+	auto Root = GetRootObject();
+	if (Root)
+	{
+		Root->CheckTransform();
+	}
+	auto RootComp = GetRootComponent();
+	if (RootComp)
+	{
+		RootComp->UpdateTransform();
+	}
 	this->LoadedModel = Model;
 
 	if (!LoadedModel || LoadedModel->Data->Meshes.empty())
 		return;
 
 	Body = new MeshBody(LoadedModel, WorldTransform, physics::MotionType::Static, physics::Layer::Static, this);
-	GetRootObject()->GetScene()->Physics.AddBody(Body, true, StartCollisionEnabled);
+	GetManager()->AddBody(Body, true, StartCollisionEnabled);
 	OldTransform = WorldTransform;
 	IsCollisionEnabled = StartCollisionEnabled;
 }
