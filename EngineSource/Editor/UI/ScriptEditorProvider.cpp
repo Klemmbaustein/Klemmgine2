@@ -77,23 +77,23 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 
 	auto& Input = Window::GetActiveWindow()->Input;
 
-	if (ParentEditor->SelectionStart.Line == Index)
-	{
-		const TextSegment* Nearest = nullptr;
+	//if (ParentEditor->SelectionStart.Line == Index)
+	//{
+	//	const TextSegment* Nearest = nullptr;
 
-		size_t Pos = 0;
+	//	size_t Pos = 0;
 
-		for (auto& i : NewLine)
-		{
-			Pos += i.Text.size();
+	//	for (auto& i : NewLine)
+	//	{
+	//		Pos += i.Text.size();
 
-			if (Pos >= ParentEditor->SelectionStart.Column)
-			{
-				Nearest = &i;
-				Log::Info(Nearest->Text);
-			}
-		}
-	}
+	//		if (Pos >= ParentEditor->SelectionStart.Column)
+	//		{
+	//			Nearest = &i;
+	//			//Log::Info(Nearest->Text);
+	//		}
+	//	}
+	//}
 
 	if (Input.Text == ".")
 	{

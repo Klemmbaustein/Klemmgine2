@@ -15,8 +15,8 @@ namespace engine
 		Vector3 Position;
 		Rotation3 Rotation;
 		Vector3 Scale = 1;
-		Transform ObjectTransform;
 		ObjectTypeID TypeID = 0;
+		Transform ObjectTransform;
 		string Name;
 
 		friend struct ObjPropertyBase;
@@ -64,8 +64,8 @@ namespace engine
 
 	private:
 
-		bool BeginCalled = false;
 		std::vector<ObjectComponent*> ChildComponents;
+		bool BeginCalled = false;
 		Vector3 OldPosition;
 		Rotation3 OldRotation;
 		Vector3 OldScale = 1;

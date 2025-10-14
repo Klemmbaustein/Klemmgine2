@@ -3,6 +3,7 @@
 #include "EditorPanel.h"
 #include <Editor/UI/Elements/Toolbar.h>
 #include <Editor/UI/Gizmos/TranslateGizmo.h>
+#include <Editor/UI/EditorUI.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <kui/Timer.h>
@@ -59,7 +60,13 @@ namespace engine::editor
 
 		Vector3 GetCursorDirection();
 
+		void ShiftSelected(Vector3 Direction);
+
+		float GridSize = 0.1f;
+
 	private:
+
+		void OnItemDropped(EditorUI::DraggedItem Item);
 
 		void Run();
 

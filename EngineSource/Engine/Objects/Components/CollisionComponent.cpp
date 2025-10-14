@@ -11,10 +11,8 @@ void engine::CollisionComponent::OnAttached()
 
 engine::CollisionComponent::~CollisionComponent()
 {
-	if (Body)
+	if (Body && GetManager()->Active)
 	{
-		if (!GetManager()->Active)
-			return;
 		GetManager()->RemoveBody(Body);
 		delete Body;
 	}
@@ -88,6 +86,8 @@ void engine::CollisionComponent::Load(AssetRef File, bool StartCollisionEnabled)
 
 void engine::CollisionComponent::Load(GraphicsModel* Model, bool StartCollisionEnabled)
 {
+	this->LoadedModel = Model;
+
 	if (!GetManager()->Active)
 		return;
 
@@ -101,7 +101,6 @@ void engine::CollisionComponent::Load(GraphicsModel* Model, bool StartCollisionE
 	{
 		RootComp->UpdateTransform();
 	}
-	this->LoadedModel = Model;
 
 	if (!LoadedModel || LoadedModel->Data->Meshes.empty())
 		return;

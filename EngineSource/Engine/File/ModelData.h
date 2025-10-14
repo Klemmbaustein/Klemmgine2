@@ -51,7 +51,7 @@ namespace engine
 	{
 		ModelData* Data = nullptr;
 		graphics::Model* Drawable = nullptr;
-		size_t References;
+		size_t References = 0;
 		std::map<void*, std::function<void()>> OnDereferenced;
 
 		static GraphicsModel* RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);

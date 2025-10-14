@@ -25,6 +25,7 @@ namespace engine::editor
 		physics::PhysicsManager Physics = physics::PhysicsManager(nullptr);
 
 		Vector3 OldNormal;
+		Vector3 CurrentPosition;
 		float OldDistance = 0;
 		int DraggedAxis = false;
 

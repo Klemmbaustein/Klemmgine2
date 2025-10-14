@@ -75,9 +75,9 @@ engine::editor::Viewport::Viewport()
 
 	ViewportToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
 		[this]()
-		{
-			SaveCurrentScene();
-		});
+	{
+		SaveCurrentScene();
+	});
 
 	ViewportToolbar->AddDropdown("View", "file:Engine/Editor/Assets/Options.png",
 		{
@@ -108,39 +108,7 @@ engine::editor::Viewport::Viewport()
 		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
 			->SetPadding(5_px, 5_px, 5_px, 15_px));
 
-	auto ViewportDropBox = new DroppableBox(false, [this](EditorUI::DraggedItem Item)
-		{
-			if (!Scene::GetMain())
-				return;
-
-			Window* Win = Window::GetActiveWindow();
-
-			auto hit = RayAtCursor();
-
-			Vector3 EndPosition = Vector3::SnapToGrid(hit.ImpactPoint, 0.1f);
-
-			if (Item.ObjectType != 0)
-			{
-				auto obj = Scene::GetMain()->CreateObjectFromID(Item.ObjectType, EndPosition);
-				OnObjectCreated(obj);
-				SelectedObjects.clear();
-				SelectedObjects.insert(obj);
-			}
-
-			AssetRef Dropped = AssetRef::FromPath(Item.Path);
-
-			if (Dropped.Extension != "kmdl")
-			{
-				return;
-			}
-
-			auto obj = Scene::GetMain()->CreateObject<MeshObject>(EndPosition);
-			obj->Name = Dropped.DisplayName();
-			obj->LoadMesh(Dropped);
-			OnObjectCreated(obj);
-			SelectedObjects.clear();
-			SelectedObjects.insert(obj);
-		});
+	auto ViewportDropBox = new DroppableBox(false, std::bind(&Viewport::OnItemDropped, this, std::placeholders::_1));
 
 	Background
 		->AddChild(ViewportToolbar)
@@ -156,11 +124,36 @@ engine::editor::Viewport::Viewport()
 	if (Scene::GetMain())
 		Scene::GetMain()->UsedCamera = Scene::GetMain()->SceneCamera;
 
+	auto Win = Window::GetActiveWindow();
+
+	Win->Input.RegisterOnKeyDownCallback(Key::LEFT, this, [=] {
+		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		ShiftSelected(Vector3(0, 0, -Speed));
+	});
+
+	Win->Input.RegisterOnKeyDownCallback(Key::RIGHT, this, [=] {
+		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		ShiftSelected(Vector3(0, 0, Speed));
+	});
+
+	Win->Input.RegisterOnKeyDownCallback(Key::DOWN, this, [=] {
+		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
+		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		ShiftSelected(ShiftDown ? Vector3(0, -Speed, 0) : Vector3(-Speed, 0, 0));
+	});
+
+	Win->Input.RegisterOnKeyDownCallback(Key::UP, this, [=] {
+		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
+		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
+	});
+
 	Translate = new TranslateGizmo();
 }
 
 engine::editor::Viewport::~Viewport()
 {
+	delete Translate;
 	VideoSubsystem::Current->MainWindow->Input.RemoveOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 }
 
@@ -351,7 +344,10 @@ void engine::editor::Viewport::Update()
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
 		&& input::IsLMBClicked && !Translate->HasGrabbedClick)
 	{
-		Viewport::Current->ClearSelected();
+		if (!input::IsKeyDown(input::Key::LSHIFT))
+		{
+			Viewport::Current->ClearSelected();
+		}
 		auto hit = RayAtCursor();
 		if (hit.Hit)
 		{
@@ -449,9 +445,45 @@ void engine::editor::Viewport::OnObjectCreated(SceneObject* Target)
 	SceneChanged();
 }
 
+void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
+{
+	if (!Scene::GetMain())
+		return;
+
+	Window* Win = Window::GetActiveWindow();
+
+	auto hit = RayAtCursor();
+
+	Vector3 EndPosition = Vector3::SnapToGrid(hit.ImpactPoint, 0.1f);
+
+	if (Item.ObjectType != 0)
+	{
+		auto obj = Scene::GetMain()->CreateObjectFromID(Item.ObjectType, EndPosition);
+		OnObjectCreated(obj);
+		SelectedObjects.clear();
+		SelectedObjects.insert(obj);
+	}
+
+	AssetRef Dropped = AssetRef::FromPath(Item.Path);
+
+	if (Dropped.Extension != "kmdl")
+	{
+		return;
+	}
+
+	auto obj = Scene::GetMain()->CreateObject<MeshObject>(EndPosition);
+	obj->Name = Dropped.DisplayName();
+	obj->LoadMesh(Dropped);
+	OnObjectCreated(obj);
+	SelectedObjects.clear();
+	SelectedObjects.insert(obj);
+}
+
 void engine::editor::Viewport::Run()
 {
 	using namespace subsystem;
+
+	Viewport::Current->ClearSelected();
 
 	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	SetName("Viewport (playing)");
@@ -510,6 +542,23 @@ Vector3 engine::editor::Viewport::GetCursorDirection()
 
 	Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
 	return Direction;
+}
+
+void engine::editor::Viewport::ShiftSelected(Vector3 Direction)
+{
+	if (SelectedObjects.empty())
+	{
+		return;
+	}
+
+	std::vector<SceneObject*> Changed;
+	for (auto& i : SelectedObjects)
+	{
+		i->Position += Direction;
+		Changed.push_back(i);
+	}
+
+	OnObjectsChanged(Changed);
 }
 
 void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)

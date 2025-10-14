@@ -51,6 +51,8 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 	Effect->OutlineShader->Bind();
 	Effect->OutlineShader->SetInt(Effect->OutlineShader->GetUniformLocation("u_isHovered"), h.Hit || HasGrabbedClick);
 
+	auto Selected = *With->SelectedObjects.begin();
+
 	if (h.Hit && Clicked && !HasGrabbedClick)
 	{
 		for (int i = 0; i < 3; i++)
@@ -63,13 +65,15 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 		}
 
 		OldNormal = Direction;
-		OldDistance = Vector3::Distance((*With->SelectedObjects.begin())->Position, Cam->Position);
+		OldDistance = Vector3::Distance(Selected->Position, Cam->Position);
+		CurrentPosition = Selected->Position;
 		HasGrabbedClick = true;
 	}
 	else if (HasGrabbedClick)
 	{
-		(*With->SelectedObjects.begin())->Position[DraggedAxis] += Direction[DraggedAxis] * OldDistance - OldNormal[DraggedAxis] * OldDistance;
-		OldDistance = Vector3::Distance((*With->SelectedObjects.begin())->Position, Cam->Position);
+		CurrentPosition[DraggedAxis] += Direction[DraggedAxis] * OldDistance - OldNormal[DraggedAxis] * OldDistance;
+		Selected->Position = Vector3::SnapToGrid(CurrentPosition, With->GridSize);
+		OldDistance = Vector3::Distance(CurrentPosition, Cam->Position);
 		OldNormal = Direction;
 	}
 	if (!Clicked)

@@ -34,9 +34,7 @@ SerializedValue engine::SceneObject::Serialize()
 void engine::SceneObject::DeSerialize(SerializedValue* From)
 {
 	Position = From->At("position").GetVector3();
-
 	Rotation = From->At("rotation").GetVector3();
-
 	Scale = From->At("scale").GetVector3();
 
 	Name = From->At("name").GetString();

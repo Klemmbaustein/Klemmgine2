@@ -10,7 +10,7 @@ void main()
 {
 	vec3 baseColor = texture(u_texture, v_texcoords).xyz;
 
-	vec2 texelSize = 2.0 / textureSize(u_depthStencil, 0);
+	vec2 texelSize = 1.0 / textureSize(u_depthStencil, 0);
 	vec2 texCoord = v_texcoords - texelSize / 2;
 
 	uint baseValue = texture(u_depthStencil, texCoord).x;
@@ -19,6 +19,7 @@ void main()
 	uint stencilValue2 = texture(u_depthStencil, texCoord + vec2(1, 0) * texelSize).x;
 	uint stencilValue3 = texture(u_depthStencil, texCoord + vec2(1, 1) * texelSize).x;
 
+	bool hasGizmoColor = false;
 	if (baseValue > 1u
 		|| stencilValue1 > 1u
 		|| stencilValue2 > 1u
@@ -38,14 +39,15 @@ void main()
 			f_color.xyz = vec3(0, 0, 1) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		}
+		hasGizmoColor = true;
 	}
-	else if (baseValue != stencilValue1
+	if (baseValue != stencilValue1
 		|| baseValue != stencilValue2
 		|| baseValue != stencilValue3)
 	{
 		f_color.xyz = vec3(1);
 	}
-	else
+	else if (!hasGizmoColor)
 	{
 		f_color.xyz = baseColor;
 	}

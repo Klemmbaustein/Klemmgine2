@@ -368,6 +368,7 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 		}
 		return;
 	}
+	Log::Info("oops");
 }
 
 void engine::GraphicsModel::UnloadModel(AssetRef Asset)
@@ -393,6 +394,8 @@ void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 		}
 		return;
 	}
+
+	Log::Info(Asset.FilePath);
 }
 
 engine::GraphicsModel* engine::GraphicsModel::UnitCube()

@@ -4,12 +4,12 @@
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <filesystem>
-#pragma comment(lib, "Dwmapi.lib")
 
 #if WINDOWS
 #include <ShObjIdl_core.h>
 #include <functiondiscoverykeys.h>
 #include <dwmapi.h>
+#pragma comment(lib, "Dwmapi.lib")
 
 static std::string WstrToStr(const std::wstring& wstr)
 {

@@ -31,21 +31,28 @@ class MyObject : SceneObject
 
 	override fn update()
 	{
+		Rotation3 moveRotation = rot3(0, this.rotation.y, 0)
+	
 		if isKeyDown(Key::w)
 		{
-			movement.addInput(forward(rotation))
+			movement.addInput(forward(moveRotation))
 		}
 		if isKeyDown(Key::s)
 		{
-			movement.addInput(-forward(rotation))
+			movement.addInput(-forward(moveRotation))
 		}
 		if isKeyDown(Key::d)
 		{
-			movement.addInput(right(rotation))
+			movement.addInput(right(moveRotation))
 		}
 		if isKeyDown(Key::a)
 		{
-			movement.addInput(-right(rotation))
+			movement.addInput(-right(moveRotation))
+		}
+		
+		if isKeyDown(Key::e)
+		{
+			movement.jump()
 		}
 
 		Vector2 mouseMovement = getMouseMovement()
