@@ -14,7 +14,7 @@ namespace engine
 
 		ENGINE_OBJECT(PlayerObject, "Game");
 
-		ObjProperty<AssetRef> PlayerModel = ObjProperty<AssetRef>("Model", "cube.kmdl"_asset, this);
+		ObjProperty<AssetRef> PlayerModel = ObjProperty<AssetRef>("Model", "Cube.kmdl"_asset, this);
 
 		void Begin() override;
 		void Update() override;

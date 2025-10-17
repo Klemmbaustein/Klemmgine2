@@ -19,9 +19,10 @@ engine::graphics::Model::~Model()
 	}
 }
 
-void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Camera* With, std::vector<Material*>& UsedMaterials)
+void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Camera* With,
+	std::vector<Material*>& UsedMaterials, bool Stencil)
 {
-	if (!In)
+	if (!In && Stencil)
 	{
 		glStencilMask(0xFF);
 	}
@@ -47,9 +48,8 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 
 		ModelVertexBuffers[i]->Draw();
 	}
-	if (!In)
+	if (!In && Stencil)
 	{
-		glStencilMask(0);
 		glStencilFunc(GL_GEQUAL, 1, 0xFF);
 	}
 }

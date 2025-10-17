@@ -1,6 +1,5 @@
 #include "ModelData.h"
 #include "Core/File/BinarySerializer.h"
-#include "Core/File/FileUtil.h"
 #include <filesystem>
 #include <mutex>
 #include <Core/Log.h>
@@ -9,6 +8,7 @@
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 
+using namespace engine;
 using namespace engine::graphics;
 
 std::mutex ModelDataMutex;
@@ -368,7 +368,6 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 		}
 		return;
 	}
-	Log::Info("oops");
 }
 
 void engine::GraphicsModel::UnloadModel(AssetRef Asset)
@@ -394,13 +393,43 @@ void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 		}
 		return;
 	}
+}
 
-	Log::Info(Asset.FilePath);
+static void AddPlane(Vector3 Dir, Vector3 Offset, Vector3 Up, Vector3 Right, ModelData::Mesh& m)
+{
+	uint32 InitialLength = m.Vertices.size();
+	m.Vertices.push_back(Vertex({
+			.Position = Offset - Up - Right,
+			.UV = Vector2(0, 0),
+			.Normal = Dir,
+		}));
+	m.Vertices.push_back(Vertex({
+			.Position = Offset - Up + Right,
+			.UV = Vector2(1, 0),
+			.Normal = Dir,
+		}));
+	m.Vertices.push_back(Vertex({
+			.Position = Offset + Up - Right,
+			.UV = Vector2(0, 1),
+			.Normal = Dir,
+		}));
+	m.Vertices.push_back(Vertex({
+			.Position = Offset + Up + Right,
+			.UV = Vector2(1, 1),
+			.Normal = Dir,
+		}));
+
+	m.Indices.push_back(InitialLength);
+	m.Indices.push_back(InitialLength + 1);
+	m.Indices.push_back(InitialLength + 2);
+	m.Indices.push_back(InitialLength + 1);
+	m.Indices.push_back(InitialLength + 3);
+	m.Indices.push_back(InitialLength + 2);
 }
 
 engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 {
-	GraphicsModel* Cube = nullptr;
+	static GraphicsModel* Cube = nullptr;
 
 	if (!Cube)
 	{
@@ -409,47 +438,39 @@ engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 
 		auto& m = Cube->Data->Meshes.emplace_back();
 
-		auto MakeFace = [&](Vector3 Dir, Vector3 Up, Vector3 Right) {
-
-			uint32 InitialLength = m.Vertices.size();
-			m.Vertices.push_back(Vertex({
-					.Position = Dir - Up - Right,
-					.UV = Vector2(0, 0),
-					.Normal = Dir,
-				}));
-			m.Vertices.push_back(Vertex({
-					.Position = Dir - Up + Right,
-					.UV = Vector2(1, 0),
-					.Normal = Dir,
-				}));
-			m.Vertices.push_back(Vertex({
-					.Position = Dir + Up - Right,
-					.UV = Vector2(0, 1),
-					.Normal = Dir,
-				}));
-			m.Vertices.push_back(Vertex({
-					.Position = Dir + Up + Right,
-					.UV = Vector2(1, 1),
-					.Normal = Dir,
-				}));
-
-			m.Indices.push_back(InitialLength);
-			m.Indices.push_back(InitialLength + 1);
-			m.Indices.push_back(InitialLength + 2);
-			m.Indices.push_back(InitialLength + 1);
-			m.Indices.push_back(InitialLength + 3);
-			m.Indices.push_back(InitialLength + 2);
+		auto AddFace = [&](Vector3 Dir, Vector3 Up, Vector3 Right) {
+			AddPlane(Dir, Dir, Up, Right, m);
 		};
 
-		MakeFace(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
-		MakeFace(Vector3(0, -1, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1));
-		MakeFace(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 1));
-		MakeFace(Vector3(-1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1));
-		MakeFace(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(1, 0, 0));
-		MakeFace(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(1, 0, 0));
+		AddFace(Vector3(0, 1, 0), Vector3(1, 0, 0), Vector3(0, 0, 1));
+		AddFace(Vector3(0, -1, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1));
+		AddFace(Vector3(1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, 1));
+		AddFace(Vector3(-1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1));
+		AddFace(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(1, 0, 0));
+		AddFace(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(1, 0, 0));
 
 		Cube->Drawable = new graphics::Model(Cube->Data);
 	}
 
 	return Cube;
+}
+
+GraphicsModel* engine::GraphicsModel::UnitPlane()
+{
+	static GraphicsModel* Plane = nullptr;
+
+	if (!Plane)
+	{
+		Plane = new GraphicsModel();
+		Plane->Data = new ModelData();
+
+		auto& m = Plane->Data->Meshes.emplace_back();
+
+		AddPlane(Vector3(0, 1, 0), 0, Vector3(1, 0, 0), Vector3(0, 0, 1), m);
+		AddPlane(Vector3(0, -1, 0), 0, Vector3(-1, 0, 0), Vector3(0, 0, 1), m);
+
+		Plane->Drawable = new graphics::Model(Plane->Data);
+	}
+
+	return Plane;
 }

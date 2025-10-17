@@ -342,6 +342,12 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, Y, y, FloatInst);
 	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, R, r, FloatInst);
 
+	auto Rot3Function = EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(FloatInst, "p"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "r") },
+			RotType, "rot3", [](InterpretContext* context) {}));
+
+	RotType->addConstructor(Rot3Function);
+
 	EngineModule.types.push_back(RotType);
 	EngineModule.types.push_back(VecType);
 	EngineModule.types.push_back(Vec2Type);
@@ -355,6 +361,26 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 
 	auto ObjectType = EngineModule.createClass<ScriptObjectData>("SceneObject");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
+
+	ComponentType->members.push_back(ClassMember{
+		.name = "position",
+		.offset = offsetof(ObjectComponent, Position),
+		.type = VecType
+		});
+
+	ComponentType->members.push_back(ClassMember{
+		.name = "rotation",
+		.offset = offsetof(ObjectComponent, Rotation),
+		.type = RotType
+		});
+
+	ComponentType->members.push_back(ClassMember{
+		.name = "scale",
+		.offset = offsetof(ObjectComponent, Scale),
+		.type = VecType
+		});
+
+	ComponentType->isPointerClass = true;
 
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "begin", &SceneObject_empty), 1);
@@ -448,10 +474,6 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 			VecType, "right", &Vector3_Right));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "p"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "r") },
-			RotType, "rot3", [](InterpretContext* context) {}));
-
-	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "extension") },
 			AssetRefType, "emptyAsset", AssetRef_emptyAsset));
 
@@ -491,6 +513,10 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	EngineInputModule.addEnumValue(KeyType, "down", Key::DOWN);
 	EngineInputModule.addEnumValue(KeyType, "left", Key::LEFT);
 	EngineInputModule.addEnumValue(KeyType, "right", Key::RIGHT);
+	EngineInputModule.addEnumValue(KeyType, "space", Key::SPACE);
+	EngineInputModule.addEnumValue(KeyType, "shift", Key::LSHIFT);
+	EngineInputModule.addEnumValue(KeyType, "ctrl", Key::LCTRL);
+	EngineInputModule.addEnumValue(KeyType, "enter", Key::RETURN);
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
 		BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
 

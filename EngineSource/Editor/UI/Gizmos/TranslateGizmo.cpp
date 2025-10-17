@@ -11,6 +11,8 @@ engine::editor::TranslateGizmo::TranslateGizmo()
 	GizmoMesh = new MeshComponent();
 	GizmoMesh->Load("Engine/Editor/Assets/Models/Arrows.kmdl"_asset);
 	GizmoMesh->Rotation.Y = -90;
+	GizmoMesh->DrawStencil = true;
+	GizmoMesh->CastShadow = false;
 
 	this->Physics.Init();
 
@@ -63,6 +65,7 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 				break;
 			}
 		}
+		With->OnObjectChanged(Selected);
 
 		OldNormal = Direction;
 		OldDistance = Vector3::Distance(Selected->Position, Cam->Position);
@@ -76,7 +79,7 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 		OldDistance = Vector3::Distance(CurrentPosition, Cam->Position);
 		OldNormal = Direction;
 	}
-	if (!Clicked)
+	if (!Clicked && HasGrabbedClick)
 	{
 		HasGrabbedClick = false;
 	}

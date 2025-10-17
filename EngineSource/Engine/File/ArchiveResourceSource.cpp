@@ -28,7 +28,6 @@ bool engine::resource::ArchiveResourceSource::FileExists(string Path)
 
 ReadOnlyBufferStream* engine::resource::ArchiveResourceSource::GetFile(string Path)
 {
-	// TODO: refactor archives to be a ResourceSource
 	if (UseArchives)
 	{
 		for (auto& i : LoadedArchives)

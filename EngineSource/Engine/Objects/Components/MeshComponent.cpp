@@ -14,7 +14,8 @@ void engine::MeshComponent::Draw(graphics::Camera* From)
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
 		DrawBoundingBox = DrawnModel->Data->Bounds;
-		DrawnModel->Drawable->Draw(Root ? Root->GetScene() : nullptr, WorldTransform, From, Materials);
+		DrawnModel->Drawable->Draw(Root ? Root->GetScene() : nullptr, WorldTransform, From,
+			Materials, this->DrawStencil);
 	}
 }
 

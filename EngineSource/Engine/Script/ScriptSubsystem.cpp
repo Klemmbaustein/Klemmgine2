@@ -1,6 +1,7 @@
 #include "ScriptSubsystem.h"
 #include "ScriptObject.h"
 #include "EngineModules.h"
+#include "FileScriptProvider.h"
 #include "ScriptSerializer.h"
 #include <Engine/Stats.h>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
@@ -27,6 +28,8 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 	Runtime->createBackgroundThread = [](std::function<void()> function) {
 		ThreadPool::Main()->AddJob(function);
 	};
+
+	Scripts = new FileScriptProvider();
 
 	Reload();
 }
@@ -86,12 +89,9 @@ void engine::script::ScriptSubsystem::Reload()
 		Print(Message, LogType::Error);
 	};
 
-	if (std::filesystem::is_directory("Scripts"))
+	for (auto& i : Scripts->GetFiles())
 	{
-		for (auto& i : std::filesystem::recursive_directory_iterator("Scripts"))
-		{
-			Compiler->addFile(i.path().string());
-		}
+		Compiler->addString(Scripts->GetFile(i), i);
 	}
 
 	auto NewInstructions = Compiler->compile();;

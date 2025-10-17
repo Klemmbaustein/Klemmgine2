@@ -151,6 +151,11 @@ void engine::SceneObject::InitObj(Scene* Scn, bool CallBegin, int32 TypeID)
 {
 	OriginScene = Scn;
 	this->TypeID = TypeID;
+
+	static ObjectID IDCounter = 0;
+
+	this->ID = IDCounter++;
+
 	if (CallBegin)
 	{
 		if (this->Name.empty())

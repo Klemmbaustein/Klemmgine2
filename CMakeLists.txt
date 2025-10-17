@@ -195,7 +195,7 @@ target_link_libraries(KlemmgineLib PUBLIC KuiDynamicMarkup)
 target_link_libraries(KlemmgineLib PUBLIC libglew_static)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
-target_link_libraries(KlemmgineCore PUBLIC ProgrammingLanguage)
+target_link_libraries(KlemmgineCore PUBLIC DSharp)
 
 target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI KlemmgineLib)
 

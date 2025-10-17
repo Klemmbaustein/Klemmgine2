@@ -5,11 +5,13 @@
 #include <Engine/Engine.h>
 #include <Engine/Graphics/Effects/PostProcess.h>
 #include <Engine/Input.h>
+#include <Core/File/TextSerializer.h>
 #include <Engine/Objects/MeshObject.h>
 #include <Engine/Stats.h>
 #include <Editor/EditorSubsystem.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <kui/UI/UISpinner.h>
+#include <sstream>
 using namespace engine::subsystem;
 using namespace kui;
 using namespace engine;
@@ -148,12 +150,76 @@ engine::editor::Viewport::Viewport()
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
 	});
 
+	Win->Input.RegisterOnKeyDownCallback(Key::c, this, [=] {
+
+		if (this != EditorUI::FocusedPanel)
+		{
+			return;
+		}
+
+		if (!Win->Input.IsKeyDown(Key::LCTRL) || SelectedObjects.empty())
+		{
+			return;
+		}
+
+		std::stringstream Stream;
+
+		SerializedValue ToCopy = (*SelectedObjects.begin())->Serialize();
+
+		TextSerializer::ToStream(ToCopy.GetObject(), Stream);
+
+		EditorUI::SetStatusMessage("Copied object", EditorUI::StatusType::Info);
+
+		Win->Input.SetClipboard(Stream.str());
+	});
+
+	Win->Input.RegisterOnKeyDownCallback(Key::v, this, [=] {
+
+		if (this != EditorUI::FocusedPanel)
+		{
+			return;
+		}
+
+		if (!Win->Input.IsKeyDown(Key::LCTRL))
+		{
+			return;
+		}
+
+		std::stringstream Stream;
+		Stream << Win->Input.GetClipboard();
+
+		SerializedValue ObjData = TextSerializer::FromStream(Stream);
+
+		auto Obj = Scene::GetMain()->CreateObjectFromID(ObjData.At("typeId").GetInt());
+		Obj->DeSerialize(&ObjData);
+		Obj->CheckTransform();
+		Obj->CheckComponentTransform();
+
+		EditorUI::SetStatusMessage("Pasted object", EditorUI::StatusType::Info);
+
+		ClearSelected();
+
+		SelectedObjects.insert(Obj);
+
+		Win->Input.SetClipboard(Stream.str());
+	});
+
 	Translate = new TranslateGizmo();
+
+	Grid = new MeshComponent();
+
+	Grid->Load(GraphicsModel::UnitPlane());
+	Grid->Materials[0] = new graphics::Material(AssetRef::FromPath("Engine/Editor/Assets/Models/Grid.kmt"));
+	Grid->IsTransparent = true;
+	Grid->CastShadow = false;
+	Grid->Scale = 1000;
+	Grid->UpdateTransform();
 }
 
 engine::editor::Viewport::~Viewport()
 {
 	delete Translate;
+	delete Grid;
 	VideoSubsystem::Current->MainWindow->Input.RemoveOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 }
 
@@ -232,6 +298,7 @@ void engine::editor::Viewport::Update()
 		StatsRedrawTimer.Reset();
 		RedrawStats = false;
 	}
+
 	Scene* Current = Scene::GetMain();
 
 	if (bool(Current) != this->SceneLoaded)
@@ -240,12 +307,15 @@ void engine::editor::Viewport::Update()
 		if (this->SceneLoaded)
 		{
 			Current->PostProcess.AddEffect(new EditorOutline());
+			Current->AddDrawnComponent(Grid);
 			Current->AddDrawnComponent(Translate->GizmoMesh);
 		}
 	}
 
 	bool HasFocus = EditorUI::FocusedPanel == this;
 	UpdateSelection();
+
+	Grid->IsVisible = !Engine::IsPlaying;
 
 	if (Engine::IsPlaying)
 	{
@@ -423,7 +493,7 @@ void engine::editor::Viewport::OnObjectsChanged(std::vector<SceneObject*> Target
 	for (SceneObject* i : Targets)
 	{
 		NewChanges.ChangeList.push_back(Change{
-			.Object = i,
+			.Object = i->ID,
 			.ObjectData = i->Serialize()
 			});
 	}
@@ -438,7 +508,7 @@ void engine::editor::Viewport::OnObjectCreated(SceneObject* Target)
 	ObjectChanges.push(Changes{
 		.ChangeList = {
 			Change{
-			.Object = Target,
+			.Object = Target->ID,
 		}
 		} });
 
@@ -567,7 +637,7 @@ void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)
 	SceneObject* Obj = nullptr;
 	for (SceneObject* i : Current->Objects)
 	{
-		if (i != Target.Object)
+		if (i->ID != Target.Object)
 		{
 			continue;
 		}

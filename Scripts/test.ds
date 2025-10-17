@@ -11,12 +11,6 @@ class MyObject : SceneObject
 	MoveComponent movement = new()
 	CameraComponent camera = new()
 
-	async fn addOneAsync(int value) -> int
-	{
-		await wait(1.0)
-		return 1 + value
-	}
-
 	override fn begin()
 	{
 		const testMesh = new MeshComponent()
@@ -27,12 +21,13 @@ class MyObject : SceneObject
 		attach(movement)
 		camera.use()
 		camera.setFOV(80)
+		camera.position = new(0, 1, 0)
 	}
 
 	override fn update()
 	{
-		Rotation3 moveRotation = rot3(0, this.rotation.y, 0)
-	
+		Rotation3 moveRotation = new(0, this.rotation.y, 0)
+
 		if isKeyDown(Key::w)
 		{
 			movement.addInput(forward(moveRotation))
@@ -49,8 +44,8 @@ class MyObject : SceneObject
 		{
 			movement.addInput(-right(moveRotation))
 		}
-		
-		if isKeyDown(Key::e)
+
+		if isKeyDown(Key::space)
 		{
 			movement.jump()
 		}
@@ -58,7 +53,7 @@ class MyObject : SceneObject
 		Vector2 mouseMovement = getMouseMovement()
 
 		rotation.y -= mouseMovement.x
-		rotation.p -= mouseMovement.y
+		camera.rotation.p -= mouseMovement.y
 	}
 
 	override fn destroy()

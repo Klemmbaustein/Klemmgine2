@@ -4,13 +4,18 @@
 #include "Reflection/ObjectReflection.h"
 #include "Reflection/ObjectPropery.h"
 #include "Components/ObjectComponent.h"
+
 namespace engine
 {
+	using ObjectID = uint64;
+
 	class Scene;
 
 	class SceneObject
 	{
 	public:
+
+		ObjectID ID = 0;
 
 		Vector3 Position;
 		Rotation3 Rotation;

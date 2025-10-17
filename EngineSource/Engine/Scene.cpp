@@ -129,7 +129,9 @@ void engine::Scene::Draw()
 	glStencilMask(0);
 	glStencilFunc(GL_GEQUAL, 1, 0xFF);
 
+
 	{
+		bool LasIsTransparent = false;
 		bool LastDrawStencil = false;
 		std::unique_lock g{ DrawSortMutex };
 
@@ -144,6 +146,16 @@ void engine::Scene::Draw()
 			{
 				glStencilMask(0);
 				LastDrawStencil = false;
+			}
+			if (i->IsTransparent && !LasIsTransparent)
+			{
+				glEnable(GL_BLEND);
+				LasIsTransparent = true;
+			}
+			else if (!i->IsTransparent && LastDrawStencil)
+			{
+				glDisable(GL_BLEND);
+				LasIsTransparent = false;
 			}
 			i->Draw(UsedCamera);
 		}
@@ -585,26 +597,39 @@ void engine::Scene::StartSorting()
 	Vector3 CameraPosition = SceneCamera->Position;
 	IsSorting = true;
 
-	ThreadPool::Main()->AddJob([this, CameraPosition]()
+	ThreadPool::Main()->AddJob([this, CameraPosition]() {
+		using Entry = std::pair<SortingInfo, DrawableComponent*>;
+
+		std::unique_lock g{ DrawSortMutex };
+		for (auto& i : SortedComponents)
 		{
-			using Entry = std::pair<SortingInfo, ObjectComponent*>;
+			Vector3 BoundsPosition = i.first.Position + i.first.Bounds.Position;
+			i.first.Position.X = Vector3::Distance(BoundsPosition, CameraPosition) - i.first.Bounds.Extents.Length();
+		}
 
-			std::unique_lock g{ DrawSortMutex };
-			for (auto& i : SortedComponents)
+		std::sort(SortedComponents.begin(), SortedComponents.end(), [](const Entry& a, const Entry& b) -> bool
+		{
+			if (a.second->IsTransparent && !b.second->IsTransparent)
 			{
-				Vector3 BoundsPosition = i.first.Position + i.first.Bounds.Position;
-				i.first.Position.X = Vector3::Distance(BoundsPosition, CameraPosition) - i.first.Bounds.Extents.Length();
+				return false;
+			}
+			if (!a.second->IsTransparent && b.second->IsTransparent)
+			{
+				return true;
+			}
+			if (a.second->IsTransparent && b.second->IsTransparent)
+			{
+				// Draw transparent objects in reverse order
+				return a.first.Position.X > b.first.Position.X;
 			}
 
-			std::sort(SortedComponents.begin(), SortedComponents.end(), [](const Entry& a, const Entry& b) -> bool
-				{
-					return a.first.Position.X < b.first.Position.X;
-				});
-			IsSorting = false;
-
-			for (size_t i = 0; i < DrawnComponents.size(); i++)
-			{
-				DrawnComponents[i] = SortedComponents[i].second;
-			}
+			return a.first.Position.X < b.first.Position.X;
 		});
+		IsSorting = false;
+
+		for (size_t i = 0; i < DrawnComponents.size(); i++)
+		{
+			DrawnComponents[i] = SortedComponents[i].second;
+		}
+	});
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
 #include <list>
+#include "ScriptProvider.h"
 
 namespace ds
 {
@@ -29,6 +30,8 @@ namespace engine::script
 		ds::BytecodeStream* ScriptInstructions = nullptr;
 
 		std::list<WaitTask> WaitTasks;
+
+		ScriptProvider* Scripts = nullptr;
 
 		ScriptSubsystem();
 		virtual ~ScriptSubsystem() override;

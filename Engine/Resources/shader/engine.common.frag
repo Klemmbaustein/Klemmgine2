@@ -48,6 +48,9 @@ uniform float u_shadowBiasModifier = 0;
 #define PCF_SIZE 4
 #define PCF_HALF_SIZE 2
 
+#export //!
+float opacity = 1.0;
+
 float shadowValues[PCF_SIZE][PCF_SIZE];
 
 vec3 getAmbient(vec3 normal)
@@ -180,7 +183,7 @@ vec3 fragment();
 void main()
 {
 	f_color.rgb = fragment();
-	f_color.a = 1;
+	f_color.a = opacity;
 	f_position = v_screenPosition;
 	f_normal = v_screenNormal != vec3(0) ? normalize(v_screenNormal) : vec3(0, 1, 0);
 }

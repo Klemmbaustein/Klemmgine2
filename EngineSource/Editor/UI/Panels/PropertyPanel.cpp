@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "PropertyPanel.h"
 #include <Editor/UI/EditorUI.h>
 #include <kui/UI/UITextField.h>
@@ -31,8 +30,10 @@ void engine::editor::PropertyPanel::Update()
 			SelectedObj = New;
 			LoadPropertiesFrom(SelectedObj);
 		}
-		else if (SelectedObj && OldObjectTransform.Matrix != SelectedObj->ObjectTransform.Matrix)
+		else if (UpdateTimer.Get() > 0.1f && SelectedObj
+			&& OldObjectTransform.Matrix != SelectedObj->ObjectTransform.Matrix)
 		{
+			this->UpdateTimer.Reset();
 			Properties->UpdateProperties();
 		}
 	}
@@ -136,4 +137,3 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		}
 	}
 }
-#endif

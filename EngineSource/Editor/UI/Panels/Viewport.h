@@ -42,7 +42,7 @@ namespace engine::editor
 
 		struct Change
 		{
-			SceneObject* Object = nullptr;
+			ObjectID Object = 0;
 			SerializedValue ObjectData;
 		};
 
@@ -64,6 +64,8 @@ namespace engine::editor
 
 		float GridSize = 0.1f;
 
+		Event<std::vector<SceneObject*>> OnChanged();
+
 	private:
 
 		void OnItemDropped(EditorUI::DraggedItem Item);
@@ -82,6 +84,7 @@ namespace engine::editor
 		bool SceneLoaded = false;
 
 		Toolbar* ViewportToolbar = nullptr;
+		MeshComponent* Grid = nullptr;
 
 		TranslateGizmo* Translate = nullptr;
 

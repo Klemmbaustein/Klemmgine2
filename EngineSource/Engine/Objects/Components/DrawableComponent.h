@@ -12,6 +12,7 @@ namespace engine
 		bool DrawStencil = false;
 		bool IsVisible = true;
 		bool CastShadow = true;
+		bool IsTransparent = false;
 		virtual void Draw(graphics::Camera* From) = 0;
 		virtual void SimpleDraw(graphics::ShaderObject* With) {};
 	};

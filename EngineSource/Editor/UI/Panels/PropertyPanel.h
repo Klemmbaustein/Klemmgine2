@@ -1,8 +1,8 @@
-#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 #include <Engine/Objects/SceneObject.h>
 #include <Editor/UI/Elements/PropertyMenu.h>
+#include <kui/Timer.h>
 
 namespace engine::editor
 {
@@ -21,6 +21,6 @@ namespace engine::editor
 	private:
 		PropertyMenu* Properties = nullptr;
 		Transform OldObjectTransform;
+		kui::Timer UpdateTimer;
 	};
 }
-#endif
