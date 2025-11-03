@@ -10,6 +10,7 @@
 #include <Editor/UI/DropdownMenu.h>
 #include <algorithm>
 #include <kui/Window.h>
+#include <kui/UI/UIBlurBackground.h>
 #include <Editor/UI/EditorUI.h>
 
 using namespace kui;
@@ -249,7 +250,7 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 		delete this->HoveredBox;
 	}
 
-	this->HoveredBox = (new UIBackground(true, 0, 0.2f))
+	this->HoveredBox = (new UIBlurBackground(true, 0, 0.2f))
 		->SetCorner(5_px)
 		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
 	this->HoveredBox

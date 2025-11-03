@@ -12,11 +12,11 @@ engine::editor::ServerConnectionPanel::ServerConnectionPanel(ServerConnection* C
 	this->Connection = Connection;
 	this->Background->AddChild(Element);
 
-	Connection->OnUsersChanged.Add(this, [=] {
+	Connection->OnUsersChanged.Add(this, [this] {
 		UpdateUsers();
 	});
 
-	Connection->OnClosed.Add(this, [=] {
+	Connection->OnClosed.Add(this, [this] {
 		this->Connection = nullptr;
 		delete this;
 	});

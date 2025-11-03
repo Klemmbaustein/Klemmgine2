@@ -46,7 +46,8 @@ void engine::editor::Viewport::HandleKeyPress(Window* w)
 			Engine::GetSubsystem<EditorSubsystem>()->StopProject();
 			input::ShowMouseCursor = true;
 			Viewport::Current->RedrawStats = true;
-			Viewport::Current->SetName(Viewport::Current->UnsavedChanges ? "Viewport*" : "Viewport");
+			Viewport::Current->SetName(Viewport::Current->UnsavedChanges
+				? "Viewport*" : "Viewport");
 		}
 	}
 }
@@ -56,7 +57,8 @@ engine::editor::Viewport::Viewport()
 {
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
-	Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader("shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
+	Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader(
+		"shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
 	VideoSystem->MainWindow->Input.RegisterOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 
 	ViewportBackground = new UIBackground(false, 0, 1, 0, HoleShader);
@@ -76,8 +78,7 @@ engine::editor::Viewport::Viewport()
 	ViewportToolbar = new Toolbar();
 
 	ViewportToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
-		[this]()
-	{
+		[this]() {
 		SaveCurrentScene();
 	});
 
@@ -714,7 +715,7 @@ void engine::editor::Viewport::UndoLast()
 
 	Scene* Current = Scene::GetMain();
 
-	auto LastChanges = ObjectChanges.top();
+	Changes LastChanges = ObjectChanges.top();
 
 	for (Change& i : LastChanges.ChangeList)
 	{

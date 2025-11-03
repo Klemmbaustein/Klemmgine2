@@ -121,10 +121,12 @@ void engine::LandscapeComponent::OnAttached()
 
 			if (x < SIZE - 1 && y < SIZE - 1)
 			{
-				Indices.append_range(std::vector{
-					i + 0, i + SIZE, i + SIZE + 1,
-					i + 0, i + SIZE + 1, i + 1,
-					});
+				Indices.push_back(i + 0);
+				Indices.push_back(i + SIZE);
+				Indices.push_back(i + SIZE + 1);
+				Indices.push_back(i + 0);
+				Indices.push_back(i + SIZE + 1);
+				Indices.push_back(i + 1);
 			}
 		}
 	}

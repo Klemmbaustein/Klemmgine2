@@ -20,6 +20,16 @@ namespace engine
 
 		struct WriteOptions
 		{
+			WriteOptions()
+			{
+
+			}
+
+			WriteOptions(bool Indent)
+				: Indent(Indent)
+			{
+
+			}
 			bool Indent = false;
 		};
 
@@ -33,13 +43,13 @@ namespace engine
 		* This function directly calls WriteObject() with Depth = 0.
 		*/
 		static void ToStream(const SerializedValue& Target,
-			std::ostream& Stream, WriteOptions Opt = {});
+			std::ostream& Stream, WriteOptions Opt = WriteOptions());
 		/**
 		* @brief
 		* Writes the contents of the SerializedData objects to a file with the given file path.
 		*/
 		static void ToFile(const SerializedValue& Target, string File,
-			WriteOptions Opt = {});
+			WriteOptions Opt = WriteOptions());
 		/**
 		* @brief
 		* Writes the contents of the SerializedData objects to the given C++ stream.
@@ -48,7 +58,7 @@ namespace engine
 		* the indentation of the written data.
 		*/
 		static void WriteObject(const std::vector<SerializedData>& Target, std::ostream& Stream,
-			uint32 Depth, WriteOptions Opt = {});
+			uint32 Depth, WriteOptions Opt = WriteOptions());
 
 		/**
 		* @brief

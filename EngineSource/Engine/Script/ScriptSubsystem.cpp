@@ -135,7 +135,7 @@ void engine::script::ScriptSubsystem::Reload()
 
 	for (auto& [Id, TypeInfo] : ScriptInstructions->reflect.types)
 	{
-		Reflection::RegisterObject(TypeInfo.name, [&TypeInfo, this] -> SceneObject* {
+		Reflection::RegisterObject(TypeInfo.name, [&TypeInfo, this]() -> SceneObject* {
 			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
 		});
 	}

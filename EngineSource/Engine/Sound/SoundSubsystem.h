@@ -5,6 +5,7 @@ namespace engine::sound
 {
 	class SoundSubsystem : public subsystem::Subsystem
 	{
-
+	public:
+		SoundSubsystem();
 	};
 }

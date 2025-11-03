@@ -132,10 +132,10 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 
 static void ImportPrint(string Message)
 {
-	Log::Info(Message, { Log::LogPrefix{ .Text = "Import ", .Color = Log::LogColor::Gray } });
+	Log::Info(Message, { Log::LogPrefix{ .Text = "Import", .Color = Log::LogColor::Gray } });
 }
 
-static void AssimpLogCallback(const char* msg, char* userData)
+static void ImportLogCallback(const char* msg, char* userData)
 {
 	ImportPrint(msg);
 }
@@ -163,7 +163,7 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	ctx.Options = Options;
 
 	aiLogStream stream;
-	stream.callback = AssimpLogCallback;
+	stream.callback = ImportLogCallback;
 	aiAttachLogStream(&stream);
 
 	ImportPrint("--- Starting import process ---");

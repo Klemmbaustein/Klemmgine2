@@ -5,6 +5,7 @@
 #include "Subsystem/InputSubsystem.h"
 #include "Subsystem/ConsoleSubsystem.h"
 #include "Subsystem/SceneSubsystem.h"
+#include "Sound/SoundSubsystem.h"
 #include "Plugins/PluginSubsystem.h"
 #include "Script/ScriptSubsystem.h"
 #include "Internal/WorkingDirectory.h"
@@ -52,6 +53,7 @@ Engine* Engine::Init()
 	Instance->LoadSubsystem(new PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
+	Instance->LoadSubsystem(new sound::SoundSubsystem());
 	Instance->LoadSubsystem(new script::ScriptSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());
 
@@ -61,7 +63,6 @@ Engine* Engine::Init()
 	IsPlaying = true;
 	GameHasFocus = true;
 #endif
-
 
 	return Instance;
 }

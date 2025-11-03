@@ -12,17 +12,9 @@ using engine::subsystem::SceneSubsystem;
 
 int32 EngineMain(int argc, char** argv)
 {
-	auto res = editor::ServerConnectDialog::Show();
-
 	Engine* Instance = Engine::Init();
 
-	if (res.Connect)
-	{
-		auto ServerInterface = new editor::EditorServerSubsystem(res.Connection);
-		Instance->LoadSubsystem(ServerInterface);
-	}
-
-	//Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync("Assets/Test");
+	Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync("Assets/Test");
 
 	Instance->Run();
 	return 0;

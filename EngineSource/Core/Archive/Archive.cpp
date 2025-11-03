@@ -146,8 +146,8 @@ void engine::Archive::LoadInternal(IBinaryStream* Stream)
 		size_t CompressedSize = Stream->Get<size_t>();
 		mz_ulong FileSize = mz_ulong(Stream->Get<size_t>());
 
-		uByte* CompressedFile = new uByte[CompressedSize]();
-		uByte* DecompressedFile = new uByte[FileSize]();
+		uByte* CompressedFile = new uByte[CompressedSize];
+		uByte* DecompressedFile = new uByte[FileSize];
 		if (!Stream->Read(CompressedFile, CompressedSize))
 		{
 			Log::Error(str::Format("Format error. Could not read %i bytes", CompressedSize));

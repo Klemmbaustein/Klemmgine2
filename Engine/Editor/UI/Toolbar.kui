@@ -5,7 +5,7 @@ element ToolBarButton
 	var Name = "Some name";
 
 	allAlign = centered;
-	height = 1pn;
+	height = 100%;
 
 	child UIButton btn
 	{

@@ -23,3 +23,6 @@
 	path = Dependencies/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls.git
 	branch = main
+[submodule "Dependencies/openal-soft"]
+	path = Dependencies/openal-soft
+	url = https://github.com/kcat/openal-soft.git

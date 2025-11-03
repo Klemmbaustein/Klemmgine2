@@ -6,6 +6,7 @@
 #include <Core/Error/EngineAssert.h>
 #include <Engine/Stats.h>
 #include <mutex>
+#include <algorithm>
 #include <Core/ThreadPool.h>
 #include <Engine/MainThread.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
@@ -443,7 +444,8 @@ engine::internal::JoltInstance::~JoltInstance()
 
 void engine::internal::JoltInstance::Update()
 {
-	System->Update(std::min(stats::DeltaTime, 0.1f), 1, TempAllocator, JobSystem);
+	// In case time scale is less than 0 (support this for fun)
+	System->Update(std::clamp<float>(stats::DeltaTime, 0, 0.1f), 1, TempAllocator, JobSystem);
 }
 
 void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive, bool StartCollisionEnabled)

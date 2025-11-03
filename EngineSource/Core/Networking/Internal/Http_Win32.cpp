@@ -44,7 +44,6 @@ http::HttpResponse* http::SendRequestNoSSL(HttpUrl url, string method, HttpOptio
 
 	return new HttpResponse(HttpResponse(Connection.HeaderBytes, response));
 }
-#endif
 
 engine::http::win32::HttpConnection::HttpConnection(HttpUrl url, string method, HttpOptions options)
 {
@@ -211,3 +210,4 @@ size_t engine::http::win32::HttpConnectionStream::ReadCount(uByte* To, size_t Si
 		}
 	}
 }
+#endif

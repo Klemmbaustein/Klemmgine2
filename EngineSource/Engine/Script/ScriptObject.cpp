@@ -32,7 +32,7 @@ void engine::script::ScriptObject::Begin()
 		i->OnChanged();
 	}
 
-	Interpreter->callVirtualMethod<void>(ScriptData, 1);
+	Interpreter->callVirtualMethodVoid(ScriptData, 1);
 }
 
 void engine::script::ScriptObject::Update()

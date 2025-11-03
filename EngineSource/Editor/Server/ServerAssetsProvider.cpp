@@ -36,7 +36,7 @@ std::vector<AssetFile> engine::editor::ServerAssetsProvider::GetFiles(string Pat
 			continue;
 		}
 
-		if (SecondPart.contains('/'))
+		if (SecondPart.find('/') != std::string::npos)
 		{
 			continue;
 		}

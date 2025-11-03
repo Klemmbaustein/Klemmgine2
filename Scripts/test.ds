@@ -24,10 +24,16 @@ class MyObject : SceneObject
 		camera.position = new(0, 1, 0)
 	}
 
+	async fn doStuffAsync()
+	{
+		await wait(1)
+		info("hello!")
+	}
+
 	override fn update()
 	{
 		Rotation3 moveRotation = new(0, this.rotation.y, 0)
-
+		
 		if isKeyDown(Key::w)
 		{
 			movement.addInput(forward(moveRotation))

@@ -1,5 +1,6 @@
 #include "ServerResourceSource.h"
 #include <Core/File/FileUtil.h>
+#include <condition_variable>
 
 using namespace engine::editor;
 using namespace engine;
