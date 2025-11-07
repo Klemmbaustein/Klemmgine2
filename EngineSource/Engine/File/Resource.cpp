@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <kui/Resource.h>
 #include <Core/File/BinarySerializer.h>
-#include <Core/Archive/Archive.h>
+#include <Engine/File/ArchiveResourceSource.h>
 #include <mutex>
 #include <Core/Log.h>
 #include <set>
@@ -154,6 +154,14 @@ void resource::ScanForAssets()
 	using std::filesystem::recursive_directory_iterator;
 
 	LoadedAssets.clear();
+
+	static bool ArchiveProviderLoaded = false;
+
+	if (std::filesystem::exists("Assets/archmap.bin") && !ArchiveProviderLoaded)
+	{
+		ArchiveProviderLoaded = true;
+		AddResourceSource(new ArchiveResourceSource());
+	}
 
 	for (auto& i : Sources)
 	{

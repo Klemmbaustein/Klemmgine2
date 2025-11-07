@@ -8,18 +8,35 @@ using namespace engine;
 
 engine::resource::ArchiveResourceSource::ArchiveResourceSource()
 {
+	if (LoadedArchives.empty())
+	{
+		LoadArchive("scenes");
+	}
+
+	SceneArchives.clear();
+
+	auto ArchiveMap = BinarySerializer::FromFile("Assets/archmap.bin", "archm");
+
+	for (auto& i : ArchiveMap)
+	{
+		std::vector<string> Scenes;
+
+		for (auto& scn : i.Value.GetArray())
+		{
+			Scenes.push_back(scn.GetString());
+		}
+
+		SceneArchives.insert({ i.Name, Scenes });
+	}
 }
 
 bool engine::resource::ArchiveResourceSource::FileExists(string Path)
 {
-	if (UseArchives)
+	for (auto& i : LoadedArchives)
 	{
-		for (auto& i : LoadedArchives)
+		if (i.second->HasFile(Path))
 		{
-			if (i.second->HasFile(Path))
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 
@@ -28,14 +45,11 @@ bool engine::resource::ArchiveResourceSource::FileExists(string Path)
 
 ReadOnlyBufferStream* engine::resource::ArchiveResourceSource::GetFile(string Path)
 {
-	if (UseArchives)
+	for (auto& i : LoadedArchives)
 	{
-		for (auto& i : LoadedArchives)
-		{
-			ReadOnlyBufferStream* f = i.second->GetFile(Path);
-			if (f)
-				return f;
-		}
+		ReadOnlyBufferStream* f = i.second->GetFile(Path);
+		if (f)
+			return f;
 	}
 
 	return nullptr;
@@ -43,42 +57,11 @@ ReadOnlyBufferStream* engine::resource::ArchiveResourceSource::GetFile(string Pa
 
 std::map<string, string> engine::resource::ArchiveResourceSource::GetFiles()
 {
-	UseArchives = std::filesystem::exists("Assets/archmap.bin");
-
-	if (UseArchives)
-	{
-		if (LoadedArchives.empty())
-		{
-			LoadArchive("scenes");
-		}
-
-		SceneArchives.clear();
-
-		auto ArchiveMap = BinarySerializer::FromFile("Assets/archmap.bin", "archm");
-
-		for (auto& i : ArchiveMap)
-		{
-			std::vector<string> Scenes;
-
-			for (auto& scn : i.Value.GetArray())
-			{
-				Scenes.push_back(scn.GetString());
-			}
-
-			SceneArchives.insert({ i.Name, Scenes });
-		}
-	}
-
 	return ArchiveAssets;
 }
 
 void engine::resource::ArchiveResourceSource::LoadSceneFiles(string ScenePath)
 {
-	if (!UseArchives)
-	{
-		return;
-	}
-
 	std::set<string> ArchivesToLoad;
 
 	for (auto& [Archive, DependentScenes] : SceneArchives)
@@ -118,6 +101,8 @@ void engine::resource::ArchiveResourceSource::LoadSceneFiles(string ScenePath)
 	{
 		LoadArchive(i);
 	}
+
+	resource::ScanForAssets();
 }
 
 void engine::resource::ArchiveResourceSource::LoadArchive(string Name)

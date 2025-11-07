@@ -1,3 +1,4 @@
+#ifdef KLEMMGINE_WEBSOCKETS
 #pragma once
 #include <Core/File/BinaryStream.h>
 #include <optional>
@@ -38,3 +39,4 @@ namespace engine::http
 		ix::WebSocket* Socket = nullptr;
 	};
 }
+#endif

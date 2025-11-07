@@ -52,11 +52,12 @@ PropertyEntryElement* engine::editor::PropertyMenu::CreateNewEntry(string Name)
 	return New;
 }
 
-void engine::editor::PropertyMenu::AddVecEntry(string Name, Vector3& Value, std::function<void()> OnChanged)
+void engine::editor::PropertyMenu::AddVecEntry(string Name, Vector3& Value,
+	std::function<void()> OnChanged, bool IsColor)
 {
 	auto* Position = CreateNewEntry(Name);
 
-	auto* PosField = new VectorField(Value, ElementSize, nullptr);
+	auto* PosField = new VectorField(Value, ElementSize, nullptr, IsColor);
 	PosField->OnChanged = [&Value, OnChanged, PosField] {
 		Value = PosField->GetValue();
 		if (OnChanged)
@@ -139,7 +140,7 @@ void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::f
 		->SetMinSize(SizeVec(ElementSize, 0)));
 }
 
-void engine::editor::PropertyMenu::AddFloatEntry(string Name, int32& Value, std::function<void()> OnChanged)
+void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std::function<void()> OnChanged)
 {
 	auto* NameEntry = CreateNewEntry(Name);
 

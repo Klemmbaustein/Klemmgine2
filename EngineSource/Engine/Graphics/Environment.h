@@ -26,6 +26,10 @@ namespace engine::graphics
 		Vector3 SkyColor = Vector3(0.8f, 0.8f, 1.0f);
 		Vector3 GroundColor = Vector3(0.7f, 0.5f, 0.6f);
 
+		float FogRange = 0.0f;
+		float FogStart = 0.0f;
+		Vector3 FogColor = Vector3(1);
+
 		Render RenderSettings;
 
 		void ApplyTo(ShaderObject* TargetShader) const;

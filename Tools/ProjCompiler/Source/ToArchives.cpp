@@ -99,8 +99,7 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 	{
 		try
 		{
-			std::fstream SceneFile = std::fstream(FilePath, std::ios::in);
-			SerializedValue Scene = TextSerializer::FromStream(SceneFile);
+			SerializedValue Scene = TextSerializer::FromFile(FilePath.string());
 
 			auto& Objects = Scene.At("objects").GetArray();
 			for (SerializedValue& obj : Objects)
@@ -114,7 +113,7 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 				}
 			}
 		}
-		catch (SerializeReadException e)
+		catch (SerializeReadException& e)
 		{
 			Log::Warn(str::Format("%s: %s", FilePath.c_str(), e.what()));
 		}
@@ -133,7 +132,12 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 	if (FilePath.extension() == ".kmt")
 	{
 		std::fstream SceneFile = std::fstream(FilePath, std::ios::in);
-		SerializedValue Material = TextSerializer::FromStream(SceneFile);
+
+		std::stringstream s;
+		s << SceneFile.rdbuf();
+
+		SerializedValue Material = TextSerializer::FromStream(s);
+
 		for (auto& i : Material.GetObject())
 		{
 			if (i.Value.GetType() != SerializedData::DataType::Object)

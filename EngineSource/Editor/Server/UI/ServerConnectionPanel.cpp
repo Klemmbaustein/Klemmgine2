@@ -21,17 +21,17 @@ engine::editor::ServerConnectionPanel::ServerConnectionPanel(ServerConnection* C
 		delete this;
 	});
 
-	Connection->OnChatMessage.Add(this, [=] {
+	Connection->OnChatMessage.Add(this, [this] {
 		UpdateChatMessages();
 	});
 
-	Element->chatField->field->OnChanged = [=]
+	Element->chatField->field->OnChanged = [this]
 	{
 		string Message = Element->chatField->field->GetText();
 
 		if (!Message.empty())
 		{
-			Connection->SendMessage("sendChat", Message);
+			this->Connection->SendMessage("sendChat", Message);
 
 			Element->chatField->field->SetText("");
 		}

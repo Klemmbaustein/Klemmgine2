@@ -110,6 +110,11 @@ void engine::Scene::Draw()
 
 	UsedCamera->Update();
 
+	if (UsedCamera->UseSceneEnvironment)
+	{
+		UsedCamera->UsedEnvironment = &this->SceneEnvironment;
+	}
+
 	Shadows.Update(UsedCamera);
 
 	{

@@ -22,17 +22,6 @@ class MyObject : SceneObject
 		camera.use()
 		camera.setFOV(80)
 		camera.position = new(0, 1, 0)
-		const _ = doStuffAsync()
-	}
-
-	async fn doStuffAsync()
-	{
-		await wait(1)
-		info("hello!")
-		task t = system::async::sleep()
-		
-		await t
-		info("hello!")
 	}
 
 	override fn update()

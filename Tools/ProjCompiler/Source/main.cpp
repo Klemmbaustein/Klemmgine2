@@ -150,6 +150,9 @@ int main(int argc, char** argv)
 
 		build::CopyPluginFiles(BinPath, OutPath);
 		CopyBinaries(BinPath, OutPath);
+		Log::Info("Copying scripts...");
+
+		std::fs::copy("Scripts", OutPath + "/Scripts");
 
 		auto Archives = engine::build::GetBuildArchives("Assets/");
 		Log::Info(str::Format("Starting %i archive compression jobs...", int(Archives.size())));

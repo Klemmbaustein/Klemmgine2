@@ -199,6 +199,7 @@ void Material::DeSerialize(SerializedValue* From)
 				TextureOptions Options;
 				Options.Filter = TextureOptions::Filtering(Val.At("filter").GetByte());
 				Options.TextureBorders = TextureOptions::BorderType(Val.At("border").GetByte());
+				Options.MipMaps = Options.Filter == TextureOptions::Filtering::Linear;
 
 				NewField.TextureValue.Name = new MatTexture(
 					Val.At("file").GetString(),

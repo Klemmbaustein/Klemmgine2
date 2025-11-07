@@ -226,7 +226,6 @@ void engine::internal::JoltInstance::InitJolt()
 	JPH::RegisterTypes();
 
 	TempAllocator = new JPH::TempAllocatorImpl(1024 * 1024);
-	//JobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 	JobSystem = new JoltJobSystemImpl(ThreadPool::Main());
 
 	// We need a job system that will execute physics jobs on multiple threads. Typically
@@ -464,7 +463,8 @@ void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive
 
 	if (StartCollisionEnabled)
 	{
-		info.ID = JoltBodyInterface->CreateAndAddBody(*JoltShape, StartActive ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
+		info.ID = JoltBodyInterface->CreateAndAddBody(*JoltShape, StartActive
+			? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
 	}
 	else
 	{
@@ -542,7 +542,8 @@ std::pair<Vector3, Rotation3> engine::internal::JoltInstance::GetBodyPositionAnd
 	JPH::Quat Rot;
 	JoltBodyInterface->GetPositionAndRotation(Info->ID, Pos, Rot);
 	JPH::Vec3 RotEuler = Rot.GetEulerAngles();
-	return { Vector3(Pos.GetX(), Pos.GetY(), Pos.GetZ()), Rotation3(RotEuler.GetX(), RotEuler.GetY(), RotEuler.GetZ(), true) };
+	return { Vector3(Pos.GetX(), Pos.GetY(), Pos.GetZ()),
+		Rotation3(RotEuler.GetX(), RotEuler.GetY(), RotEuler.GetZ(), true) };
 }
 
 void engine::internal::JoltInstance::SetBodyRotation(engine::physics::PhysicsBody* Body, Vector3 NewRotation)
@@ -556,7 +557,8 @@ void engine::internal::JoltInstance::SetBodyRotation(engine::physics::PhysicsBod
 	JoltBodyInterface->SetRotation(Info->ID, ToJPHQuat(NewRotation), JPH::EActivation::Activate);
 }
 
-void engine::internal::JoltInstance::SetBodyPositionAndRotation(engine::physics::PhysicsBody* Body, Vector3 NewPosition, Rotation3 NewRotation)
+void engine::internal::JoltInstance::SetBodyPositionAndRotation(engine::physics::PhysicsBody* Body,
+	Vector3 NewPosition, Rotation3 NewRotation)
 {
 	if (!Body->PhysicsSystemBody)
 	{
@@ -564,7 +566,8 @@ void engine::internal::JoltInstance::SetBodyPositionAndRotation(engine::physics:
 	}
 
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
-	JoltBodyInterface->SetPositionAndRotation(Info->ID, ToJPHVec3(NewPosition), ToJPHQuat(NewRotation), JPH::EActivation::Activate);
+	JoltBodyInterface->SetPositionAndRotation(Info->ID, ToJPHVec3(NewPosition),
+		ToJPHQuat(NewRotation), JPH::EActivation::Activate);
 }
 
 void engine::internal::JoltInstance::ScaleBody(engine::physics::PhysicsBody* Body, Vector3 ScaleFactor)
@@ -575,7 +578,18 @@ void engine::internal::JoltInstance::ScaleBody(engine::physics::PhysicsBody* Bod
 	}
 
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
-	auto ShapeInfo = JoltBodyInterface->GetShape(Info->ID)->ScaleShape(ToJPHVec3(ScaleFactor));
+
+	auto s = JoltBodyInterface->GetShape(Info->ID);
+
+	auto t = s->GetSubType();
+
+	if (t == JPH::EShapeSubType::Scaled)
+	{
+		auto scaled = static_cast<const JPH::ScaledShape*>(s.GetPtr());
+		s = scaled->GetInnerShape();
+		ScaleFactor *= Vector3(scaled->GetScale().GetX(), scaled->GetScale().GetY(), scaled->GetScale().GetZ());
+	}
+	auto ShapeInfo = s->ScaleShape(ToJPHVec3(ScaleFactor));
 	JoltBodyInterface->SetShape(Info->ID, ShapeInfo.Get(), true, JPH::EActivation::Activate);
 }
 
@@ -589,12 +603,14 @@ void engine::internal::JoltInstance::SetBodyActive(engine::physics::PhysicsBody*
 	Body->IsActive = IsActive;
 }
 
-void engine::internal::JoltInstance::SetBodyCollisionEnabled(engine::physics::PhysicsBody* Body, bool IsCollisionEnabled)
+void engine::internal::JoltInstance::SetBodyCollisionEnabled(engine::physics::PhysicsBody* Body,
+	bool IsCollisionEnabled)
 {
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
 	if (IsCollisionEnabled)
 	{
-		JoltBodyInterface->AddBody(Info->ID, Body->IsActive ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
+		JoltBodyInterface->AddBody(Info->ID, Body->IsActive
+			? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
 	}
 	else
 	{
@@ -640,8 +656,10 @@ public:
 		HitResult r;
 		r.Hit = true;
 		r.Depth = inResult.mPenetrationDepth;
-		r.Normal = -Vector3(inResult.mPenetrationAxis.GetX(), inResult.mPenetrationAxis.GetY(), inResult.mPenetrationAxis.GetZ()).Normalize();
-		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(), inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
+		r.Normal = -Vector3(inResult.mPenetrationAxis.GetX(),
+			inResult.mPenetrationAxis.GetY(), inResult.mPenetrationAxis.GetZ()).Normalize();
+		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(),
+			inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
 		r.Distance = inResult.mFraction;
 
 		PhysicsBody* BodyInfo = Instance->Bodies[inResult.mBodyID2].Body;
@@ -684,8 +702,10 @@ public:
 		HitResult r;
 		r.Hit = true;
 		r.Depth = inResult.mPenetrationDepth;
-		r.Normal = -Vector3(inResult.mPenetrationAxis.GetX(), inResult.mPenetrationAxis.GetY(), inResult.mPenetrationAxis.GetZ()).Normalize();
-		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(), inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
+		r.Normal = -Vector3(inResult.mPenetrationAxis.GetX(),
+			inResult.mPenetrationAxis.GetY(), inResult.mPenetrationAxis.GetZ()).Normalize();
+		r.ImpactPoint = Vector3(inResult.mContactPointOn2.GetX(),
+			inResult.mContactPointOn2.GetY(), inResult.mContactPointOn2.GetZ());
 
 		PhysicsBody* BodyInfo = Instance->Bodies[inResult.mBodyID2].Body;
 		r.HitComponent = BodyInfo->Parent;
@@ -693,7 +713,8 @@ public:
 	};
 };
 
-std::vector<physics::HitResult> engine::internal::JoltInstance::CollisionTest(Transform At, physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+std::vector<physics::HitResult> engine::internal::JoltInstance::CollisionTest(Transform At,
+	physics::PhysicsBody* Body, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
 {
 	if (!Body->ShapeInfo)
 	{
@@ -726,7 +747,8 @@ std::vector<physics::HitResult> engine::internal::JoltInstance::CollisionTest(Tr
 
 	JPH::Vec3 ObjectScale = ToJPHVec3(1);
 
-	System->GetNarrowPhaseQuery().CollideShape(JoltShape->GetShape(), ObjectScale, ResultMat, Settings, JPH::Vec3(), cl, BplF, LayerF, ObjF);
+	System->GetNarrowPhaseQuery().CollideShape(JoltShape->GetShape(),
+		ObjectScale, ResultMat, Settings, JPH::Vec3(), cl, BplF, LayerF, ObjF);
 
 	return cl.Hits;
 }

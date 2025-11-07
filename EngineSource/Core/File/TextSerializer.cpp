@@ -71,8 +71,10 @@ std::vector<engine::SerializedData> engine::TextSerializer::FromFile(string File
 	}
 
 	std::ifstream In = std::ifstream(File);
+	std::stringstream str;
+	str << In.rdbuf();
 	std::vector<SerializedData> Out;
-	ReadObject(Out, In);
+	ReadObject(Out, str);
 	In.close();
 	return Out;
 }
@@ -275,7 +277,7 @@ engine::string engine::TextSerializer::ReadString(std::istream& Stream)
 		int fail = Stream.fail();
 		int New = Stream.get();
 		if (New == EOF)
-			return "";
+			throw SerializeReadException(str::Format("Unexpected character '%c' (hex %x)", char(New), New));
 
 		if (New == '\n' || New == '\t' || New == ' ' || New == '\r')
 			continue;

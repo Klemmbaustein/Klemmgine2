@@ -8,6 +8,7 @@
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/ObjectListPanel.h"
 #include "Panels/PropertyPanel.h"
+#include "Panels/ScenePanel.h"
 #include "Panels/Viewport.h"
 #include "Windows/BuildWindow.h"
 #include "Windows/SettingsWindow.h"
@@ -220,7 +221,12 @@ engine::editor::EditorUI::EditorUI()
 	Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
 	RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
 	EditorPanel* Right = new EditorPanel("panel");
-	Right->AddChild(new PropertyPanel(), EditorPanel::Align::Vertical);
+	auto Properties = new EditorPanel("panel");
+	Right->AddChild(Properties, EditorPanel::Align::Vertical);
+
+	Properties->AddChild(new PropertyPanel(), EditorPanel::Align::Tabs);
+	Properties->AddChild(new ScenePanel(), EditorPanel::Align::Tabs);
+
 	Right->AddChild(new ObjectListPanel(), EditorPanel::Align::Vertical);
 	RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
 

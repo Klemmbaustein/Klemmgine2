@@ -13,6 +13,8 @@ namespace engine
 
 		ENGINE_OBJECT(LandscapeObject, "Engine");
 
+		ObjProperty<AssetRef> Material = ObjProperty<AssetRef>("Material", "Grass.kmt"_asset, this);
+
 	private:
 	};
 }

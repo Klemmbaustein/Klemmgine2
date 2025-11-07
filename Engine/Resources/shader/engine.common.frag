@@ -45,6 +45,10 @@ uniform int u_shadowCascadeCount = 4;
 uniform sampler2DArray u_shadowMaps;
 uniform float u_shadowBiasModifier = 0;
 
+uniform vec3 u_sceneFogColor = vec3(0.0);
+uniform float u_sceneFogRange = 0.0;
+uniform float u_sceneFogStart = 0.0;
+
 #define PCF_SIZE 4
 #define PCF_HALF_SIZE 2
 
@@ -70,7 +74,8 @@ float SampleFromShadowMap(vec2 distances)
 	{
 		for (int y = 0; y < PCF_SIZE - 1; ++y)
 		{
-			ShadowVal += mix(mix(shadowValues[x][y], shadowValues[x + 1][y], distances.x), mix(shadowValues[x][y + 1], shadowValues[x + 1][y +  1], distances.x), distances.y);
+			ShadowVal += mix(mix(shadowValues[x][y], shadowValues[x + 1][y], distances.x),
+				mix(shadowValues[x][y + 1], shadowValues[x + 1][y +  1], distances.x), distances.y);
 		}
 	}
 	return 1 - clamp(ShadowVal / ((PCF_SIZE - 1) * (PCF_SIZE - 1)), 0.0, 1.0);
@@ -134,7 +139,8 @@ float getShadowStrength()
 	{
 		for (int y = 0; y < PCF_SIZE; ++y)
 		{
-			float pcfDepth = texture(u_shadowMaps, vec3(projCoords.xy + ivec2(x - PCF_HALF_SIZE, y - PCF_HALF_SIZE) * texelSize.xy, layer)).r;
+			float pcfDepth = texture(u_shadowMaps, vec3(projCoords.xy
+				+ ivec2(x - PCF_HALF_SIZE, y - PCF_HALF_SIZE) * texelSize.xy, layer)).r;
 			bool isLight = currentDepth > pcfDepth + bias;
 			shadowValues[x][y] = isLight ? 1.0 : 0.0;
 			if (isLight)
@@ -150,7 +156,8 @@ float getShadowStrength()
 	if (allValuesDark)
 		return 0.0;
 
-	vec2 distances = vec2(mod(projCoords.x, texelSize.x), mod(projCoords.y, texelSize.y)) * vec2(textureSize(u_shadowMaps, 0));
+	vec2 distances = vec2(mod(projCoords.x, texelSize.x),
+		mod(projCoords.y, texelSize.y)) * vec2(textureSize(u_shadowMaps, 0));
 	return SampleFromShadowMap(distances);
 }
 
@@ -158,6 +165,14 @@ float getShadowStrength()
 float getLightStrength()
 {
 	return getShadowStrength() * max(dot(v_normal, u_lightDirection), 0.0);
+}
+
+#export //!
+vec3 applyFog(vec3 color)
+{
+	return u_sceneFogRange > 0
+		? mix(color, u_sceneFogColor, pow(clamp((length(v_screenPosition) - u_sceneFogStart) / u_sceneFogRange, 0.0, 1.0), 2.0))
+		: color;
 }
 
 #export //!
@@ -169,7 +184,7 @@ vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize
 	vec3 reflectDir = reflect(-u_lightDirection, v_normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularSize);
 	vec3 spec_color = spec * specularStength * u_sunColor;
-	return (color * u_sunColor + spec_color) * getLightStrength() + ambient;
+	return applyFog((color * u_sunColor + spec_color) * getLightStrength() + ambient);
 }
 
 #export //!

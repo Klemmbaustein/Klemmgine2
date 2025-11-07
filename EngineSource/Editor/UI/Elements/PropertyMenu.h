@@ -29,12 +29,12 @@ namespace engine::editor
 		PropertyHeaderElement* CreateNewHeading(string Title, bool HasPadding = true);
 
 		PropertyEntryElement* CreateNewEntry(string Name);
-		void AddVecEntry(string Name, Vector3& Value, std::function<void()> OnChanged);
+		void AddVecEntry(string Name, Vector3& Value, std::function<void()> OnChanged, bool IsColor = false);
 		void AddStringEntry(string Name, string& Value, std::function<void()> OnChanged);
 		void AddBooleanEntry(string Name, bool& Value, std::function<void()> OnChanged);
 		void AddButtonEntry(string Name, string Label, std::function<void()> OnClicked);
 		void AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged);
-		void AddFloatEntry(string Name, int32& Value, std::function<void()> OnChanged);
+		void AddFloatEntry(string Name, float& Value, std::function<void()> OnChanged);
 		void AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged);
 		void AddDropdownEntry(string Name,
 			std::vector<kui::UIDropdown::Option> Values,

@@ -11,6 +11,8 @@ static std::array<Vec3f, 3> Colors = {
 	Vec3f(0.0f, 0.1f, 0.6f),
 };
 
+static std::array<const char, 3> ColorValues = { 'R', 'G', 'B' };
+
 engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std::function<void()> OnChanged, bool IsColor)
 	: kui::UIBox(!IsColor, 0)
 {
@@ -40,7 +42,7 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std:
 			->SetMinHeight(UISize::Parent(1))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetHorizontalAlign(UIBox::Align::Centered)
-			->AddChild((new UIText(UISize::Pixels(11), 1, string({ char('X' + i) }), EditorUI::EditorFont)));
+			->AddChild((new UIText(UISize::Pixels(11), 1, { IsColor ? ColorValues[i] : char('X' + i) }, EditorUI::EditorFont)));
 
 		Target->AddChild(CoordBackground);
 
@@ -90,8 +92,8 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std:
 
 			auto OnSubmit = [this, OnChange](Vector3 NewValue) {
 				this->Picker = nullptr;
-				UpdateValues();
 				OnChange(NewValue);
+				UpdateValues();
 			};
 
 			this->Picker = new ColorPicker(Value, OnSubmit, OnChange);

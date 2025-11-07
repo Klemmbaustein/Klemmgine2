@@ -178,6 +178,7 @@ elseif(ENGINE_EDITOR)
 	set(MBEDTLS_FATAL_WARNINGS OFF)
 	add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
 	add_subdirectory("Dependencies/IXWebSocket" EXCLUDE_FROM_ALL)
+	target_compile_definitions(KlemmgineCore PUBLIC KLEMMGINE_WEBSOCKETS)
 	target_compile_definitions(ixwebsocket PRIVATE IXWEBSOCKET_USE_MBED_TLS_MIN_VERSION_3)
 	target_link_libraries(KlemmgineCore PUBLIC ixwebsocket)
 

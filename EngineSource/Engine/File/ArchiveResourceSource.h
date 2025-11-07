@@ -16,8 +16,6 @@ namespace engine::resource
 		std::map<string, string> GetFiles() override;
 		void LoadSceneFiles(string ScenePath) override;
 
-		bool UseArchives = false;
-
 		std::mutex ArchiveMutex;
 		std::map<string, Archive*> LoadedArchives;
 		std::map<string, std::vector<string>> SceneArchives;

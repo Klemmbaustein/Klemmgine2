@@ -1,3 +1,4 @@
+#ifdef KLEMMGINE_WEBSOCKETS
 #include "HttpWebSocket.h"
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXNetSystem.h>
@@ -61,3 +62,4 @@ void engine::http::WebSocketConnection::Send(const uByte* Data, size_t DataSize,
 	}
 	Socket->send(string((char*)Data, DataSize), IsBinary);
 }
+#endif

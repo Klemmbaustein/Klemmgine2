@@ -103,23 +103,34 @@ void engine::Archive::Save(IBinaryStream* Stream)
 
 		Stream->WriteString(Name);
 
-		uByte* CompressedFile = new uByte[Data.Size]();
-
-		mz_ulong CompressedSize = mz_ulong(Data.Size);
-		int Error = mz_compress(CompressedFile, &CompressedSize, Data.Bytes, mz_ulong(Data.Size));
-
-		if (Error != MZ_OK)
+		if (Data.Size > 0)
 		{
-			Log::Error("Deflate compress error: " + string(mz_error(Error)));
-			break;
+			uByte* CompressedFile = new uByte[Data.Size]();
+
+			mz_ulong CompressedSize = mz_ulong(Data.Size);
+			int Error = mz_compress(CompressedFile, &CompressedSize, Data.Bytes, mz_ulong(Data.Size));
+
+			if (Error != MZ_OK)
+			{
+				Log::Warn("Deflate compress error: " + string(mz_error(Error)) + ". Storing uncompressed.");
+				Stream->WriteValue(Data.Size);
+				Stream->WriteValue(Data.Size);
+				Stream->Write(Data.Bytes, Data.Size);
+			}
+			else
+			{
+				Stream->WriteValue(size_t(CompressedSize));
+				Stream->WriteValue(Data.Size);
+
+				Stream->Write(CompressedFile, CompressedSize);
+				delete[] CompressedFile;
+			}
 		}
-
-		Stream->WriteValue(size_t(CompressedSize));
-		Stream->WriteValue(Data.Size);
-
-		Stream->Write(CompressedFile, CompressedSize);
-
-		delete[] CompressedFile;
+		else
+		{
+			Stream->WriteValue(size_t(0)); // Compressed size
+			Stream->WriteValue(size_t(0)); // Uncompressed size
+		}
 	}
 }
 
@@ -146,29 +157,50 @@ void engine::Archive::LoadInternal(IBinaryStream* Stream)
 		size_t CompressedSize = Stream->Get<size_t>();
 		mz_ulong FileSize = mz_ulong(Stream->Get<size_t>());
 
-		uByte* CompressedFile = new uByte[CompressedSize];
-		uByte* DecompressedFile = new uByte[FileSize];
-		if (!Stream->Read(CompressedFile, CompressedSize))
+		if (!CompressedSize)
 		{
-			Log::Error(str::Format("Format error. Could not read %i bytes", CompressedSize));
-			return;
-		}
-
-		int Error = mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
-
-		if (Error != MZ_OK)
-		{
-			Log::Error("Deflate compress error: " + string(mz_error(Error)));
 			break;
 		}
 
-		delete[] CompressedFile;
+		uByte* CompressedFile = new uByte[CompressedSize];
 
-		Streams.insert({ FileName, ArchiveData{
-			.Bytes = DecompressedFile,
-			.Size = FileSize
-			} });
+		if (!Stream->Read(CompressedFile, CompressedSize))
+		{
+			Log::Error(str::Format("Format error. Could not read %i bytes of file %s", CompressedSize, FileName.c_str()));
+			delete[] CompressedFile;
+			return;
+		}
 
-		FileNames.insert({ file::FileName(FileName), FileName });
+		// No compression
+		if (FileSize == CompressedSize)
+		{
+			Streams.insert({ FileName, ArchiveData{
+				.Bytes = CompressedFile,
+				.Size = FileSize
+				} });
+
+			FileNames.insert({ file::FileName(FileName), FileName });
+		}
+		else
+		{
+			uByte* DecompressedFile = new uByte[FileSize];
+
+			int Error = mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
+
+			if (Error != MZ_OK)
+			{
+				Log::Error("Deflate compress error: " + string(mz_error(Error)));
+				break;
+			}
+
+			delete[] CompressedFile;
+
+			Streams.insert({ FileName, ArchiveData{
+				.Bytes = DecompressedFile,
+				.Size = FileSize
+				} });
+
+			FileNames.insert({ file::FileName(FileName), FileName });
+		}
 	}
 }
