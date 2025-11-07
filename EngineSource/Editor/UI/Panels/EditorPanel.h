@@ -109,6 +109,8 @@ namespace engine::editor
 
 		kui::Vec2f UsedSize;
 		kui::Vec2f Position;
+		kui::Vec2f OldUsedSize;
+		kui::Vec2f OldPosition;
 		kui::Vec2f UsedSizeToPanelSize(kui::Vec2f Used);
 		kui::Vec2f PositionToPanelPosition(kui::Vec2f Pos);
 	};

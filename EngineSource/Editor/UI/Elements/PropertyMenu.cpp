@@ -234,5 +234,5 @@ void engine::editor::PropertyMenu::Update()
 	uint32 PixelSize = this->GetUsedSize().GetPixels().X;
 
 	this->IsCompact = PixelSize < 220;
-	ElementSize = UISize::Pixels(PixelSize - (IsCompact ? 10 : 100));
+	ElementSize = UISize::Pixels(PixelSize - (IsCompact ? 10 : 110));
 }

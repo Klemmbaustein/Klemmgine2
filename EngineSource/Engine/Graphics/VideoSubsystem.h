@@ -30,6 +30,9 @@ namespace engine
 		static VideoSubsystem* Current;
 
 		void OnResized();
+
+		void InitGLErrors();
+
 	private:
 		string GetWindowTitle();
 		kui::Vec2ui GetWindowSize();

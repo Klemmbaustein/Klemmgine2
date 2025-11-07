@@ -22,7 +22,7 @@ element PropertyEntryElement
 		}
 		minSize = (90, 0)px;
 		maxSize = (90, 200)px;
-		horizontalAlign = reverse;
+		leftPadding = 10px;
 	}
 
 	child UIBackground separator

@@ -36,7 +36,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
 {
-	Log::Info(std::to_string(RuntimeClass::classRefCount));
+	Print("Script classes leaked: " + std::to_string(RuntimeClass::classRefCount), LogType::Note);
 
 	delete this->Runtime;
 	delete this->ScriptLanguage;

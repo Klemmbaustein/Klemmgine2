@@ -32,7 +32,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	PreviewScene->Resizable = false;
 	PreviewScene->AlwaysRedraw = false;
 	PreviewScene->Redraw = true;
-	PreviewScene->BufferSize = 200 * Window::GetActiveWindow()->GetDPI();
+	PreviewScene->BufferSize = Vec2ui(300, 200) * Window::GetActiveWindow()->GetDPI();
 	PreviewScene->OnResized(PreviewScene->BufferSize);
 
 	auto CurrentObj = PreviewScene->CreateObject<MeshObject>();
@@ -54,8 +54,11 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 		Engine::GetSubsystem<VideoSubsystem>()->Shaders.ReloadAll();
 	});
 
-	PreviewImage = new UIBackground(true, 0, 1, 200_px);
+	PreviewImage = new UIBackground(true, 0, 1, SizeVec(300_px, 200_px));
 	Sidebar = new UIBackground(false, 0, EditorUI::Theme.DarkBackground);
+
+	SidebarScroll = new UIScrollBox(false, 0, true);
+	Sidebar->AddChild(SidebarScroll);
 
 	MainBox = new UIBox(true);
 
@@ -63,42 +66,18 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	Background->AddChild(MainBox
 		->AddChild(Sidebar
 			->SetCorner(5_px)
-			->SetPadding(0, 1_px, 1_px, 1_px)
-			->AddChild(PreviewImage
-				->SetPadding(5_px)))
+			->SetPadding(0, 2_px, 1_px, 1_px))
 		->AddChild(MaterialParamsBox));
 
-	UIBox* PropertiesBox = new UIBox(false);
+	MaterialSettings = new PropertyMenu();
 
-	auto AddSidebarTextField = [PropertiesBox, this](string Name, string& Value)
-	{
-		auto ShaderField = new UITextField(0, EditorUI::Theme.Background, EditorUI::EditorFont, nullptr);
-		ShaderField
-			->SetText(Value)
-			->SetTextColor(EditorUI::Theme.Text)
-			->SetMinSize(SizeVec(130_px, UISize::Parent(1)));
-		ShaderField->OnChanged = [this, ShaderField, &Value] {
-			if (Value == ShaderField->GetText())
-				return;
-			Value = ShaderField->GetText();
-			this->LoadedMaterial->UpdateShader();
-			this->OnChanged();
-			this->LoadUI();
-		};
+	MaterialSettings->SetDisplayScrollBar(false);
 
-		PropertiesBox->AddChild((new UIBox(true))
-			->SetPadding(5_px)
-			->SetVerticalAlign(UIBox::Align::Centered)
-			->AddChild((new UIText(11_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
-				->SetTextWidthOverride(65_px)
-				->SetWrapEnabled(true, 65_px))
-			->AddChild(ShaderField));
-	};
-
-	Sidebar->AddChild(PropertiesBox);
-
-	AddSidebarTextField("Vertex shader", LoadedMaterial->VertexShader);
-	AddSidebarTextField("Fragment shader", LoadedMaterial->FragmentShader);
+	SidebarScroll
+		->SetPadding(5_px)
+		->AddChild(PreviewImage
+			->SetPadding(5_px))
+		->AddChild(MaterialSettings);
 }
 
 engine::editor::MaterialEditor::~MaterialEditor()
@@ -125,20 +104,54 @@ void engine::editor::MaterialEditor::LoadUI()
 
 	MaterialParamsBox->DeleteChildren();
 
-	bool Compact = SizeVec(Size).GetPixels().X < 600;
+	Vec2f Pixels = SizeVec(Size).GetPixels();
+
+	bool Compact = Pixels.X < 700;
 
 	MainBox->SetHorizontal(!Compact);
-	Sidebar->SetHorizontal(Compact);
+
+	MaterialSettings->SetMinWidth(290_px);
+	MaterialSettings->SetMaxWidth(290_px);
+
+	MaterialSettings->Clear();
+
+	auto OnShaderChanged = [this] {
+		this->LoadedMaterial->UpdateShader();
+		this->OnChanged();
+		this->LoadUI();
+	};
+
+	MaterialSettings->CreateNewHeading("Material properties");
+	MaterialSettings->AddStringEntry("Vertex shader", LoadedMaterial->VertexShader, OnShaderChanged);
+	MaterialSettings->AddStringEntry("Fragment shader", LoadedMaterial->FragmentShader, OnShaderChanged);
+
+
+	Background->UpdateElement();
+
+	UISize Size = Compact ?
+		(Pixels.X < 320 ? 200_px : 300_px)
+		: (Pixels.X < 800 ? 200_px : 300_px);
 
 	if (Compact)
 	{
 		Sidebar->SetCorners(false, false, false, false);
 		Sidebar->SetMinSize(SizeVec(UISize::Parent(1), 0));
+		SidebarScroll->SetMinSize(SizeVec(UISize::Parent(1), 0));
+		SidebarScroll->SetMinSize(SizeVec(UISize::Parent(1), 300_px));
+		SidebarScroll->SetMaxSize(SizeVec(UISize::Parent(1), 300_px));
+		MaterialParamsBox->SetMinHeight(UISize::Pixels(Pixels.Y - 360));
+		MaterialParamsBox->SetMaxHeight(UISize::Pixels(Pixels.Y - 360));
+		MaterialParamsBox->SetMinWidth(UISize::Pixels(Pixels.X - 10));
 	}
 	else
 	{
 		Sidebar->SetCorners(false, false, true, false);
 		Sidebar->SetMinSize(SizeVec(0, UISize::Parent(1)));
+		SidebarScroll->SetMinSize(SizeVec(0, UISize::Parent(1)));
+		SidebarScroll->SetMaxSize(SizeVec(2, UISize::Parent(1)));
+		MaterialParamsBox->SetMinHeight(UISize::Pixels(Pixels.Y - 50));
+		MaterialParamsBox->SetMaxHeight(UISize::Pixels(Pixels.Y - 50));
+		MaterialParamsBox->SetMinWidth(UISize::Pixels(Pixels.X - 330));
 	}
 
 	for (Material::Field& i : LoadedMaterial->Fields)
@@ -178,7 +191,7 @@ void engine::editor::MaterialEditor::LoadUI()
 
 		if (i.FieldType == Material::Field::Type::Vec3)
 		{
-			auto VecField = new VectorField(i.Vec3, 200_px, nullptr);
+			auto VecField = new VectorField(i.Vec3, Size, nullptr, true);
 			VecField->OnChanged = [this, VecField, &i]()
 			{
 				if (i.Vec3 == VecField->GetValue())
@@ -205,6 +218,7 @@ void engine::editor::MaterialEditor::LoadUI()
 		}
 
 		auto Field = new MaterialValueElement();
+		Field->field->SetSize(Size);
 		switch (i.FieldType)
 		{
 		case Material::Field::Type::Int:
@@ -281,8 +295,7 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 		TextureName.Name.empty() ? AssetRef{ .Extension = "png" } : AssetRef::Convert(TextureName.Name),
 		UISize(180_px).GetScreen().X, nullptr);
 
-	Selector->OnChanged = [this, Selector, TexElement, &Field]()
-	{
+	Selector->OnChanged = [this, Selector, TexElement, &Field]() {
 		string Name = file::FileName(Selector->SelectedAsset.FilePath);
 
 		if (!Field.TextureValue.Name)
@@ -313,7 +326,6 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 		{
 			auto Dropdown = new UIDropdown(0, 75_px, EditorUI::Theme.DarkBackground,
 				EditorUI::Theme.Text, FilteringOptions, nullptr, EditorUI::EditorFont);
-			Dropdown->SelectOption(DefaultValue, false);
 			Dropdown->OnClicked = [this, Dropdown, TexElement, &Field, SetValue]()
 			{
 				SetValue(uint8(Dropdown->SelectedIndex));
@@ -326,6 +338,7 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 			Dropdown->SetPadding(5_px);
 			Dropdown->SetTextSize(11_px, 3_px);
 			Dropdown->SetCorner(5_px);
+			Dropdown->SelectOption(DefaultValue, false);
 			ControlsBox->AddChild(Dropdown);
 		};
 
@@ -334,8 +347,7 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 		CreateTextureDropdown({
 			UIDropdown::Option("Nearest"),
 			UIDropdown::Option("Linear"),
-			}, TextureName.Options.Filter, [&Field](uint8 NewValue)
-		{
+			}, TextureName.Options.Filter, [&Field](uint8 NewValue) {
 			Field.TextureValue.Name->Options.Filter = TextureOptions::Filtering(NewValue);
 		});
 

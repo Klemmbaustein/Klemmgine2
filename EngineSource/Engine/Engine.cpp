@@ -28,7 +28,6 @@ Engine* Engine::Instance = nullptr;
 bool Engine::IsPlaying = false;
 bool Engine::GameHasFocus = false;
 
-
 Engine::Engine()
 {
 }

@@ -132,7 +132,12 @@ void engine::editor::EditorPanel::UpdateLayout()
 	}
 	ShouldUpdate = false;
 
-	OnResized();
+	if (OldPosition != Position || OldUsedSize != UsedSize)
+	{
+		OldPosition = Position;
+		OldUsedSize = UsedSize;
+		OnResized();
+	}
 }
 
 void engine::editor::EditorPanel::UpdatePanel()

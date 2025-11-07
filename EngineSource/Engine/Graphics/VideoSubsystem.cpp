@@ -102,8 +102,7 @@ engine::VideoSubsystem::VideoSubsystem()
 
 	static_cast<render::OpenGLBackend*>(MainWindow->UI.Render)->CanDrawToWindow = false;
 
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(MessageCallback, this);
+	InitGLErrors();
 
 	debug::TimeLogger ModulesTime{ "Compiled shader modules", GetLogPrefixes() };
 	Shaders.Modules.ScanModules();
@@ -329,4 +328,10 @@ void engine::VideoSubsystem::OnResized()
 	{
 		Callback(MainWindow->GetSize());
 	}
+}
+
+void engine::VideoSubsystem::InitGLErrors()
+{
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(MessageCallback, this);
 }

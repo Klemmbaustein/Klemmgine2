@@ -23,7 +23,7 @@ std::vector<string> engine::script::FileScriptProvider::GetFiles()
 
 string engine::script::FileScriptProvider::GetFile(string Name)
 {
-	std::ifstream File = std::ifstream(Name);
+	std::ifstream File{ Name };
 
 	std::stringstream FileStream;
 	FileStream << File.rdbuf();

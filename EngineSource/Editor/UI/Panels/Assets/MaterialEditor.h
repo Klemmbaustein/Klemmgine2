@@ -6,6 +6,7 @@
 #include <kui/UI/UIScrollBox.h>
 #include "AssetEditor.h"
 #include <iostream>
+#include <Editor/UI/Elements/PropertyMenu.h>
 
 namespace engine::editor
 {
@@ -28,10 +29,13 @@ namespace engine::editor
 
 		void OnChanged() override;
 
+		PropertyMenu* MaterialSettings = nullptr;
+
 		void CreateTextureField(kui::UIBox* Parent, graphics::Material::Field& Field);
 
 		bool RedrawNextFrame = false;
 		kui::UIBackground* Sidebar = nullptr;
+		kui::UIScrollBox* SidebarScroll = nullptr;
 		kui::UIBackground* PreviewImage = nullptr;
 		kui::UIBox* MainBox = nullptr;
 		Scene* PreviewScene = nullptr;
