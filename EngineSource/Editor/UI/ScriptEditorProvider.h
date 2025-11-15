@@ -2,7 +2,9 @@
 #include <kui/UI/FileEditorProvider.h>
 #include <ds/language.hpp>
 #include <kui/Timer.h>
+#include <stack>
 #include <Editor/Server/ServerConnection.h>
+#include <Core/Event.h>
 
 namespace engine::editor
 {
@@ -51,7 +53,35 @@ namespace engine::editor
 
 		void LoadRemoteFile();
 
+		void Commit() override;
+
+		void Undo();
+		void Redo();
+
+		Event<> OnUpdated;
+
 	private:
+
+
+		struct ChangePart
+		{
+			uint64_t Line;
+			std::string Content;
+			bool IsRemove = false;
+			bool IsAdd = false;
+		};
+
+		struct Change
+		{
+			std::vector<ChangePart> Parts;
+		};
+
+		Change ApplyChange(const Change& Target);
+
+		Change NextChange;
+
+		std::stack<Change> Changes;
+		std::stack<Change> UnDoneChanges;
 
 		struct HoverErrorData
 		{
@@ -64,8 +94,10 @@ namespace engine::editor
 			void* Symbol = nullptr;
 			kui::EditorPosition At;
 			std::function<kui::UIBox* ()> GetHoverData;
-			std::function<kui::EditorPosition()> GetDefinition;
+			std::function<ds::Token()> GetDefinition;
 		};
+
+		std::vector<size_t> Changed;
 
 		HoverErrorData GetHoveredError(kui::Vec2f ScreenPosition);
 		HoverSymbolData GetHoveredSymbol(kui::Vec2f ScreenPosition);

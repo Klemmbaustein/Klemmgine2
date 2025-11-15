@@ -3,10 +3,11 @@
 #include <Engine/Scene.h>
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/Physics/Physics.h>
+#include <Core/Log.h>
 
 using namespace engine::graphics;
 
-constexpr uint32 SIZE = 128;
+constexpr uint32 SIZE = 256;
 
 constexpr float Fade(float t)
 {
@@ -135,7 +136,8 @@ void engine::LandscapeComponent::OnAttached()
 	{
 		i.Normal = Vector3(0);
 	}
-	for (size_t i = 0; i < Indices.size(); i += 3) // <- Flat shading
+
+	for (size_t i = 0; i < Indices.size(); i += 3)
 	{
 		size_t A = Indices[i], B = Indices[i + 1], C = Indices[i + 2];
 		Vector3 n = Vector3::Cross(Vertices[B].Position - Vertices[A].Position, Vertices[C].Position - Vertices[A].Position);

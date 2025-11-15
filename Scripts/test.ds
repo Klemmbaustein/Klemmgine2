@@ -5,7 +5,6 @@ module game
 
 class MyObject : SceneObject
 {
-	[Export]
 	AssetRef testModel = emptyAsset("kmdl")
 
 	MoveComponent movement = new()
@@ -13,7 +12,7 @@ class MyObject : SceneObject
 
 	override fn begin()
 	{
-		const testMesh = new MeshComponent()
+		MeshComponent testMesh = new()
 		testMesh.load(testModel)
 		attach(testMesh)
 
@@ -53,9 +52,9 @@ class MyObject : SceneObject
 		Vector2 mouseMovement = getMouseMovement()
 
 		rotation.y -= mouseMovement.x
-		camera.rotation.p -= mouseMovement.y
+		camera.rotation.p -= mouseMovement.y	
 	}
-
+	
 	override fn destroy()
 	{
 	}

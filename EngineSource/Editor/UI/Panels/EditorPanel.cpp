@@ -153,7 +153,8 @@ void engine::editor::EditorPanel::UpdatePanel()
 		{
 			bool IsFocused = EditorUI::FocusedPanel == this;
 			auto HoveredBox = PanelElement->GetParentWindow()->UI.HoveredBox;
-			if (!IsFocused && HoveredBox && PanelElement->GetParentWindow()->Input.IsLMBClicked && HoveredBox->IsChildOf(PanelElement))
+			if (!IsFocused && HoveredBox && PanelElement->GetParentWindow()->Input.IsLMBClicked
+				&& HoveredBox->IsChildOf(PanelElement))
 			{
 				SetFocused();
 			}
@@ -323,6 +324,19 @@ void engine::editor::EditorPanel::OnThemeChanged()
 {
 }
 
+size_t engine::editor::EditorPanel::IndexOf(EditorPanel* Child) const
+{
+	for (size_t i = 0; i < Children.size(); i++)
+	{
+		if (Children[i] == Child)
+		{
+			return i;
+		}
+	}
+	
+	return SIZE_MAX;
+}
+
 bool engine::editor::EditorPanel::OnClosed()
 {
 	return true;
@@ -461,8 +475,10 @@ void engine::editor::EditorPanel::UpdateFocusState()
 	if (TabElements.size() <= Selected)
 		return;
 
-	TabElements[Selected]->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
-	TabElements[Selected]->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
+	TabElements[Selected]->SetBorderColor(Focused
+		? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
+	TabElements[Selected]->SetColor(Focused
+		? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
 }
 
 void engine::editor::EditorPanel::MovePanel()
@@ -553,7 +569,8 @@ void engine::editor::EditorPanel::UpdatePanelMove()
 			PreviewPosition += Vec2f(0, PreviewSize.Y / 2);
 			PreviewSize = PreviewSize / Vec2f(1, 2);
 			Move.TabAlign = Align::Vertical;
-			Move.TabPosition = SIZE_MAX;
+			Move.TabPosition = Parent && Parent->ChildrenAlign == Align::Vertical
+				? Parent->IndexOf(this) : SIZE_MAX;
 			break;
 		case MoveOperation::Down:
 			PreviewSize = PreviewSize / Vec2f(1, 2);
@@ -569,7 +586,8 @@ void engine::editor::EditorPanel::UpdatePanelMove()
 			PreviewPosition += Vec2f(PreviewSize.X / 2, 0);
 			PreviewSize = PreviewSize / Vec2f(2, 1);
 			Move.TabAlign = Align::Horizontal;
-			Move.TabPosition = SIZE_MAX;
+			Move.TabPosition = Parent && Parent->ChildrenAlign == Align::Horizontal
+				? Parent->IndexOf(this) : SIZE_MAX;
 			break;
 		case MoveOperation::Center:
 			Move.TabAlign = Align::Tabs;

@@ -62,6 +62,9 @@ namespace engine::editor
 
 		virtual void OnThemeChanged();
 
+		size_t IndexOf(EditorPanel* Child) const;
+		Align ChildrenAlign = Align::Horizontal;
+
 	protected:
 
 		bool CanClose = true;
@@ -105,7 +108,6 @@ namespace engine::editor
 		void AddTabFor(EditorPanel* Target, bool Selected);
 		std::vector<EditorPanelTab*> TabElements;
 		string Name, TypeName;
-		Align ChildrenAlign = Align::Horizontal;
 
 		kui::Vec2f UsedSize;
 		kui::Vec2f Position;

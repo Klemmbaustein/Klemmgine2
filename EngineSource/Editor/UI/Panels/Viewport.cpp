@@ -129,23 +129,39 @@ engine::editor::Viewport::Viewport()
 
 	auto Win = Window::GetActiveWindow();
 
-	Win->Input.RegisterOnKeyDownCallback(Key::LEFT, this, [=] {
+	Win->Input.RegisterOnKeyDownCallback(Key::LEFT, this, [this, Win] {
+		if (Win->Input.PollForText)
+		{
+			return;
+		}
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, -Speed));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::RIGHT, this, [=] {
+	Win->Input.RegisterOnKeyDownCallback(Key::RIGHT, this, [this, Win] {
+		if (Win->Input.PollForText)
+		{
+			return;
+		}
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, Speed));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::DOWN, this, [=] {
+	Win->Input.RegisterOnKeyDownCallback(Key::DOWN, this, [this, Win] {
+		if (Win->Input.PollForText)
+		{
+			return;
+		}
 		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, -Speed, 0) : Vector3(-Speed, 0, 0));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::UP, this, [=] {
+	Win->Input.RegisterOnKeyDownCallback(Key::UP, this, [this, Win] {
+		if (Win->Input.PollForText)
+		{
+			return;
+		}
 		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));

@@ -26,6 +26,8 @@ uniform vec3 u_lightDirection = vec3(0, 1, 0);
 #export //!
 uniform vec3 u_sunColor = vec3(1);
 #export //!
+uniform float u_sunIntensity = 1.0;
+#export //!
 uniform vec3 u_skyColor = vec3(1);
 #export //!
 uniform vec3 u_groundColor = vec3(1);
@@ -178,13 +180,20 @@ vec3 applyFog(vec3 color)
 #export //!
 vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize)
 {
+	float shadows = 1;
+	if (u_sunIntensity > 0)
+	{
+		shadows = getLightStrength();
+	}
+
 	vec3 ambient = color * u_ambientStrength * getAmbient(v_normal);
 
 	vec3 viewDir = normalize(u_cameraPos - v_position);
 	vec3 reflectDir = reflect(-u_lightDirection, v_normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularSize);
-	vec3 spec_color = spec * specularStength * u_sunColor;
-	return applyFog((color * u_sunColor + spec_color) * getLightStrength() + ambient);
+	vec3 spec_color = spec * specularStength * u_sunColor * u_sunIntensity;
+
+	return applyFog((color * u_sunColor * u_sunIntensity + spec_color) * shadows + ambient);
 }
 
 #export //!

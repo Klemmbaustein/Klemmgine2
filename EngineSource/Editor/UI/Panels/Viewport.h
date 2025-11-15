@@ -64,8 +64,6 @@ namespace engine::editor
 
 		float GridSize = 0.1f;
 
-		Event<std::vector<SceneObject*>> OnChanged();
-
 	private:
 
 		void OnItemDropped(EditorUI::DraggedItem Item);

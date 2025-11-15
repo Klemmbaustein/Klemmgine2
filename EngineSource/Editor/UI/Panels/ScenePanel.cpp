@@ -1,4 +1,5 @@
 #include "ScenePanel.h"
+#include <Editor/UI/Panels/Viewport.h>
 
 engine::editor::ScenePanel::ScenePanel()
 	: EditorPanel("Scene", "scene")
@@ -33,18 +34,22 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 		return;
 	}
 
-	Properties->CreateNewHeading("Scene - " + Target->Name);
+	auto OnChanged = [] {
+		Viewport::Current->SceneChanged();
+	};
+
+	Properties->CreateNewHeading("Scene - " + Target->Name, false);
 
 	Properties->CreateNewHeading("Lighting");
-	Properties->AddVecEntry("Sun color", Target->SceneEnvironment.SunColor, nullptr, true);
-	Properties->AddFloatEntry("Sun intensity", Target->SceneEnvironment.SunIntensity, nullptr);
-	Properties->AddVecEntry("Sky color", Target->SceneEnvironment.SkyColor, nullptr, true);
-	Properties->AddVecEntry("Ground color", Target->SceneEnvironment.GroundColor, nullptr, true);
-	Properties->AddFloatEntry("Ambient intensity", Target->SceneEnvironment.AmbientIntensity, nullptr);
+	Properties->AddVecEntry("Sun color", Target->SceneEnvironment.SunColor, OnChanged, true);
+	Properties->AddFloatEntry("Sun intensity", Target->SceneEnvironment.SunIntensity, OnChanged);
+	Properties->AddVecEntry("Sky color", Target->SceneEnvironment.SkyColor, OnChanged, true);
+	Properties->AddVecEntry("Ground color", Target->SceneEnvironment.GroundColor, OnChanged, true);
+	Properties->AddFloatEntry("Ambient intensity", Target->SceneEnvironment.AmbientIntensity, OnChanged);
 
 	Properties->CreateNewHeading("Atmosphere");
 
-	Properties->AddVecEntry("Fog Color", Target->SceneEnvironment.FogColor, nullptr, true);
-	Properties->AddFloatEntry("Fog range", Target->SceneEnvironment.FogRange, nullptr);
-	Properties->AddFloatEntry("Fog start", Target->SceneEnvironment.FogStart, nullptr);
+	Properties->AddVecEntry("Fog Color", Target->SceneEnvironment.FogColor, OnChanged, true);
+	Properties->AddFloatEntry("Fog range", Target->SceneEnvironment.FogRange, OnChanged);
+	Properties->AddFloatEntry("Fog start", Target->SceneEnvironment.FogStart, OnChanged);
 }

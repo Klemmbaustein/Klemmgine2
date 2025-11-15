@@ -2,8 +2,6 @@
 #include <Engine/Engine.h>
 #include <kui/UI/UITextEditor.h>
 #include <Engine/Script/ScriptSubsystem.h>
-#include <Editor/Server/EditorServerSubsystem.h>
-#include <ds/modules/standardLibrary.hpp>
 #include <ds/service/languageService.hpp>
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
@@ -58,7 +56,7 @@ void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, s
 void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Length)
 {
 	FileEditorProvider::RemoveLines(Start, Length);
-	UpdateFile();
+
 	if (Connection)
 	{
 		Connection->SendMessage("scriptEdit", SerializedValue({
@@ -70,31 +68,38 @@ void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Leng
 	}
 }
 
+void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::vector<TextSegment>& Content)
+{
+	FileEditorProvider::InsertLine(Index, Content);
+	NextChange.Parts.push_back(ChangePart{
+		.Line = Index,
+		.IsAdd = true,
+		});
+
+	if (Connection)
+	{
+		Connection->SendMessage("scriptEdit", SerializedValue({
+			SerializedData("editType", "insert"),
+			SerializedData("file", this->ScriptFile),
+			SerializedData("line", int32(Index)),
+			SerializedData("newContent", TextSegment::CombineToString(Content)),
+			}));
+	}
+}
+
 void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vector<TextSegment>& NewLine)
 {
+	NextChange.Parts.push_back(ChangePart{
+		.Line = Index,
+		.Content = this->Lines[Index],
+		});
+	UnDoneChanges = {};
+
 	FileEditorProvider::SetLine(Index, NewLine);
-	UpdateFile();
-	UpdateLineColorization(Index);
+
+	Changed.push_back(Index);
 
 	auto& Input = Window::GetActiveWindow()->Input;
-
-	//if (ParentEditor->SelectionStart.Line == Index)
-	//{
-	//	const TextSegment* Nearest = nullptr;
-
-	//	size_t Pos = 0;
-
-	//	for (auto& i : NewLine)
-	//	{
-	//		Pos += i.Text.size();
-
-	//		if (Pos >= ParentEditor->SelectionStart.Column)
-	//		{
-	//			Nearest = &i;
-	//			//Log::Info(Nearest->Text);
-	//		}
-	//	}
-	//}
 
 	if (Input.Text == ".")
 	{
@@ -112,21 +117,92 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 	}
 }
 
-void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::vector<TextSegment>& Content)
+void engine::editor::ScriptEditorProvider::Commit()
 {
-	FileEditorProvider::InsertLine(Index, Content);
 	UpdateFile();
-	UpdateLineColorization(Index);
-
-	if (Connection)
+	if (NextChange.Parts.size())
 	{
-		Connection->SendMessage("scriptEdit", SerializedValue({
-			SerializedData("editType", "insert"),
-			SerializedData("file", this->ScriptFile),
-			SerializedData("line", int32(Index)),
-			SerializedData("newContent", TextSegment::CombineToString(Content)),
-			}));
+		this->Changes.push(NextChange);
 	}
+	for (size_t Index : Changed)
+	{
+		UpdateLineColorization(Index);
+	}
+	Changed.clear();
+
+	NextChange = Change();
+}
+
+void engine::editor::ScriptEditorProvider::Undo()
+{
+	if (Changes.empty())
+	{
+		return;
+	}
+
+	auto& c = Changes.top();
+
+	UnDoneChanges.push(ApplyChange(c));
+	Changes.pop();
+	Commit();
+}
+
+void engine::editor::ScriptEditorProvider::Redo()
+{
+	if (UnDoneChanges.empty())
+	{
+		return;
+	}
+
+	auto& c = UnDoneChanges.top();
+
+	Changes.push(ApplyChange(c));
+	UnDoneChanges.pop();
+	Commit();
+}
+
+ScriptEditorProvider::Change engine::editor::ScriptEditorProvider::ApplyChange(const Change& Target)
+{
+	Change ReDoneChange;
+
+	for (auto& p : Target.Parts)
+	{
+		if (p.IsAdd)
+		{
+			ReDoneChange.Parts.push_back(ChangePart{
+				.Line = p.Line,
+				.Content = this->Lines[p.Line],
+				.IsRemove = true,
+				});
+			ParentEditor->RemoveLine(p.Line);
+		}
+		else if (p.IsRemove)
+		{
+			ReDoneChange.Parts.push_back(ChangePart{
+				.Line = p.Line,
+				.IsAdd = true,
+				});
+			std::vector<TextSegment> s = { TextSegment(p.Content, 1) };
+			ParentEditor->AddLine(p.Line, s);
+		}
+		else
+		{
+			ReDoneChange.Parts.push_back(ChangePart{
+				.Line = p.Line,
+				.Content = this->Lines[p.Line],
+				});
+			std::vector<TextSegment> s = { TextSegment(p.Content, 1) };
+			FileEditorProvider::SetLine(p.Line, s);
+			Changed.push_back(p.Line);
+			this->Lines[p.Line] = p.Content;
+		}
+	}
+
+	NextChange = {};
+
+	Log::Info(str::Format("Applied change with %i part(s)", Target.Parts.size()));
+	
+	return ReDoneChange;
 }
 
 void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector<TextSegment>& To)
@@ -206,7 +282,8 @@ void engine::editor::ScriptEditorProvider::Update()
 				.OnClicked = [this, NewHoveredSymbol]
 				{
 					auto def = NewHoveredSymbol.GetDefinition();
-					ParentEditor->SetCursorPosition(def);
+					ParentEditor->SetCursorPosition(EditorPosition(def.position.startPos, def.position.line),
+						EditorPosition(def.position.endPos, def.position.line));
 					ParentEditor->ScrollTo(ParentEditor->SelectionStart);
 					ParentEditor->Edit();
 				},
@@ -215,11 +292,17 @@ void engine::editor::ScriptEditorProvider::Update()
 		}
 
 		Options.push_back(DropdownMenu::Option{
-				.Name = "Cut",
-			});
+			.Name = "Cut",
+			.OnClicked = [this] {
+				Window::GetActiveWindow()->Input.SetClipboard(ParentEditor->GetSelectedText());
+				ParentEditor->DeleteSelection();
+		} });
 
 		Options.push_back(DropdownMenu::Option{
-				.Name = "Copy" });
+			.Name = "Copy",
+			.OnClicked = [this] {
+				Window::GetActiveWindow()->Input.SetClipboard(ParentEditor->GetSelectedText());
+		} });
 
 		Options.push_back(DropdownMenu::Option{
 				.Name = "Paste",
@@ -443,14 +526,12 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 					->SetPadding(5_px);
 			};
 
-			std::function<EditorPosition()> GetDefinition;
+			std::function<Token()> GetDefinition;
 
 			if (i.definition)
 			{
 				GetDefinition = [i] {
-					return EditorPosition(
-						i.definition->at.position.startPos,
-						i.definition->at.position.line);
+					return i.definition->at;
 				};
 			}
 
@@ -494,14 +575,12 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 					->SetPadding(5_px);
 			};
 
-			std::function<EditorPosition()> GetDefinition;
+			std::function<Token()> GetDefinition;
 
-			if (i.definition)
+			if (i.definition && i.definition->at.position.line != 0 || i.definition->at.position.endPos != 0)
 			{
 				GetDefinition = [i] {
-					return EditorPosition(
-						i.definition->at.position.startPos,
-						i.definition->at.position.line);
+					return i.definition->at;
 				};
 			}
 
@@ -558,6 +637,7 @@ void engine::editor::ScriptEditorProvider::UpdateFile()
 void engine::editor::ScriptEditorProvider::ScanFile()
 {
 	this->ScriptService->commitChanges();
+	OnUpdated.Invoke();
 
 	if (this->ScriptService->files.size())
 	{

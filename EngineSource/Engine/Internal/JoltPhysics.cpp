@@ -396,7 +396,7 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 		}
 
 		return JPH::BodyCreationSettings(Shape,
-			ToJPHVec3(Position),
+			JPH::Vec3(0, 0, 0),
 			ToJPHQuat(Rotation),
 			JPH::EMotionType::Static,
 			JPH::ObjectLayer(MapPtr->CollisionLayers));
@@ -422,8 +422,6 @@ engine::internal::JoltInstance::JoltInstance()
 		BroadPhaseLayers,
 		ObjectVsBroadPhaseFilter,
 		ObjectVsObjectFilter);
-
-	System->SetGravity(System->GetGravity() * 4);
 
 	JoltBodyInterface = &System->GetBodyInterface();
 }

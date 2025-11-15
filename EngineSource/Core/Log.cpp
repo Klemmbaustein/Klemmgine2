@@ -1,5 +1,4 @@
 #include "Log.h"
-#include "Log.h"
 #include <Core/Platform/Platform.h>
 #include <iostream>
 std::vector<engine::Log::Message> engine::Log::LogMessages;

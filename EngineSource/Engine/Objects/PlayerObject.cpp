@@ -1,5 +1,4 @@
 #include "PlayerObject.h"
-#include <Core/Log.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
 #include <Engine/Engine.h>

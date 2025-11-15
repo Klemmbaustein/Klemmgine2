@@ -1,5 +1,6 @@
 #include "ScriptEditorPanel.h"
 #include <Editor/UI/Elements/Toolbar.h>
+#include <Editor/UI/CodeEditorTheme.h>
 #include <Engine/Engine.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/UI/EditorUI.h>
@@ -48,9 +49,19 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		"await"
 	};
 
+	CodeEditorTheme().ApplyToScript(Provider);
+
 	Toolbar* EditorToolbar = new Toolbar();
 	EditorToolbar->AddButton("Save", EditorUI::Asset("Save.png"), [this]() {
 		Save();
+	});
+
+	EditorToolbar->AddButton("Undo", EditorUI::Asset("Undo.png"), [this]() {
+		Provider->Undo();
+	});
+
+	EditorToolbar->AddButton("Redo", EditorUI::Asset("Redo.png"), [this]() {
+		Provider->Redo();
 	});
 
 	EditorToolbar->SetLeftPadding(0);
@@ -68,15 +79,20 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	CenterBox->AddChild(EditorToolbar);
 
 	Editor = new UITextEditor(Provider, EditorUI::MonospaceFont);
-	//Editor->EditorScrollBox->ScrollBarWidth = 20;
 
 	CenterBox->AddChild(Editor
 		->SetPadding(5_px));
 	CenterBox->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(UISize::Parent(1), 1_px)))
 		->SetPadding(1_px));
 
-	CenterBox->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Script status", EditorUI::EditorFont))
+	StatusText = new UIText(12_px, EditorUI::Theme.Text, "Script status", EditorUI::EditorFont);
+
+	CenterBox->AddChild(StatusText
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
+
+	MiniMap = new ScriptMiniMap(Editor, Provider);
+
+	MiniMap->BackgroundColor = EditorUI::Theme.Background;
 
 	UpdateTabs();
 }
@@ -108,16 +124,22 @@ void engine::editor::ScriptEditorPanel::Save()
 	out.close();
 
 	Engine::Instance->GetSubsystem<ScriptSubsystem>()->Reload();
+	EditorUI::SetStatusMessage("Compiled scripts", EditorUI::StatusType::Info);
 }
 
 void engine::editor::ScriptEditorPanel::OnResized()
 {
 	this->Editor->SetMinHeight(this->Size.Y - (78_px).GetScreen().Y);
 	this->Editor->SetMinWidth(this->Size.X - (200_px).GetScreen().X);
+	this->Editor->UpdateElement();
+	this->MiniMap->ReGenerate = true;
 }
 
 void engine::editor::ScriptEditorPanel::Update()
 {
+	this->MiniMap->Update();
+	this->StatusText->SetText(str::Format("%s | Errors: %i", this->Provider->ScriptFile.c_str(), this->Provider->Errors.size()));
+
 	auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
 	if (sys && !Provider->Connection)
 	{

@@ -151,44 +151,6 @@ engine::editor::EditorUI::EditorUI()
 		->SetVerticalAlign(UIBox::Align::Centered);
 	Root->AddChild(MenuBar);
 
-	AddMenuBarItem("File",
-		{
-			DropdownMenu::Option("New", Asset("Plus.png")),
-			DropdownMenu::Option("Open Project"),
-			DropdownMenu::Option("Build Project", Asset("Build.png"), []() {
-				new BuildWindow();
-			}),
-			DropdownMenu::Option("Exit", Asset("X.png"), []() {
-				Engine::Instance->ShouldQuit = true;
-			}),
-		});
-
-	AddMenuBarItem("Edit",
-		{
-			DropdownMenu::Option("Undo"),
-			DropdownMenu::Option("Redo"),
-			DropdownMenu::Option("Settings", Asset("Settings.png"), []() {
-				new SettingsWindow();
-			}),
-			DropdownMenu::Option("Project settings"),
-		});
-
-	AddMenuBarItem("Scene",
-		{
-			DropdownMenu::Option("Save"),
-			DropdownMenu::Option("Open"),
-			DropdownMenu::Option("View..."),
-		});
-	AddMenuBarItem("Window",
-		{
-			DropdownMenu::Option("Save layout"),
-			DropdownMenu::Option("Load layout"),
-		});
-
-	AddMenuBarItem("Help",
-		{ DropdownMenu::Option("About"), DropdownMenu::Option("Source code") }
-	);
-
 	MainBackground = new UIBox(true, 0);
 
 	Root->AddChild(MainBackground);
@@ -235,6 +197,46 @@ engine::editor::EditorUI::EditorUI()
 
 	SetStatusMainThread("Editor loaded", StatusType::Info);
 	input::ShowMouseCursor = true;
+
+	AddMenuBarItem("File",
+		{
+			DropdownMenu::Option("New", Asset("Plus.png")),
+			DropdownMenu::Option("Open Project"),
+			DropdownMenu::Option("Build Project", Asset("Build.png"), []() {
+				new BuildWindow();
+			}),
+			DropdownMenu::Option("Exit", Asset("X.png"), []() {
+				Engine::Instance->ShouldQuit = true;
+			}),
+		});
+
+	AddMenuBarItem("Edit",
+		{
+			DropdownMenu::Option("Undo", Asset("Undo.png"), [vp]() {
+				vp->UndoLast();
+			}),
+			DropdownMenu::Option("Redo", Asset("Redo.png")),
+			DropdownMenu::Option("Settings", Asset("Settings.png"), []() {
+				new SettingsWindow();
+			}),
+			DropdownMenu::Option("Project settings"),
+		});
+
+	AddMenuBarItem("Scene",
+		{
+			DropdownMenu::Option("Save"),
+			DropdownMenu::Option("Open"),
+			DropdownMenu::Option("View..."),
+		});
+	AddMenuBarItem("Window",
+		{
+			DropdownMenu::Option("Save layout"),
+			DropdownMenu::Option("Load layout"),
+		});
+
+	AddMenuBarItem("Help",
+		{ DropdownMenu::Option("About"), DropdownMenu::Option("Source code") }
+	);
 
 	Update();
 }

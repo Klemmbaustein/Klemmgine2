@@ -305,6 +305,7 @@ void engine::Scene::LoadAsyncFinish()
 	Init();
 	for (SceneObject* obj : Objects)
 	{
+		obj->CheckTransform();
 		obj->Begin();
 		obj->BeginCalled = true;
 	}
@@ -436,6 +437,33 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		if (SceneInfo.Contains("sunColor"))
 		{
 			this->SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
+		}
+
+		if (SceneInfo.Contains("skyColor"))
+		{
+			this->SceneEnvironment.SkyColor = SceneInfo.At("skyColor").GetVector3();
+		}
+
+		if (SceneInfo.Contains("groundColor"))
+		{
+			this->SceneEnvironment.GroundColor = SceneInfo.At("groundColor").GetVector3();
+		}
+
+		if (SceneInfo.Contains("sunIntensity"))
+		{
+			this->SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
+		}
+		if (SceneInfo.Contains("fogColor"))
+		{
+			this->SceneEnvironment.FogColor = SceneInfo.At("fogColor").GetVector3();
+		}
+		if (SceneInfo.Contains("fogRange"))
+		{
+			this->SceneEnvironment.FogRange = SceneInfo.At("fogRange").GetFloat();
+		}
+		if (SceneInfo.Contains("fogStart"))
+		{
+			this->SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
 		}
 	}
 	catch (SerializeException& SerializeError)
@@ -579,6 +607,13 @@ engine::SerializedValue engine::Scene::GetSceneInfo()
 {
 	return std::vector{
 		SerializedData("sunColor", this->SceneEnvironment.SunColor),
+		SerializedData("skyColor", this->SceneEnvironment.SkyColor),
+		SerializedData("groundColor", this->SceneEnvironment.GroundColor),
+		SerializedData("sunIntensity", this->SceneEnvironment.SunIntensity),
+		SerializedData("ambientIntensity", this->SceneEnvironment.AmbientIntensity),
+		SerializedData("fogColor", this->SceneEnvironment.FogColor),
+		SerializedData("fogRange", this->SceneEnvironment.FogRange),
+		SerializedData("fogStart", this->SceneEnvironment.FogStart),
 	};
 }
 
