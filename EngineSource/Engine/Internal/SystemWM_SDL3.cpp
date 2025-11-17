@@ -504,6 +504,9 @@ void kui::systemWM::SysWindow::UpdateEvents()
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 			Parent->Close();
 			break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			Parent->Input.UpdateCursorPosition();
+			break;
 		case SDL_EVENT_MOUSE_WHEEL:
 			Parent->Input.MoveMouseWheel(int(ev.wheel.y));
 			break;
@@ -515,7 +518,10 @@ void kui::systemWM::SysWindow::UpdateEvents()
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
 			if (WindowHasFocus(this) && !input::ShowMouseCursor)
-				input::MouseMovement = input::MouseMovement + Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.05f, 0.05f);
+			{
+				input::MouseMovement = input::MouseMovement
+					+ Vector2(ev.motion.xrel, ev.motion.yrel) * Vector2(0.05f, 0.05f);
+			}
 			break;
 		default:
 			break;

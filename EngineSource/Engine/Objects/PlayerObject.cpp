@@ -12,7 +12,12 @@ void engine::PlayerObject::Begin()
 	Cam = new CameraComponent();
 	Attach(Cam);
 	Cam->Use();
-	Cam->SetFov(70);
+	Cam->SetFov(Fov.Value);
+
+	this->Fov.OnChanged = [this] {
+		Cam->SetFov(Fov.Value);
+	};
+
 	Cam->Position.Y = 0.75f;
 
 	auto Mesh = new MeshComponent();

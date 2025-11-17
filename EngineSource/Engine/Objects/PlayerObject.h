@@ -15,6 +15,7 @@ namespace engine
 		ENGINE_OBJECT(PlayerObject, "Game");
 
 		ObjProperty<AssetRef> PlayerModel = ObjProperty<AssetRef>("Model", "Cube.kmdl"_asset, this);
+		ObjProperty<float> Fov = ObjProperty<float>("FOV", 70.0f, this);
 
 		void Begin() override;
 		void Update() override;

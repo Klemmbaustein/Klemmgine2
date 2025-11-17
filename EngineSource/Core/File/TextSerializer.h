@@ -49,6 +49,12 @@ namespace engine
 		* Reads a serialized object from the given stream.
 		*
 		* Will throw a SerializeReadException when it encounters an error with reading the data.
+		* 
+		* @param Stream
+		* A C++ character stream to read the data from.
+		* 
+		* @return
+		* A vector of serialized data found in the stream.
 		*/
 		static std::vector<SerializedData> FromStream(std::istream& Stream);
 		/**
