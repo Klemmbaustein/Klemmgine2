@@ -55,6 +55,11 @@ void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, s
 
 void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Length)
 {
+	NextChange.Parts.push_back(ChangePart{
+		.Line = Start,
+		.Content = Lines[Start],
+		.IsRemove = true,
+		});
 	FileEditorProvider::RemoveLines(Start, Length);
 
 	if (Connection)
@@ -70,11 +75,11 @@ void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Leng
 
 void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::vector<TextSegment>& Content)
 {
-	FileEditorProvider::InsertLine(Index, Content);
 	NextChange.Parts.push_back(ChangePart{
 		.Line = Index,
 		.IsAdd = true,
 		});
+	FileEditorProvider::InsertLine(Index, Content);
 
 	if (Connection)
 	{
@@ -163,46 +168,46 @@ void engine::editor::ScriptEditorProvider::Redo()
 
 ScriptEditorProvider::Change engine::editor::ScriptEditorProvider::ApplyChange(const Change& Target)
 {
-	Change ReDoneChange;
+	Change DoneChanges;
 
-	for (auto& p : Target.Parts)
+	for (auto p = Target.Parts.rbegin(); p < Target.Parts.rend(); p++)
 	{
-		if (p.IsAdd)
+		if (p->IsAdd)
 		{
-			ReDoneChange.Parts.push_back(ChangePart{
-				.Line = p.Line,
-				.Content = this->Lines[p.Line],
+			DoneChanges.Parts.push_back(ChangePart{
+				.Line = p->Line,
+				.Content = this->Lines[p->Line],
 				.IsRemove = true,
 				});
-			ParentEditor->RemoveLine(p.Line);
+			ParentEditor->RemoveLine(p->Line);
 		}
-		else if (p.IsRemove)
+		else if (p->IsRemove)
 		{
-			ReDoneChange.Parts.push_back(ChangePart{
-				.Line = p.Line,
+			DoneChanges.Parts.push_back(ChangePart{
+				.Line = p->Line,
 				.IsAdd = true,
 				});
-			std::vector<TextSegment> s = { TextSegment(p.Content, 1) };
-			ParentEditor->AddLine(p.Line, s);
+			std::vector<TextSegment> s = { TextSegment(p->Content, 1) };
+			ParentEditor->AddLine(p->Line, s);
 		}
 		else
 		{
-			ReDoneChange.Parts.push_back(ChangePart{
-				.Line = p.Line,
-				.Content = this->Lines[p.Line],
+			DoneChanges.Parts.push_back(ChangePart{
+				.Line = p->Line,
+				.Content = this->Lines[p->Line],
 				});
-			std::vector<TextSegment> s = { TextSegment(p.Content, 1) };
-			FileEditorProvider::SetLine(p.Line, s);
-			Changed.push_back(p.Line);
-			this->Lines[p.Line] = p.Content;
+			std::vector<TextSegment> s = { TextSegment(p->Content, 1) };
+			FileEditorProvider::SetLine(p->Line, s);
+			Changed.push_back(p->Line);
+			this->Lines[p->Line] = p->Content;
 		}
 	}
 
 	NextChange = {};
 
 	Log::Info(str::Format("Applied change with %i part(s)", Target.Parts.size()));
-	
-	return ReDoneChange;
+
+	return DoneChanges;
 }
 
 void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector<TextSegment>& To)
@@ -363,62 +368,19 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete()
 {
 	auto pos = ParentEditor->SelectionStart;
 
-	ScannedFunction* FoundFunction = nullptr;
-	ScannedVariable* Found = nullptr;
-	size_t NearestLine = 0;
-
-	for (auto& i : this->ScriptService->files.begin()->second.variables)
-	{
-		if (i.at.position.line == pos.Line && i.at.position.endPos <= pos.Column
-			&& i.at.position.startPos <= pos.Column
-			&& NearestLine < i.at.position.endPos)
-		{
-			NearestLine = i.at.position.endPos;
-			Found = &i;
-		}
-	}
-
-	for (auto& i : this->ScriptService->files.begin()->second.functions)
-	{
-		if (i.at.position.line == pos.Line && i.argEnd.endPos <= pos.Column
-			&& i.at.position.startPos <= pos.Column
-			&& NearestLine < i.argEnd.endPos)
-		{
-			NearestLine = i.argEnd.endPos;
-			Found = nullptr;
-			FoundFunction = &i;
-		}
-	}
-
-	TypeId typeToList = 0;
-
-	if (Found)
-	{
-		typeToList = Found->typeId;
-	}
-	else if (FoundFunction)
-	{
-		typeToList = FoundFunction->returnTypeId;
-	}
-
-	if (typeToList == 0)
-	{
-		return;
-	}
-
-	auto t = this->ScriptService->types.find(typeToList);
-
-	if (t == this->ScriptService->types.end())
-	{
-		return;
-	}
+	auto c = this->ScriptService->completeAt(&ScriptService->files.begin()->second, pos.Column, pos.Line);
 
 	UIBox* content = new UIBox(false);
 
-	for (auto& i : t->second.members)
+	for (auto& i : c)
 	{
 		content->AddChild((new UIText(12_px, EditorUI::Theme.Text, i.name, EditorUI::EditorFont))
 			->SetPadding(3_px));
+	}
+
+	if (c.size())
+	{
+		ParentEditor->Insert(c[0].name, pos, false);
 	}
 
 	auto box = CreateHoverBox(content, pos);
