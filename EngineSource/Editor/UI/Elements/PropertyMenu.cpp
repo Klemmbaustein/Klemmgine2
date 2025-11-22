@@ -45,7 +45,7 @@ PropertyEntryElement* engine::editor::PropertyMenu::CreateNewEntry(string Name)
 		New->SetVerticalAlign(UIBox::Align::Reverse);
 		New->textBox->SetHorizontalAlign(UIBox::Align::Default);
 		New->SetCompactTextPadding(0_px);
-		delete New->separator;
+		New->separator->IsCollapsed = true;
 	}
 
 	AddChild(New);

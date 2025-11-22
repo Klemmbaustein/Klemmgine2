@@ -18,7 +18,6 @@
 #include <Engine/Objects/MeshObject.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
-#include <filesystem>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 using namespace engine::editor;
@@ -139,7 +138,6 @@ engine::editor::EditorUI::EditorUI()
 		VideoSystem->MainWindow->Markup.AddFont("mono", MonospaceFont);
 		VideoSystem->MainWindow->Markup.SetGetStringFunction(&EditorUI::Asset);
 	}
-
 
 	Root = new UIBackground(false, -1, Theme.Background, 2);
 	Root

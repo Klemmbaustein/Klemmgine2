@@ -16,12 +16,17 @@ class MyObject : SceneObject
 		MeshComponent testMesh = new()
 		testMesh.load(testModel)
 		attach(testMesh)
+		testMesh.scale = new(0.5, 1, 0.5)
 
 		attach(camera)
 		attach(movement)
 		camera.use()
 		camera.setFOV(80)
-		camera.position = new(0, 1, 0)
+		camera.position = new(0, 0.8, 0)
+		
+		woah a = parser()
+		
+		a.hi()
 	}
 
 	override fn update()
@@ -53,10 +58,38 @@ class MyObject : SceneObject
 		Vector2 mouseMovement = getMouseMovement()
 
 		rotation.y -= mouseMovement.x
-		camera.rotation.p -= mouseMovement.y	
+		camera.rotation.p -= mouseMovement.y
+
+		if camera.rotation.p < -90 {
+			camera.rotation.p = -90
+		}
+
+		if camera.rotation.p > 90 {
+			camera.rotation.p = 90
+		}
 	}
 	
 	override fn destroy()
 	{
 	}
+}
+
+class woah
+{
+	string message = ""
+	
+	fn new(string message)
+	{
+		this.message = message
+	}
+
+	fn hi()
+	{
+		info(message)
+	}
+}
+
+fn parser() -> woah
+{
+	return new woah("hello")
 }

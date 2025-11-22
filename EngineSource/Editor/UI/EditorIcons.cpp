@@ -5,7 +5,7 @@ using namespace engine::editor;
 
 void EditorIcons::AddObjectIcon(string IconPath, ObjectTypeID ObjType)
 {
-	Icons.insert({ ObjType, IconPath });
+	Icons[ObjType] = IconPath;
 }
 
 string EditorIcons::GetObjectIcon(ObjectTypeID ObjType)

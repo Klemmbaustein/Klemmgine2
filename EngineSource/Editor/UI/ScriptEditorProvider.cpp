@@ -378,10 +378,10 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete()
 			->SetPadding(3_px));
 	}
 
-	if (c.size())
-	{
-		ParentEditor->Insert(c[0].name, pos, false);
-	}
+	//if (c.size())
+	//{
+	//	ParentEditor->Insert(c[0].name, pos, false);
+	//}
 
 	auto box = CreateHoverBox(content, pos);
 }
