@@ -2,13 +2,12 @@
 #include <csignal>
 #include <Core/Error/StackTrace.h>
 #include <map>
-#include <exception>
 #include <Core/Platform/Platform.h>
 #include <Core/Log.h>
 using namespace engine;
 
-static thread_local bool Crashed = false;
-static thread_local bool SignalReceived = false;
+static thread_local bool Crashed;
+static thread_local bool SignalReceived;
 
 static void OnErrorCallbackInternal(string Error, string StackTrace)
 {
@@ -51,6 +50,7 @@ static void SignalHandler(int Signal)
 
 void engine::error::InitForThread(string ThreadName)
 {
+	SignalReceived = false;
 	Crashed = false;
 	platform::SetThreadName(ThreadName);
 	signal(SIGSEGV, &SignalHandler);

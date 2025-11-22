@@ -571,6 +571,7 @@ void engine::editor::Viewport::Run()
 	using namespace subsystem;
 
 	Viewport::Current->ClearSelected();
+	SetFocused();
 
 	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	SetName("Viewport (playing)");

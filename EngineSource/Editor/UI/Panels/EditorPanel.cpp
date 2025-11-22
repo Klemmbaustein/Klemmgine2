@@ -292,6 +292,11 @@ void engine::editor::EditorPanel::SetFocused()
 	if (EditorUI::FocusedPanel == this)
 		return;
 
+	if (Parent)
+	{
+		Parent->SelectedTab = Parent->IndexOf(this);
+	}
+
 	EditorPanel* Old = EditorUI::FocusedPanel;
 	EditorUI::FocusedPanel = this;
 	Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = Background;
@@ -300,6 +305,7 @@ void engine::editor::EditorPanel::SetFocused()
 		Old->UpdateFocusState();
 		Old->PanelElement->RedrawElement();
 	}
+
 	PanelElement->RedrawElement();
 	UpdateFocusState();
 }
