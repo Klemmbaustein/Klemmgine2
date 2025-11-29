@@ -32,7 +32,7 @@ element ConsolePanelElement
 	{
 		verticalAlign = centered;
 		width = 100%;
-		height = 32px;
+		height = 35px;
 
 		child EditorTextField commandField
 		{

@@ -3,7 +3,7 @@
 #include "Subsystem.h"
 #include <Engine/Scene.h>
 
-namespace engine::subsystem
+namespace engine
 {
 	/**
 	* @brief
@@ -13,7 +13,7 @@ namespace engine::subsystem
 	*
 	* @see engine::Scene
 	*/
-	class SceneSubsystem : public Subsystem
+	class SceneSubsystem : public subsystem::Subsystem
 	{
 	public:
 		SceneSubsystem();

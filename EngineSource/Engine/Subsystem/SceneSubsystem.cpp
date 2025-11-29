@@ -4,9 +4,9 @@
 #include <Engine/Engine.h>
 #include <thread>
 
-engine::subsystem::SceneSubsystem* engine::subsystem::SceneSubsystem::Current = nullptr;
+engine::SceneSubsystem* engine::SceneSubsystem::Current = nullptr;
 
-engine::subsystem::SceneSubsystem::SceneSubsystem()
+engine::SceneSubsystem::SceneSubsystem()
 	: Subsystem("Scene", Log::LogColor::Green)
 {
 	Current = this;
@@ -24,7 +24,7 @@ engine::subsystem::SceneSubsystem::SceneSubsystem()
 	}
 }
 
-engine::subsystem::SceneSubsystem::~SceneSubsystem()
+engine::SceneSubsystem::~SceneSubsystem()
 {
 	std::vector OldScenes = LoadedScenes;
 	LoadedScenes.clear();
@@ -35,7 +35,7 @@ engine::subsystem::SceneSubsystem::~SceneSubsystem()
 	Current = nullptr;
 }
 
-void engine::subsystem::SceneSubsystem::LoadSceneAsync(string SceneName)
+void engine::SceneSubsystem::LoadSceneAsync(string SceneName)
 {
 	Print(str::Format("Loading scene asynchronously: %s", SceneName.c_str()), LogType::Info);
 
@@ -44,7 +44,7 @@ void engine::subsystem::SceneSubsystem::LoadSceneAsync(string SceneName)
 		}).detach();
 }
 
-void engine::subsystem::SceneSubsystem::Update()
+void engine::SceneSubsystem::Update()
 {
 	for (Scene* scn : LoadedScenes)
 	{
@@ -52,7 +52,7 @@ void engine::subsystem::SceneSubsystem::Update()
 	}
 }
 
-void engine::subsystem::SceneSubsystem::LoadSceneThread(string SceneName)
+void engine::SceneSubsystem::LoadSceneThread(string SceneName)
 {
 	IsLoading = true;
 	Scene* New = new Scene(true);

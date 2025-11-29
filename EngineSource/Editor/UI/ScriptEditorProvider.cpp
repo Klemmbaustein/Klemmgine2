@@ -33,8 +33,6 @@ engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFil
 			.Description = Description,
 			});
 	};
-
-	ScanFile();
 }
 
 void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)
@@ -519,7 +517,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 			&& (HoverPosition.Column >= i.at.position.startPos && HoverPosition.Column <= i.at.position.endPos))
 		{
 			auto Callback = [this, i] {
-				auto DefaultColor = EditorUI::Theme.Text;
+				auto DefaultColor = this->TextColor;
 
 				std::vector<TextSegment> HoverString = {
 					TextSegment(i.kind == ScannedVariable::Kind::localVariable

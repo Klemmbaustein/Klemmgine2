@@ -3,7 +3,7 @@
 #include "Checkbox.h"
 #include "AssetSelector.h"
 #include <Editor/UI/EditorUI.h>
-#include <DialogWindow.kui.hpp>
+#include <Common.kui.hpp>
 
 using namespace kui;
 
@@ -27,16 +27,23 @@ void engine::editor::PropertyMenu::Clear()
 	Update();
 }
 
-PropertyHeaderElement* engine::editor::PropertyMenu::CreateNewHeading(string Title, bool HasPadding)
+PropertyHeaderElement* engine::editor::PropertyMenu::CreateNewHeading(string Title, std::string Icon, bool HasPadding)
 {
 	auto* New = new PropertyHeaderElement();
 
 	New->SetTitle(Title);
 	AddChild(New);
-	if (!HasPadding)
-		New->SetUpPadding(5_px);
+
+	New->SetUpPadding(HasPadding ? 10_px : 5_px);
+
+	if (Icon.empty())
+	{
+		New->icon->IsCollapsed = true;
+	}
 	else
-		New->SetUpPadding(15_px);
+	{
+		New->SetIcon(Icon);
+	}
 
 	return New;
 }
@@ -117,7 +124,7 @@ void engine::editor::PropertyMenu::AddButtonEntry(string Name, string Label, std
 {
 	auto* NameEntry = CreateNewEntry(Name);
 
-	auto* Button = new DialogWindowButton();
+	auto* Button = new EditorButton();
 	Button->btn->OnClicked = OnClicked;
 	Button->btn->SetPadding(0);
 	Button->SetText(Label);
@@ -130,7 +137,7 @@ void engine::editor::PropertyMenu::AddButtonsEntry(string Name, std::vector<std:
 
 	for (auto& i : Buttons)
 	{
-		auto* Button = new DialogWindowButton();
+		auto* Button = new EditorButton();
 		Button->btn->OnClicked = i.second;
 		Button->btn->SetPadding(0, 0, 0, 10_px);
 		Button->SetText(i.first);

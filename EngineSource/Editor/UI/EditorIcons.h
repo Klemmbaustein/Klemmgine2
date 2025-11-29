@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 #include <map>
@@ -17,4 +16,3 @@ namespace engine::editor
 		static constexpr const char* DEFAULT_ICON = "Engine/Editor/Assets/Object.png";
 	};
 }
-#endif

@@ -29,7 +29,7 @@ namespace engine::editor
 		bool IsCompact = false;
 		kui::UISize ElementSize = 0;
 
-		PropertyHeaderElement* CreateNewHeading(string Title, bool HasPadding = true);
+		PropertyHeaderElement* CreateNewHeading(string Title, std::string Icon = "", bool HasPadding = true);
 
 		PropertyEntryElement* CreateNewEntry(string Name);
 		void AddVecEntry(string Name, Vector3& Value, std::function<void()> OnChanged, bool IsColor = false);

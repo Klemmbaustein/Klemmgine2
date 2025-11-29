@@ -1,0 +1,48 @@
+element LauncherElement
+{
+	var ContentSize = 200px;
+
+	position = -1;
+	size = 100%;
+
+	child UIBackground
+	{
+		color = Color_Background;
+		size = 100%;
+
+		child UIBox content
+		{
+			width = ContentSize;
+			height = 100%;
+		}
+
+		child UIBackground
+		{
+			width = 1px;
+			color = Color_BackgroundHighlight;
+			height = 100%;
+		}
+
+		child UIScrollBox sidebar
+		{
+			orientation = vertical;
+			horizontalAlign = centered;
+			width = 120px;
+			height = 2sr;
+
+			child EditorButton openButton
+			{
+				padding = 5px;
+				downPadding = 0;
+				width = 100%;
+				Text = "New project...";
+			}
+			child EditorButton openButton
+			{
+				padding = 5px;
+				width = 100%;
+				Text = "Connect to...";
+			}
+		}
+	}
+}

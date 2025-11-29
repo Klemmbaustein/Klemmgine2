@@ -468,7 +468,7 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 	}
 	catch (SerializeException& SerializeError)
 	{
-		subsystem::SceneSubsystem::Current->Print(
+		SceneSubsystem::Current->Print(
 			str::Format("Failed to read scene metadata: '%s'", SerializeError.what()),
 			subsystem::Subsystem::LogType::Warning
 		);
@@ -490,14 +490,14 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		}
 		catch (SerializeException& SerializeError)
 		{
-			subsystem::SceneSubsystem::Current->Print(
+			SceneSubsystem::Current->Print(
 				str::Format("Failed to DeSerialize object in scene: '%s'", SerializeError.what()),
 				subsystem::Subsystem::LogType::Warning
 			);
 		}
 		catch (std::out_of_range& RangeError)
 		{
-			subsystem::SceneSubsystem::Current->Print(
+			SceneSubsystem::Current->Print(
 				str::Format("Out of range error while trying to DeSerialize object in scene: '%s'. Object likely had an invalid ID.", RangeError.what()),
 				subsystem::Subsystem::LogType::Warning
 			);
@@ -543,7 +543,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 	}
 	catch (SerializeReadException& ReadErr)
 	{
-		subsystem::SceneSubsystem::Current->Print(
+		SceneSubsystem::Current->Print(
 			str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
 			subsystem::Subsystem::LogType::Error
 		);

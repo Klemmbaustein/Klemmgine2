@@ -1,5 +1,6 @@
 #include "IDialogWindow.h"
 #include <Core/Log.h>
+#include <Common.kui.hpp>
 #include <DialogWindow.kui.hpp>
 #include <Engine/MainThread.h>
 
@@ -31,7 +32,7 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 
 	for (auto i = Options.rbegin(); i < Options.rend(); i++)
 	{
-		auto NewButton = new DialogWindowButton();
+		auto NewButton = new EditorButton();
 		NewButton->btn->OnClicked = [this, Value = *i]() {
 			if (Value.OnClicked)
 			{

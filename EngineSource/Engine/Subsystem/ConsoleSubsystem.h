@@ -3,9 +3,9 @@
 #include <Engine/Console.h>
 #include <unordered_map>
 
-namespace engine::subsystem
+namespace engine
 {
-	class ConsoleSubsystem : public Subsystem
+	class ConsoleSubsystem : public subsystem::Subsystem
 	{
 	public:
 		ConsoleSubsystem();

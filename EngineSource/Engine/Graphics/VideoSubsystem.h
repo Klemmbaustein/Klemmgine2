@@ -16,7 +16,7 @@ namespace engine
 		virtual void Update() override;
 		virtual void RenderUpdate() override;
 
-		virtual void RegisterCommands(subsystem::ConsoleSubsystem* System) override;
+		virtual void RegisterCommands(ConsoleSubsystem* System) override;
 
 		kui::Window* MainWindow = nullptr;
 		kui::Font* DefaultFont = nullptr;

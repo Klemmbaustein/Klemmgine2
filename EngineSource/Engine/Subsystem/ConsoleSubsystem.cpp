@@ -5,7 +5,7 @@
 
 using namespace engine::console;
 
-engine::subsystem::ConsoleSubsystem::ConsoleSubsystem()
+engine::ConsoleSubsystem::ConsoleSubsystem()
 	: Subsystem("Console", Log::LogColor::White)
 {
 	AddCommand({
@@ -29,7 +29,7 @@ engine::subsystem::ConsoleSubsystem::ConsoleSubsystem()
 		});
 }
 
-void engine::subsystem::ConsoleSubsystem::ExecuteCommand(const string& Command)
+void engine::ConsoleSubsystem::ExecuteCommand(const string& Command)
 {
 	std::stringstream Stream;
 	Stream << Command;
@@ -78,12 +78,12 @@ void engine::subsystem::ConsoleSubsystem::ExecuteCommand(const string& Command)
 	Print(str::Format("Unknown command: %s", FirstWord.c_str()), LogType::Error);
 }
 
-void engine::subsystem::ConsoleSubsystem::AddCommand(const console::Command& NewCommand)
+void engine::ConsoleSubsystem::AddCommand(const console::Command& NewCommand)
 {
 	Commands.insert({ NewCommand.Name, NewCommand });
 }
 
-void engine::subsystem::ConsoleSubsystem::RemoveCommand(const string& CommandName)
+void engine::ConsoleSubsystem::RemoveCommand(const string& CommandName)
 {
 	if (Commands.contains(CommandName))
 		Commands.erase(CommandName);

@@ -2,7 +2,7 @@
 #include <Core/Types.h>
 #include <functional>
 
-namespace engine::subsystem
+namespace engine
 {
 	class ConsoleSubsystem;
 }
@@ -14,7 +14,7 @@ namespace engine::console
 		struct CallContext
 		{
 			std::vector<string> ProvidedArguments;
-			subsystem::ConsoleSubsystem* Context = nullptr;
+			ConsoleSubsystem* Context = nullptr;
 		};
 
 		struct Argument

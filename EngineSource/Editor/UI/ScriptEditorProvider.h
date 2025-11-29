@@ -56,6 +56,7 @@ namespace engine::editor
 		void Commit() override;
 
 		void RefreshAll();
+		void ScanFile();
 
 		void Undo();
 		void Redo();
@@ -114,7 +115,6 @@ namespace engine::editor
 		void UpdateLineColorization(size_t Line);
 
 		void UpdateFile();
-		void ScanFile();
 		void UpdateSyntaxHighlight();
 	};
 }

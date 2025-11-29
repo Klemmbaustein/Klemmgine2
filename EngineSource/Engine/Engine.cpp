@@ -8,7 +8,6 @@
 #include "Sound/SoundSubsystem.h"
 #include "Plugins/PluginSubsystem.h"
 #include "Script/ScriptSubsystem.h"
-#include "Internal/WorkingDirectory.h"
 #include "MainThread.h"
 #include "Core/ThreadPool.h"
 #include "File/Resource.h"
@@ -30,6 +29,7 @@ bool Engine::GameHasFocus = false;
 
 Engine::Engine()
 {
+	char32_t;
 }
 
 Engine* Engine::Init()
@@ -41,8 +41,6 @@ Engine* Engine::Init()
 
 	debug::TimeLogger StartupTime{ "Engine started" };
 	Log::Info(VersionInfo::Get().GetDisplayNameAndBuild());
-
-	internal::AdjustWorkingDirectory();
 
 	Instance = new Engine();
 

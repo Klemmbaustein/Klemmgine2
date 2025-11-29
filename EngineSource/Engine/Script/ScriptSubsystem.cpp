@@ -42,7 +42,7 @@ engine::script::ScriptSubsystem::~ScriptSubsystem()
 	delete this->ScriptLanguage;
 }
 
-void engine::script::ScriptSubsystem::RegisterCommands(subsystem::ConsoleSubsystem* System)
+void engine::script::ScriptSubsystem::RegisterCommands(ConsoleSubsystem* System)
 {
 	System->AddCommand(console::Command{
 		.Name = "script_reload",

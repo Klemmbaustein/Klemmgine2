@@ -1,7 +1,7 @@
 #include "ServerConnectDialog.h"
 #include <kui/Window.h>
 #include <SDL3/SDL.h>
-#include <DialogWindow.kui.hpp>
+#include <Common.kui.hpp>
 #include <condition_variable>
 #include <mutex>
 using namespace engine::editor;
@@ -26,7 +26,7 @@ ConnectResult engine::editor::ServerConnectDialog::Show()
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetHorizontalAlign(UIBox::Align::Centered);
 
-		auto btn = new DialogWindowButton();
+		auto btn = new EditorButton();
 		btn->SetText("Connect!");
 		btn->btn->OnClicked = [&] { Accepted = true; win.Close(); };
 		bx->AddChild(btn);

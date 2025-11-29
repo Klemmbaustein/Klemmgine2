@@ -40,7 +40,6 @@ engine::editor::ConsolePanel::ConsolePanel()
 
 	Element = new ConsolePanelElement();
 	Element->commandField->field->OnChanged = [this]() {
-		using namespace subsystem;
 		string Command = Element->commandField->field->GetText();
 
 		if (Command.empty() || !Element->GetParentWindow()->Input.IsKeyDown(kui::Key::RETURN))
@@ -49,7 +48,7 @@ engine::editor::ConsolePanel::ConsolePanel()
 		Log::Info("> " + Command);
 		Element->commandField->field->SetText("");
 		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
-		};
+	};
 	Background->AddChild(Element);
 }
 
@@ -69,7 +68,7 @@ void engine::editor::ConsolePanel::OnResized()
 {
 	using namespace kui;
 
-	Element->SetLogSize(Size - SizeVec(2_px, 34_px).GetScreen());
+	Element->SetLogSize(Size - SizeVec(2_px, 38_px).GetScreen());
 	UpdateLog(true);
 }
 

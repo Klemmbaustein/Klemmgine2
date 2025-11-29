@@ -22,7 +22,7 @@ element PropertyEntryElement
 		}
 		minSize = (90, 0)px;
 		maxSize = (90, 200)px;
-		leftPadding = 10px;
+		leftPadding = 5px;
 	}
 
 	child UIBackground separator
@@ -30,7 +30,7 @@ element PropertyEntryElement
 		width = 1px;
 
 		color = Color_BackgroundHighlight;
-		height = 1pn;
+		height = 100%;
 	}
 
 	child UIBox valueBox
@@ -43,22 +43,37 @@ element PropertyEntryElement
 
 element PropertyHeaderElement
 {
+	var Icon = "";
 	var Title = "title";
 	var UpPadding = 15px;
 
 	orientation = vertical;
-	width = 1pn;
+	width = 100%;
 
-	child UIText
+	child UIBox
 	{
-		padding = 5px;
-		downPadding = 3px;
+		verticalAlign = centered;
 		leftPadding = 10px;
+		child UIBackground icon
+		{
+			size = 15px;
+			image = Icon;
+			padding = 5px;
+			leftPadding = 0px;
+			rightPadding = 7px;
+		}
 
 		upPadding = UpPadding;
-		color = Color_Text;
-		text = Title;
-		size = 13px;
+		child UIText
+		{
+			padding = 5px;
+			leftPadding = 0px;
+			downPadding = 3px;
+
+			color = Color_Text;
+			text = Title;
+			size = 13px;
+		}
 	}
 
 	child UIBackground

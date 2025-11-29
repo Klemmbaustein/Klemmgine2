@@ -1,5 +1,6 @@
 #include "Core/Types.h"
 #include <Core/LaunchArgs.h>
+#include <Engine/Internal/WorkingDirectory.h>
 
 #ifdef USE_ENGINEMAIN
 
@@ -16,6 +17,7 @@ int WinMain(
 )
 {
 	engine::launchArgs::SetArgs(__argc, __argv);
+	engine::internal::AdjustWorkingDirectory();
 	return EngineMain(__argc, __argv);
 }
 
@@ -24,6 +26,7 @@ int WinMain(
 int main(int argc, char** argv)
 {
 	engine::launchArgs::SetArgs(argc, argv);
+	engine::internal::AdjustWorkingDirectory();
 	return EngineMain(argc, argv);
 }
 

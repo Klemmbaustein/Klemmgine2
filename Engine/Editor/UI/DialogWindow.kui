@@ -1,32 +1,3 @@
-element DialogWindowButton
-{
-	var Text = "Ok";
-
-	child UIButton btn
-	{
-		color = Color_Background;
-		border = 1px;
-		borderColor = Color_Highlight1;
-
-		minSize = (50, 24)px;
-		maxSize = (100, 24)px;
-
-		corners = Theme_CornerSize;
-
-		allAlign = centered;
-
-		padding = 6px;
-		leftPadding = 0;
-
-		child UIText
-		{
-			text = Text;
-			size = 11px;
-			color = Color_Text;
-			padding = 5px;
-		}
-	}
-}
 
 element DialogWindowMainElement
 {

@@ -6,9 +6,16 @@
 
 namespace engine::editor
 {
+	/**
+	 * @brief Theme used by various editor elements.
+	 *
+	 * Loaded from a .k2t file, usually located in {editor path}/Editor/Themes
+	 */
 	struct EditorTheme
 	{
+		/// The name of the theme.
 		string Name;
+		/// The corner size is also controlled by the theme.
 		kui::UISize CornerSize = 5_px;
 
 		kui::Vec3f Text = 1;

@@ -50,6 +50,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	};
 
 	EditorUI::Theme.CodeTheme.ApplyToScript(Provider);
+	Provider->ScanFile();
 
 	Toolbar* EditorToolbar = new Toolbar();
 	EditorToolbar->AddButton("Save", EditorUI::Asset("Save.png"), [this]() {

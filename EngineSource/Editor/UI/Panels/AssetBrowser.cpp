@@ -57,7 +57,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				if (Scene::AsyncLoads)
 					return;
 				delete Scene::GetMain();
-				subsystem::SceneSubsystem::Current->LoadSceneAsync(FilePath);
+				SceneSubsystem::Current->LoadSceneAsync(FilePath);
 				EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
 			};
 		}

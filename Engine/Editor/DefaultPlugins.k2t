@@ -1,0 +1,5 @@
+{
+	"defaultActive": obj = {
+		"DebugUI": bool = 1;
+	}
+}

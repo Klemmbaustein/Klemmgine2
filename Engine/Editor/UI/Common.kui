@@ -47,3 +47,34 @@ element EditorTextField
 		}
 	}
 }
+element EditorButton
+{
+	var Text = "Ok";
+	var Size = 20px;
+
+	padding = 6px;
+	leftPadding = 0;
+	minWidth = Size;
+
+	child UIButton btn
+	{
+		color = Color_Background;
+		border = 1px;
+		borderColor = Color_Highlight1;
+
+		height = 24px;
+		minWidth = Size;
+
+		corners = Theme_CornerSize;
+
+		allAlign = centered;
+
+		child UIText
+		{
+			text = Text;
+			size = 11px;
+			color = Color_Text;
+			padding = 5px;
+		}
+	}
+}

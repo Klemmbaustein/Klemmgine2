@@ -115,7 +115,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 		if (!FailedLoading)
 		{
 			Sidebar->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 30_px))
-				->SetBackgroundColor(EditorUI::Theme.HighlightDark)
+				->SetBackgroundColor(EditorUI::Theme.LightBackground)
 				->SetPadding(10_px));
 		}
 		else

@@ -655,40 +655,36 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 	if (Target != this)
 	{
-		NewTab->mainButton->OnClicked = [this, Target]()
+		NewTab->mainButton->OnClicked = [this, Target]() {
+			if (!Parent || Parent->ChildrenAlign != Align::Tabs)
 			{
-				if (!Parent || Parent->ChildrenAlign != Align::Tabs)
-				{
-					return;
-				}
-				for (size_t i = 0; i < Parent->Children.size(); i++)
-				{
-					if (Parent->Children[i] == Target)
-					{
-						Parent->SelectedTab = i;
-						Parent->ShouldUpdate = true;
-						Parent->Children[i]->SetFocused();
-						break;
-					}
-				}
-			};
-
-		NewTab->mainButton->OnDragged = [Target](int)
+				return;
+			}
+			for (size_t i = 0; i < Parent->Children.size(); i++)
 			{
-				Target->MovePanel();
-			};
-	}
-
-	NewTab->closeButton->OnClicked = [Target]()
-		{
-			if (Target->OnClosed())
-				delete Target;
+				if (Parent->Children[i] == Target)
+				{
+					Parent->SelectedTab = i;
+					Parent->ShouldUpdate = true;
+					Parent->Children[i]->SetFocused();
+					break;
+				}
+			}
 		};
 
-	NewTab->mainButton->OnDragged = [Target](int)
-		{
+		NewTab->mainButton->OnDragged = [Target](int) {
 			Target->MovePanel();
 		};
+	}
+
+	NewTab->closeButton->OnClicked = [Target]() {
+		if (Target->OnClosed())
+			delete Target;
+	};
+
+	NewTab->mainButton->OnDragged = [Target](int) {
+		Target->MovePanel();
+	};
 
 	if (Selected)
 	{

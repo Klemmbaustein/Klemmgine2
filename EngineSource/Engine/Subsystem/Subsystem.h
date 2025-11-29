@@ -3,10 +3,13 @@
 #include <typeinfo>
 #include <Core/Log.h>
 
-namespace engine::subsystem
+namespace engine
 {
 	class ConsoleSubsystem;
+}
 
+namespace engine::subsystem
+{
 	/**
 	* @brief
 	* A subsystem of the engine.

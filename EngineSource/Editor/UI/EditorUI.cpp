@@ -5,21 +5,22 @@
 #include "Panels/ClassBrowser.h"
 #include "Panels/ConsolePanel.h"
 #include "Panels/MessagePanel.h"
-#include "Panels/ScriptEditorPanel.h"
 #include "Panels/ObjectListPanel.h"
 #include "Panels/PropertyPanel.h"
 #include "Panels/ScenePanel.h"
+#include "Panels/ScriptEditorPanel.h"
 #include "Panels/Viewport.h"
 #include "Windows/AboutWindow.h"
 #include "Windows/BuildWindow.h"
 #include "Windows/SettingsWindow.h"
+#include <Editor/Editor.h>
 #include <Engine/Engine.h>
-#include <Engine/Input.h>
-#include <Engine/MainThread.h>
-#include <Engine/Objects/MeshObject.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
+#include <Engine/Input.h>
 #include <Engine/Internal/PlatformGraphics.h>
+#include <Engine/MainThread.h>
+#include <Engine/Objects/MeshObject.h>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 using namespace engine::editor;
@@ -39,11 +40,11 @@ EditorPanel* EditorUI::FocusedPanel = nullptr;
 static std::map<engine::string, Vec3f> FileNameColors =
 {
 	{ "", Vec3f(0.5f) },
-	{ "png", Vec3f(0.5f, 0.1f, 0.8f) },
-	{ "kmt", Vec3f(0.3f, 0.8f, 0.1f) },
+	{ "png", Vec3f(0.4f, 0.2f, 0.6f) },
+	{ "kmt", Vec3f(0.4f, 0.7f, 0.3f) },
 	{ "kts", Vec3f(0.6f, 0.1f, 0.3f) },
-	{ "kmdl", Vec3f(0.2f, 0.4f, 0.8f) },
-	{ "dir/", Vec3f(0.8f, 0.5f, 0) },
+	{ "kmdl", Vec3f(0.3f, 0.4f, 0.7f) },
+	{ "dir/", Vec3f(0.7f, 0.5f, 0) },
 };
 static std::map<string, string> FileNameIcons =
 {
@@ -115,11 +116,16 @@ void engine::editor::EditorUI::SetStatusMainThread(string NewMessage, StatusType
 	Instance->StatsBarElement->RedrawElement();
 }
 
+void engine::editor::EditorUI::InitTheme()
+{
+	Theme.LoadFromFile("Dark");
+}
+
 engine::editor::EditorUI::EditorUI()
 {
 	Instance = this;
 
-	Theme.LoadFromFile("Dark");
+	InitTheme();
 
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
 
@@ -379,10 +385,6 @@ void engine::editor::EditorUI::Update()
 	DropdownMenu::UpdateDropdowns();
 }
 
-void engine::editor::EditorUI::ReloadUI()
-{
-}
-
 void engine::editor::EditorUI::UpdateBackgrounds()
 {
 	using namespace kui;
@@ -405,7 +407,7 @@ void engine::editor::EditorUI::AddMenuBarItem(string Name, std::vector<DropdownM
 	MenuBar->AddChild(btn);
 }
 
-engine::string engine::editor::EditorUI::Asset(const string& name)
+engine::string engine::editor::EditorUI::Asset(const string& Path)
 {
-	return "Engine/Editor/Assets/" + name;
+	return GetEditorPath() + "Editor/Assets/" + Path;
 }
