@@ -43,16 +43,38 @@ void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
 	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
-	BOOL UseDarkMode = true;
-	DwmSetWindowAttribute(
-		hwnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE,
-		&UseDarkMode, sizeof(UseDarkMode));
-
-
 	if (Flags & int(kui::Window::WindowFlag::Popup))
 	{
 		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION);
 	}
+}
+
+void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
+	kui::Vec3f BorderColor, bool RoundCorners, kui::Window* Window)
+{
+	kui::systemWM::SysWindow* w = reinterpret_cast<kui::systemWM::SysWindow*>(Window->GetSysWindow());
+
+	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(w->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+
+	auto CaptionRgb = RGB(Color.X * 255, Color.Y * 255, Color.Z * 255);
+
+	DwmSetWindowAttribute(
+		hwnd, DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR,
+		&CaptionRgb, sizeof(CaptionRgb));
+
+	if (!w->IsMain)
+	{
+		auto BorderRgb = RGB(BorderColor.X * 255, BorderColor.Y * 255, BorderColor.Z * 255);
+
+		DwmSetWindowAttribute(
+			hwnd, DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR,
+			&BorderRgb, sizeof(BorderRgb));
+	}
+	auto RoundingPreference = RoundCorners ? DWMWCP_ROUND : DWMWCP_DONOTROUND;
+
+	DwmSetWindowAttribute(
+		hwnd, DWMWINDOWATTRIBUTE::DWMWA_WINDOW_CORNER_PREFERENCE,
+		&RoundingPreference, sizeof(RoundingPreference));
 }
 
 std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
@@ -204,6 +226,12 @@ static bool CommandExists(std::string Command)
 
 void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
+}
+
+void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
+	kui::Vec3f BorderColor, bool RoundCorners, kui::Window* Window)
+{
+	// HAHA as if
 }
 
 void engine::platform::Init()

@@ -6,7 +6,7 @@ element MenuBarButton
 	child UIButton button
 	{
 		minSize = (24, 20)px;
-		color = Color_LightBackground;
+		color = Color_DarkBackground;
 		verticalAlign = centered;
 
 		corners = Theme_CornerSize;

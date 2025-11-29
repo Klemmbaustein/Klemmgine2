@@ -1,0 +1,12 @@
+{
+	"name": str = "Solarized";
+	"colors": obj = {
+		"text": vec3 = <0.58, 0.63, 0.63>;
+		"type": vec3 = <0.71, 0.54, 0>;
+		"function": vec3 = <0.15, 0.55, 0.82>;
+		"variable": vec3 = <0.16, 0.63, 0.6>;
+		"string": vec3 = <0.86, 0.2, 0.18>;
+		"number": vec3 = <0.15, 0.55, 0.82>;
+		"keyword": vec3 = <0.52, 0.6, 0>;
+	};
+}

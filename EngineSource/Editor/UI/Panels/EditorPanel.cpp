@@ -339,7 +339,7 @@ size_t engine::editor::EditorPanel::IndexOf(EditorPanel* Child) const
 			return i;
 		}
 	}
-	
+
 	return SIZE_MAX;
 }
 
@@ -703,7 +703,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 	}
 	else
 	{
-		NewTab->SetColor(EditorUI::Theme.DarkBackground2);
+		NewTab->SetColor(EditorUI::Theme.Background);
 		NewTab->SetBorderSize(0_px);
 		NewTab->SetPaddingSize(0_px);
 	}

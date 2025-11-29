@@ -24,6 +24,26 @@ namespace engine
 
 		/**
 		 * @brief
+		 * Gets the short name of this version.
+		 * @return
+		 * A version string in the format Klemmgine-{VersionNumber}
+		 *
+		 * Example: Klemmgine 2.0.0
+		 */
+		string GetShortName() const;
+
+		/**
+		 * @brief
+		 * Gets the build configuration of this version.
+		 * @return
+		 * A version string in the format {Platform} {Compiler} {Architecture}-{Configuration}
+		 *
+		 * Example: Windows MSVC AMD64-Debug
+		 */
+		string GetConfiguration() const;
+
+		/**
+		 * @brief
 		 * Gets the display name of this version
 		 * @return
 		 * A version string in the format Klemmgine-{VersionNumber} ({Platform} {Compiler} {Architecture}-{Configuration}}

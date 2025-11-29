@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include <Core/Types.h>
 #include <functional>
@@ -27,4 +26,3 @@ namespace engine::editor
 		static void Clear();
 	};
 }
-#endif

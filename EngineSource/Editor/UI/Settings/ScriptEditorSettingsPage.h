@@ -12,5 +12,7 @@ namespace engine::editor
 		void Generate(PropertyMenu* Target, SettingsWindow* TargetWindow) override;
 
 	private:
+
+		bool HasMiniMap = true;
 	};
 }

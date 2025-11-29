@@ -138,6 +138,12 @@ void engine::editor::ScriptEditorProvider::Commit()
 	NextChange = Change();
 }
 
+void engine::editor::ScriptEditorProvider::RefreshAll()
+{
+	UpdateSyntaxHighlight();
+	ParentEditor->FullRefresh();
+}
+
 void engine::editor::ScriptEditorProvider::Undo()
 {
 	if (Changes.empty())
@@ -338,8 +344,8 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 		delete this->HoveredBox;
 	}
 
-	this->HoveredBox = (new UIBlurBackground(true, 0, 0.2f))
-		->SetCorner(5_px)
+	this->HoveredBox = (new UIBlurBackground(true, 0, EditorUI::Theme.LightBackground))
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
 	this->HoveredBox
 		->AddChild(Content);
@@ -457,9 +463,9 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 		{
 			auto Callback = [this, Fn = &i] {
 				std::vector<TextSegment> HoverString = {
-					TextSegment("fn ", Vec3f(1.0f, 0.2f, 0.5f)),
+					TextSegment("fn ", this->KeywordColor),
 					TextSegment(Fn->name, this->FunctionColor),
-					TextSegment("(", 1)
+					TextSegment("(", this->TextColor)
 				};
 
 				for (auto it = Fn->arguments.begin(); it < Fn->arguments.end(); it++)
@@ -468,20 +474,21 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 					HoverString.push_back(TextSegment(it->second, VariableColor));
 					if (Fn->arguments.end() != it + 1)
 					{
-						HoverString.push_back(TextSegment(", ", 1));
+						HoverString.push_back(TextSegment(", ", this->TextColor));
 					}
 				}
-				HoverString.push_back(TextSegment(")", 1));
+				HoverString.push_back(TextSegment(")", this->TextColor));
 
 				if (!Fn->returnType.empty())
 				{
-					HoverString.push_back(TextSegment(" -> ", 1));
+					HoverString.push_back(TextSegment(" -> ", this->TextColor));
 					HoverString.push_back(TextSegment(Fn->returnType, TypeColor));
 				}
 
 				HoverString.push_back(TextSegment(Fn->definition ?
-					"\nDefined in " + Fn->definition->file->name + " at line " + std::to_string(Fn->definition->at.position.line + 1)
-					: "\nDefined in native code.", 1));
+					"\nDefined in " + Fn->definition->file->name
+					+ " at line " + std::to_string(Fn->definition->at.position.line + 1)
+					: "\nDefined in native code.", this->TextColor));
 
 				return (new UIText(12_px, HoverString, EditorUI::MonospaceFont))
 					->SetWrapEnabled(true, 1000_px)
@@ -515,7 +522,8 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 				auto DefaultColor = EditorUI::Theme.Text;
 
 				std::vector<TextSegment> HoverString = {
-					TextSegment(i.kind == ScannedVariable::Kind::localVariable ? "(local variable) " : "(member) ", DefaultColor),
+					TextSegment(i.kind == ScannedVariable::Kind::localVariable
+						? "(local variable) " : "(member) ", DefaultColor),
 					TextSegment(i.type + " ", this->TypeColor),
 				};
 
@@ -590,7 +598,6 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 
 void engine::editor::ScriptEditorProvider::UpdateFile()
 {
-	Highlights.clear();
 	Errors.clear();
 	this->ScriptService->updateFile(this->GetContent(), this->ScriptFile);
 	ScanFile();
@@ -600,52 +607,58 @@ void engine::editor::ScriptEditorProvider::ScanFile()
 {
 	this->ScriptService->commitChanges();
 	OnUpdated.Invoke();
+	UpdateSyntaxHighlight();
+}
 
-	if (this->ScriptService->files.size())
+void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
+{
+	Highlights.clear();
+	if (!this->ScriptService->files.size())
 	{
-		for (auto& i : this->ScriptService->files.begin()->second.functions)
+		return;
+	}
+	for (auto& i : this->ScriptService->files.begin()->second.functions)
+	{
+		size_t ActualStart = i.at.position.startPos;
+
+		size_t Colon = i.at.string.find_last_of(':');
+
+		if (Colon != std::string::npos)
 		{
-			size_t ActualStart = i.at.position.startPos;
-
-			size_t Colon = i.at.string.find_last_of(':');
-
-			if (Colon != std::string::npos)
-			{
-				ActualStart += Colon + 1;
-			}
-
-			Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
-				.Start = ActualStart,
-				.Length = i.at.position.endPos - ActualStart,
-				.Color = FunctionColor,
-				});
+			ActualStart += Colon + 1;
 		}
 
-		for (auto& i : this->ScriptService->files.begin()->second.types)
+		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
+			.Start = ActualStart,
+			.Length = i.at.position.endPos - ActualStart,
+			.Color = FunctionColor,
+			});
+	}
+
+	for (auto& i : this->ScriptService->files.begin()->second.types)
+	{
+		size_t ActualStart = i.position.startPos;
+
+		size_t Colon = i.string.find_last_of(':');
+
+		if (Colon != std::string::npos)
 		{
-			size_t ActualStart = i.position.startPos;
-
-			size_t Colon = i.string.find_last_of(':');
-
-			if (Colon != std::string::npos)
-			{
-				ActualStart += Colon + 1;
-			}
-
-			Highlights[i.position.line].push_back(ScriptSyntaxHighlight{
-				.Start = ActualStart,
-				.Length = i.position.endPos - ActualStart,
-				.Color = TypeColor,
-				});
+			ActualStart += Colon + 1;
 		}
 
-		for (auto& i : this->ScriptService->files.begin()->second.variables)
-		{
-			Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
-				.Start = i.at.position.startPos,
-				.Length = i.at.position.endPos - i.at.position.startPos,
-				.Color = VariableColor,
-				});
-		}
+		Highlights[i.position.line].push_back(ScriptSyntaxHighlight{
+			.Start = ActualStart,
+			.Length = i.position.endPos - ActualStart,
+			.Color = TypeColor,
+			});
+	}
+
+	for (auto& i : this->ScriptService->files.begin()->second.variables)
+	{
+		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
+			.Start = i.at.position.startPos,
+			.Length = i.at.position.endPos - i.at.position.startPos,
+			.Color = VariableColor,
+			});
 	}
 }

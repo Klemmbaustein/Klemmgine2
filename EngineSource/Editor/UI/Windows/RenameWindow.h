@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include "IDialogWindow.h"
 #include <kui/UI/UITextField.h>
@@ -21,5 +20,3 @@ namespace engine::editor
 		std::function<void(string NewName)> OnRenamed;
 	};
 }
-
-#endif

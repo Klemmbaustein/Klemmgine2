@@ -74,7 +74,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	}
 
 	Properties->SetMode(PropertyMenu::Mode::DisplayEntries);
-	Properties->CreateNewHeading("Object: " + Object->Name, false);
+	Properties->CreateNewHeading("Object: " + Object->Name);
 
 	Properties->CreateNewHeading("Object");
 

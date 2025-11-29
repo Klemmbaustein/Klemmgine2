@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "IPopupWindow.h"
 #include <Editor/UI/EditorUI.h>
 #include <thread>
@@ -70,4 +69,3 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	delete Popup;
 	delete this;
 }
-#endif

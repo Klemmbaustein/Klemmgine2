@@ -38,7 +38,7 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 		Viewport::Current->SceneChanged();
 	};
 
-	Properties->CreateNewHeading("Scene - " + Target->Name, false);
+	Properties->CreateNewHeading("Scene - " + Target->Name);
 
 	Properties->CreateNewHeading("Lighting");
 	Properties->AddVecEntry("Sun color", Target->SceneEnvironment.SunColor, OnChanged, true);

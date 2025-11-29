@@ -167,7 +167,7 @@ engine::editor::Viewport::Viewport()
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::c, this, [=] {
+	Win->Input.RegisterOnKeyDownCallback(Key::c, this, [this, Win] {
 
 		if (this != EditorUI::FocusedPanel)
 		{
@@ -190,7 +190,7 @@ engine::editor::Viewport::Viewport()
 		Win->Input.SetClipboard(Stream.str());
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::v, this, [=] {
+	Win->Input.RegisterOnKeyDownCallback(Key::v, this, [this, Win] {
 
 		if (this != EditorUI::FocusedPanel)
 		{

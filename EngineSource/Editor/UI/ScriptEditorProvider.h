@@ -55,6 +55,8 @@ namespace engine::editor
 
 		void Commit() override;
 
+		void RefreshAll();
+
 		void Undo();
 		void Redo();
 
@@ -113,5 +115,6 @@ namespace engine::editor
 
 		void UpdateFile();
 		void ScanFile();
+		void UpdateSyntaxHighlight();
 	};
 }

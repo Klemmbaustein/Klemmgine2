@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "ProgressBar.h"
 #include <cmath>
 #include <algorithm>
@@ -56,4 +55,3 @@ void engine::editor::ProgressBar::SetMessage(string NewMessage)
 		this->ProgressMessage = NewMessage;
 	}
 }
-#endif

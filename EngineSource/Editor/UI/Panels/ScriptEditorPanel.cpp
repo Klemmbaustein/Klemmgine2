@@ -49,7 +49,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		"await"
 	};
 
-	CodeEditorTheme().ApplyToScript(Provider);
+	EditorUI::Theme.CodeTheme.ApplyToScript(Provider);
 
 	Toolbar* EditorToolbar = new Toolbar();
 	EditorToolbar->AddButton("Save", EditorUI::Asset("Save.png"), [this]() {
@@ -73,7 +73,8 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	TabBox->SetMinHeight(UISize::Parent(1));
 	this->Background->AddChild(TabBox);
 	this->Background->AddChild(
-		(new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1)))));
+		(new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
+		->SetPadding(1_px, 1_px, 0, 0));
 	this->Background->AddChild(CenterBox);
 
 	CenterBox->AddChild(EditorToolbar);
@@ -83,7 +84,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	CenterBox->AddChild(Editor
 		->SetPadding(5_px));
 	CenterBox->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(UISize::Parent(1), 1_px)))
-		->SetPadding(1_px));
+		->SetPadding(0, 0, 0, 1_px));
 
 	StatusText = new UIText(12_px, EditorUI::Theme.Text, "Script status", EditorUI::EditorFont);
 
@@ -103,7 +104,7 @@ void engine::editor::ScriptEditorPanel::UpdateTabs()
 
 	TabBox->AddChild((new UIButton(true, 0, EditorUI::Theme.HighlightDark, nullptr))
 		->SetBorder(1_px, EditorUI::Theme.Highlight1)
-		->SetCorner(5_px)
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->SetMinWidth(UISize::Parent(1))
 		->SetPadding(5_px)
@@ -146,4 +147,12 @@ void engine::editor::ScriptEditorPanel::Update()
 		Provider->Connection = sys->Connection;
 		Provider->LoadRemoteFile();
 	}
+}
+
+void engine::editor::ScriptEditorPanel::OnThemeChanged()
+{
+	MiniMap->BackgroundColor = EditorUI::Theme.Background;
+	EditorUI::Theme.CodeTheme.ApplyToScript(Provider);
+	Provider->RefreshAll();
+	UpdateTabs();
 }

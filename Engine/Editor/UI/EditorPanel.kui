@@ -121,6 +121,6 @@ element EditorPanelElement
 		height = 24px;
 		width = 100%;
 
-		color = Color_DarkBackground2;
+		color = Color_Background;
 	}
 }

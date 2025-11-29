@@ -37,6 +37,7 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 
 	Editor = new UITextEditor(Provider, EditorUI::MonospaceFont);
 	//Editor->EditorScrollBox->ScrollBarWidth = 20;
+	EditorUI::Theme.CodeTheme.ApplyToFile(Provider);
 
 	this->Background->AddChild(Editor
 		->SetPadding(5_px));

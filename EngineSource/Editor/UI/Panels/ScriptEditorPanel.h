@@ -14,6 +14,8 @@ namespace engine::editor
 		virtual void OnResized() override;
 		virtual void Update() override;
 
+		void OnThemeChanged() override;
+
 	private:
 
 		kui::UIBox* CenterBox = nullptr;

@@ -7,9 +7,16 @@
 
 using namespace kui;
 
-engine::editor::PropertyMenu::PropertyMenu()
+engine::editor::PropertyMenu::PropertyMenu(kui::Font* MenuFont)
 	: UIScrollBox(false, 0, true)
 {
+	this->MenuFont = MenuFont;
+}
+
+void engine::editor::PropertyMenu::OnAttached()
+{
+	GetAbsoluteParent()->UpdateElement();
+	Update();
 }
 
 void engine::editor::PropertyMenu::Clear()
@@ -74,7 +81,7 @@ void engine::editor::PropertyMenu::AddStringEntry(string Name, string& Value, st
 {
 	auto* NameEntry = CreateNewEntry(Name);
 
-	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, this->MenuFont, nullptr);
 
 	NameField->OnChanged = [OnChanged, &Value, NameField] {
 		Value = NameField->GetText();
@@ -85,7 +92,10 @@ void engine::editor::PropertyMenu::AddStringEntry(string Name, string& Value, st
 	NameEntry->valueBox->AddChild(NameField
 		->SetText(Value)
 		->SetTextColor(EditorUI::Theme.Text)
+		->SetInnerPadding(5_px)
 		->SetTextSize(11_px)
+		->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight)
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetMinSize(SizeVec(ElementSize, 0)));
 }
 
@@ -114,11 +124,25 @@ void engine::editor::PropertyMenu::AddButtonEntry(string Name, string Label, std
 	NameEntry->AddChild(Button);
 }
 
+void engine::editor::PropertyMenu::AddButtonsEntry(string Name, std::vector<std::pair<string, std::function<void()>>> Buttons)
+{
+	auto* NameEntry = CreateNewEntry(Name);
+
+	for (auto& i : Buttons)
+	{
+		auto* Button = new DialogWindowButton();
+		Button->btn->OnClicked = i.second;
+		Button->btn->SetPadding(0, 0, 0, 10_px);
+		Button->SetText(i.first);
+		NameEntry->AddChild(Button);
+	}
+}
+
 void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged)
 {
 	auto* NameEntry = CreateNewEntry(Name);
 
-	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, this->MenuFont, nullptr);
 
 	NameField->OnChanged = [OnChanged, &Value, NameField] {
 		try
@@ -136,7 +160,10 @@ void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::f
 	NameEntry->valueBox->AddChild(NameField
 		->SetText(std::to_string(Value))
 		->SetTextColor(EditorUI::Theme.Text)
+		->SetInnerPadding(5_px)
 		->SetTextSize(11_px)
+		->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight)
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetMinSize(SizeVec(ElementSize, 0)));
 }
 
@@ -144,7 +171,7 @@ void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std:
 {
 	auto* NameEntry = CreateNewEntry(Name);
 
-	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+	auto* NameField = new UITextField(0, EditorUI::Theme.DarkBackground, this->MenuFont, nullptr);
 
 	NameField->OnChanged = [OnChanged, &Value, NameField] {
 		try
@@ -162,7 +189,10 @@ void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std:
 	NameEntry->valueBox->AddChild(NameField
 		->SetText(str::FloatToString(Value))
 		->SetTextColor(EditorUI::Theme.Text)
+		->SetInnerPadding(5_px)
 		->SetTextSize(11_px)
+		->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight)
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetMinSize(SizeVec(ElementSize, 0)));
 }
 void engine::editor::PropertyMenu::SetMode(Mode NewMode)
@@ -196,11 +226,11 @@ void engine::editor::PropertyMenu::AddDropdownEntry(string Name,
 		EditorUI::Theme.Text, Values,
 		[Values, OnChanged](int i) {
 		OnChanged(Values[i]);
-	}, EditorUI::EditorFont);
+	}, this->MenuFont);
 
 	Dropdown->SetTextSize(11_px, 3_px);
 	Dropdown->SetDropdownColor(EditorUI::Theme.LightBackground, EditorUI::Theme.Text);
-	Dropdown->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
+	Dropdown->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight);
 
 	Dropdown->SelectOption(DefaultIndex, false);
 
@@ -211,7 +241,7 @@ void engine::editor::PropertyMenu::AddInfoEntry(string Name, string Value)
 {
 	auto* New = CreateNewEntry(Name);
 
-	New->valueBox->AddChild((new UITextField(0, 0, EditorUI::EditorFont, nullptr))
+	New->valueBox->AddChild((new UITextField(0, 0, this->MenuFont, nullptr))
 		->SetCanEdit(false)
 		->SetText(Value)
 		->SetTextSize(11_px)

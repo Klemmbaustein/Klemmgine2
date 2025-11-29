@@ -1,15 +1,17 @@
 {
 	"name": str = "Light";
 	"isLight": bool = 1;
+	"editorTheme": str = "Klemmgine Light";
 	"colors": obj = {
 		"text": vec3 = <0, 0, 0>;
-		"darkText": vec3 = <0.2, 0.2, 0.2>;
+		"darkText": vec3 = <0.4, 0.4, 0.4>;
 		"background": vec3 = <1.0, 1.0, 1.0>;
-		"darkBackground": vec3 = <0.9, 0.9, 0.9>;
-		"darkBackground2": vec3 = <0.95, 0.95, 0.95>;
-		"lightBackground": vec3 = <0.8, 0.8, 0.8>;
-		"backgroundHighlight": vec3 = <0.4, 0.4, 0.4>;
-		"highlight1": vec3 = <0.2, 0.3, 0.7>;
+		"darkBackground": vec3 = <0.85, 0.85, 0.85>;
+		"darkBackground2": vec3 = <0.9, 0.9, 0.9>;
+		"lightBackground": vec3 = <0.95, 0.95, 0.95>;
+		"backgroundHighlight": vec3 = <0.6, 0.6, 0.6>;
+		"darkBackgroundHighlight": vec3 = <0.7, 0.7, 0.7>;
+		"highlight1": vec3 = <0.3, 0.5, 1>;
 		"highlightDark": vec3 = <0.5, 0.7, 1>;
 		"highlight2": vec3 = <0.1, 0.1, 0.1>;
 		"highlightText": vec3 = <1, 1, 1>;

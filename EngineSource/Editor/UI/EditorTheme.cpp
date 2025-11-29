@@ -24,6 +24,7 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 			{"darkBackground2", this->DarkBackground2},
 			{"lightBackground", this->LightBackground},
 			{"backgroundHighlight", this->BackgroundHighlight},
+			{"darkBackgroundHighlight", this->DarkBackgroundHighlight},
 			{"highlight1", this->Highlight1},
 			{"highlightDark", this->HighlightDark},
 			{"highlight2", this->Highlight2},
@@ -34,6 +35,12 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 
 		this->IsLight = ThemeData.Contains("isLight") && ThemeData.At("isLight").GetBool();
 		this->CornerSize = ThemeData.Contains("cornerSize") ? UISize::Pixels(ThemeData.At("cornerSize").GetInt()) : 5_px;
+
+		this->CodeTheme = CodeEditorTheme();
+		if (ThemeData.Contains("editorTheme"))
+		{
+			this->CodeTheme.LoadFromFile(ThemeData.At("editorTheme").GetString());
+		}
 
 		for (auto& [Name, Value] : Colors)
 		{

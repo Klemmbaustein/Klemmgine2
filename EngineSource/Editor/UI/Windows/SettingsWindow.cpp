@@ -35,7 +35,7 @@ void engine::editor::SettingsWindow::Begin()
 	Sidebar = new UIScrollBox(false, 0, true);
 	Sidebar->SetMinSize(SizeVec(160_px, UISize::Parent(1)));
 	Sidebar->SetMaxSize(SizeVec(160_px, UISize::Parent(1)));
-	SettingsMenu = new PropertyMenu();
+	SettingsMenu = new PropertyMenu(this->DefaultFont);
 	SettingsMenu->SetMinSize(SizeVec(380_px, UISize::Parent(1)));
 	SettingsMenu->SetMaxSize(SizeVec(380_px, UISize::Parent(1)));
 	SettingsMenu->SetLeftPadding(50_px);
@@ -72,7 +72,7 @@ void engine::editor::SettingsWindow::GenerateTabs()
 			ShowPage(i);
 		}))
 			->SetBorder(1_px, OutlineColor)
-			->SetCorner(5_px)
+			->SetCorner(EditorUI::Theme.CornerSize)
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetMinWidth(UISize::Parent(1))
 			->SetPadding(5_px, 0, 5_px, 5_px)

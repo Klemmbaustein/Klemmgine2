@@ -2,12 +2,12 @@
 #include <kui/Vec3.h>
 #include <kui/UISize.h>
 #include <Core/Types.h>
+#include "CodeEditorTheme.h"
 
 namespace engine::editor
 {
 	struct EditorTheme
 	{
-		bool IsLight = false;
 		string Name;
 		kui::UISize CornerSize = 5_px;
 
@@ -18,10 +18,15 @@ namespace engine::editor
 		kui::Vec3f DarkBackground2 = 0.08f;
 		kui::Vec3f LightBackground = 0.2f;
 		kui::Vec3f BackgroundHighlight = kui::Vec3f(0.4f);
+		kui::Vec3f DarkBackgroundHighlight = kui::Vec3f(0.3f);
 		kui::Vec3f Highlight1 = kui::Vec3f(0.5f, 0.5f, 1);
 		kui::Vec3f HighlightDark = kui::Vec3f(0.15f, 0.15f, 0.35f);
 		kui::Vec3f Highlight2 = 1;
 		kui::Vec3f HighlightText = 0;
+
+		bool IsLight = false;
+
+		CodeEditorTheme CodeTheme;
 
 		void LoadFromFile(string ThemeName);
 	};

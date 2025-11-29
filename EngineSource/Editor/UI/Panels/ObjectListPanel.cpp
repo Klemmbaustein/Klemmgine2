@@ -25,9 +25,9 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 void engine::editor::ObjectListPanel::Update()
 {
 	Heading->SetMinSize(Size - UIBox::PixelSizeToScreenSize(2, Heading->GetParentWindow()));
-	Heading->search->SetSize(UISize::Pixels(Heading->GetMinSize().GetPixels().X - 30));
+	Heading->search->SetSize(UISize::Pixels(Heading->GetMinSize().GetPixels().X - 35));
 
-	Heading->listBox->SetMinSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 35), Heading->GetParentWindow()));
+	Heading->listBox->SetMinSize(Size - UIBox::PixelSizeToScreenSize(Vec2f(2, 40), Heading->GetParentWindow()));
 	Heading->listBox->SetMaxSize(Heading->listBox->GetMinSize());
 
 	Scene* Current = Scene::GetMain();

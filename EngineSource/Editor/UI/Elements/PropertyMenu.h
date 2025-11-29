@@ -4,6 +4,7 @@
 #include <PropertyPanel.kui.hpp>
 #include <Core/Types.h>
 #include <Core/Vector.h>
+#include <Editor/UI/EditorUI.h>
 #include <Engine/File/AssetRef.h>
 
 namespace engine::editor
@@ -18,7 +19,9 @@ namespace engine::editor
 			DisplayEntries,
 		};
 
-		PropertyMenu();
+		PropertyMenu(kui::Font* MenuFont = EditorUI::EditorFont);
+
+		void OnAttached() override;
 
 		void Update() override;
 		void Clear();
@@ -33,6 +36,7 @@ namespace engine::editor
 		void AddStringEntry(string Name, string& Value, std::function<void()> OnChanged);
 		void AddBooleanEntry(string Name, bool& Value, std::function<void()> OnChanged);
 		void AddButtonEntry(string Name, string Label, std::function<void()> OnClicked);
+		void AddButtonsEntry(string Name, std::vector<std::pair<string, std::function<void()>>> Buttons);
 		void AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged);
 		void AddFloatEntry(string Name, float& Value, std::function<void()> OnChanged);
 		void AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged);
@@ -47,6 +51,7 @@ namespace engine::editor
 		void UpdateProperties();
 
 	private:
+		kui::Font* MenuFont = nullptr;
 		std::vector<std::function<void()>> UpdatePropertiesCallback;
 	};
 }

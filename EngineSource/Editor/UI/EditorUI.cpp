@@ -10,6 +10,7 @@
 #include "Panels/PropertyPanel.h"
 #include "Panels/ScenePanel.h"
 #include "Panels/Viewport.h"
+#include "Windows/AboutWindow.h"
 #include "Windows/BuildWindow.h"
 #include "Windows/SettingsWindow.h"
 #include <Engine/Engine.h>
@@ -18,6 +19,7 @@
 #include <Engine/Objects/MeshObject.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
+#include <Engine/Internal/PlatformGraphics.h>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 using namespace engine::editor;
@@ -139,12 +141,12 @@ engine::editor::EditorUI::EditorUI()
 		VideoSystem->MainWindow->Markup.SetGetStringFunction(&EditorUI::Asset);
 	}
 
-	Root = new UIBackground(false, -1, Theme.Background, 2);
+	Root = new UIBackground(false, -1, Theme.DarkBackground, 2);
 	Root
 		->SetMinSize(2)
 		->SetMaxSize(2);
 
-	MenuBar = new UIBackground(true, 0, Theme.LightBackground, SizeVec(UISize::Parent(1), UISize::Pixels(MenuBarSize)));
+	MenuBar = new UIBackground(true, 0, Theme.DarkBackground, SizeVec(UISize::Parent(1), UISize::Pixels(MenuBarSize)));
 	MenuBar
 		->SetVerticalAlign(UIBox::Align::Centered);
 	Root->AddChild(MenuBar);
@@ -233,7 +235,9 @@ engine::editor::EditorUI::EditorUI()
 		});
 
 	AddMenuBarItem("Help",
-		{ DropdownMenu::Option("About"), DropdownMenu::Option("Source code") }
+		{ DropdownMenu::Option("About", Asset("Info.png"), [vp]() {
+				new AboutWindow();
+			}), DropdownMenu::Option("Source code") }
 	);
 
 	Update();
@@ -307,6 +311,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Markup.SetGlobal("Color_DarkBackground", Theme.DarkBackground);
 	Target->Markup.SetGlobal("Color_DarkBackground2", Theme.DarkBackground2);
 	Target->Markup.SetGlobal("Color_LightBackground", Theme.LightBackground);
+	Target->Markup.SetGlobal("Color_DarkBackgroundHighlight", Theme.DarkBackgroundHighlight);
 	Target->Markup.SetGlobal("Color_BackgroundHighlight", Theme.BackgroundHighlight);
 	Target->Markup.SetGlobal("Color_Highlight1", Theme.Highlight1);
 	Target->Markup.SetGlobal("Color_HighlightDark", Theme.HighlightDark);
@@ -314,15 +319,19 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
 	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
 
-	UIScrollBox::BackgroundColor = Theme.LightBackground;
-	UIScrollBox::BackgroundBorderColor = Theme.Background;
-	UIScrollBox::ScrollBarColor = Theme.DarkText;
+	Target->Colors.ScrollBackgroundColor = Theme.Background;
+	Target->Colors.ScrollBackgroundBorderColor = Theme.Background;
+	Target->Colors.ScrollBarColor = Theme.DarkText;
+	Target->Colors.TextFieldSelection = Vec3f::Lerp(Theme.Highlight1, Theme.DarkBackground, 0.33f);
+	Target->Colors.TextFieldTextDefaultColor = Theme.Text;
+
+	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1, Theme.CornerSize.Value > 0, Target);
 
 	if (Full && thread::IsMainThread)
 	{
-		Instance->Root->SetColor(Theme.Background);
+		Instance->Root->SetColor(Theme.DarkBackground);
 		Instance->StatusBar->SetColor(Theme.DarkBackground);
-		Instance->MenuBar->SetColor(Theme.LightBackground);
+		Instance->MenuBar->SetColor(Theme.DarkBackground);
 
 		ForEachPanel<EditorPanel>([](EditorPanel* p) {
 			p->OnThemeChanged();

@@ -1,0 +1,12 @@
+{
+	"name": str = "Klemmgine Dark";
+	"colors": obj = {
+		"text": vec3 = <1, 1, 1>;
+		"type": vec3 = <0.31, 0.79, 0.69>;
+		"function": vec3 = <0.86, 0.86, 0.67>;
+		"variable": vec3 = <0.61, 0.86, 1>;
+		"string": vec3 = <0.84, 0.62, 0.52>;
+		"number": vec3 = <0.71, 0.81, 0.66>;
+		"keyword": vec3 = <0.34, 0.61, 0.84>;
+	};
+}

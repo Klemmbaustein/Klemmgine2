@@ -10,15 +10,16 @@ element EditorTextField
 	{
 		hintText = HintText;
 		width = Size;
-		height = 22px;
+		height = 25px;
 		textSize = 11px;
 		color = Color_DarkBackground;
 		textColor = Color_Text;
 		rightPadding = 0;
+		innerPadding = 5px;
 
 		border = 1px;
 		rightBorder = false;
-		borderColor = Color_LightBackground;
+		borderColor = Color_DarkBackgroundHighlight;
 
 		corners = Theme_CornerSize;
 		topRightCorner = false;
@@ -27,14 +28,14 @@ element EditorTextField
 
 	child UIBackground
 	{
-		size = 22px;
+		size = 25px;
 		color = Color_DarkBackground;
 		corners = Theme_CornerSize;
 		topLeftCorner = false;
 		bottomLeftCorner = false;
 
 		border = 1px;
-		borderColor = Color_LightBackground;
+		borderColor = Color_DarkBackgroundHighlight;
 
 		allAlign = centered;
 
@@ -46,5 +47,3 @@ element EditorTextField
 		}
 	}
 }
-
-global Theme_CornerSize = 5px;

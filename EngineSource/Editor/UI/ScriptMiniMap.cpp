@@ -60,6 +60,7 @@ void ScriptMiniMap::Update()
 				this->Editor->EditorScrollBox->GetScrollBarBackground()->SetUseImage(true, Image);
 				IsGenerating = false;
 				Editor->EditorScrollBox->ScrollDownPadding = DownPadding;
+				this->Editor->EditorScrollBox->RedrawElement();
 			});
 		});
 	}

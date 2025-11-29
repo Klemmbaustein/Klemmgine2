@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "RenameWindow.h"
 #include <DialogWindow.kui.hpp>
 #include <Core/File/FileUtil.h>
@@ -66,5 +65,3 @@ void engine::editor::RenameWindow::Confirm()
 		CopyOnRenamed(OutFile);
 		});
 }
-
-#endif

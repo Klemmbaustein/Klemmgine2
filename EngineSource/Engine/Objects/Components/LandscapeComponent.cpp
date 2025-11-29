@@ -7,7 +7,7 @@
 
 using namespace engine::graphics;
 
-constexpr uint32 SIZE = 256;
+constexpr uint32 SIZE = 64;
 
 constexpr float Fade(float t)
 {

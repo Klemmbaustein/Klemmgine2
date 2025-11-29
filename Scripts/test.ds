@@ -23,16 +23,16 @@ class MyObject : SceneObject
 		camera.use()
 		camera.setFOV(80)
 		camera.position = new(0, 0.8, 0)
-		
+
 		woah a = parser()
-		
+
 		a.hi()
 	}
 
 	override fn update()
 	{
 		Rotation3 moveRotation = new(0, this.rotation.y, 0)
-		
+
 		if isKeyDown(Key::w)
 		{
 			movement.addInput(forward(moveRotation))
@@ -68,7 +68,7 @@ class MyObject : SceneObject
 			camera.rotation.p = 90
 		}
 	}
-	
+
 	override fn destroy()
 	{
 	}
@@ -77,7 +77,7 @@ class MyObject : SceneObject
 class woah
 {
 	string message = ""
-	
+
 	fn new(string message)
 	{
 		this.message = message

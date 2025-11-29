@@ -18,10 +18,19 @@ VersionInfo VersionInfo::Get()
 	};
 }
 
+string engine::VersionInfo::GetShortName() const
+{
+	return "Klemmgine " + VersionName;
+}
+
+string engine::VersionInfo::GetConfiguration() const
+{
+	return Platform + " " + Architecture;
+}
+
 string VersionInfo::GetDisplayName() const
 {
-	return "Klemmgine " + VersionName
-		+ " (" + Platform + " " + Architecture + ")";
+	return GetShortName() + " (" + GetConfiguration() + ")";
 }
 
 string engine::VersionInfo::GetDisplayNameAndBuild() const
