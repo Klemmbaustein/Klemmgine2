@@ -156,7 +156,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		if (HasChildren)
 		{
 			IsCollapsed = Collapsed.contains(Obj.Name);
-			Elem->SetArrowImage(IsCollapsed ? EditorUI::Asset("LeftArrow.png") : EditorUI::Asset("DownArrow.png"));
+			Elem->SetArrowImage(IsCollapsed ? EditorUI::Asset("RightArrow.png") : EditorUI::Asset("DownArrow.png"));
 		}
 
 		if (Obj.Children.empty())

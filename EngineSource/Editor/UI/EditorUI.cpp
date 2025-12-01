@@ -333,7 +333,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 
 	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1, Theme.CornerSize.Value > 0, Target);
 
-	if (Full && thread::IsMainThread)
+	if (Full && thread::IsMainThread && Instance)
 	{
 		Instance->Root->SetColor(Theme.DarkBackground);
 		Instance->StatusBar->SetColor(Theme.DarkBackground);

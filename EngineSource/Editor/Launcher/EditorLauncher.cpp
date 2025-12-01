@@ -1,8 +1,12 @@
 #include "EditorLauncher.h"
+#include <Engine/MainThread.h>
 #include <kui/Window.h>
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Editor/UI/EditorUI.h>
-#include <Editor/UI/Elements/Toolbar.h>
+#include <Editor/Server/EditorServerSubsystem.h>
+#include <Editor/UI/Windows/SettingsWindow.h>
+#include <SDL3/SDL.h>
+#include <Engine/Engine.h>
 
 using namespace engine;
 using namespace engine::editor;
@@ -12,11 +16,14 @@ engine::editor::launcher::EditorLauncher::EditorLauncher()
 {
 }
 
-void engine::editor::launcher::EditorLauncher::Run()
+void engine::editor::launcher::EditorLauncher::InitWindow()
 {
 	EditorUI::InitTheme();
+	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
+	thread::IsMainThread = true;
 
-	LauncherWindow = new Window("Klemmgine 2 Launcher", Window::WindowFlag::Resizable);
+	LauncherWindow = new Window("Klemmgine 2 Project Manager", Window::WindowFlag::Resizable,
+		Window::POSITION_CENTERED, Vec2ui(700, 500));
 
 	LauncherWindow->OnResizedCallback = std::bind(&EditorLauncher::OnWindowResized, this);
 
@@ -28,26 +35,126 @@ void engine::editor::launcher::EditorLauncher::Run()
 
 	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text,
 		Theme.Highlight1, Theme.CornerSize.Value > 0, LauncherWindow);
+}
+
+void engine::editor::launcher::EditorLauncher::InitLayout()
+{
+	auto& Theme = EditorUI::Theme;
 
 	Element = new LauncherElement();
 
-	auto t = new Toolbar(false);
+	LauncherToolbar = new Toolbar(false, Theme.DarkBackground);
 
-	t->AddButton("Settings", EditorUI::Asset("Settings.png"), nullptr);
+	LauncherToolbar->AddButton("New project", EditorUI::Asset("Plus.png"), [this]() {
+		LauncherWindow->Close();
+		this->Result = LauncherResult::LaunchProject;
+	});
+	LauncherToolbar->AddButton("Add existing project", EditorUI::Asset("ExitFolder.png"), [this]() {
+	});
+	LauncherToolbar->AddButton("Add server", "", [this]() {
+		new ServerConnectDialog([this](ConnectResult r) {
+			if (r.Connect)
+			{
+				this->Connection = r;
+				this->Result = LauncherResult::ConnectToServer;
+				LauncherWindow->Close();
+			}
+		});
+	});
 
-	Element->content->AddChild(t);
+	LauncherToolbar->AddButton("Settings", EditorUI::Asset("Settings.png"), [this]() {
+		new SettingsWindow();
+	});
+
+	Element->content->AddChild(LauncherToolbar);
+
+	ProjectList = new UIScrollBox(false, 0, true);
+
+	ProjectList->SetMinWidth(UISize::Parent(1));
+	ProjectList->SetMinHeight(1);
+
+	Element->content->AddChild(ProjectList);
+
+	Element->openButton->IsCollapsed = true;
+
+	Element->openButton->btn->OnClicked = [this]() {
+		LauncherWindow->Close();
+		this->Result = LauncherResult::LaunchProject;
+	};
+
+	Window::GetActiveWindow()->Markup.ListenToGlobal("Color_Background", AnyContainer(), this, [this]() {
+		UpdateProjectList();
+		LauncherToolbar->SetToolbarColor(EditorUI::Theme.DarkBackground);
+	});
 
 	OnWindowResized();
+}
+
+void engine::editor::launcher::EditorLauncher::Run()
+{
+	InitWindow();
+	InitLayout();
+
+	UpdateProjectList();
 
 	while (LauncherWindow->UpdateWindow())
 	{
-
+		thread::MainThreadUpdate();
 	}
+
 	delete WindowFont;
 	delete LauncherWindow;
+
+	switch (Result)
+	{
+	case engine::editor::launcher::LauncherResult::LaunchProject:
+	{
+		auto Engine = Engine::Init();
+		Engine->Run();
+		break;
+	}
+	case engine::editor::launcher::LauncherResult::ConnectToServer:
+	{
+		auto Engine = Engine::Init();
+		Engine->LoadSubsystem(new EditorServerSubsystem(this->Connection.Connection));
+		Engine->Run();
+		break;
+	}
+	break;
+	case engine::editor::launcher::LauncherResult::Exit:
+	default:
+		return;
+	}
+}
+
+void engine::editor::launcher::EditorLauncher::UpdateProjectList()
+{
+	ProjectList->DeleteChildren();
+
+	auto Projects = LauncherProject::GetProjects();
+
+	for (auto& i : Projects)
+	{
+		auto Elem = new LauncherProjectElement();
+
+		Elem->SetName(i.Name);
+		Elem->SetDescription(i.Path);
+		Elem->SetColor(EditorUI::Theme.LightBackground);
+		Elem->SetBorderSize(0);
+		Elem->btn->OnClicked = [this, Elem, i]() {
+			Elem->SetBorderSize(1_px);
+			Elem->SetColor(EditorUI::Theme.HighlightDark);
+			this->SelectedProject = i;
+			Element->openButton->IsCollapsed = false;
+			Element->UpdateElement();
+			Element->openButton->RedrawElement();
+		};
+
+		ProjectList->AddChild(Elem);
+	}
 }
 
 void engine::editor::launcher::EditorLauncher::OnWindowResized()
 {
-	Element->SetContentSize(UISize::Screen(2).GetScreen().X - UISize::Pixels(121).GetScreen().X);
+	Element->SetContentSize(UISize::Screen(2).GetScreen().Y - UISize::Pixels(41).GetScreen().Y);
 }

@@ -3,6 +3,7 @@
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <kui/App.h>
 #include <SDL3/SDL.h>
+#include <Engine/Internal/WMOptions.h>
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Engine.h>
@@ -54,7 +55,8 @@ engine::VideoSubsystem::VideoSubsystem()
 	Current = this;
 	app::error::SetErrorCallback([this](string Message, bool Fatal)
 	{
-		app::MessageBox("kui error: " + Message, "Error", Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
+		app::MessageBox("kui error: " + Message, "Error",
+			Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
 		Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
 	});
 
@@ -81,13 +83,15 @@ engine::VideoSubsystem::VideoSubsystem()
 		}
 		else
 		{
-			Print(str::Format("Unknown OpenGL version '%s' will be interpreted as default", VersionString.c_str()));
+			Print(str::Format("Unknown OpenGL version '%s' will be interpreted as default",
+				VersionString.c_str()));
 		}
 
 		Print(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
 	}
 
-	MainWindow = new Window(GetWindowTitle(), Window::WindowFlag::Resizable, Window::POSITION_CENTERED, GetWindowSize());
+	MainWindow = new Window(GetWindowTitle(), Window::WindowFlag::Resizable
+		| EngineWindowFlag::EngineWindow, Window::POSITION_CENTERED, GetWindowSize());
 	MainWindow->SetMinSize(Vec2ui(600, 400));
 
 	if (openGL::GetGLVersion() < openGL::Version::GL430)

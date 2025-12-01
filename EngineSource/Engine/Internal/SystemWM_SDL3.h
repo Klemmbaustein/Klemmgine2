@@ -16,6 +16,7 @@ namespace kui::systemWM
 		// @cond
 	public:
 		bool IsMain = false;
+		bool IsEngineWindow = false;
 		SDL_Window* SDLWindow = nullptr;
 		Window* Parent = nullptr;
 		SDL_GLContext GLContext;

@@ -103,7 +103,8 @@ void engine::editor::PropertyMenu::AddStringEntry(string Name, string& Value, st
 		->SetTextSize(11_px)
 		->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight)
 		->SetCorner(EditorUI::Theme.CornerSize)
-		->SetMinSize(SizeVec(ElementSize, 0)));
+		->SetMinWidth(ElementSize)
+		->SetMaxWidth(ElementSize));
 }
 
 void engine::editor::PropertyMenu::AddBooleanEntry(string Name, bool& Value, std::function<void()> OnChanged)
@@ -171,7 +172,8 @@ void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::f
 		->SetTextSize(11_px)
 		->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight)
 		->SetCorner(EditorUI::Theme.CornerSize)
-		->SetMinSize(SizeVec(ElementSize, 0)));
+		->SetMinWidth(ElementSize)
+		->SetMaxWidth(ElementSize));
 }
 
 void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std::function<void()> OnChanged)
@@ -200,7 +202,8 @@ void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std:
 		->SetTextSize(11_px)
 		->SetBorder(1_px, EditorUI::Theme.DarkBackgroundHighlight)
 		->SetCorner(EditorUI::Theme.CornerSize)
-		->SetMinSize(SizeVec(ElementSize, 0)));
+		->SetMinWidth(ElementSize)
+		->SetMaxWidth(ElementSize));
 }
 void engine::editor::PropertyMenu::SetMode(Mode NewMode)
 {

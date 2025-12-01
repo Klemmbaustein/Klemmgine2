@@ -50,7 +50,7 @@ element EditorTextField
 element EditorButton
 {
 	var Text = "Ok";
-	var Size = 20px;
+	var Size = 60px;
 
 	padding = 6px;
 	leftPadding = 0;

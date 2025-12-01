@@ -1,73 +1,63 @@
 #include "ServerConnectDialog.h"
 #include <kui/Window.h>
-#include <SDL3/SDL.h>
 #include <Common.kui.hpp>
 #include <condition_variable>
+#include <Engine/MainThread.h>
 #include <mutex>
 using namespace engine::editor;
 using namespace kui;
 
-ConnectResult engine::editor::ServerConnectDialog::Show()
+engine::editor::ServerConnectDialog::ServerConnectDialog(std::function<void(ConnectResult)> SubmitResult)
+	: IDialogWindow("Connect to server", {
+	Option{
+	.Name = "Connect",
+	.OnClicked = [this]() {
+			TryConnect();
+		},
+	.Close = false,
+	},
+	Option{
+	.Name = "Cancel",
+	.Close = true,
+	}, }, Vec2ui(400, 300))
 {
-	bool ConnectionAccepted = false;
+	this->SubmitResult = SubmitResult;
+	this->Open();
+}
 
-	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
-	bool Accepted = false;
-	{
-		Window win = Window("Connect to server...", Window::WindowFlag::None, Window::POSITION_CENTERED, Vec2ui(400, 300));
+void engine::editor::ServerConnectDialog::Begin()
+{
+	IDialogWindow::Begin();
+}
 
-		Font* fnt = new Font("res:DefaultFont.ttf");
-		win.Markup.SetDefaultFont(fnt);
+void engine::editor::ServerConnectDialog::Update()
+{
+}
 
-		UIBox* bx = new UIBox(true, -1);
+void engine::editor::ServerConnectDialog::Destroy()
+{
+}
 
-		bx->SetMinSize(2);
-		bx
-			->SetVerticalAlign(UIBox::Align::Centered)
-			->SetHorizontalAlign(UIBox::Align::Centered);
-
-		auto btn = new EditorButton();
-		btn->SetText("Connect!");
-		btn->btn->OnClicked = [&] { Accepted = true; win.Close(); };
-		bx->AddChild(btn);
-
-		while (win.UpdateWindow())
-		{
-
-		}
-
-		delete fnt;
-	}
-
-	if (!Accepted)
-	{
-		return ConnectResult{
-			.Connect = false,
-		};
-	}
-
+void engine::editor::ServerConnectDialog::TryConnect()
+{
 	auto c = new ServerConnection("localhost:5000");
-	std::condition_variable cv;
-	std::mutex m;
-	bool GotResult = false;
 
-	c->OnConnectionAcceptDeny = [&](bool Accept){
+	c->OnConnectionAcceptDeny = [this, c](bool Accept) {
 		ConnectionAccepted = Accept;
-		GotResult = true;
-		cv.notify_one();
+
+		if (!ConnectionAccepted)
+		{
+			delete c;
+		}
+		else
+		{
+			thread::ExecuteOnMainThread(std::bind(this->SubmitResult, ConnectResult{
+				.Connect = ConnectionAccepted,
+				.Connection = c,
+			}));
+		}
+		this->Close();
 	};
 
-	std::unique_lock lk(m);
-	cv.wait(lk, [&] { return GotResult; });
-
-	if (!ConnectionAccepted)
-	{
-		delete c;
-		c = nullptr;
-	}
-
-	return ConnectResult{
-		.Connect = ConnectionAccepted,
-		.Connection = c,
-	};
+	this->SetButtons({});
 }

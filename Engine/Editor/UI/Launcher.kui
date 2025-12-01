@@ -1,48 +1,82 @@
 element LauncherElement
 {
-	var ContentSize = 200px;
+	var ContentSize = 200px
 
-	position = -1;
-	size = 100%;
+	position = -1
+	size = 100%
 
 	child UIBackground
 	{
-		color = Color_Background;
-		size = 100%;
+		color = Color_Background
+		size = 100%
+		orientation = vertical
 
 		child UIBox content
 		{
-			width = ContentSize;
-			height = 100%;
+			orientation = vertical
+			height = ContentSize
+			width = 100%
 		}
 
 		child UIBackground
 		{
-			width = 1px;
-			color = Color_BackgroundHighlight;
-			height = 100%;
+			width = 100%
+			color = Color_BackgroundHighlight
+			height = 1px
 		}
 
-		child UIScrollBox sidebar
+		child UIBackground footer
 		{
-			orientation = vertical;
-			horizontalAlign = centered;
-			width = 120px;
-			height = 2sr;
+			color = Color_DarkBackground
+
+			width = 100%
+			height = 40px
+
+			verticalAlign = centered
+			horizontalAlign = reverse
 
 			child EditorButton openButton
 			{
-				padding = 5px;
-				downPadding = 0;
-				width = 100%;
-				Text = "New project...";
+				Text = "Open"
 			}
-			child EditorButton openButton
-			{
-				padding = 5px;
-				width = 100%;
-				Text = "Connect to...";
-			}
+		}
+	}
+}
+
+element LauncherProjectElement
+{
+	var Name = "Funny project :)"
+	var Description = "F:/Dev/Klemmgine2"
+	var BorderSize = 1px
+	var Color = 0.1
+
+	width = 100%
+	height = 60px
+	child UIButton btn
+	{
+		width = 100%
+		height = 60px
+		color = Color
+		orientation = vertical
+
+		border = BorderSize
+		borderColor = Color_Highlight1
+
+		child UIText name
+		{
+			upPadding = 10px
+			leftPadding = 5px
+			size = 14px
+			text = Name
+			color = Color_Text
+		}
+
+		child UIText description
+		{
+			color = Color_DarkText
+			leftPadding = 5px
+			size = 12px
+			text = Description
 		}
 	}
 }

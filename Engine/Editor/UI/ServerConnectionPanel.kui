@@ -68,7 +68,7 @@ element ServerConnectionPanelElement
 			{
 				Size = 600px;
 				HintText = "Chat";
-				Image = "Engine/Editor/Assets/LeftArrow.png";
+				Image = "Engine/Editor/Assets/RightArrow.png";
 				padding = 5px;
 			}
 		}

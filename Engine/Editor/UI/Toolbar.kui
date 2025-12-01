@@ -1,43 +1,44 @@
 
 element ToolBarButton
 {
-	var Icon;
-	var Name = "Some name";
+	var Icon
+	var Name = "Some name"
+	var Color
 
-	allAlign = centered;
-	height = 100%;
+	allAlign = centered
+	height = 100%
 
 	child UIButton btn
 	{
-		color = Color_Background;
-		corners = Theme_CornerSize;
-		padding = 5px;
-		allAlign = centered;
+		color = Color
+		corners = Theme_CornerSize
+		padding = 5px
+		allAlign = centered
 
 		child UIBackground
 		{
-			padding = 5px;
-			color = Color_Text;
-			image = Icon;
-			size = 20px;
+			padding = 5px
+			color = Color_Text
+			image = Icon
+			size = 20px
 		}
 
 		child UIText
 		{
-			padding = 5px;
-			leftPadding = 0;
+			padding = 5px
+			leftPadding = 0
 			size = 12px;
-			text = Name;
-			color = Color_Text;
+			text = Name
+			color = Color_Text
 		}
 
 		child UIBackground dropdownButton
 		{
-			image = "Engine/Editor/Assets/DownArrow.png";
-			size = 14px;
-			color = Color_Text;
-			leftPadding = -3px;
-			padding = 5px;
+			image = "Engine/Editor/Assets/DownArrow.png"
+			size = 14px
+			color = Color_Text
+			leftPadding = -3px
+			padding = 5px
 		}
 	}
 }

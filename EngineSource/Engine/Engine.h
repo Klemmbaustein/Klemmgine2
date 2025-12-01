@@ -66,6 +66,11 @@ namespace engine
 		template<typename T>
 		static T* GetSubsystem()
 		{
+			if (!Instance)
+			{
+				return nullptr;
+			}
+
 			for (subsystem::Subsystem* i : Instance->LoadedSystems)
 			{
 				if (typeid(*i) == typeid(T))

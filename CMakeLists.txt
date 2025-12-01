@@ -199,8 +199,9 @@ target_link_libraries(KlemmgineLib PUBLIC OpenAL)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
 target_link_libraries(KlemmgineCore PUBLIC DSharp)
+target_link_libraries(KlemmUI PUBLIC KlemmgineLib)
 
-target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI KlemmgineLib)
+target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
 
 if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC" AND ENGINE_EDITOR)
 	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)

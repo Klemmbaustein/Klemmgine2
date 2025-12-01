@@ -55,7 +55,7 @@ void engine::editor::ServerConnectionPanel::Update()
 void engine::editor::ServerConnectionPanel::OnResized()
 {
 	Element->SetWidth(this->Size.X - (201_px).GetScreen().X);
-	Element->SetHeight(this->Size.Y - (34_px).GetScreen().Y);
+	Element->SetHeight(this->Size.Y - (40_px).GetScreen().Y);
 }
 
 void engine::editor::ServerConnectionPanel::OnThemeChanged()

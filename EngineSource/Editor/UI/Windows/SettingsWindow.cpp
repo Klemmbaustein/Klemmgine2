@@ -76,7 +76,7 @@ void engine::editor::SettingsWindow::GenerateTabs()
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetMinWidth(UISize::Parent(1))
 			->SetPadding(5_px, 0, 5_px, 5_px)
-			->AddChild((new UIText(12_px, EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
+			->AddChild((new UIText(12_px, EditorUI::Theme.Text, i->Name, this->DefaultFont))
 				->SetPadding(4_px)));
 	}
 }

@@ -29,7 +29,6 @@ bool Engine::GameHasFocus = false;
 
 Engine::Engine()
 {
-	char32_t;
 }
 
 Engine* Engine::Init()

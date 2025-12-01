@@ -2,31 +2,52 @@
 #include "SystemWM_SDL3.h"
 #include <SystemWM.h>
 #include <kui/App.h>
-#include <iostream>
+#include <thread>
 #include <Engine/Engine.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Subsystem/InputSubsystem.h>
 #include "PlatformGraphics.h"
+#include <Engine/MainThread.h>
+#include "WMOptions.h"
 
+#if WINDOWS
 #pragma comment(linker, "\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
 
-static std::mutex EventsMutex;
 static std::mutex WindowCreateMutex;
 
-std::vector<kui::systemWM::SysWindow*> ActiveWindows;
+static std::vector<kui::systemWM::SysWindow*> ActiveWindows;
+
+// SDL kind of breaks when managing multiple windows on multiple threads :(
+// This should be okay for a game engine though, since we usually only have a single window anyways.
+static void MainThreadBlocking(std::function<void()> fn)
+{
+	if (engine::thread::IsMainThread)
+	{
+		fn();
+	}
+	else
+	{
+		auto HeapFunction = new std::function<void()>(fn);
+		SDL_RunOnMainThread([](void* Data) {
+			auto Ptr = reinterpret_cast<std::function<void()>*>(Data);
+			(*Ptr)();
+			delete Ptr;
+		}, HeapFunction, true);
+	}
+}
 
 kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	Window* Parent, Vec2ui Size, Vec2ui Pos, std::string Title, Window::WindowFlag Flags)
 {
 	engine::platform::Init();
 
-	std::lock_guard g{ WindowCreateMutex };
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
 
-	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_MAXIMIZED;
+	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
 
 	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
 	{
@@ -38,20 +59,33 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 		SDLFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
 	}
 
-	OutWindow->SDLWindow = SDL_CreateWindow(Title.c_str(), int(Size.X), int(Size.Y), SDLFlags);
-	if (ActiveWindows.size() && (Flags & Window::WindowFlag::Popup) == Window::WindowFlag::Popup)
+	OutWindow->IsEngineWindow = (Window::WindowFlag(engine::EngineWindowFlag::EngineWindow) & Flags)
+		!= Window::WindowFlag::None;
+
+	if (OutWindow->IsEngineWindow)
 	{
-		SDL_SetWindowParent(OutWindow->SDLWindow, ActiveWindows[0]->SDLWindow);
-		SDL_SetWindowModal(OutWindow->SDLWindow, true);
+		SDLFlags |= SDL_WINDOW_MAXIMIZED;
 	}
 
-	if ((Flags & Window::WindowFlag::Resizable) != Window::WindowFlag::Resizable)
-	{
-		SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
-	}
+	MainThreadBlocking([=]() {
 
-	OutWindow->IsMain = ActiveWindows.empty();
-	ActiveWindows.push_back(OutWindow);
+		std::lock_guard g{ WindowCreateMutex };
+
+		OutWindow->SDLWindow = SDL_CreateWindow(Title.c_str(), int(Size.X), int(Size.Y), SDLFlags);
+		if (ActiveWindows.size() && (Flags & Window::WindowFlag::Popup) == Window::WindowFlag::Popup)
+		{
+			SDL_SetWindowParent(OutWindow->SDLWindow, ActiveWindows[0]->SDLWindow);
+			SDL_SetWindowModal(OutWindow->SDLWindow, true);
+		}
+
+		if ((Flags & Window::WindowFlag::Resizable) != Window::WindowFlag::Resizable)
+		{
+			SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
+		}
+
+		OutWindow->IsMain = ActiveWindows.empty();
+		ActiveWindows.push_back(OutWindow);
+	});
 
 	engine::platform::InitWindow(OutWindow, int(Flags));
 	SDL_ShowWindow(OutWindow->SDLWindow);
@@ -67,6 +101,8 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 		SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE),
 		SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE),
 	};
+
+	SDL_GL_MakeCurrent(OutWindow->SDLWindow, OutWindow->GLContext);
 
 #if WINDOWS
 
@@ -174,48 +210,49 @@ static std::map<int, kui::Key> Keys =
 
 void kui::systemWM::DestroyWindow(SysWindow* Target)
 {
-	std::lock_guard g{ WindowCreateMutex };
+	MainThreadBlocking([=]() {
 
-	for (auto i = ActiveWindows.begin(); i < ActiveWindows.end(); i++)
-	{
-		if (*i == Target)
+		for (auto i = ActiveWindows.begin(); i < ActiveWindows.end(); i++)
 		{
-			ActiveWindows.erase(i);
-			break;
-		}
-	}
-
-	for (auto& [Key, IsPressed] : Target->Parent->Input.PressedKeys)
-	{
-		if (!IsPressed)
-		{
-			break;
-		}
-
-		SDL_Event KeyReleasedEvent;
-		for (auto& win : ActiveWindows)
-		{
-			KeyReleasedEvent.type = SDL_EVENT_KEY_UP;
-			for (auto& [SDLKey, KuiKey] : Keys)
+			if (*i == Target)
 			{
-				if (KuiKey == Key)
-				{
-					KeyReleasedEvent.key.key = SDLKey;
-					break;
-				}
+				ActiveWindows.erase(i);
+				break;
 			}
-			win->Events.push_back(KeyReleasedEvent);
 		}
-	}
 
-	for (SDL_Cursor* Cursor : Target->WindowCursors)
-	{
-		SDL_DestroyCursor(Cursor);
-	}
+		for (auto& [Key, IsPressed] : Target->Parent->Input.PressedKeys)
+		{
+			if (!IsPressed)
+			{
+				break;
+			}
 
-	SDL_GL_DestroyContext(Target->GLContext);
-	SDL_DestroyWindow(Target->SDLWindow);
-	delete Target;
+			SDL_Event KeyReleasedEvent;
+			for (auto& win : ActiveWindows)
+			{
+				KeyReleasedEvent.type = SDL_EVENT_KEY_UP;
+				for (auto& [SDLKey, KuiKey] : Keys)
+				{
+					if (KuiKey == Key)
+					{
+						KeyReleasedEvent.key.key = SDLKey;
+						break;
+					}
+				}
+				win->Events.push_back(KeyReleasedEvent);
+			}
+		}
+
+		for (SDL_Cursor* Cursor : Target->WindowCursors)
+		{
+			SDL_DestroyCursor(Cursor);
+		}
+
+		SDL_GL_DestroyContext(Target->GLContext);
+		SDL_DestroyWindow(Target->SDLWindow);
+		delete Target;
+	});
 }
 
 void kui::systemWM::SwapWindow(SysWindow* Target)
@@ -230,6 +267,10 @@ void kui::systemWM::SwapWindow(SysWindow* Target)
 
 void kui::systemWM::WaitFrame(SysWindow* Target, float RemainingTime)
 {
+	if (!Target->IsMain || !engine::Engine::Instance)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(RemainingTime * 500)));
+	}
 }
 
 void* kui::systemWM::GetPlatformHandle(SysWindow* Target)
@@ -255,12 +296,11 @@ void kui::systemWM::SetWindowIcon(SysWindow* Target, uint8_t* Bytes, size_t Widt
 
 void kui::systemWM::UpdateWindow(SysWindow* Target)
 {
+	if (engine::thread::IsMainThread)
 	{
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev))
 		{
-			if (!WindowCreateMutex.try_lock())
-				break;
 			for (auto& i : ActiveWindows)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)
@@ -268,10 +308,12 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 					i->Events.push_back(ev);
 				}
 			}
-			WindowCreateMutex.unlock();
 		}
 
 	}
+	static std::mutex m;
+
+	std::lock_guard g{ m };
 	Target->UpdateEvents();
 }
 
