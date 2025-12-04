@@ -10,28 +10,28 @@ using namespace engine;
 
 static std::map<Log::LogColor, kui::Vec3f> LogColorValues =
 {
-	std::pair(Log::LogColor::Default, kui::Vec3f(0.7f)),
-	std::pair(Log::LogColor::White, kui::Vec3f(1)),
-	std::pair(Log::LogColor::Gray, kui::Vec3f(0.7f)),
-	std::pair(Log::LogColor::Red, kui::Vec3f(1, 0.2f, 0.0f)),
-	std::pair(Log::LogColor::Green, kui::Vec3f(0.5f, 1.0f, 0.0f)),
-	std::pair(Log::LogColor::Cyan, kui::Vec3f(0, 1, 1)),
-	std::pair(Log::LogColor::Magenta, kui::Vec3f(1, 0.1f, 1)),
-	std::pair(Log::LogColor::Blue, kui::Vec3f(0.25f, 0.25f, 1)),
-	std::pair(Log::LogColor::Yellow, kui::Vec3f(1, 1, 0)),
+	{Log::LogColor::Default, kui::Vec3f(0.7f)},
+	{Log::LogColor::White, kui::Vec3f(1)},
+	{Log::LogColor::Gray, kui::Vec3f(0.7f)},
+	{Log::LogColor::Red, kui::Vec3f(1, 0.2f, 0.0f)},
+	{Log::LogColor::Green, kui::Vec3f(0.5f, 1.0f, 0.0f)},
+	{Log::LogColor::Cyan, kui::Vec3f(0, 1, 1)},
+	{Log::LogColor::Magenta, kui::Vec3f(1, 0.1f, 1)},
+	{Log::LogColor::Blue, kui::Vec3f(0.25f, 0.25f, 1)},
+	{Log::LogColor::Yellow, kui::Vec3f(1, 1, 0)},
 };
 
 static std::map<Log::LogColor, kui::Vec3f> LogColorValuesLight =
 {
-	std::pair(Log::LogColor::Default, kui::Vec3f(0.3f)),
-	std::pair(Log::LogColor::White, kui::Vec3f(0)),
-	std::pair(Log::LogColor::Gray, kui::Vec3f(0.3f)),
-	std::pair(Log::LogColor::Red, kui::Vec3f(1, 0.0f, 0.0f)),
-	std::pair(Log::LogColor::Green, kui::Vec3f(0.0f, 0.6f, 0.0f)),
-	std::pair(Log::LogColor::Cyan, kui::Vec3f(0, 0.6f, 0.6f)),
-	std::pair(Log::LogColor::Magenta, kui::Vec3f(0.6f, 0, 0.6f)),
-	std::pair(Log::LogColor::Blue, kui::Vec3f(0, 0, 0.6f)),
-	std::pair(Log::LogColor::Yellow, kui::Vec3f(0.6f, 0.6f, 0)),
+	{Log::LogColor::Default, kui::Vec3f(0.3f)},
+	{Log::LogColor::White, kui::Vec3f(0)},
+	{Log::LogColor::Gray, kui::Vec3f(0.3f)},
+	{Log::LogColor::Red, kui::Vec3f(1, 0.0f, 0.0f)},
+	{Log::LogColor::Green, kui::Vec3f(0.0f, 0.6f, 0.0f)},
+	{Log::LogColor::Cyan, kui::Vec3f(0, 0.6f, 0.6f)},
+	{Log::LogColor::Magenta, kui::Vec3f(0.6f, 0, 0.6f)},
+	{Log::LogColor::Blue, kui::Vec3f(0, 0, 0.6f)},
+	{Log::LogColor::Yellow, kui::Vec3f(0.6f, 0.6f, 0)},
 };
 
 engine::editor::ConsolePanel::ConsolePanel()
@@ -99,11 +99,13 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 	{
 		std::vector<TextSegment> Segments;
 
+		auto& DefaultColor = Colors->at(Log::LogColor::Default);
+
 		for (const Log::LogPrefix& i : LogMessages[i].Prefixes)
 		{
-			Segments.push_back(TextSegment("[", Colors->at(Log::LogColor::Default)));
+			Segments.push_back(TextSegment("[", DefaultColor));
 			Segments.push_back(TextSegment(i.Text, Colors->at(i.Color)));
-			Segments.push_back(TextSegment("]: ", Colors->at(Log::LogColor::Default)));
+			Segments.push_back(TextSegment("]: ", DefaultColor));
 		}
 
 		Segments.push_back(TextSegment(LogMessages[i].Message, Colors->at(LogMessages[i].Color)));

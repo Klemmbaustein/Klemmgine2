@@ -58,6 +58,7 @@ element PropertyHeaderElement
 		{
 			size = 15px;
 			image = Icon;
+			color = Color_Text;
 			padding = 5px;
 			leftPadding = 0px;
 			rightPadding = 7px;

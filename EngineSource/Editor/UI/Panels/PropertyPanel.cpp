@@ -49,10 +49,7 @@ void engine::editor::PropertyPanel::Update()
 
 void engine::editor::PropertyPanel::OnResized()
 {
-	if (SelectedObj)
-	{
-		LoadPropertiesFrom(SelectedObj);
-	}
+	LoadPropertiesFrom(SelectedObj);
 }
 
 void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
@@ -136,4 +133,9 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			break;
 		}
 	}
+}
+
+void engine::editor::PropertyPanel::OnThemeChanged()
+{
+	OnResized();
 }

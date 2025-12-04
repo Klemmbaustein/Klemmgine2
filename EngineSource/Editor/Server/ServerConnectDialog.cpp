@@ -1,9 +1,6 @@
 #include "ServerConnectDialog.h"
 #include <kui/Window.h>
-#include <Common.kui.hpp>
-#include <condition_variable>
 #include <Engine/MainThread.h>
-#include <mutex>
 using namespace engine::editor;
 using namespace kui;
 

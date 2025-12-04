@@ -90,6 +90,7 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 void engine::editor::ItemBrowser::OnThemeChanged()
 {
 	UpdateItems();
+	StatusText->SetColor(EditorUI::Theme.Text);
 }
 
 void engine::editor::ItemBrowser::Update()
@@ -100,7 +101,7 @@ void engine::editor::ItemBrowser::Update()
 	auto Win = Background->GetParentWindow();
 
 	ItemsScrollBox->SetMinSize(Background->GetUsedSize().GetScreen() - Vec2f(0, Heading->GetUsedSize().GetScreen().Y)
-		- SizeVec(1_px, 30_px).GetScreen());
+		- SizeVec(1_px, 25_px).GetScreen());
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
 
 	bool ScrollBoxHovered = ItemsScrollBox->IsBeingHovered();
@@ -160,7 +161,7 @@ void engine::editor::ItemBrowser::OnResized()
 		Heading->container->SetHorizontal(false);
 		Heading->pathButtons->SetMinWidth(UISize::Parent(1));
 		Heading->searchBox->SetSize(UISize::Screen(Size.X -
-			UIBox::PixelSizeToScreenSize(38, Heading->GetParentWindow()).X));
+			UIBox::PixelSizeToScreenSize(35, Heading->GetParentWindow()).X));
 		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 60));
 	}
 

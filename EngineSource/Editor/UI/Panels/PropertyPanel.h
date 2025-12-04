@@ -16,6 +16,8 @@ namespace engine::editor
 
 		void LoadPropertiesFrom(SceneObject* Object);
 
+		void OnThemeChanged() override;
+
 		SceneObject* SelectedObj = nullptr;
 
 	private:

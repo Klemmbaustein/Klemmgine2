@@ -30,7 +30,7 @@ void engine::graphics::Camera::Update()
 		Vector3 Up = Vector3::Up(Rotation);
 		View = glm::lookAt(glm::vec3(0), glm::vec3(Forward.X, Forward.Y, Forward.Z), glm::vec3(Up.X, Up.Y, Up.Z));
 		View = glm::translate(View, -glm::vec3(Position.X, Position.Y, Position.Z));
-	}
+	} 
 }
 engine::Vector3 engine::graphics::Camera::GetPosition() const
 {

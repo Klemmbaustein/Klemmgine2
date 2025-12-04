@@ -53,3 +53,8 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	Properties->AddFloatEntry("Fog range", Target->SceneEnvironment.FogRange, OnChanged);
 	Properties->AddFloatEntry("Fog start", Target->SceneEnvironment.FogStart, OnChanged);
 }
+
+void engine::editor::ScenePanel::OnThemeChanged()
+{
+	OnResized();
+}

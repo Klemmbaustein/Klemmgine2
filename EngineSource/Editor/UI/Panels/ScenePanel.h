@@ -16,6 +16,8 @@ namespace engine::editor
 
 		void LoadPropertiesFrom(Scene* Target);
 
+		void OnThemeChanged() override;
+
 	private:
 		Scene* CurrentScene = nullptr;
 		PropertyMenu* Properties = nullptr;

@@ -1,6 +1,6 @@
 # Why do I need to do "cmd /c" on windows?
 if(WIN32)
-	execute_process(COMMAND cmd /c dotnet --list-sdks OUTPUT_VARIABLE NET_SDKS)
+	execute_process(COMMAND cmd /c dotnet --list-sdks OUTPUT_VARIABLE NET_SDKS RESULT_VARIABLE NET_FAILED)
 else()
 	execute_process(COMMAND dotnet --list-sdks OUTPUT_VARIABLE NET_SDKS RESULT_VARIABLE NET_FAILED)
 endif()
