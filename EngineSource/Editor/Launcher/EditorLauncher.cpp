@@ -1,12 +1,12 @@
 #include "EditorLauncher.h"
+#include <Editor/Server/EditorServerSubsystem.h>
+#include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Windows/SettingsWindow.h>
+#include <Engine/Engine.h>
+#include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
 #include <kui/Window.h>
-#include <Engine/Internal/PlatformGraphics.h>
-#include <Editor/UI/EditorUI.h>
-#include <Editor/Server/EditorServerSubsystem.h>
-#include <Editor/UI/Windows/SettingsWindow.h>
 #include <SDL3/SDL.h>
-#include <Engine/Engine.h>
 
 using namespace engine;
 using namespace engine::editor;
@@ -142,9 +142,15 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 		Elem->SetColor(EditorUI::Theme.LightBackground);
 		Elem->SetBorderSize(0);
 		Elem->btn->OnClicked = [this, Elem, i]() {
+			if (SelectedProject.value_or({}).Path == i.Path)
+			{
+				LauncherWindow->Close();
+				Result = LauncherResult::LaunchProject;
+			}
+
 			Elem->SetBorderSize(1_px);
 			Elem->SetColor(EditorUI::Theme.HighlightDark);
-			this->SelectedProject = i;
+			SelectedProject = i;
 			Element->openButton->IsCollapsed = false;
 			Element->UpdateElement();
 			Element->openButton->RedrawElement();

@@ -66,6 +66,10 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	{
 		SDLFlags |= SDL_WINDOW_MAXIMIZED;
 	}
+	if ((Flags & Window::WindowFlag::Popup) == Window::WindowFlag::Popup)
+	{
+		OutWindow->ShouldRaise = true;
+	}
 
 	MainThreadBlocking([=]() {
 
@@ -88,7 +92,6 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	});
 
 	engine::platform::InitWindow(OutWindow, int(Flags));
-	SDL_ShowWindow(OutWindow->SDLWindow);
 	OutWindow->GLContext = SDL_GL_CreateContext(OutWindow->SDLWindow);
 
 	SDL_StartTextInput(OutWindow->SDLWindow);
@@ -210,6 +213,8 @@ static std::map<int, kui::Key> Keys =
 
 void kui::systemWM::DestroyWindow(SysWindow* Target)
 {
+	SDL_GL_DestroyContext(Target->GLContext);
+
 	MainThreadBlocking([=]() {
 
 		for (auto i = ActiveWindows.begin(); i < ActiveWindows.end(); i++)
@@ -249,7 +254,6 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 			SDL_DestroyCursor(Cursor);
 		}
 
-		SDL_GL_DestroyContext(Target->GLContext);
 		SDL_DestroyWindow(Target->SDLWindow);
 		delete Target;
 	});
@@ -257,6 +261,16 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 
 void kui::systemWM::SwapWindow(SysWindow* Target)
 {
+	if (Target->ShouldShow)
+	{
+		Target->ShouldShow = false;
+		SDL_ShowWindow(Target->SDLWindow);
+	}
+	if (Target->ShouldRaise)
+	{
+		Target->ShouldRaise = false;
+		SDL_RaiseWindow(Target->SDLWindow);
+	}
 	if (!Target->IsMain || !engine::Engine::Instance)
 	{
 		SDL_GL_SetSwapInterval(1);

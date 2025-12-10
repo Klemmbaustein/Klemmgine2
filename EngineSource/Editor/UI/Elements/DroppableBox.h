@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include <kui/UI/UIBox.h>
 #include <Editor/UI/EditorUI.h>
@@ -21,4 +20,3 @@ namespace engine::editor
 		OnDropFn OnDrop;
 	};
 }
-#endif

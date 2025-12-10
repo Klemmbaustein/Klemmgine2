@@ -8,6 +8,7 @@
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/ProgressBar.h>
 #include <Editor/UI/Windows/RenameWindow.h>
+#include <Editor/UI/Windows/MessageWindow.h>
 #include <Core/File/FileUtil.h>
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
@@ -22,6 +23,41 @@
 engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
+	AddShortcut(kui::Key::F2, {}, [this] {
+		for (auto& i : this->Buttons)
+		{
+			if (i.first.Selected)
+			{
+				RenameFile(i.first.Path);
+				return;
+			}
+		}
+	});
+
+	AddShortcut(kui::Key::DELETE, {}, [this] {
+		for (auto& i : this->Buttons)
+		{
+			if (i.first.Selected)
+			{
+				new MessageWindow(str::Format("Really delete %s?", i.first.Path.c_str()), "Delete file", {
+					IDialogWindow::Option{
+						.Name = "Yes",
+						.OnClicked = [this, i]() {
+							std::filesystem::remove_all(i.first.Path);
+							resource::ScanForAssets();
+							UpdateItems();
+						},
+						.IsAccept = true,
+					},
+					IDialogWindow::Option{
+						.Name = "No",
+						.IsClose = true,
+					}
+					});
+				return;
+			}
+		}
+	});
 }
 
 std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems()
@@ -113,17 +149,15 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			}
 
 			Options.push_back(DropdownMenu::Option{
+				.Name = "Duplicate",
+				.Icon = EditorUI::Asset("Copy.png"),
+				.OnClicked = std::bind(&AssetBrowser::DuplicateFile, this, FilePath),
+				});
+
+			Options.push_back(DropdownMenu::Option{
 				.Name = "Rename",
 				.Icon = EditorUI::Asset("Rename.png"),
-				.OnClicked = [this, FilePath]()
-				{
-					new RenameWindow(FilePath, [this, FilePath](string NewPath)
-					{
-						std::filesystem::rename(FilePath, NewPath);
-						resource::ScanForAssets();
-						UpdateItems();
-					});
-				},
+				.OnClicked = std::bind(&AssetBrowser::RenameFile, this, FilePath),
 				});
 
 			Options.push_back(DropdownMenu::Option{
@@ -140,7 +174,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 		};
 
 		Out.push_back(Item{
-			.Name = file::FileNameWithoutExt(File.Path),
+			.Name = File.IsDirectory ? file::FileName(File.Path) : file::FileNameWithoutExt(File.Path),
 			.Path = File.Path,
 			.IsDirectory = File.IsDirectory,
 			.Color = IconAndColor.second,
@@ -174,7 +208,8 @@ void engine::editor::AssetBrowser::Back()
 	UpdateItems();
 }
 
-static std::vector<engine::string> ModelExtensions = { "glb", "gltf", "obj", "fbx", "ply", "blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
+static std::vector<engine::string> ModelExtensions = { "glb", "gltf", "obj", "fbx", "ply",
+"blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
 
 static void ImportItem(engine::string File, engine::string CurrentPath)
 {
@@ -302,7 +337,8 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 				EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
 				resource::ScanForAssets();
 			},
-			.Separator = true },
+			.Separator = true
+		},
 		DropdownMenu::Option{
 			.Name = "Open in file explorer",
 			.Icon = EditorUI::Asset("TabDrag.png"),
@@ -341,4 +377,29 @@ void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
 engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 {
 	return "Assets/" + Path;
+}
+
+void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
+{
+	if (std::filesystem::is_directory(FilePath))
+	{
+		std::filesystem::copy(FilePath, file::FilePath(FilePath) + " (Copy)");
+	}
+	else
+	{
+		std::filesystem::copy(FilePath, file::FilePath(FilePath) + "/" +
+			file::FileNameWithoutExt(FilePath) + " (Copy)." + file::Extension(FilePath));
+	}
+	resource::ScanForAssets();
+	UpdateItems();
+}
+
+void engine::editor::AssetBrowser::RenameFile(string FilePath)
+{
+	new RenameWindow(FilePath, [this, FilePath](string NewPath)
+	{
+		std::filesystem::rename(FilePath, NewPath);
+		resource::ScanForAssets();
+		UpdateItems();
+	});
 }

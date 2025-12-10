@@ -64,7 +64,7 @@ element MaterialValueElement
 	child EditorTextField field
 	{
 		HintText = "Value";
-		Image = "Engine/Editor/Assets/Search.png";
+		Image = "Engine/Editor/Assets/Rename.png";
 		Size = 200px;
 	}
 }

@@ -2,6 +2,7 @@
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Effects/Outline.h>
 #include <Editor/UI/Elements/DroppableBox.h>
+#include <Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Engine.h>
 #include <Engine/Graphics/Effects/PostProcess.h>
 #include <Engine/Input.h>
@@ -18,40 +19,6 @@ using namespace engine;
 
 engine::editor::Viewport* engine::editor::Viewport::Current = nullptr;
 
-void engine::editor::Viewport::HandleKeyPress(Window* w)
-{
-	VideoSubsystem* VideoSystem = VideoSubsystem::Current;
-
-	using namespace engine;
-	using namespace engine::editor;
-
-	if (!Engine::IsPlaying)
-	{
-		return;
-	}
-
-	if (Viewport::Current->PolledForText)
-	{
-		return;
-	}
-
-	if (Viewport::Current == EditorUI::FocusedPanel)
-	{
-		if (input::IsKeyDown(input::Key::LSHIFT))
-		{
-			EditorUI::FocusedPanel = nullptr;
-		}
-		else
-		{
-			Engine::GetSubsystem<EditorSubsystem>()->StopProject();
-			input::ShowMouseCursor = true;
-			Viewport::Current->RedrawStats = true;
-			Viewport::Current->SetName(Viewport::Current->UnsavedChanges
-				? "Viewport*" : "Viewport");
-		}
-	}
-}
-
 engine::editor::Viewport::Viewport()
 	: EditorPanel("Viewport", "viewport")
 {
@@ -59,7 +26,6 @@ engine::editor::Viewport::Viewport()
 
 	Shader* HoleShader = VideoSystem->MainWindow->Shaders.LoadShader(
 		"shaders/uishader.vert", "ui/ui_hole.frag", "ui hole shader");
-	VideoSystem->MainWindow->Input.RegisterOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 
 	ViewportBackground = new UIBackground(false, 0, 1, 0, HoleShader);
 	ViewportBackground
@@ -129,56 +95,29 @@ engine::editor::Viewport::Viewport()
 
 	auto Win = Window::GetActiveWindow();
 
-	Win->Input.RegisterOnKeyDownCallback(Key::LEFT, this, [this, Win] {
-		if (Win->Input.PollForText)
-		{
-			return;
-		}
+	AddShortcut(Key::LEFT, {}, [this, Win] {
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, -Speed));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::RIGHT, this, [this, Win] {
-		if (Win->Input.PollForText)
-		{
-			return;
-		}
+	AddShortcut(Key::RIGHT, {}, [this, Win] {
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, Speed));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::DOWN, this, [this, Win] {
-		if (Win->Input.PollForText)
-		{
-			return;
-		}
+	AddShortcut(Key::DOWN, {}, [this, Win] {
 		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, -Speed, 0) : Vector3(-Speed, 0, 0));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::UP, this, [this, Win] {
-		if (Win->Input.PollForText)
-		{
-			return;
-		}
+	AddShortcut(Key::UP, {}, [this, Win] {
 		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::c, this, [this, Win] {
-
-		if (this != EditorUI::FocusedPanel)
-		{
-			return;
-		}
-
-		if (!Win->Input.IsKeyDown(Key::LCTRL) || SelectedObjects.empty())
-		{
-			return;
-		}
-
+	AddShortcut(Key::c, Key::LCTRL, [this, Win] {
 		std::stringstream Stream;
 
 		SerializedValue ToCopy = (*SelectedObjects.begin())->Serialize();
@@ -190,17 +129,7 @@ engine::editor::Viewport::Viewport()
 		Win->Input.SetClipboard(Stream.str());
 	});
 
-	Win->Input.RegisterOnKeyDownCallback(Key::v, this, [this, Win] {
-
-		if (this != EditorUI::FocusedPanel)
-		{
-			return;
-		}
-
-		if (!Win->Input.IsKeyDown(Key::LCTRL))
-		{
-			return;
-		}
+	AddShortcut(Key::v, Key::LCTRL, [this, Win] {
 
 		std::stringstream Stream;
 		Stream << Win->Input.GetClipboard();
@@ -221,6 +150,46 @@ engine::editor::Viewport::Viewport()
 		Win->Input.SetClipboard(Stream.str());
 	});
 
+	AddShortcut(Key::s, Key::LCTRL, [this] {
+		if (!Engine::IsPlaying && UnsavedChanges)
+		{
+			SaveCurrentScene();
+		}
+	});
+
+	AddShortcut(Key::z, Key::LCTRL, [this] {
+		if (!Engine::IsPlaying)
+		{
+			UndoLast();
+		}
+	});
+
+	AddShortcut(Key::ESCAPE, {}, [this] {
+		if (!Engine::IsPlaying || PolledForText)
+		{
+			return;
+		}
+		if (input::IsKeyDown(input::Key::LSHIFT))
+		{
+			EditorUI::FocusedPanel = nullptr;
+		}
+		else
+		{
+			Engine::GetSubsystem<EditorSubsystem>()->StopProject();
+			input::ShowMouseCursor = true;
+			Viewport::Current->RedrawStats = true;
+			Viewport::Current->SetName(Viewport::Current->UnsavedChanges
+				? "Viewport*" : "Viewport");
+		}
+	});
+
+	AddShortcut(Key::F5, {}, [this] {
+		if (!Engine::IsPlaying)
+		{
+			Run();
+		}
+	}, ShortcutOptions::Global);
+
 	Translate = new TranslateGizmo();
 
 	Grid = new MeshComponent();
@@ -237,7 +206,6 @@ engine::editor::Viewport::~Viewport()
 {
 	delete Translate;
 	delete Grid;
-	VideoSubsystem::Current->MainWindow->Input.RemoveOnKeyDownCallback(Key::ESCAPE, &HandleKeyPress);
 }
 
 void engine::editor::Viewport::OnResized()
@@ -303,7 +271,7 @@ void engine::editor::Viewport::Update()
 			ObjCount = int(SceneSystem->Main->Objects.size());
 		}
 
-		string ViewportText = str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, int(Fps));
+		string ViewportText = str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, Fps);
 
 		if (Engine::IsPlaying)
 		{
@@ -374,29 +342,6 @@ void engine::editor::Viewport::Update()
 		input::ShowMouseCursor = true;
 		Win->Input.KeyboardFocusInput = true;
 		MouseGrabbed = false;
-	}
-
-	if (input::IsKeyDown(input::Key::F5))
-	{
-		Run();
-	}
-
-	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s) && UnsavedChanges && HasFocus)
-	{
-		SaveCurrentScene();
-	}
-
-	if (input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::z) && HasFocus)
-	{
-		if (!Undoing)
-		{
-			UndoLast();
-			Undoing = true;
-		}
-	}
-	else
-	{
-		Undoing = false;
 	}
 
 	if (MouseGrabbed && Current)
@@ -569,6 +514,12 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 void engine::editor::Viewport::Run()
 {
 	using namespace subsystem;
+
+	if (!SceneLoaded)
+	{
+		new MessageWindow("Cannot run with no scene loaded.", nullptr);
+		return;
+	}
 
 	Viewport::Current->ClearSelected();
 	SetFocused();

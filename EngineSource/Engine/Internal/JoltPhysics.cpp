@@ -317,7 +317,7 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 			ToJPHVec3(Position),
 			ToJPHQuat(Rotation),
 			JPH::EMotionType(Body->ColliderMovability),
-			(JPH::ObjectLayer)Body->CollisionLayers);
+			JPH::ObjectLayer(Body->CollisionLayers));
 	}
 	case PhysicsBody::BodyType::Box:
 	{
@@ -441,6 +441,9 @@ engine::internal::JoltInstance::~JoltInstance()
 
 void engine::internal::JoltInstance::Update()
 {
+	// Loading models while the system is updating is a bad idea (don't ask how I know)
+	std::lock_guard g{ LoadedModelsMutex };
+
 	// In case time scale is less than 0 (support this for fun)
 	System->Update(std::clamp<float>(stats::DeltaTime, 0, 0.1f), 1, TempAllocator, JobSystem);
 }

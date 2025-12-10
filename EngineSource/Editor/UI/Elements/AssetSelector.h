@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include "DroppableBox.h"
 #include <Engine/File/AssetRef.h>
@@ -33,4 +32,3 @@ namespace engine::editor
 		void UpdateSearchResults();
 	};
 }
-#endif

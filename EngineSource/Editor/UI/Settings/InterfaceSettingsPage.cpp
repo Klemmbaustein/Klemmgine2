@@ -35,6 +35,9 @@ void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, Setti
 	UIDropdown::Option{
 		.Name = "Windows 10 Dark",
 	},
+	UIDropdown::Option{
+		.Name = "Catppuccin",
+	},
 	};
 
 	auto Index = std::ranges::find_if(Options,

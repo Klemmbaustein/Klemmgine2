@@ -141,6 +141,7 @@ engine::ReadOnlyBufferStream::ReadOnlyBufferStream(const uByte* Data, size_t Siz
 {
 	this->Data = Data;
 	this->Size = Size;
+	this->FreeOnClose = FreeOnClose;
 }
 engine::ReadOnlyBufferStream::~ReadOnlyBufferStream()
 {

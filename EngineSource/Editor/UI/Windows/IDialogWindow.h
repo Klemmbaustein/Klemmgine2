@@ -27,6 +27,10 @@ namespace engine::editor
 			std::function<void()> OnClicked;
 			/// Close the window after the option is clicked if true.
 			bool Close = true;
+			/// If true, this will be clicked automatically once enter is pressed.
+			bool IsAccept = false;
+			/// If true, this will be clicked automatically once escape is pressed.
+			bool IsClose = false;
 			/// Run OnClicked on the main thread. If false, it will be run on the same thread as the dialog window.
 			bool OnMainThread = true;
 		};
@@ -38,7 +42,7 @@ namespace engine::editor
 		 * @param Size The size of the window in DPI-scaled pixels.
 		 *
 		 * Like with IPopupWindow, when overriding this constructor, call Open() to start the dialog window's thread
-		 * after you're done ititializing it's variables from the main thread.
+		 * after you're done initializing it's variables from the main thread.
 		 */
 		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size);
 		virtual void Begin() override;
@@ -60,6 +64,9 @@ namespace engine::editor
 		kui::UIBox* Background = nullptr;
 
 	private:
+
+		void PressButton(const Option& o);
+
 		std::vector<Option> Options;
 		kui::UIBox* ButtonBackground = nullptr;
 	};

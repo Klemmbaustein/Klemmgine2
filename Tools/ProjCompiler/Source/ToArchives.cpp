@@ -108,12 +108,12 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 				for (auto& property : Properties)
 				{
 					string Path = property.Value.GetString();
-					if (fs::exists(Path))
+					if (fs::exists(Path) && fs::is_regular_file(Path))
 						out.insert(fs::path(Path));
 				}
 			}
 		}
-		catch (SerializeReadException& e)
+		catch (SerializeException& e)
 		{
 			Log::Warn(str::Format("%s: %s", FilePath.c_str(), e.what()));
 		}

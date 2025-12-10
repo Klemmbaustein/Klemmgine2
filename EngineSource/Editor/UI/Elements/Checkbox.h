@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include <kui/UI/UIButton.h>
 #include <functional>
@@ -16,4 +15,3 @@ namespace engine::editor
 		bool Value = false;
 	};
 }
-#endif

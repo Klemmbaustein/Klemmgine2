@@ -321,7 +321,6 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Markup.SetGlobal("Color_BackgroundHighlight", Theme.BackgroundHighlight);
 	Target->Markup.SetGlobal("Color_Highlight1", Theme.Highlight1);
 	Target->Markup.SetGlobal("Color_HighlightDark", Theme.HighlightDark);
-	Target->Markup.SetGlobal("Color_Highlight2", Theme.Highlight2);
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
 	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
 

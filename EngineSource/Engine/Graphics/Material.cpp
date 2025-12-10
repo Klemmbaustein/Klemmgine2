@@ -237,9 +237,16 @@ void Material::Clear()
 {
 	for (const Field& i : Fields)
 	{
-		if (i.FieldType == Field::Type::Texture && i.TextureValue.Name)
+		if (i.FieldType == Field::Type::Texture)
 		{
-			delete i.TextureValue.Name;
+			if (i.TextureValue.Value)
+			{
+				TextureLoader::Instance->FreeTexture(i.TextureValue.Value);
+			}
+			if (i.TextureValue.Name)
+			{
+				delete i.TextureValue.Name;
+			}
 		}
 	}
 	Fields.clear();

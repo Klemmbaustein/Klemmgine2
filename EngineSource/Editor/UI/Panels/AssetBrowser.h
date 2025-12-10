@@ -13,5 +13,9 @@ namespace engine::editor
 		void OnItemsRightClick(kui::Vec2f Position) override;
 
 		string GetPathDisplayName() override;
+
+	private:
+		void DuplicateFile(string FilePath);
+		void RenameFile(string FilePath);
 	};
 }

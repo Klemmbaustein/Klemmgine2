@@ -13,6 +13,7 @@ internal class AotObjects
 
 	struct ObjectTypeInfo
 	{
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public Type ObjectType;
 		public string Name;
 	}
@@ -82,7 +83,6 @@ internal class AotObjects
 	}
 
 	[UnmanagedCallersOnly(EntryPoint = "Aot_CreateObjectInstance")]
-	[RequiresUnreferencedCode("Calls Activator.CreateInstance()")]
 	internal static IntPtr CreateObjectInstance(IntPtr Type, IntPtr NativeObject)
 	{
 		ObjectTypeInfo Loaded = LoadedTypes[Type];

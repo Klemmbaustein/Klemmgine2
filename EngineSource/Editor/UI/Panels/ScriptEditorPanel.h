@@ -32,5 +32,7 @@ namespace engine::editor
 		bool Saved = true;
 		void UpdateTabs();
 		void Save();
+
+		kui::UIBackground* SeparatorBackgrounds[2];
 	};
 }

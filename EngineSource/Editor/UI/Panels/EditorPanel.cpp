@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "EditorPanel.h"
 #include <kui/Window.h>
 #include <kui/UI/UIBlurBackground.h>
@@ -38,6 +37,11 @@ engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 
 engine::editor::EditorPanel::~EditorPanel()
 {
+	for (auto& s : Shortcuts)
+	{
+		Background->GetParentWindow()->Input.RemoveOnKeyDownCallback(s, this);
+	}
+
 	if (EditorUI::FocusedPanel == this)
 	{
 		EditorUI::FocusedPanel = nullptr;
@@ -138,6 +142,33 @@ void engine::editor::EditorPanel::UpdateLayout()
 		OldUsedSize = UsedSize;
 		OnResized();
 	}
+}
+
+void engine::editor::EditorPanel::AddShortcut(kui::Key NewKey,
+	std::optional<kui::Key> Modifier, std::function<void()> OnPressed, ShortcutOptions Options)
+{
+	bool AllowInText = (int(Options) & int(ShortcutOptions::AllowInText)) > 0;
+	bool Global = (int(Options) & int(ShortcutOptions::Global)) > 0;
+
+	Background->GetParentWindow()->Input.RegisterOnKeyDownCallback(NewKey, this,
+		[this, OnPressed, Modifier, AllowInText, Global]() {
+
+		if (!AllowInText && Background->GetParentWindow()->Input.PollForText)
+		{
+			return;
+		}
+
+		if (!Global && EditorUI::FocusedPanel != this)
+		{
+			return;
+		}
+
+		if ((!Modifier.has_value() || Background->GetParentWindow()->Input.IsKeyDown(*Modifier)))
+		{
+			OnPressed();
+		}
+	});
+	Shortcuts.push_back(NewKey);
 }
 
 void engine::editor::EditorPanel::UpdatePanel()
@@ -719,4 +750,3 @@ kui::Vec2f engine::editor::EditorPanel::PositionToPanelPosition(kui::Vec2f Pos)
 {
 	return Pos + UIBox::PixelSizeToScreenSize(Vec2f(PANEL_PADDING, PANEL_PADDING), Window::GetActiveWindow());
 }
-#endif

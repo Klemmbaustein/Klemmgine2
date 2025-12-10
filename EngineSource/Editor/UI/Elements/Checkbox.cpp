@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "Checkbox.h"
 #include <Editor/UI/EditorUI.h>
 
@@ -20,5 +19,3 @@ void UICheckbox::OnButtonClicked()
 	SetUseTexture(this->Value, "Engine/Editor/Assets/Checkbox.png");
 	UIButton::OnButtonClicked();
 }
-
-#endif

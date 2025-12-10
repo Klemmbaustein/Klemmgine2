@@ -35,6 +35,7 @@ namespace engine
 		/// The path to the referenced file.
 		string FilePath;
 
+		/// The extension of the file.
 		string Extension;
 
 		/**

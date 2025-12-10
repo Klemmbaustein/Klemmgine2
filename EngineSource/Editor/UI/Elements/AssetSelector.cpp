@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "AssetSelector.h"
 #include <kui/Window.h>
 #include <Engine/File/Resource.h>
@@ -209,4 +208,3 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 	SearchBackground->UpdateElement();
 	SearchBackground->RedrawElement();
 }
-#endif

@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "ItemBrowser.h"
 #include <Editor/UI/EditorUI.h>
 #include <kui/Window.h>
@@ -6,6 +5,8 @@
 #include <Editor/UI/Elements/DroppableBox.h>
 #include <Core/Log.h>
 #include <filesystem>
+#include <Engine/MainThread.h>
+#include <Core/Error/EngineAssert.h>
 using namespace kui;
 using namespace engine::editor;
 
@@ -362,4 +363,3 @@ void engine::editor::ItemBrowser::DisplayList()
 		}
 	}
 }
-#endif

@@ -73,7 +73,8 @@ Pipe::Pipe(string Command)
 	sInfo.hStdError = ErrWPipe;
 	sInfo.hStdInput = InRPipe;
 
-	if (!CreateProcessA(0, Command.data(), 0, 0, TRUE, NORMAL_PRIORITY_CLASS, 0, 0, &sInfo, &pInfo))
+	if (!CreateProcessA(0, Command.data(), 0, 0,
+		TRUE, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, 0, 0, &sInfo, &pInfo))
 	{
 		this->ErrorMessage = platform::GetLastErrorString();
 		this->ReturnValue = 1;
@@ -155,7 +156,7 @@ void Pipe::WriteLogThread(Pipe* Target)
 		{
 			break;
 		}
-		
+
 		if (NumRead)
 		{
 			std::lock_guard MessagesGuard = std::lock_guard(Target->MessagesMutex);
@@ -191,7 +192,7 @@ engine::string engine::platform::Pipe::GetErrorMessage()
 std::vector<engine::string> Pipe::GetNewLines()
 {
 	std::lock_guard MessagesGuard = std::lock_guard(MessagesMutex);
-	
+
 	std::vector<string> Lines;
 
 	string CurrentLine;

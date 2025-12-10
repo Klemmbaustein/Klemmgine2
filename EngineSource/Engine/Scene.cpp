@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Scene.h"
 #include "Core/ThreadPool.h"
 #include "Engine.h"
 #include "Internal/OpenGL.h"
@@ -265,7 +264,7 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 		}
 		Objects.clear();
 
-		std::vector<AssetRef> OldReferenced = ReferencedAssets;
+		std::vector<SceneAsset> OldReferenced = ReferencedAssets;
 		ReferencedAssets.clear();
 
 		DeSerializeInternal(FromState, false);
@@ -393,6 +392,7 @@ void engine::Scene::RemoveDrawnComponent(DrawableComponent* Removed)
 
 void engine::Scene::PreLoadAsset(AssetRef Target)
 {
+	const void* TargetPtr = nullptr;
 	if (Target.Extension == "kmdl")
 	{
 		auto Model = GraphicsModel::RegisterModel(Target);
@@ -403,25 +403,28 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 			{
 				Physics.PreLoadMesh(Model);
 			}
+			TargetPtr = Model;
 		}
 	}
 	if (Target.Extension == "png" && graphics::TextureLoader::Instance)
 	{
-		graphics::TextureLoader::Instance->PreLoadBuffer(Target,
+		TargetPtr = graphics::TextureLoader::Instance->PreLoadBuffer(Target,
 			graphics::TextureOptions{});
 	}
-	ReferencedAssets.push_back(Target);
+	ReferencedAssets.push_back({ Target, TargetPtr });
 }
 
-void engine::Scene::UnloadAsset(AssetRef Target)
+void engine::Scene::UnloadAsset(const SceneAsset& Target)
 {
-	if (Target.Extension == "kmdl")
+	using namespace engine::graphics;
+
+	if (Target.FileReference.Extension == "kmdl")
 	{
-		GraphicsModel::UnloadModel(Target);
+		GraphicsModel::UnloadModel(Target.FileReference);
 	}
-	if (Target.Extension == "png")
+	if (Target.FileReference.Extension == "png")
 	{
-		// TODO: Unload textures again
+		TextureLoader::Instance->FreeTexture(reinterpret_cast<const Texture*>(Target.LoadedData));
 	}
 }
 

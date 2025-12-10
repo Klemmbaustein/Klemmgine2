@@ -1,14 +1,18 @@
 #include "AssetEditor.h"
-#include <Engine/Input.h>
-#include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/MessageWindow.h>
-#include "TextEditorPanel.h"
 
 engine::editor::AssetEditor::AssetEditor(string NameFormat, AssetRef Asset)
 	: EditorPanel(str::Format(NameFormat, Asset.DisplayName().c_str()), "")
 {
 	this->NameFormat = NameFormat;
 	this->EditedAsset = Asset;
+
+	AddShortcut(kui::Key::s, kui::Key::LCTRL, [this]() {
+		if (!Saved)
+		{
+			Save();
+		}
+	});
 }
 
 void engine::editor::AssetEditor::OnChanged()
@@ -29,11 +33,6 @@ void engine::editor::AssetEditor::Save()
 void engine::editor::AssetEditor::Update()
 {
 	EditorPanel::Update();
-	if (!Saved && EditorUI::FocusedPanel == this
-		&& input::IsKeyDown(input::Key::LCTRL) && input::IsKeyDown(input::Key::s))
-	{
-		Save();
-	}
 }
 
 bool engine::editor::AssetEditor::OnClosed()
@@ -45,8 +44,7 @@ bool engine::editor::AssetEditor::OnClosed()
 	IDialogWindow::Option
 	{
 		.Name = "Yes",
-		.OnClicked = [this]()
-	{
+		.OnClicked = [this]() {
 		Save();
 		delete this;
 	}
@@ -54,8 +52,7 @@ bool engine::editor::AssetEditor::OnClosed()
 	IDialogWindow::Option
 	{
 		.Name = "No",
-		.OnClicked = [this]()
-	{
+		.OnClicked = [this]() {
 		delete this;
 	}
 	},

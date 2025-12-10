@@ -67,6 +67,9 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	EditorToolbar->SetLeftPadding(0);
 
+	SeparatorBackgrounds[0] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1)));
+	SeparatorBackgrounds[1] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(UISize::Parent(1), 1_px));
+
 	Background->SetHorizontal(true);
 	CenterBox = new UIBox(false);
 	TabBox = new UIScrollBox(false, 0, true);
@@ -74,7 +77,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	TabBox->SetMinHeight(UISize::Parent(1));
 	this->Background->AddChild(TabBox);
 	this->Background->AddChild(
-		(new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
+		SeparatorBackgrounds[0]
 		->SetPadding(1_px, 1_px, 0, 0));
 	this->Background->AddChild(CenterBox);
 
@@ -82,9 +85,10 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	Editor = new UITextEditor(Provider, EditorUI::MonospaceFont);
 
+
 	CenterBox->AddChild(Editor
 		->SetPadding(5_px));
-	CenterBox->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(UISize::Parent(1), 1_px)))
+	CenterBox->AddChild((SeparatorBackgrounds[1])
 		->SetPadding(0, 0, 0, 1_px));
 
 	StatusText = new UIText(12_px, EditorUI::Theme.Text, "Script status", EditorUI::EditorFont);
@@ -96,6 +100,18 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	MiniMap->BackgroundColor = EditorUI::Theme.Background;
 
+	AddShortcut(Key::s, Key::LCTRL, [this] {
+		Save();
+		EditorUI::SetStatusMessage(str::Format("Saved file %s", Provider->ScriptFile.c_str()), EditorUI::StatusType::Info);
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::z, Key::LCTRL, [this] {
+		Provider->Undo();
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::y, Key::LCTRL, [this] {
+		Provider->Redo();
+	}, ShortcutOptions::AllowInText);
 	UpdateTabs();
 }
 
@@ -153,6 +169,13 @@ void engine::editor::ScriptEditorPanel::Update()
 void engine::editor::ScriptEditorPanel::OnThemeChanged()
 {
 	MiniMap->BackgroundColor = EditorUI::Theme.Background;
+	StatusText->SetColor(EditorUI::Theme.Text);
+
+	for (auto& i : SeparatorBackgrounds)
+	{
+		i->SetColor(EditorUI::Theme.BackgroundHighlight);
+	}
+
 	EditorUI::Theme.CodeTheme.ApplyToScript(Provider);
 	Provider->RefreshAll();
 	UpdateTabs();

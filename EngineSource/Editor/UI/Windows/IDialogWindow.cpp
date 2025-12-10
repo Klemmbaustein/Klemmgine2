@@ -23,6 +23,38 @@ void engine::editor::IDialogWindow::Begin()
 	ButtonBackground = MainElement->buttonBox;
 
 	SetButtons(Options);
+
+	Popup->Input.RegisterOnKeyDownCallback(Key::ESCAPE, this, [this] {
+		if (Popup->Input.PollForText)
+		{
+			return;
+		}
+
+		for (auto& i : Options)
+		{
+			if (i.IsClose)
+			{
+				PressButton(i);
+				return;
+			}
+		}
+	});
+
+	Popup->Input.RegisterOnKeyDownCallback(Key::RETURN, this, [this] {
+		if (Popup->Input.PollForText && !Popup->UI.KeyboardFocusBox)
+		{
+			return;
+		}
+
+		for (auto& i : Options)
+		{
+			if (i.IsAccept)
+			{
+				PressButton(i);
+				return;
+			}
+		}
+	});
 }
 
 void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
@@ -34,25 +66,36 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 	{
 		auto NewButton = new EditorButton();
 		NewButton->btn->OnClicked = [this, Value = *i]() {
-			if (Value.OnClicked)
-			{
-				if (Value.OnMainThread)
-				{
-					thread::ExecuteOnMainThread([OnClicked = Value.OnClicked]()
-						{
-							OnClicked();
-						});
-				}
-				else
-				{
-					Value.OnClicked();
-				}
-			}
-			if (Value.Close)
-				Close();
+			PressButton(Value);
 			};
 		NewButton->SetText(i->Name);
 		ButtonBackground->AddChild(NewButton);
 	}
 	ButtonBackground->RedrawElement();
+}
+
+void engine::editor::IDialogWindow::PressButton(const Option& o)
+{
+	if (o.OnClicked)
+	{
+		if (o.OnMainThread)
+		{
+			thread::ExecuteOnMainThread([this, ShouldClose = o.Close, OnClicked = o.OnClicked]()
+			{
+				OnClicked();
+				if (ShouldClose)
+				{
+					Close();
+				}
+			});
+		}
+		else
+		{
+			o.OnClicked();
+		}
+	}
+	if (o.Close && o.OnMainThread)
+	{
+		Close();
+	}
 }

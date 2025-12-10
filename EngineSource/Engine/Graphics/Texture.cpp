@@ -1,8 +1,8 @@
 #include "Texture.h"
 #include <Engine/File/Resource.h>
 #include <Engine/Internal/OpenGL.h>
-#include <stb_image.hpp>
 #include <mutex>
+#include <stb_image.hpp>
 using namespace engine;
 using namespace engine::graphics;
 
@@ -22,7 +22,7 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureOptions Load
 {
 	using namespace engine::resource;
 
-	auto Name = From.FilePath + std::to_string(LoadInfo.Filter) + std::to_string(LoadInfo.TextureBorders);
+	auto Name = MakeTextureID(From, LoadInfo);
 
 	{
 		TextureLoadMutex.lock();
@@ -32,23 +32,19 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureOptions Load
 		{
 			Texture& tx = LoadedTextures[Name];
 
+			if (tx.Pixels && !tx.TextureObject)
+			{
+				tx.TextureObject = CreateGLTexture(tx.Pixels, tx.Width, tx.Height, tx.Options);
+				stbi_image_free(const_cast<uByte*>(tx.Pixels));
+				tx.Pixels = nullptr;
+			}
+
 			tx.References++;
 			TextureLoadMutex.unlock();
 			return &tx;
 		}
 
 		LoadInfo.Name = Name;
-
-		// Check if the texture is pre-loaded. (Decompressed but not a GL texture)
-		auto FoundBuffer = TextureBuffers.find(Name);
-		if (FoundBuffer != TextureBuffers.end())
-		{
-			TextureLoadMutex.unlock();
-			const Texture* Result = LoadTexture(FoundBuffer->second.Pixels, FoundBuffer->second.Width, FoundBuffer->second.Height, LoadInfo);
-			stbi_image_free(const_cast<uByte*>(FoundBuffer->second.Pixels));
-			TextureBuffers.erase(FoundBuffer);
-			return Result;
-		}
 		TextureLoadMutex.unlock();
 	}
 
@@ -92,7 +88,7 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 
 	std::lock_guard g{ TextureLoadMutex };
 
-	auto Name = From.FilePath + std::to_string(LoadInfo.Filter) + std::to_string(LoadInfo.TextureBorders);
+	auto Name = MakeTextureID(From, LoadInfo);
 
 	if (LoadedTextures.contains(Name))
 		return &LoadedTextures[Name];
@@ -107,7 +103,7 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 
 	stbi_set_flip_vertically_on_load(true);
 	auto Pixels = stbi_load_from_memory(Bytes->GetData(), int(Bytes->GetSize()), &w, &h, &ch, 4);
-	const Texture* New = &(*TextureBuffers.insert({ Name, Texture{
+	const Texture* New = &(*LoadedTextures.insert({ Name, Texture{
 		.Options = LoadInfo,
 		.Pixels = Pixels,
 		.TextureObject = 0,
@@ -122,9 +118,52 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 
 void TextureLoader::FreeTexture(const Texture* Tex)
 {
+	for (auto& [id, texture] : LoadedTextures)
+	{
+		if (&texture == Tex)
+		{
+			texture.References--;
+			if (texture.References == 0)
+			{
+				FreeTextureData(&texture);
+				LoadedTextures.erase(id);
+			}
+			return;
+		}
+	}
+
+	Tex->References--;
+	if (Tex->References == 0)
+	{
+		FreeTextureData(Tex);
+		return;
+	}
 }
 
-uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo)
+void engine::graphics::TextureLoader::FreeTexture(AssetRef From)
+{
+}
+
+void engine::graphics::TextureLoader::FreeTextureData(const Texture* Tex)
+{
+	if (Tex->Pixels)
+	{
+		stbi_image_free(const_cast<uByte*>(Tex->Pixels));
+	}
+
+	if (Tex->TextureObject)
+	{
+		glDeleteTextures(1, &Tex->TextureObject);
+	}
+}
+
+string engine::graphics::TextureLoader::MakeTextureID(const AssetRef& Ref, const TextureOptions& LoadInfo)
+{
+	return Ref.FilePath + std::to_string(LoadInfo.Filter) + std::to_string(LoadInfo.TextureBorders);
+}
+
+uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height,
+	TextureOptions LoadInfo)
 {
 	uint32 TextureID = 0;
 	glGenTextures(1, &TextureID);

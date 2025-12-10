@@ -18,6 +18,7 @@ namespace engine::editor
 	class AssetListProvider
 	{
 	public:
+		/// Virtual destructor.
 		virtual ~AssetListProvider() = default;
 
 		/**
@@ -29,10 +30,56 @@ namespace engine::editor
 		 * A list of assets at the given path.
 		 */
 		virtual std::vector<AssetFile> GetFiles(string Path) = 0;
+
+		/**
+		 * @brief
+		 * Removes a file or directory at the given location.
+		 *
+		 * This will call @ref OnChanged once the operation is done.
+		 * @param Path
+		 * The path to remove.
+		 */
 		virtual void DeleteFile(string Path) = 0;
+		/**
+		 * @brief
+		 * Creates a new empty file at the given location.
+		 *
+		 * This will call @ref OnChanged once the operation is done.
+		 * @param Path
+		 * The path of the new file.
+		 */
 		virtual void NewFile(string Path) = 0;
+		/**
+		 * @brief
+		 * Creates a new directory with the given path.
+		 *
+		 * This will call @ref OnChanged once the operation is done.
+		 * @param Path
+		 * The path that the new directory should be created at.
+		 */
 		virtual void NewDirectory(string Path) = 0;
+		/**
+		 * @brief
+		 * Tries to get a stream that can be written.
+		 *
+		 * If the stream cannot be acquired, use @ref SaveToFile() to write the data instead.
+		 *
+		 * @param Path
+		 * The path of the file to write to.
+		 * @return
+		 * A binary stream to write to if that's possible. nullptr otherwise.
+		 */
 		virtual IBinaryStream* GetFileSaveStream(string Path) = 0;
+		/**
+		 * @brief
+		 * Saves the given stream to a file.
+		 * @param Path
+		 * The path to the file that should be saved.
+		 * @param Stream
+		 * The stream containing data to save.
+		 * @param Length
+		 * The amount of data in bytes to save.
+		 */
 		virtual void SaveToFile(string Path, IBinaryStream* Stream, size_t Length)
 		{
 			auto OutStream = GetFileSaveStream(Path);

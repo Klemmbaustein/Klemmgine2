@@ -1,0 +1,19 @@
+{
+	"name": str = "Dark";
+	"cornerSize": int = 5;
+	"editorTheme": str = "Catppuccin";
+	"colors": obj = {
+		"text": vec3 = <0.79, 0.83, 0.96>;
+		"darkText": vec3 = <0.65, 0.68, 0.8>;
+		"background": vec3 = <0.12, 0.12, 0.18>;
+		"darkBackground": vec3 = <0.08, 0.1, 0.15>;
+		"darkBackground2": vec3 = <0.12, 0.13, 0.19>;
+		"lightBackground": vec3 = <0.19, 0.2, 0.27>;
+		"backgroundHighlight": vec3 = <0.5, 0.53, 0.64>;
+		"darkBackgroundHighlight": vec3 = <0.43, 0.45, 0.55>;
+		"highlight1": vec3 = <0.71, 0.75, 1>;
+		"highlightDark": vec3 = <0.14, 0.15, 0.23>;
+		"highlight2": vec3 = <0.42, 0.44, 0.52>;
+		"highlightText": vec3 = <0, 0, 0>;
+	};
+}

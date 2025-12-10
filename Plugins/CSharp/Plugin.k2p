@@ -3,9 +3,9 @@
 	"binary": str = "Klemmgine.CSharp.Loader";
 	"include": array = [
 		obj: {
-			"win-x64": str = "bin/net8.0/win-x64/native/Klemmgine.CSharp.Aot.dll";
-			"win-arm64": str = "bin/net8.0/win-arm64/native/Klemmgine.CSharp.Aot.dll";
-			"linux-x64": str = "bin/net8.0/linux-x64/native/Klemmgine.CSharp.Aot.so";
+			"win-x64": str = "bin/net10.0/win-x64/native/Klemmgine.CSharp.Aot.dll";
+			"win-arm64": str = "bin/net10.0/win-arm64/native/Klemmgine.CSharp.Aot.dll";
+			"linux-x64": str = "bin/net10.0/linux-x64/native/Klemmgine.CSharp.Aot.so";
 		},
 		obj: {
 			"win-x64": str = "nethost.dll";

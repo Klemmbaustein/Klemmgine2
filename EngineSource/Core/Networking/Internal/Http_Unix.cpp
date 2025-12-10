@@ -1,7 +1,7 @@
-#if defined(UNIX)
-#include "aio/http/http.hpp"
-#include "http_internal.hpp"
-#include <aio/closeable_value.hpp>
+#if defined(__linux__)
+#include <Core/Networking/Http.h>
+#include "HttpInternal.hpp"
+#include <Core/Closeable.h>
 #include <cstdint>
 #include <cstdlib>
 #include <format>
@@ -13,55 +13,49 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-using namespace aio;
+using namespace engine;
 
 using std::size_t;
 
-http::HttpResponsePtr http::sendRequestNoSSL(HttpUrl url, str method, HttpOptions options)
+http::HttpResponse* http::SendRequestNoSSL(HttpUrl Url, string Method, HttpOptions Options)
 {
-	hostent* server;
-	sockaddr_in serv_addr;
+	string Message = Options.GetHeadersString(Url, Method);
+	Message.append(Options.Body);
 
-	/* What are we going to send? */
-	str message = options.getHeadersString(url, method);
-	message.append(options.body);
-
-	/* create the socket */
-	CloseableValue sockfd = { socket(AF_INET, SOCK_STREAM, 0), close };
-	if (sockfd < 0)
+	Closeable SocketFile = { socket(AF_INET, SOCK_STREAM, 0), close };
+	if (SocketFile < 0)
 	{
-		sockfd.invalidate();
-		return HttpResponse::httpError("Error opening socket");
+		SocketFile.Invalidate();
+		return HttpResponse::HttpError("Error opening socket");
 	}
-	/* lookup the ip address */
-	server = gethostbyname(url.hostName.c_str());
-	if (!server)
-		return HttpResponse::httpError("No such host");
 
-	/* fill in the structure */
-	memset(&serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(url.port);
-	memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+	hostent* Server = gethostbyname(Url.HostName.c_str());
+	if (!Server)
+		return HttpResponse::HttpError("No such host");
+
+	sockaddr_in ServerAddress{ 0 };
+	ServerAddress.sin_family = AF_INET;
+	ServerAddress.sin_port = htons(Url.Port);
+	memcpy(&ServerAddress.sin_addr.s_addr, Server->h_addr, Server->h_length);
 
 	/* connect the socket */
-	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
-		return HttpResponse::httpError("Error connecting");
+	if (connect(SocketFile, (struct sockaddr*)&ServerAddress, sizeof(ServerAddress)) < 0)
+		return HttpResponse::HttpError("Error connecting");
 
 	/* send the request */
-	size_t sent = 0, total = message.size();
+	size_t Sent = 0, Total = Message.size();
 	do
 	{
-		size_t bytes = write(sockfd, message.data() + sent, total - sent);
-		if (bytes < 0)
-			return HttpResponse::httpError("Error writing message to socket");
-		if (bytes == 0)
+		size_t WrittenBytes = write(SocketFile, Message.data() + Sent, Total - Sent);
+		if (WrittenBytes < 0)
+			return HttpResponse::HttpError("Error writing message to socket");
+		if (WrittenBytes == 0)
 			break;
-		sent += bytes;
-	} while (sent < total);
+		Sent += WrittenBytes;
+	} while (Sent < Total);
 
-	return internal::handleConnection([&sockfd](i64 toRead, void* to) -> i64 {
-		return read(sockfd, to, toRead);
+	return internal::HandleConnection([&SocketFile](int64 ToRead, void* ToPtr) -> int64 {
+		return read(SocketFile, ToPtr, ToRead);
 	});
 }
 #endif

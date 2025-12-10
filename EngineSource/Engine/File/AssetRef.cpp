@@ -1,16 +1,17 @@
 #include "AssetRef.h"
 #include "Resource.h"
 #include <Core/File/FileUtil.h>
-#include <Core/Log.h>
 #include <filesystem>
+
+using namespace engine;
 
 engine::AssetRef operator""_asset(const char* Name, std::size_t Size)
 {
-	engine::string Out = engine::string(Name, Size);
+	string Out = engine::string(Name, Size);
 
 	size_t Dot = Out.find_last_of(".");
 
-	return engine::AssetRef::FromName(Out.substr(0, Dot), Out.substr(Dot + 1));
+	return AssetRef::FromName(Out.substr(0, Dot), Out.substr(Dot + 1));
 }
 
 engine::AssetRef engine::AssetRef::FromName(string Name, string Extension)

@@ -10,7 +10,7 @@ using namespace aio;
 
 using std::size_t;
 
-http::HttpResponsePtr http::sendRequestSSL(HttpUrl url, str method, HttpOptions options)
+http::HttpResponsePtr http::SendRequestSSL(HttpUrl url, str method, HttpOptions options)
 {
 	SSL_library_init();
 

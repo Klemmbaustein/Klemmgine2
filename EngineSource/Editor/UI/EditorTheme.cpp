@@ -2,6 +2,7 @@
 #include <Core/File/TextSerializer.h>
 #include <Core/Log.h>
 #include <map>
+#include <Editor/Editor.h>
 
 using namespace kui;
 
@@ -13,7 +14,7 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 
 	try
 	{
-		SerializedValue ThemeData = TextSerializer::FromFile("Engine/Editor/Themes/" + ThemeName + ".k2t");
+		SerializedValue ThemeData = TextSerializer::FromFile(GetEditorPath() + "/Editor/Themes/" + ThemeName + ".k2t");
 
 		std::map<string, kui::Vec3f&> Colors =
 		{
@@ -27,7 +28,6 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 			{"darkBackgroundHighlight", this->DarkBackgroundHighlight},
 			{"highlight1", this->Highlight1},
 			{"highlightDark", this->HighlightDark},
-			{"highlight2", this->Highlight2},
 			{"highlightText", this->HighlightText},
 		};
 

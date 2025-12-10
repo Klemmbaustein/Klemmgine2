@@ -200,20 +200,27 @@ namespace engine
 		*/
 		void PreLoadAsset(AssetRef Target);
 
-		void UnloadAsset(AssetRef Target);
-
 		uint32 GetDrawBuffer()
 		{
 			return SceneTexture;
 		}
 
 	private:
+
+		struct SceneAsset
+		{
+			AssetRef FileReference;
+			const void* LoadedData = nullptr;
+		};
+
 		void DeSerializeInternal(SerializedValue* From, bool Async);
 		friend class SceneObject;
-		std::vector<AssetRef> ReferencedAssets;
+		std::vector<SceneAsset> ReferencedAssets;
 		std::set<SceneObject*> DestroyedObjects;
 		void LoadInternal(string File, bool Async);
 		void Init();
+
+		void UnloadAsset(const SceneAsset& Target);
 
 		uint32 SceneTexture = 0;
 

@@ -16,7 +16,9 @@ internal class AotEntryPoint
 	}
 
 	[UnmanagedCallersOnly(EntryPoint = "Aot_Main")]
-	[RequiresUnreferencedCode("Calls NativeFunctions.RegisterFunctions()")]
+	[UnconditionalSuppressMessage("Trimming",
+		"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+		Justification = "It's *fine*")]
 	public static void EntryPoint(IntPtr functionPointers, int nativeFunctionCount)
 	{
 		List<NativeFunctionInfo> engineFunctions = [];

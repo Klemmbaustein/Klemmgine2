@@ -19,6 +19,8 @@ void engine::editor::CodeEditorTheme::ApplyToFile(kui::FileEditorProvider* Provi
 	Provider->KeywordColor = Keyword;
 	Provider->StringColor = String;
 	Provider->NumberColor = Number;
+	Provider->BacketAreaColor = BracketArea;
+	Provider->LineNumberColor = LineNumber;
 }
 
 void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
@@ -40,6 +42,8 @@ void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
 			{"string", this->String},
 			{"number", this->Number},
 			{"keyword", this->Keyword},
+			{"bracketArea", this->BracketArea},
+			{"lineNumber", this->LineNumber},
 		};
 
 		auto& ColorData = ThemeData.At("colors");

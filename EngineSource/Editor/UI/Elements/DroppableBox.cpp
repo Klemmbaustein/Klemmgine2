@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "DroppableBox.h"
 #include <Core/Log.h>
 using namespace engine::editor;
@@ -34,4 +33,3 @@ DroppableBox* engine::editor::DroppableBox::GetBoxAtCursor()
 	}
 	return Found;
 }
-#endif

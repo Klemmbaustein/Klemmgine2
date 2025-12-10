@@ -41,7 +41,8 @@ void engine::platform::Init()
 
 void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 {
-	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(Target->SDLWindow),
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
 	if (Flags & int(kui::Window::WindowFlag::Popup))
 	{
@@ -54,7 +55,8 @@ void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
 {
 	kui::systemWM::SysWindow* w = reinterpret_cast<kui::systemWM::SysWindow*>(Window->GetSysWindow());
 
-	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(w->SDLWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(w->SDLWindow),
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
 	auto CaptionRgb = RGB(Color.X * 255, Color.Y * 255, Color.Z * 255);
 
@@ -117,13 +119,13 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 			}
 		}
 
-		std::ranges::for_each(i.FileTypes, [&WideFilters](const string& str)
-			{
-				if (str != "*")
-					WideFilters += StrToWstr("*." + str) + L";";
-				else
-					WideFilters += L"*;";
-			});
+		for (const string& str : i.FileTypes)
+		{
+			if (str != "*")
+				WideFilters += StrToWstr("*." + str) + L";";
+			else
+				WideFilters += L"*;";
+		}
 
 		if (WideFilters.size())
 			WideFilters.pop_back();
@@ -166,7 +168,8 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 	ItemName.vt = VT_LPWSTR;
 	ItemName.pwszVal = AssetsName.data();
 
-	hr = SHCreateItemFromParsingName((std::filesystem::current_path() / "Assets").wstring().c_str(), NULL, IID_PPV_ARGS(&AssetsItem));
+	hr = SHCreateItemFromParsingName((std::filesystem::current_path() / "Assets").wstring().c_str(),
+		NULL, IID_PPV_ARGS(&AssetsItem));
 	if (SUCCEEDED(hr))
 	{
 		SHSetTemporaryPropertyForItem(AssetsItem, PKEY_ItemNameDisplay, ItemName);
@@ -247,7 +250,8 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 #endif
 
 // Stolen from SystemWM_Win32 and SystemWM_Linux in KlemmUI.
-// SDL also has a message box function but that one looks weird. (It doesn't even seem to use MessageBox() on Windows)
+// SDL also has a message box function but it is rather janky.
+// (It doesn't even seem to use MessageBox() on Windows)
 bool engine::platform::ShowMessageBox(string Title, string Message, int Type)
 {
 	if (Type < 0 || Type > 2)

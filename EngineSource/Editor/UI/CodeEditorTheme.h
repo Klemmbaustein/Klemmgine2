@@ -16,6 +16,8 @@ namespace engine::editor
 		kui::Vec3f String = kui::Vec3f(0.5f, 1.0f, 0.2f);
 		kui::Vec3f Number = kui::Vec3f(0.5f, 0.7f, 1.0f);
 		kui::Vec3f Keyword = kui::Vec3f(1.0f, 0.2f, 0.5f);
+		kui::Vec3f LineNumber = 0.75f;
+		kui::Vec3f BracketArea = 0.5f;
 		bool IsLight = false;
 
 		void ApplyToScript(ScriptEditorProvider* Provider) const;

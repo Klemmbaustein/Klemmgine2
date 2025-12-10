@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35617.110
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11304.174 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Core", "Engine.Core\Engine.Core.csproj", "{BD8E14C2-CF4D-88A2-D043-49FB7238E53B}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -11,8 +11,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{DE054545-5975-4DDD-BB93-8D5CE2F4F34B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Aot", "Engine.Aot\Engine.Aot.csproj", "{C98A9807-5633-48A9-9154-F1BEA83690CD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project", "..\..\Script\Project.csproj", "{4A3F2B6D-11FF-7F12-B0E6-D72AB8CEF2D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +30,6 @@ Global
 		{C98A9807-5633-48A9-9154-F1BEA83690CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C98A9807-5633-48A9-9154-F1BEA83690CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C98A9807-5633-48A9-9154-F1BEA83690CD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4A3F2B6D-11FF-7F12-B0E6-D72AB8CEF2D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4A3F2B6D-11FF-7F12-B0E6-D72AB8CEF2D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4A3F2B6D-11FF-7F12-B0E6-D72AB8CEF2D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4A3F2B6D-11FF-7F12-B0E6-D72AB8CEF2D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

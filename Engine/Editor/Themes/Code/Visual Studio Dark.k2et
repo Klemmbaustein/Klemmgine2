@@ -8,5 +8,7 @@
 		"string": vec3 = <0.84, 0.62, 0.52>;
 		"number": vec3 = <0.71, 0.81, 0.66>;
 		"keyword": vec3 = <0.34, 0.61, 0.84>;
+		"lineNumber": vec3 = <0.54, 0.54, 0.54>;
+		"bracketArea": vec3 = <0.36, 0.36, 0.36>;
 	};
 }

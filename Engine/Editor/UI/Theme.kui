@@ -8,7 +8,6 @@ global Color_DarkBackgroundHighlight = 0.3;
 global Color_BackgroundHighlight = 0.5;
 global Color_Highlight1 = (1, 0.5, 0.5);
 global Color_HighlightDark = (0.15, 0.15, 0.35);
-global Color_Highlight2 = 1;
 global Color_HighlightText = 0;
 
 global Theme_CornerSize = 5px;

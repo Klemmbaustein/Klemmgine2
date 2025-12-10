@@ -14,9 +14,12 @@ engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::
 	: MessageWindow(Message, Title, { Option{
 	.Name = "Ok",
 	.OnClicked = [OnAccepted, this]() {
-			if (OnAccepted)
-				OnAccepted();
-		}} })
+		if (OnAccepted)
+			OnAccepted();
+	},
+	.IsAccept = true,
+	.IsClose = true,
+	}})
 {
 }
 
