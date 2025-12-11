@@ -82,7 +82,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 			SDL_SetWindowModal(OutWindow->SDLWindow, true);
 		}
 
-		if ((Flags & Window::WindowFlag::Resizable) != Window::WindowFlag::Resizable)
+		if (!OutWindow->IsEngineWindow)
 		{
 			SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
 		}

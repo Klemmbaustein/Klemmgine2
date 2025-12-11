@@ -1,10 +1,11 @@
 #pragma once
-#include <kui/UI/FileEditorProvider.h>
-#include <ds/language.hpp>
-#include <kui/Timer.h>
-#include <stack>
-#include <Editor/Server/ServerConnection.h>
 #include <Core/Event.h>
+#include <ds/language.hpp>
+#include <Editor/Server/ServerConnection.h>
+#include <kui/Timer.h>
+#include <kui/UI/FileEditorProvider.h>
+#include <kui/UI/UIScrollBox.h>
+#include <stack>
 
 namespace engine::editor
 {
@@ -86,6 +87,8 @@ namespace engine::editor
 		void NavigateTo(kui::EditorPosition Position);
 		void NavigateTo(kui::EditorPosition StartPosition, kui::EditorPosition EndPosition);
 
+		void CloseAutoComplete();
+
 	private:
 
 		struct ChangePart
@@ -110,7 +113,11 @@ namespace engine::editor
 
 		std::vector<size_t> Changed;
 
+		kui::UIScrollBox* AutoCompleteBox = nullptr;
+
 		kui::Timer HoverTime;
+
+		bool IsAutoCompleteActive = false;
 
 		void* HoveredData = nullptr;
 

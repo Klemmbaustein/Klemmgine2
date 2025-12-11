@@ -235,7 +235,7 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	void* NewHovered = NewHoveredError.Error ? (void*)NewHoveredError.Error : (void*)NewHoveredSymbol.Symbol;
 
-	if (DropdownMenu::Current || !Win->UI.HoveredBox || !Win->UI.HoveredBox->IsChildOf(ParentEditor))
+	if (IsAutoCompleteActive || DropdownMenu::Current || !Win->UI.HoveredBox || !Win->UI.HoveredBox->IsChildOf(ParentEditor))
 	{
 		NewHovered = nullptr;
 	}
@@ -365,10 +365,11 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 		->AddChild(Content);
 	this->HoveredBox->UpdateElement();
 	this->HoveredBox->HasMouseCollision = true;
-	this->HoveredBox->SetCurrentScrollObject(ParentEditor->EditorScrollBox->GetScrollObject());
 
 	this->HoveredBox->SetPosition(ParentEditor->EditorToScreen(At)
+		+ Vec2f(0, ParentEditor->EditorScrollBox->GetScrollObject()->GetOffset())
 		- Vec2f(0, this->HoveredBox->GetUsedSize().GetScreen().Y) + Vec2f(0, (1_px).GetScreen().Y));
+
 	return this->HoveredBox;
 }
 
@@ -390,12 +391,18 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete()
 
 	auto c = this->ScriptService->completeAt(&ScriptService->files.begin()->second, pos.Column, pos.Line);
 
-	UIBox* content = new UIBox(false);
+	UIBox* content = new UIScrollBox(false, 0, true);
 
 	for (auto& i : c)
 	{
-		content->AddChild((new UIText(12_px, EditorUI::Theme.Text, i.name, EditorUI::EditorFont))
-			->SetPadding(3_px));
+		content->AddChild((new UIButton(true, 0, EditorUI::Theme.Background, [this, i]() {
+			CloseAutoComplete();
+			ParentEditor->Edit();
+			ParentEditor->InsertAtCursor(i.name, true);
+		}))
+			->SetMinWidth(UISize::Parent(1))
+			->AddChild((new UIText(12_px, EditorUI::Theme.Text, i.name, EditorUI::EditorFont))
+				->SetPadding(3_px)));
 	}
 
 	//if (c.size())
@@ -403,7 +410,21 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete()
 	//	ParentEditor->Insert(c[0].name, pos, false);
 	//}
 
+	content->SetMinSize(SizeVec(150_px, 50_px));
+	content->SetMaxSize(SizeVec(150_px, 400_px));
+	content->SetPadding(3_px);
+
+
+	IsAutoCompleteActive = true;
+
 	auto box = CreateHoverBox(content, pos);
+}
+
+void engine::editor::ScriptEditorProvider::CloseAutoComplete()
+{
+	delete HoveredBox;
+	HoveredBox = nullptr;
+	IsAutoCompleteActive = false;
 }
 
 void engine::editor::ScriptEditorProvider::LoadRemoteFile()

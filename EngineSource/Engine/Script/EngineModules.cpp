@@ -308,8 +308,8 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 			VecType, "Vector3.unaryMinus", &Vector3_UnaryMinus))
 		});
 
-	VecType->methods.insert({ "length", EngineModule.addFunction(NativeFunction({},
-			FloatInst, "Vector3.length", &Vector3_length)) });
+	EngineModule.addStructMethod(VecType, NativeFunction({},
+		FloatInst, "length", &Vector3_length));
 
 	auto Vec3Function = EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "z") },

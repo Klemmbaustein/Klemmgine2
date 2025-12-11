@@ -37,7 +37,6 @@ static std::map<Log::LogColor, kui::Vec3f> LogColorValuesLight =
 engine::editor::ConsolePanel::ConsolePanel()
 	: EditorPanel("Console", "console")
 {
-
 	Element = new ConsolePanelElement();
 	Element->commandField->field->OnChanged = [this]() {
 		string Command = Element->commandField->field->GetText();
@@ -49,6 +48,12 @@ engine::editor::ConsolePanel::ConsolePanel()
 		Element->commandField->field->SetText("");
 		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
 	};
+
+	Element->searchField->field->OnValueChanged = [this]() {
+		this->Filter = str::Lower(Element->searchField->field->GetText());
+		UpdateLog(true);
+	};
+
 	Background->AddChild(Element);
 }
 
@@ -88,15 +93,22 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 	}
 	std::vector LogMessages = Log::GetMessages();
 
-	if (LastLogSize > 0)
+	auto& Children = Element->logBox->GetChildren();
+
+	if (Children.size() > 0)
 	{
-		Element->logBox->GetChildren()[LastLogSize - 1]->SetPadding(0_px, 0_px, 5_px, 0_px);
+		Children[Children.size() - 1]->SetPadding(0_px, 0_px, 5_px, 0_px);
 	}
 
 	auto* Colors = EditorUI::Theme.IsLight ? &LogColorValuesLight : &LogColorValues;
 
 	for (size_t i = LastLogSize; i < LogMessages.size(); i++)
 	{
+		if (!Filter.empty() && str::Lower(LogMessages[i].Message).find(Filter) == string::npos)
+		{
+			continue;
+		}
+
 		std::vector<TextSegment> Segments;
 
 		auto& DefaultColor = Colors->at(Log::LogColor::Default);
@@ -120,9 +132,9 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 		Element->logBox->AddChild(txt);
 	}
 
-	if (!LogMessages.empty())
+	if (!Children.empty())
 	{
-		Element->logBox->GetChildren()[LogMessages.size() - 1]->SetPadding(0_px, 15_px, 5_px, 0_px);
+		Children[Children.size() - 1]->SetPadding(0_px, 15_px, 5_px, 0_px);
 	}
 
 	LastLogSize = LogMessages.size();

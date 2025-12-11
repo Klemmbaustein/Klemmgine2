@@ -81,7 +81,7 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 			}, }, Heading->optionsButton->GetScreenPosition());
 	};
 
-	Heading->searchBox->field->OnChanged = [this]
+	Heading->searchBox->field->OnValueChanged = [this]
 	{
 		Filter = str::Lower(Heading->searchBox->field->GetText());
 		UpdateItems();
