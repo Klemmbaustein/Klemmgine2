@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include <Core/Log.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Internal/OpenGL.h>
 #include <mutex>
@@ -91,7 +92,13 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 	auto Name = MakeTextureID(From, LoadInfo);
 
 	if (LoadedTextures.contains(Name))
-		return &LoadedTextures[Name];
+	{
+		auto& tx = LoadedTextures[Name];
+		tx.References++;
+		return &tx;
+	}
+
+	LoadInfo.Name = Name;
 
 	int w, h, ch;
 	ReadOnlyBufferStream* Bytes = GetBinaryFile(From.FilePath);
@@ -136,7 +143,6 @@ void TextureLoader::FreeTexture(const Texture* Tex)
 	if (Tex->References == 0)
 	{
 		FreeTextureData(Tex);
-		return;
 	}
 }
 

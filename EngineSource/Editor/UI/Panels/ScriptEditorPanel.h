@@ -35,4 +35,5 @@ namespace engine::editor
 
 		kui::UIBackground* SeparatorBackgrounds[2];
 	};
+	std::exception_ptr;
 }

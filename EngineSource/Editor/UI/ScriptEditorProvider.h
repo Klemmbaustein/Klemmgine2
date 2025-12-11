@@ -61,10 +61,32 @@ namespace engine::editor
 		void Undo();
 		void Redo();
 
+		void ShowDefinitionAt(kui::EditorPosition Position);
+
+		struct HoverErrorData
+		{
+			ScriptError* Error = nullptr;
+			kui::EditorPosition At;
+		};
+
+		struct HoverSymbolData
+		{
+			void* Symbol = nullptr;
+			kui::EditorPosition At;
+			std::function<kui::UIBox* ()> GetHoverData;
+			std::function<ds::Token()> GetDefinition;
+		};
+
 		Event<> OnUpdated;
+		HoverSymbolData GetSymbolAt(kui::EditorPosition Position);
+
+		HoverErrorData GetHoveredError(kui::Vec2f ScreenPosition);
+		HoverSymbolData GetHoveredSymbol(kui::Vec2f ScreenPosition);
+
+		void NavigateTo(kui::EditorPosition Position);
+		void NavigateTo(kui::EditorPosition StartPosition, kui::EditorPosition EndPosition);
 
 	private:
-
 
 		struct ChangePart
 		{
@@ -86,24 +108,8 @@ namespace engine::editor
 		std::stack<Change> Changes;
 		std::stack<Change> UnDoneChanges;
 
-		struct HoverErrorData
-		{
-			ScriptError* Error = nullptr;
-			kui::EditorPosition At;
-		};
-
-		struct HoverSymbolData
-		{
-			void* Symbol = nullptr;
-			kui::EditorPosition At;
-			std::function<kui::UIBox* ()> GetHoverData;
-			std::function<ds::Token()> GetDefinition;
-		};
-
 		std::vector<size_t> Changed;
 
-		HoverErrorData GetHoveredError(kui::Vec2f ScreenPosition);
-		HoverSymbolData GetHoveredSymbol(kui::Vec2f ScreenPosition);
 		kui::Timer HoverTime;
 
 		void* HoveredData = nullptr;

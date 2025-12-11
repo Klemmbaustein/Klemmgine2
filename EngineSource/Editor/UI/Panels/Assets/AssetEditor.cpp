@@ -1,5 +1,6 @@
 #include "AssetEditor.h"
 #include <Editor/UI/Windows/MessageWindow.h>
+#include <Editor/UI/EditorUI.h>
 
 engine::editor::AssetEditor::AssetEditor(string NameFormat, AssetRef Asset)
 	: EditorPanel(str::Format(NameFormat, Asset.DisplayName().c_str()), "")
@@ -27,6 +28,8 @@ void engine::editor::AssetEditor::OnChanged()
 void engine::editor::AssetEditor::Save()
 {
 	Saved = true;
+	EditorUI::SetStatusMessage(str::Format("Saved file '%s'", EditedAsset.FilePath.c_str()),
+		EditorUI::StatusType::Info);
 	UpdateName();
 }
 
@@ -41,26 +44,25 @@ bool engine::editor::AssetEditor::OnClosed()
 		return true;
 
 	new MessageWindow(str::Format("Save changes to '%s'?", EditedAsset.DisplayName().c_str()), "Unsaved changes", {
-	IDialogWindow::Option
-	{
-		.Name = "Yes",
-		.OnClicked = [this]() {
-		Save();
-		delete this;
-	}
-	},
-	IDialogWindow::Option
-	{
-		.Name = "No",
-		.OnClicked = [this]() {
-		delete this;
-	}
-	},
-	IDialogWindow::Option
-	{
-		.Name = "Cancel",
-	},
-		});
+		IDialogWindow::Option
+		{
+			.Name = "Yes",
+			.OnClicked = [this]() {
+			Save();
+			delete this;
+		}
+		},
+		IDialogWindow::Option
+		{
+			.Name = "No",
+			.OnClicked = [this]() {
+			delete this;
+		}
+		},
+		IDialogWindow::Option
+		{
+			.Name = "Cancel",
+		} });
 	return false;
 }
 

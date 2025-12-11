@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Text.RegularExpressions;
 using Engine.Native;
 
 namespace Engine.Aot;
 
-internal class AotObjects
+internal partial class AotObjects
 {
 	public delegate void RegisterObject([MarshalAs(UnmanagedType.LPUTF8Str)] string Name, IntPtr Type);
 	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr Type);
@@ -103,5 +104,4 @@ internal class AotObjects
 		LoadedObjects.Add(ObjectIdIndex, New);
 		return ObjectIdIndex++;
 	}
-
 }

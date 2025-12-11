@@ -291,10 +291,8 @@ void engine::editor::ScriptEditorProvider::Update()
 				.OnClicked = [this, NewHoveredSymbol]
 				{
 					auto def = NewHoveredSymbol.GetDefinition();
-					ParentEditor->SetCursorPosition(EditorPosition(def.position.startPos, def.position.line),
+					NavigateTo(EditorPosition(def.position.startPos, def.position.line),
 						EditorPosition(def.position.endPos, def.position.line));
-					ParentEditor->ScrollTo(ParentEditor->SelectionStart);
-					ParentEditor->Edit();
 				},
 				.Separator = true,
 				});
@@ -333,6 +331,24 @@ void engine::editor::ScriptEditorProvider::Update()
 	}
 
 	LastCursorPosition = Win->Input.MousePosition;
+}
+
+void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Position)
+{
+	NavigateTo(Position, Position);
+}
+
+void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition StartPosition,
+	kui::EditorPosition EndPosition)
+{
+	ParentEditor->SetCursorPosition(StartPosition,
+		EditorPosition(EndPosition));
+	ParentEditor->ScrollTo(ParentEditor->SelectionStart);
+	ParentEditor->Edit();
+}
+
+void engine::editor::ScriptEditorProvider::ShowDefinitionAt(kui::EditorPosition Position)
+{
 }
 
 UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content, EditorPosition At)
@@ -454,10 +470,15 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 		return HoverSymbolData();
 	}
 
+	return GetSymbolAt(HoverPosition);
+}
+
+ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetSymbolAt(kui::EditorPosition Position)
+{
 	for (auto& i : this->ScriptService->files.begin()->second.functions)
 	{
-		if (HoverPosition.Line == i.at.position.line
-			&& (HoverPosition.Column >= i.at.position.startPos && HoverPosition.Column <= i.at.position.endPos))
+		if (Position.Line == i.at.position.line
+			&& (Position.Column >= i.at.position.startPos && Position.Column <= i.at.position.endPos))
 		{
 			auto Callback = [this, Fn = &i] {
 				std::vector<TextSegment> HoverString = {
@@ -504,7 +525,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 
 			return HoverSymbolData{
 				.Symbol = &i,
-				.At = HoverPosition,
+				.At = Position,
 				.GetHoverData = Callback,
 				.GetDefinition = GetDefinition,
 			};
@@ -513,8 +534,8 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 
 	for (auto& i : this->ScriptService->files.begin()->second.variables)
 	{
-		if (HoverPosition.Line == i.at.position.line
-			&& (HoverPosition.Column >= i.at.position.startPos && HoverPosition.Column <= i.at.position.endPos))
+		if (Position.Line == i.at.position.line
+			&& (Position.Column >= i.at.position.startPos && Position.Column <= i.at.position.endPos))
 		{
 			auto Callback = [this, i] {
 				auto DefaultColor = this->TextColor;
@@ -554,7 +575,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 
 			return HoverSymbolData{
 				.Symbol = &i,
-				.At = HoverPosition,
+				.At = Position,
 				.GetHoverData = Callback,
 				.GetDefinition = GetDefinition,
 			};

@@ -67,8 +67,10 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	EditorToolbar->SetLeftPadding(0);
 
-	SeparatorBackgrounds[0] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1)));
-	SeparatorBackgrounds[1] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(UISize::Parent(1), 1_px));
+	SeparatorBackgrounds[0] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight,
+		SizeVec(1_px, UISize::Parent(1)));
+	SeparatorBackgrounds[1] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight,
+		SizeVec(UISize::Parent(1), 1_px));
 
 	Background->SetHorizontal(true);
 	CenterBox = new UIBox(false);
@@ -84,7 +86,6 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	CenterBox->AddChild(EditorToolbar);
 
 	Editor = new UITextEditor(Provider, EditorUI::MonospaceFont);
-
 
 	CenterBox->AddChild(Editor
 		->SetPadding(5_px));
@@ -102,7 +103,8 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	AddShortcut(Key::s, Key::LCTRL, [this] {
 		Save();
-		EditorUI::SetStatusMessage(str::Format("Saved file %s", Provider->ScriptFile.c_str()), EditorUI::StatusType::Info);
+		EditorUI::SetStatusMessage(str::Format("Saved script file '%s'", Provider->ScriptFile.c_str()),
+			EditorUI::StatusType::Info);
 	}, ShortcutOptions::AllowInText);
 
 	AddShortcut(Key::z, Key::LCTRL, [this] {
@@ -111,6 +113,23 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	AddShortcut(Key::y, Key::LCTRL, [this] {
 		Provider->Redo();
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::F12, {}, [this] {
+		auto Hovered = Provider->GetSymbolAt(Editor->SelectionEnd);
+
+		if (Hovered.GetDefinition)
+		{
+			auto Def = Hovered.GetDefinition();
+			Provider->NavigateTo(EditorPosition(Def.position.startPos, Def.position.line),
+				EditorPosition(Def.position.endPos, Def.position.line));
+			EditorUI::SetStatusMessage(str::Format("Navigated to definition of '%s'",
+				Def.string.c_str()), EditorUI::StatusType::Info);
+		}
+		else
+		{
+			EditorUI::SetStatusMessage("No definition available", EditorUI::StatusType::Warning);
+		}
 	}, ShortcutOptions::AllowInText);
 	UpdateTabs();
 }
@@ -156,7 +175,8 @@ void engine::editor::ScriptEditorPanel::OnResized()
 void engine::editor::ScriptEditorPanel::Update()
 {
 	this->MiniMap->Update();
-	this->StatusText->SetText(str::Format("%s | Errors: %i", this->Provider->ScriptFile.c_str(), this->Provider->Errors.size()));
+	this->StatusText->SetText(str::Format("%s | Errors: %i",
+		this->Provider->ScriptFile.c_str(), this->Provider->Errors.size()));
 
 	auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
 	if (sys && !Provider->Connection)
