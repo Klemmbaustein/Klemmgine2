@@ -43,7 +43,6 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 
 	if (DrawnModel && DrawnModel->Drawable)
 	{
-		IsRegistered = true;
 		for (auto& m : DrawnModel->Data->Meshes)
 		{
 			if (m.Material.empty())
@@ -62,8 +61,9 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 			}
 		}
 
-		if (IsRegistered && (RootObject || ParentObject))
+		if (!IsRegistered && (RootObject || ParentObject))
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
+		IsRegistered = true;
 		this->CastShadow = DrawnModel->Data->CastShadow;
 	}
 }
