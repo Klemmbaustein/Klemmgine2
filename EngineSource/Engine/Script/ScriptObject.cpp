@@ -18,13 +18,7 @@ void engine::script::ScriptObject::Begin()
 {
 	if (!this->ScriptData)
 	{
-		this->ScriptData = Class.create(Interpreter);
-		ClassRef<ScriptObjectData*> Data = this->ScriptData;
-
-		Data.getValue() = new ScriptObjectData{
-			.Parent = this,
-			.Position = this->Position,
-		};
+		InitializeScriptPointer();
 	}
 
 	for (auto& i : this->Properties)
@@ -39,13 +33,8 @@ void engine::script::ScriptObject::Update()
 {
 	if (Engine::IsPlaying && ScriptData && ScriptData->vtable[3])
 	{
-		auto Data = reinterpret_cast<ScriptObjectData*>(this->ScriptData->getBody());
-		Data->Position = this->Position;
-		Data->Rotation = this->Rotation;
 		Interpreter->pushValue(this->ScriptData);
 		Interpreter->virtualCall(ScriptData->vtable[3]);
-		this->Position = Data->Position;
-		this->Rotation = Data->Rotation;
 	}
 }
 
@@ -56,12 +45,7 @@ void engine::script::ScriptObject::LoadScriptData()
 		delete this->ScriptData;
 	}
 
-	this->ScriptData = Class.create(Interpreter);
-	ClassRef<ScriptObjectData*> Data = this->ScriptData;
-
-	Data.getValue() = new ScriptObjectData{
-		.Parent = this
-	};
+	InitializeScriptPointer();
 
 	for (auto& i : this->Properties)
 	{
@@ -100,6 +84,13 @@ void engine::script::ScriptObject::UnloadScriptData()
 {
 	Interpreter->destruct(ScriptData);
 	this->ScriptData = nullptr;
+}
+
+void engine::script::ScriptObject::InitializeScriptPointer()
+{
+	this->ScriptData = Class.create(Interpreter);
+	ClassRef<SceneObject*> ScriptDataRef = this->ScriptData;
+	ScriptDataRef.getValue() = this;
 }
 
 void engine::script::ScriptObject::OnDestroyed()

@@ -142,7 +142,7 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 		Elem->SetColor(EditorUI::Theme.LightBackground);
 		Elem->SetBorderSize(0);
 		Elem->btn->OnClicked = [this, Elem, i]() {
-			if (SelectedProject.value_or({}).Path == i.Path)
+			if (SelectedProject && SelectedProject->Path == i.Path)
 			{
 				LauncherWindow->Close();
 				Result = LauncherResult::LaunchProject;

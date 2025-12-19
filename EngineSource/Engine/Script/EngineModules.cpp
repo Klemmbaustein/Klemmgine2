@@ -4,6 +4,7 @@
 #include <Engine/Objects/Components/CameraComponent.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Script/ScriptSubsystem.h>
+#include <Engine/Scene.h>
 #include <Engine/Input.h>
 #include <Engine/Engine.h>
 #include <Engine/Stats.h>
@@ -14,8 +15,8 @@
 #include <ds/native/nativeStructType.hpp>
 #include <ds/parser/types/stringType.hpp>
 #include <ds/parser/types/taskType.hpp>
+#include <ds/parser/types/arrayType.hpp>
 #include <Core/Log.h>
-#include <Engine/Script/ScriptObject.h>
 
 using namespace ds;
 using namespace engine::input;
@@ -30,6 +31,61 @@ public:
 	}
 };
 
+#pragma region Scene
+
+static void Scene_new(InterpretContext* context)
+{
+	ClassRef<Scene*> NewScene = context->popValue<RuntimeClass*>();
+
+	NewScene.getValue() = new Scene();
+	context->pushValue(NewScene);
+}
+
+static void Scene_getMainScene(InterpretContext* context)
+{
+	Scene* Main = Scene::GetMain();
+
+	if (Main)
+	{
+		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), nullptr);
+		NewScene.getValue() = Main;
+		context->pushValue(NewScene);
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
+}
+
+static void Scene_getObjects(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	std::vector<RuntimeClass*> FoundObjects;
+
+	for (auto& i : TargetScene.getValue()->Objects)
+	{
+		ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(Scene*), nullptr);
+		NewObject.getValue() = i;
+		FoundObjects.push_back(NewObject.classPtr);
+	}
+
+	auto outArray = modules::system::createArray<RuntimeClass*>(FoundObjects.data(), FoundObjects.size(), true);
+	context->pushValue(outArray);
+}
+
+static void Scene_getName(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	auto& Name = TargetScene.getValue()->Name;
+	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
+}
+
+#pragma endregion
+
+#pragma region SceneObject
+
 static void SceneObject_empty(InterpretContext* context)
 {
 	context->popValue<RuntimeClass*>();
@@ -37,9 +93,36 @@ static void SceneObject_empty(InterpretContext* context)
 
 static void SceneObject_attach(InterpretContext* context)
 {
-	ClassRef<script::ScriptObjectData*> Data = context->popValue<RuntimeClass*>();
+	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
 	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
-	Data.getValue()->Parent->Attach(*Component);
+	Data.getValue()->Attach(*Component);
+}
+
+static void SceneObject_getScene(InterpretContext* context)
+{
+	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+
+	Scene* FoundScene = Data.getValue()->GetScene();
+
+	if (FoundScene)
+	{
+		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), nullptr);
+		NewScene.getValue() = FoundScene;
+		context->pushValue(NewScene);
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
+}
+
+static void SceneObject_getName(InterpretContext* context)
+{
+	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+
+	std::string& Name = Data.getValue()->Name;
+
+	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -99,6 +182,10 @@ static void CameraComponent_setFOV(InterpretContext* context)
 	Component.getValue()->SetFov(FOV);
 }
 
+#pragma endregion
+
+#pragma region Log
+
 static void Log_Info(InterpretContext* context)
 {
 	auto message = context->popRuntimeString();
@@ -112,6 +199,8 @@ static void Log_Warn(InterpretContext* context)
 
 	Log::Warn(string(message.ptr(), message.length()));
 }
+
+#pragma endregion
 
 static void Stats_GetDelta(InterpretContext* context)
 {
@@ -329,7 +418,6 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, X, x, FloatInst);
 	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, Y, y, FloatInst);
 
-
 	auto Vec2Function = EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y") },
 			Vec2Type, "vec2", [](InterpretContext* context) {}));
@@ -359,8 +447,20 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 		&AssetRef_new
 		});
 
-	auto ObjectType = EngineModule.createClass<ScriptObjectData>("SceneObject");
+	auto SceneType = EngineModule.createClass<Scene*>("Scene");
+	auto ObjectType = EngineModule.createClass<SceneObject*>("SceneObject");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
+
+	EngineModule.addClassConstructor(SceneType,
+		NativeFunction({}, nullptr, "Scene.new", &Scene_new));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({}, StrType, "getName", &Scene_getName));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({}, ArrayType::getInstance(ObjectType), "getObjects", &Scene_getObjects));
+
+	EngineModule.addFunction(NativeFunction({}, SceneType->nullable, "getMainScene", &Scene_getMainScene));
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "position",
@@ -380,7 +480,7 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 		.type = VecType
 		});
 
-	ComponentType->isPointerClass = true;
+	ComponentType->makePointerClass();
 
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "begin", &SceneObject_empty), 1);
@@ -393,19 +493,34 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "position",
-		.offset = offsetof(ScriptObjectData, Position),
+		.offset = offsetof(SceneObject, Position),
 		.type = VecType
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "rotation",
-		.offset = offsetof(ScriptObjectData, Rotation),
+		.offset = offsetof(SceneObject, Rotation),
 		.type = RotType
 		});
+
+	ObjectType->members.push_back(ClassMember{
+		.name = "rotation",
+		.offset = offsetof(SceneObject, Scale),
+		.type = RotType
+		});
+	ObjectType->makePointerClass();
 
 	EngineModule.addClassMethod(ObjectType,
 		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
 			"attach", &SceneObject_attach));
+
+	EngineModule.addClassMethod(ObjectType,
+		NativeFunction({ }, SceneType->nullable,
+			"getScene", &SceneObject_getScene));
+
+	EngineModule.addClassMethod(ObjectType,
+		NativeFunction({ }, StrType,
+			"getName", &SceneObject_getName));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StringType::getInstance(), "message") },
@@ -416,7 +531,7 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 			nullptr, "warn", &Log_Warn));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds")},
+		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds") },
 			TaskType::getInstance(nullptr), "wait", &Wait));
 
 	EngineModule.addFunction(

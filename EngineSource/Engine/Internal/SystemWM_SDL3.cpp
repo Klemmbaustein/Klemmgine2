@@ -84,7 +84,12 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 		if (!OutWindow->IsEngineWindow)
 		{
-			SetWindowSize(OutWindow, kui::Vec2f(GetWindowSize(OutWindow)) * GetDPIScale(OutWindow));
+			Vec2f OldSize = GetWindowSize(OutWindow);
+			Vec2f NewSize = OldSize * GetDPIScale(OutWindow);
+
+			SetWindowSize(OutWindow, NewSize);
+
+			SetWindowPosition(OutWindow, Pos - (NewSize - OldSize) / 2);
 		}
 
 		OutWindow->IsMain = ActiveWindows.empty();
@@ -371,7 +376,6 @@ std::string kui::systemWM::GetTextInput(SysWindow* Target)
 
 uint32_t kui::systemWM::GetDesiredRefreshRate(SysWindow* From)
 {
-	return 120;
 	const SDL_DisplayMode* Mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(From->SDLWindow));
 
 	if (!Mode)

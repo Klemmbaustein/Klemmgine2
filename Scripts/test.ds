@@ -23,6 +23,11 @@ class MyObject : SceneObject
 		camera.use()
 		camera.setFOV(80)
 		camera.position = new(0, 0.8, 0)
+
+		for const obj = getScene().getObjects()
+		{
+			info(obj.getName())
+		}
 	}
 
 	override fn update()
@@ -68,24 +73,4 @@ class MyObject : SceneObject
 	override fn destroy()
 	{
 	}
-}
-
-class woah
-{
-	string message = ""
-
-	fn new(string message)
-	{
-		this.message = message
-	}
-
-	fn hi()
-	{
-		info(message)
-	}
-}
-
-fn parser() -> woah
-{
-	return new woah("hello")
 }

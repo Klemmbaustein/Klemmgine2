@@ -22,12 +22,7 @@ namespace engine::script
 
 		void LoadScriptData();
 		void UnloadScriptData();
-	};
-
-	struct ScriptObjectData
-	{
-		ScriptObject* Parent = nullptr;
-		Vector3 Position = 0;
-		Rotation3 Rotation = 0;
+	private:
+		void InitializeScriptPointer();
 	};
 }
