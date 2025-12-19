@@ -12,7 +12,7 @@ engine::graphics::ShaderLoader::~ShaderLoader()
 {
 	for (auto& [_, Shader] : Loaded)
 	{
-		delete Shader;
+		delete Shader.Object;
 	}
 	Loaded.clear();
 }
@@ -23,11 +23,15 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 
 	if (Found != Loaded.end())
 	{
-		return Found->second;
+		return Found->second.Object;
 	}
 
 	ShaderObject* New = new ShaderObject(resource::GetTextFile(Vertex), resource::GetTextFile(Fragment));
-	Loaded.insert({ Vertex + ";" + Fragment, New });
+	Loaded.insert({ Vertex + ";" + Fragment, ShaderLoadData{
+		.Object = New,
+		.VertexSource = Vertex,
+		.FragmentSource = Fragment,
+		} });
 
 	return New;
 }
@@ -35,8 +39,8 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 void engine::graphics::ShaderLoader::ReloadAll()
 {
 	Modules.ScanModules();
-	for (auto& i : Loaded)
+	for (auto& [_, i] : Loaded)
 	{
-		i.second->ReCompile();
+		i.Object->ReCompile(resource::GetTextFile(i.VertexSource), resource::GetTextFile(i.FragmentSource));
 	}
 }

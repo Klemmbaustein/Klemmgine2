@@ -49,7 +49,7 @@ engine::graphics::ShaderObject::~ShaderObject()
 		Clear();
 }
 
-void engine::graphics::ShaderObject::ReCompile()
+void engine::graphics::ShaderObject::ReCompile(string VertexFile, string FragmentFile)
 {
 	Compile(VertexFile, FragmentFile);
 }

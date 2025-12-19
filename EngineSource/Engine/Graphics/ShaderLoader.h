@@ -7,7 +7,14 @@ namespace engine::graphics
 {
 	class ShaderLoader
 	{
-		std::unordered_map<string, ShaderObject*> Loaded;
+		struct ShaderLoadData
+		{
+			ShaderObject* Object = nullptr;
+			std::string VertexSource;
+			std::string FragmentSource;
+		};
+
+		std::unordered_map<string, ShaderLoadData> Loaded;
 
 	public:
 		ShaderLoader();

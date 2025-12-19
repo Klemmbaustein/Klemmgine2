@@ -52,6 +52,9 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	MaterialToolbar->AddButton("Reload shaders", "file:Engine/Editor/Assets/Reload.png",
 		[this] {
 		Engine::GetSubsystem<VideoSubsystem>()->Shaders.ReloadAll();
+		LoadedMaterial->UpdateShader();
+		this->OnChanged();
+		this->LoadUI();
 	});
 
 	PreviewImage = new UIBackground(true, 0, 1, SizeVec(300_px, 200_px));

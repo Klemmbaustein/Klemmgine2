@@ -31,15 +31,16 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 	{
 		UsedMaterials[i]->Apply();
 		ShaderObject* Used = UsedMaterials[i]->Shader;
+
+		if (Used == nullptr)
+			continue;
+
 		With->UsedEnvironment->ApplyTo(Used);
 
 		if (In)
 			In->Shadows.BindUniforms(Used);
 		else
 			glStencilFunc(GL_ALWAYS, GLint(i) + 2, 0xFF);
-
-		if (Used == nullptr)
-			continue;
 
 		glUniformMatrix4fv(Used->ModelUniform, 1, false, &At.Matrix[0][0]);
 		glUniformMatrix4fv(Used->GetUniformLocation("u_view"), 1, false, &With->View[0][0]);
