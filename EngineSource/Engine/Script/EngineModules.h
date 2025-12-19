@@ -1,4 +1,5 @@
 #pragma once
+#include <ds/typeId.hpp>
 
 namespace ds
 {
@@ -8,7 +9,13 @@ namespace ds
 
 namespace engine::script
 {
-	void RegisterEngineModules(ds::LanguageContext* ToContext);
+	struct EngineModuleData
+	{
+		ds::TypeId ScriptObjectType = 0;
+		ds::TypeId Vector3Type = 0;
+	};
+
+	EngineModuleData RegisterEngineModules(ds::LanguageContext* ToContext);
 
 	ds::RuntimeClass* CreateAssetRef();
 

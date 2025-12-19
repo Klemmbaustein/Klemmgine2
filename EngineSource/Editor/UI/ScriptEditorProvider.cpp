@@ -106,7 +106,7 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 
 	if (Input.Text == ".")
 	{
-		ShowAutoComplete();
+		ShowAutoComplete(true);
 	}
 
 	if (Connection)
@@ -376,20 +376,33 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 void engine::editor::ScriptEditorProvider::UpdateAutoComplete()
 {
 	auto& Input = Window::GetActiveWindow()->Input;
+	auto& UI = Window::GetActiveWindow()->UI;
 
-	if (!Input.IsKeyDown(Key::SPACE) || !Input.IsKeyDown(Key::LCTRL) || HoveredBox)
+	if (IsAutoCompleteActive && (Input.IsKeyDown(Key::ESCAPE) || (Input.IsLMBDown && UI.HoveredBox != HoveredBox)))
+	{
+		CloseAutoComplete();
+		ParentEditor->Edit();
+	}
+
+	if (!Input.IsKeyDown(Key::SPACE) || !Input.IsKeyDown(Key::LCTRL))
 	{
 		return;
 	}
 
-	ShowAutoComplete();
+	ShowAutoComplete(false);
 }
 
-void engine::editor::ScriptEditorProvider::ShowAutoComplete()
+void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly)
 {
 	auto pos = ParentEditor->SelectionStart;
 
-	auto c = this->ScriptService->completeAt(&ScriptService->files.begin()->second, pos.Column, pos.Line);
+	auto c = this->ScriptService->completeAt(&ScriptService->files.begin()->second, pos.Column, pos.Line,
+		MembersOnly ? CompletionType::member : CompletionType::all);
+
+	if (c.empty())
+	{
+		return;
+	}
 
 	UIBox* content = new UIScrollBox(false, 0, true);
 
@@ -411,7 +424,7 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete()
 	//}
 
 	content->SetMinSize(SizeVec(150_px, 50_px));
-	content->SetMaxSize(SizeVec(150_px, 400_px));
+	content->SetMaxSize(SizeVec(150_px, 200_px));
 	content->SetPadding(3_px);
 
 

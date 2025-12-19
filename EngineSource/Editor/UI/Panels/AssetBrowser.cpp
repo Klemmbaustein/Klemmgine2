@@ -337,6 +337,14 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 				EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
 				resource::ScanForAssets();
 			},
+		},
+		DropdownMenu::Option{
+			.Name = "New shader",
+			.Icon = EditorUI::GetExtIconAndColor("kmt").first,
+			.OnClicked = [this]() {
+				EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag");
+				resource::ScanForAssets();
+			},
 			.Separator = true
 		},
 		DropdownMenu::Option{

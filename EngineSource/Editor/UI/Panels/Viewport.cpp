@@ -326,7 +326,10 @@ void engine::editor::Viewport::Update()
 		{
 			Translate->SetVisible(false);
 		}
-		Translate->Update(this);
+		if (this->Visible)
+		{
+			Translate->Update(this);
+		}
 	}
 
 	if (Current && ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)

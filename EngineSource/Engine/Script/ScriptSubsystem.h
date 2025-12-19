@@ -2,6 +2,7 @@
 #include <Engine/Subsystem/Subsystem.h>
 #include <list>
 #include "ScriptProvider.h"
+#include "EngineModules.h"
 
 namespace ds
 {
@@ -39,6 +40,8 @@ namespace engine::script
 		virtual void RegisterCommands(ConsoleSubsystem* System) override;
 
 		virtual void Update() override;
+
+		EngineModuleData ScriptEngine;
 
 		void Reload();
 	};

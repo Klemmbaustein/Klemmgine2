@@ -353,7 +353,7 @@ static void Vector3_length(InterpretContext* context)
 
 #pragma endregion
 
-void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
+engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
 	EngineModule.name = "engine";
@@ -652,6 +652,12 @@ void engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);
+
+	EngineModuleData OutData;
+	OutData.Vector3Type = EngineModule.getType("Vector3")->id;
+	OutData.ScriptObjectType = EngineModule.getType("SceneObject")->id;
+
+	return OutData;
 }
 
 ds::RuntimeClass* engine::script::CreateAssetRef()

@@ -50,7 +50,7 @@ namespace engine::editor
 
 		void UpdateAutoComplete();
 
-		void ShowAutoComplete();
+		void ShowAutoComplete(bool MembersOnly);
 
 		void LoadRemoteFile();
 

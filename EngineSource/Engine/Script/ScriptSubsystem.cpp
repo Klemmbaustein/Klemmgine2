@@ -1,6 +1,5 @@
 #include "ScriptSubsystem.h"
 #include "ScriptObject.h"
-#include "EngineModules.h"
 #include "FileScriptProvider.h"
 #include "ScriptSerializer.h"
 #include <Engine/Stats.h>
@@ -21,7 +20,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 {
 	this->ScriptLanguage = new LanguageContext();
 	modules::registerStandardLibrary(this->ScriptLanguage);
-	RegisterEngineModules(this->ScriptLanguage);
+	ScriptEngine = RegisterEngineModules(this->ScriptLanguage);
 
 	ScriptInstructions = new BytecodeStream();
 	Runtime = this->ScriptLanguage->createRuntime();
@@ -135,8 +134,18 @@ void engine::script::ScriptSubsystem::Reload()
 
 	for (auto& [Id, TypeInfo] : ScriptInstructions->reflect.types)
 	{
-		Reflection::RegisterObject(TypeInfo.name, [&TypeInfo, this]() -> SceneObject* {
+		if (!ScriptInstructions->reflect.isSubclassOf(Id, ScriptEngine.ScriptObjectType))
+		{
+			continue;
+		}
+
+		size_t LastColon = TypeInfo.name.find_last_of(':');
+
+		string Name = TypeInfo.name.substr(LastColon + 1);
+		string Path = TypeInfo.name.substr(0, LastColon - 1);
+
+		Reflection::RegisterObject(Name, [&TypeInfo, this]() -> SceneObject* {
 			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
-		});
+		}, Path);
 	}
 }

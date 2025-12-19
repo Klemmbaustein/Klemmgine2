@@ -23,11 +23,6 @@ class MyObject : SceneObject
 		camera.use()
 		camera.setFOV(80)
 		camera.position = new(0, 0.8, 0)
-
-		for const obj = getScene().getObjects()
-		{
-			info(obj.getName())
-		}
 	}
 
 	override fn update()
