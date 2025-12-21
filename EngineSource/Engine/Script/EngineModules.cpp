@@ -162,6 +162,25 @@ static void MoveComponent_jump(InterpretContext* context)
 	Component.getValue()->Jump();
 }
 
+static void MoveComponent_isOnGround(InterpretContext* context)
+{
+	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	context->pushValue<Bool>(Component.getValue()->GetIsOnGround());
+}
+
+static void MoveComponent_setVelocity(InterpretContext* context)
+{
+	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	Vector3 NewVelocity = context->popValue<Vector3>();
+	Component.getValue()->SetVelocity(NewVelocity);
+}
+
+static void MoveComponent_getVelocity(InterpretContext* context)
+{
+	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	context->pushValue(Component.getValue()->GetVelocity());
+}
+
 static void CameraComponent_new(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
@@ -562,6 +581,18 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({ },
 			nullptr, "jump", &MoveComponent_jump));
 
+	EngineModule.addClassMethod(MoveComponentType,
+		NativeFunction({ },
+			BoolType::getInstance(), "isOnGround", &MoveComponent_isOnGround));
+
+	EngineModule.addClassMethod(MoveComponentType,
+		NativeFunction({ },
+			VecType, "getVelocity", &MoveComponent_getVelocity));
+
+	EngineModule.addClassMethod(MoveComponentType,
+		NativeFunction({ FunctionArgument(VecType, "newVelocity") },
+			nullptr, "setVelocity", &MoveComponent_getVelocity));
+
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "acceleration",
 		.offset = offsetof(MoveComponent, Acceleration),
@@ -588,6 +619,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		.offset = offsetof(MoveComponent, Active),
 		.type = BoolType::getInstance()
 		});
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "canMoveUpSlopes",
+		.offset = offsetof(MoveComponent, CanMoveUpSlopes),
+		.type = BoolType::getInstance()
+		});
+
 	MoveComponentType->makePointerClass();
 
 	auto CameraComponentType = EngineModule.createClass<MoveComponent*>("CameraComponent", ComponentType);

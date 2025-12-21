@@ -51,6 +51,7 @@ namespace engine
 		/// True if the movement is active.
 		bool Active = true;
 		bool LastMoveSuccessful = false;
+		bool CanMoveUpSlopes = false;
 
 		const uint32 MoveMaxDepth = 5;
 

@@ -38,7 +38,7 @@ ReadOnlyBufferStream* engine::editor::ServerResourceSource::GetFile(string Path)
 	});
 
 	std::unique_lock lk(m);
-	cv.wait(lk, [&] { return GotResult; });
+	cv.wait(lk, [&GotResult] { return GotResult; });
 
 	return Result;
 }

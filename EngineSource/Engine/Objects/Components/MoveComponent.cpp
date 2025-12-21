@@ -64,7 +64,7 @@ void engine::MoveComponent::Update()
 	auto Move = TryMove(MoveDir, MoveDir, Position, false);
 	RootObject->Position += Move.Offset;
 
-	if (!LastMoveSuccessful && !Move.Stairs && Move.Normal.Y < 0.25f)
+	if (!LastMoveSuccessful && !Move.Stairs && (Move.Normal.Y < 0.25f || !GetIsOnGround()))
 	{
 		float Angle = 1 - Vector3::Dot(LastHitNormal, -GetVelocity().Normalize());
 
@@ -188,7 +188,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 	float Length = LeftOver.Length();
 	LeftOver = LeftOver.ProjectToPlane(0, HitNormal);
 	LeftOver = LeftOver.Normalize() * Length;
-	if (Angle > 0.75f)
+	if (Angle > 0.75f || CanMoveUpSlopes)
 	{
 		if (GravityPass)
 		{

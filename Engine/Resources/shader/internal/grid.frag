@@ -13,7 +13,7 @@ vec3 fragment()
 	opacity = 0.25;
 
 	vec3 color = vec3(0.75);
-		
+
 	if (mod(v_position.x + lineSize * 5.0 / 2.0, gridSize * 10.0) < lineSize * 5.0
 		|| mod(v_position.z + lineSize * 5.0 / 2.0, gridSize * 10.0) < lineSize * 5.0)
 	{

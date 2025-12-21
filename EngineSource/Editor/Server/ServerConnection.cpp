@@ -14,11 +14,11 @@ engine::editor::ServerConnection::ServerConnection(string Url)
 {
 	this->Connection = new http::WebSocketConnection("ws://" + Url + "/ws");
 
-	this->Connection->OnOpened = [&] {
+	this->Connection->OnOpened = [this] {
 		SendMessage("tryConnect", {});
 	};
 
-	this->Connection->OnMessage = [&] (const http::WebSocketMessage& msg) {
+	this->Connection->OnMessage = [this] (const http::WebSocketMessage& msg) {
 		MessageType Type = msg.Data->Get<MessageType>();
 
 		switch (Type)

@@ -19,7 +19,7 @@ EditorServerSubsystem::EditorServerSubsystem(ServerConnection* Connection)
 
 	auto UI = EditorUI::Instance;
 
-	UI->ForEachPanel<MessagePanel>([&](MessagePanel* p) {
+	UI->ForEachPanel<MessagePanel>([this](MessagePanel* p) {
 		p->AddChild(new ServerConnectionPanel(this->Connection), EditorPanel::Align::Tabs, true, 0);
 	});
 

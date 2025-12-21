@@ -1,1 +1,7 @@
+using engine
+
 module game
+
+class TheOtherObject : SceneObject
+{
+}

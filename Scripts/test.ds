@@ -12,6 +12,11 @@ class MyObject : SceneObject
 
 	MoveComponent movement = new()
 	CameraComponent camera = new()
+	
+	float lastY = 0
+	
+	bool isSliding = false
+	float slideTimer = 0
 
 	override fn begin()
 	{
@@ -28,6 +33,8 @@ class MyObject : SceneObject
 		
 		movement.gravity = 15
 		movement.maxSpeed = 8
+		
+		lastY = this.position.y
 	}
 	
 	override fn update()
@@ -68,6 +75,64 @@ class MyObject : SceneObject
 		if camera.rotation.p > 90 {
 			camera.rotation.p = 90
 		}
+		
+		if isKeyDown(Key::shift)
+		{
+			if not isSliding
+			{
+				beginSlide()
+			}
+			isSliding = true
+		}
+		else
+		{
+			if isSliding
+			{
+				endSlide()
+			}
+			isSliding = false
+		}
+		
+		if isSliding
+		{
+			updateSlide()
+		}
+		lastY = this.position.y
+	}
+	
+	fn updateSlide()
+	{
+		if not movement.isOnGround()
+		{
+			return
+		}
+	
+		float difference = (this.position.y - lastY) / getDelta()
+
+		movement.maxSpeed = 8 - difference
+		movement.deceleration = difference + slideTimer * 8
+		slideTimer += (1 + difference) * getDelta()
+		if slideTimer < 0
+		{
+			slideTimer = 0
+		}
+	}
+	
+	fn beginSlide()
+	{
+		movement.setVelocity(movement.getVelocity() * new Vector3(5))
+		movement.acceleration = 5
+		movement.canMoveUpSlopes = true
+		slideTimer = 0
+		camera.position.y = 0
+	}
+	
+	fn endSlide()
+	{
+		movement.acceleration = 30
+		movement.deceleration = 40
+		movement.canMoveUpSlopes = false
+		camera.position.y = 0.8
 	}
 
 	override fn destroy()

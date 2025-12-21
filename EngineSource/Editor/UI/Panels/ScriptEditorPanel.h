@@ -6,31 +6,49 @@
 
 namespace engine::editor
 {
+	struct ScriptEditorTab
+	{
+	public:
+		kui::UITextEditor* Editor = nullptr;
+		ScriptEditorProvider* Provider = nullptr;
+		ScriptMiniMap* MiniMap = nullptr;
+		bool NeedsRefresh = false;
+	};
+
 	class ScriptEditorPanel : public EditorPanel
 	{
 	public:
 		ScriptEditorPanel();
+		~ScriptEditorPanel();
 
 		virtual void OnResized() override;
 		virtual void Update() override;
 
 		void OnThemeChanged() override;
 
+		void AddTab(std::string File);
+
+		void OpenTab(size_t Tab);
+
 	private:
 
+		void UpdateTabSize(ScriptEditorTab* Tab);
+
 		kui::UIBox* CenterBox = nullptr;
+		kui::UIBox* EditorBox = nullptr;
 
-		kui::UITextEditor* Editor = nullptr;
 		kui::UIScrollBox* TabBox = nullptr;
-		ScriptEditorProvider* Provider = nullptr;
-
-		ScriptMiniMap* MiniMap = nullptr;
 
 		kui::UIText* StatusText = nullptr;
 
+		std::vector<ScriptEditorTab> Tabs;
+		size_t SelectedTab = 0;
+
+		ScriptEditorTab* GetSelectedTab();
+
 		string NameFormat;
 		bool Saved = true;
-		void UpdateTabs();
+		void UpdateEditorTabs();
 		void Save();
 
 		kui::UIBackground* SeparatorBackgrounds[2];
