@@ -287,7 +287,8 @@ void engine::editor::ScriptEditorProvider::Update()
 		{
 			Options.push_back(DropdownMenu::Option{
 				.Name = "Go to definition",
-				.Icon = EditorUI::Asset("TabDrag.png"),
+				.Shortcut = "F12",
+				.Icon = EditorUI::Asset("Open.png"),
 				.OnClicked = [this, NewHoveredSymbol]
 				{
 					auto def = NewHoveredSymbol.GetDefinition();
@@ -300,6 +301,7 @@ void engine::editor::ScriptEditorProvider::Update()
 
 		Options.push_back(DropdownMenu::Option{
 			.Name = "Cut",
+			.Shortcut = "Ctrl+X",
 			.OnClicked = [this] {
 				Window::GetActiveWindow()->Input.SetClipboard(ParentEditor->GetSelectedText());
 				ParentEditor->DeleteSelection();
@@ -307,17 +309,19 @@ void engine::editor::ScriptEditorProvider::Update()
 
 		Options.push_back(DropdownMenu::Option{
 			.Name = "Copy",
+			.Shortcut = "Ctrl+C",
 			.OnClicked = [this] {
 				Window::GetActiveWindow()->Input.SetClipboard(ParentEditor->GetSelectedText());
 		} });
 
 		Options.push_back(DropdownMenu::Option{
-				.Name = "Paste",
-				.OnClicked = [this] {
-					ParentEditor->DeleteSelection();
-					ParentEditor->Insert(Window::GetActiveWindow()->Input.GetClipboard(),
-						ParentEditor->GetCursorPosition(), true);
-				}
+			.Name = "Paste",
+			.Shortcut = "Ctrl+V",
+			.OnClicked = [this] {
+				ParentEditor->DeleteSelection();
+				ParentEditor->Insert(Window::GetActiveWindow()->Input.GetClipboard(),
+					ParentEditor->GetCursorPosition(), true);
+			}
 			});
 
 		new DropdownMenu(Options, Pos);

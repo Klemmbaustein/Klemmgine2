@@ -27,6 +27,12 @@ namespace engine::editor
 
 	private:
 
+		const string DEFAULT_VERTEX_SHADER = "res:shader/basic.vert";
+		const string DEFAULT_FRAGMENT_SHADER = "res:shader/basic.frag";
+
+		AssetRef VertexShader = AssetRef::EmptyAsset("vert");
+		AssetRef FragmentShader = AssetRef::EmptyAsset("frag");
+
 		void OnChanged() override;
 
 		PropertyMenu* MaterialSettings = nullptr;

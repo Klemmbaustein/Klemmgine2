@@ -56,11 +56,18 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 			->SetCorner(EditorUI::Theme.CornerSize)
 			->SetOpacity(0.65f)
 			->SetCorners(First, First, Last, Last)
-			->SetMinSize(SizeVec::Pixels(170, 24))
+			->SetMinSize(SizeVec::Pixels(200, 24))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIText(11_px, EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
-				->SetWrapEnabled(true, 140_px)
-				->SetPadding(3_px, 3_px, HasImage ? 0 : 28_px, 3_px)));
+				->SetTextWidthOverride(120_px)
+				->SetWrapEnabled(true, 120_px)
+				->SetPadding(3_px, 3_px, HasImage ? 0 : 28_px, 3_px))
+			->AddChild((new UIBox(true))
+				->SetPadding(4_px)
+				->SetMinWidth(50_px)
+				->SetHorizontalAlign(UIBox::Align::Reverse)
+				->AddChild((new UIText(10_px, EditorUI::Theme.DarkText, i->Shortcut, EditorUI::EditorFont))
+					->SetWrapEnabled(true, 50_px))));
 	}
 
 	Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = Box;

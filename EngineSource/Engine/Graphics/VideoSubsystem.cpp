@@ -10,8 +10,6 @@
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
 #include <Engine/UI/UICanvas.h>
-#include <Editor/UI/Panels/Viewport.h>
-#include <Editor/Editor.h>
 #include <Core/LaunchArgs.h>
 #include <Engine/Graphics/OpenGL.h>
 #include <Engine/Debug/TimeLogger.h>
@@ -21,6 +19,8 @@
 
 #ifdef EDITOR
 #include <Editor/EditorSubsystem.h>
+#include <Editor/UI/Panels/Viewport.h>
+#include <Editor/Editor.h>
 #endif
 
 using namespace kui;

@@ -93,7 +93,7 @@ void engine::script::ScriptSubsystem::Reload()
 		Compiler->addString(Scripts->GetFile(i), i);
 	}
 
-	auto NewInstructions = Compiler->compile();;
+	auto NewInstructions = Compiler->compile();
 	delete Compiler;
 
 	if (NewInstructions.code.empty())

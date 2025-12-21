@@ -26,6 +26,13 @@ namespace engine
 		[[nodiscard]]
 		static AssetRef FromPath(string Path);
 
+		/**
+		* @brief
+		* Creates an empty asset reference from an extension.
+		*/
+		[[nodiscard]]
+		static AssetRef EmptyAsset(string Extension);
+
 		[[nodiscard]]
 		static AssetRef Convert(std::string PathOrName);
 

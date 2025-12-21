@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 #include <Editor/UI/Elements/Toolbar.h>
@@ -61,14 +60,13 @@ namespace engine::editor
 		Vector3 GetCursorDirection();
 
 		void ShiftSelected(Vector3 Direction);
+		void Run();
 
 		float GridSize = 0.1f;
 
 	private:
 
 		void OnItemDropped(EditorUI::DraggedItem Item);
-
-		void Run();
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
 		void HighlightComponents(DrawableComponent* Target, bool Highlighted);
@@ -89,4 +87,3 @@ namespace engine::editor
 		kui::UIBackground* LoadingScreenBox = nullptr;
 	};
 }
-#endif

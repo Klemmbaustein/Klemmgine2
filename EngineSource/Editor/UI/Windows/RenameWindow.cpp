@@ -7,7 +7,7 @@ using namespace kui;
 engine::editor::RenameWindow::RenameWindow(string File, std::function<void(string NewName)> OnRenamed)
 	: IDialogWindow("Rename",
 		{
-			Option{ .Name = "Rename", .OnClicked = [this]() { Confirm(); }, .Close = true, .OnMainThread = false, },
+			Option{.Name = "Rename", .OnClicked = [this]() { Confirm(); Close(); }, .OnMainThread = false,},
 			Option{ .Name = "Cancel", .Close = true, },
 		}, Vec2ui(300, 130))
 {

@@ -1,7 +1,9 @@
 #include "UICanvas.h"
 #include <Engine/Scene.h>
 #include <kui/Window.h>
+#ifdef EDITOR
 #include <Editor/UI/Panels/Viewport.h>
+#endif
 
 using namespace engine;
 using namespace kui;

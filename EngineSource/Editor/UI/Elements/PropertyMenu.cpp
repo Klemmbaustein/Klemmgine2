@@ -210,7 +210,8 @@ void engine::editor::PropertyMenu::SetMode(Mode NewMode)
 	this->HorizontalBoxAlign = NewMode == Mode::DisplayText ? UIBox::Align::Centered : UIBox::Align::Default;
 }
 
-void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged)
+void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged,
+	bool EmptyIsDefault)
 {
 	auto* New = CreateNewEntry(Name);
 	auto* Selector = new AssetSelector(Value, ElementSize, nullptr);
@@ -223,6 +224,8 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 		if (OnChanged)
 			OnChanged();
 	};
+
+	Selector->EmptyIsDefault = EmptyIsDefault;
 
 	New->valueBox->AddChild(Selector);
 }

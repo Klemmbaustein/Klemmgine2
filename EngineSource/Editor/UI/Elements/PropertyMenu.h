@@ -39,7 +39,7 @@ namespace engine::editor
 		void AddButtonsEntry(string Name, std::vector<std::pair<string, std::function<void()>>> Buttons);
 		void AddIntEntry(string Name, int32& Value, std::function<void()> OnChanged);
 		void AddFloatEntry(string Name, float& Value, std::function<void()> OnChanged);
-		void AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged);
+		void AddAssetRefEntry(string Name, AssetRef& Value, std::function<void()> OnChanged, bool EmptyIsDefault = false);
 		void AddDropdownEntry(string Name,
 			std::vector<kui::UIDropdown::Option> Values,
 			std::function<void(kui::UIDropdown::Option)> OnChanged,

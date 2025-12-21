@@ -10,10 +10,13 @@ namespace engine::editor
 	class AssetSelector : public DroppableBox
 	{
 	public:
-		AssetSelector(AssetRef InitialValue, kui::UISize Width, std::function<void()> OnChanged);
+		AssetSelector(AssetRef InitialValue, kui::UISize Width, std::function<void()> OnChanged,
+			bool EmptyIsDefault = false);
 		virtual ~AssetSelector() override;
 
 		std::function<void()> OnChanged;
+
+		bool EmptyIsDefault = false;
 
 		AssetRef SelectedAsset;
 		kui::UIBackground* IconBackground = nullptr;

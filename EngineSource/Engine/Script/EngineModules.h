@@ -13,6 +13,7 @@ namespace engine::script
 	{
 		ds::TypeId ScriptObjectType = 0;
 		ds::TypeId Vector3Type = 0;
+		ds::TypeId AssetRefType = 0;
 	};
 
 	EngineModuleData RegisterEngineModules(ds::LanguageContext* ToContext);

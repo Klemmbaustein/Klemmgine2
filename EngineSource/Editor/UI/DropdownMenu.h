@@ -11,6 +11,7 @@ namespace engine::editor
 		struct Option
 		{
 			string Name;
+			string Shortcut;
 			string Icon;
 			std::function<void()> OnClicked;
 			bool Separator = false;

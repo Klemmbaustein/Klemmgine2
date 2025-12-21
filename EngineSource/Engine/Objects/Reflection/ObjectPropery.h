@@ -31,6 +31,7 @@ namespace engine
 		*/
 		AssetRef,
 		Bool,
+		Vector3,
 		/// Unknown property. Unknown properties can still be serialized and de-serialized, but can't be shown in the editor.
 		Unknown,
 	};
@@ -47,7 +48,7 @@ namespace engine
 
 	/**
 	* @brief
-	* An object property with an unkown serializable type.
+	* An object property with an unknown serializable type.
 	*
 	* T must derive from ISerializable.
 	*
@@ -86,6 +87,23 @@ namespace engine
 		void DeSerialize(SerializedValue* From) override;
 
 		string Value;
+	};
+
+	template<>
+	struct ObjProperty<Vector3> : public ObjPropertyBase
+	{
+		ObjProperty(string Name, Vector3 Value, SceneObject* Obj);
+
+		ObjProperty<Vector3>& operator=(const Vector3& Target)
+		{
+			this->Value = Target;
+			return *this;
+		}
+
+		SerializedValue Serialize() override;
+		void DeSerialize(SerializedValue* From) override;
+
+		Vector3 Value;
 	};
 
 	template<>

@@ -23,6 +23,23 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 {
 	LoadedMaterial = new graphics::Material(MaterialFile);
 
+	if (LoadedMaterial->VertexShader == DEFAULT_VERTEX_SHADER)
+	{
+		this->VertexShader = AssetRef::EmptyAsset("vert");
+	}
+	else
+	{
+		this->VertexShader = AssetRef::Convert(LoadedMaterial->VertexShader);
+	}
+	if (LoadedMaterial->FragmentShader == DEFAULT_FRAGMENT_SHADER)
+	{
+		this->FragmentShader = AssetRef::EmptyAsset("frag");
+	}
+	else
+	{
+		this->FragmentShader = AssetRef::Convert(LoadedMaterial->FragmentShader);
+	}
+
 	Background->SetHorizontal(false);
 
 	PreviewScene = new Scene();
@@ -119,14 +136,18 @@ void engine::editor::MaterialEditor::LoadUI()
 	MaterialSettings->Clear();
 
 	auto OnShaderChanged = [this] {
+		this->LoadedMaterial->VertexShader = VertexShader.FilePath.empty()
+			? DEFAULT_VERTEX_SHADER : VertexShader.FilePath;
+		this->LoadedMaterial->FragmentShader = FragmentShader.FilePath.empty()
+			? DEFAULT_FRAGMENT_SHADER : FragmentShader.FilePath;
 		this->LoadedMaterial->UpdateShader();
 		this->OnChanged();
 		this->LoadUI();
 	};
 
 	MaterialSettings->CreateNewHeading("Material properties");
-	MaterialSettings->AddStringEntry("Vertex shader", LoadedMaterial->VertexShader, OnShaderChanged);
-	MaterialSettings->AddStringEntry("Fragment shader", LoadedMaterial->FragmentShader, OnShaderChanged);
+	MaterialSettings->AddAssetRefEntry("Vertex shader", VertexShader, OnShaderChanged, true);
+	MaterialSettings->AddAssetRefEntry("Fragment shader", FragmentShader, OnShaderChanged, true);
 
 
 	Background->UpdateElement();

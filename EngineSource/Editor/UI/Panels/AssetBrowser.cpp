@@ -20,6 +20,8 @@
 #include <thread>
 #include <algorithm>
 
+static void Import(engine::string CurrentPath);
+
 engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
@@ -57,6 +59,29 @@ engine::editor::AssetBrowser::AssetBrowser()
 				return;
 			}
 		}
+	});
+
+	AddShortcut(kui::Key::i, kui::Key::LCTRL, [this] {
+		Import(GetPathDisplayName());
+	});
+
+	AddShortcut(kui::Key::d, kui::Key::LCTRL, [this] {
+		EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
+	});
+
+	AddShortcut(kui::Key::n, kui::Key::LCTRL, [this] {
+		EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
+		resource::ScanForAssets();
+	});
+
+	AddShortcut(kui::Key::m, kui::Key::LCTRL, [this] {
+		EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
+		resource::ScanForAssets();
+	});
+
+	AddShortcut(kui::Key::t, kui::Key::LCTRL, [this] {
+		EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag");
+		resource::ScanForAssets();
 	});
 }
 
@@ -130,7 +155,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			std::vector<DropdownMenu::Option> Options;
 			Options.push_back(DropdownMenu::Option{
 				.Name = "Open",
-				.Icon = EditorUI::Asset("TabDrag.png"),
+				.Icon = EditorUI::Asset("Open.png"),
 				.OnClicked = OnClick,
 				});
 
@@ -156,12 +181,14 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 
 			Options.push_back(DropdownMenu::Option{
 				.Name = "Rename",
+				.Shortcut = "F2",
 				.Icon = EditorUI::Asset("Rename.png"),
 				.OnClicked = std::bind(&AssetBrowser::RenameFile, this, FilePath),
 				});
 
 			Options.push_back(DropdownMenu::Option{
 				.Name = "Delete",
+				.Shortcut = "Del",
 				.Icon = EditorUI::Asset("X.png"),
 				.OnClicked = [this, FilePath]()
 				{
@@ -311,12 +338,14 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		{
 		DropdownMenu::Option{
 			.Name = "Import...",
+			.Shortcut = "Ctrl+I",
 			.Icon = EditorUI::Asset("Plus.png"),
 			.OnClicked = [this]() { Import(GetPathDisplayName()); },
 			.Separator = true
 		},
 		DropdownMenu::Option{
 			.Name = "New folder",
+			.Shortcut = "Ctrl+D",
 			.Icon = EditorUI::GetExtIconAndColor("dir/").first,
 			.OnClicked = [this]() {
 				EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
@@ -324,6 +353,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		},
 		DropdownMenu::Option{
 			.Name = "New scene",
+			.Shortcut = "Ctrl+N",
 			.Icon = EditorUI::GetExtIconAndColor("kts").first,
 			.OnClicked = [this]() {
 				EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
@@ -332,6 +362,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		},
 		DropdownMenu::Option{
 			.Name = "New material",
+			.Shortcut = "Ctrl+M",
 			.Icon = EditorUI::GetExtIconAndColor("kmt").first,
 			.OnClicked = [this]() {
 				EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
@@ -339,7 +370,8 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			},
 		},
 		DropdownMenu::Option{
-			.Name = "New shader",
+			.Name = "New fragment shader",
+			.Shortcut = "Ctrl+T",
 			.Icon = EditorUI::GetExtIconAndColor("kmt").first,
 			.OnClicked = [this]() {
 				EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag");
@@ -349,7 +381,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		},
 		DropdownMenu::Option{
 			.Name = "Open in file explorer",
-			.Icon = EditorUI::Asset("TabDrag.png"),
+			.Icon = EditorUI::Asset("Open.png"),
 			.OnClicked = [this]()
 			{
 				using namespace engine::platform;

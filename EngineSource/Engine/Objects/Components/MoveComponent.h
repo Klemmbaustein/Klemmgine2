@@ -7,11 +7,19 @@ namespace engine
 	class MoveComponent : public ObjectComponent
 	{
 	public:
+		struct MoveResult
+		{
+			Vector3 Offset;
+			Vector3 Normal;
+			bool Hit = false;
+			bool Stairs = false;
+		};
+
 		MoveComponent();
 		void OnAttached() override;
 		void Update() override;
 		// Tries to move the object in the given direction.
-		Vector3 TryMove(Vector3 Direction, Vector3 InitialDirection, Vector3 Pos, bool GravityPass, uint32 Depth = 0);
+		MoveResult TryMove(Vector3 Direction, Vector3 InitialDirection, Vector3 Pos, bool GravityPass, uint32 Depth = 0);
 		/// Returns true if the object is touching the ground, false if not.
 		bool GetIsOnGround() const;
 
@@ -37,7 +45,7 @@ namespace engine
 		/// The deceleration of the movement.
 		float Deceleration = 40;
 		/// The air acceleration multiplier. If the movement is in air, both acceleration and deceleration will be multiplied with this value.
-		float AirAccelMultiplier = 0.5f;
+		float AirAccelMultiplier = 0.1f;
 		/// The gravity applied to the movement.
 		float Gravity = 17;
 		/// True if the movement is active.

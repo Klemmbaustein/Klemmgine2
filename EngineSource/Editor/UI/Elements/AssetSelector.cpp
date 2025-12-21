@@ -5,19 +5,20 @@
 #include <Core/File/FileUtil.h>
 using namespace kui;
 
-engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, kui::UISize Width, std::function<void()> OnChanged)
-	: DroppableBox(true, [this](EditorUI::DraggedItem itm)
-{
+engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, kui::UISize Width,
+	std::function<void()> OnChanged, bool EmptyIsDefault)
+	: DroppableBox(true, [this](EditorUI::DraggedItem itm) {
 	auto ref = AssetRef::FromPath(itm.Path);
 	if (ref.Extension == this->SelectedAsset.Extension || this->SelectedAsset.Extension.empty())
 	{
 		SelectedAsset = ref;
-		this->OnChanged();
 		UpdateSelection();
+		this->OnChanged();
 	}
 
 })
 {
+	this->EmptyIsDefault = EmptyIsDefault;
 	SelectedAsset = InitialValue;
 	auto c = EditorUI::GetExtIconAndColor(InitialValue.Extension);
 	IconBackground = new UIBackground(true, 0, c.second, 32_px);
@@ -86,10 +87,11 @@ void engine::editor::AssetSelector::Tick()
 			return;
 
 		SelectedAsset = AssetPath->GetText().empty() ? AssetRef{ .Extension = SelectedAsset.Extension } : NewAsset;
-		if (this->OnChanged)
-			this->OnChanged();
 		UpdateSelection();
 		ChangedText = false;
+		if (this->OnChanged)
+			this->OnChanged();
+		return;
 	}
 	if (AssetPath->GetIsEdited())
 	{
@@ -129,7 +131,8 @@ void engine::editor::AssetSelector::Tick()
 void engine::editor::AssetSelector::UpdateSelection()
 {
 	AssetPath->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath));
-	PathText->SetText(SelectedAsset.FilePath.empty() ? "<no file>" : SelectedAsset.FilePath);
+	PathText->SetText(SelectedAsset.FilePath.empty()
+		? (EmptyIsDefault ? "<default>" : "<no file>") : SelectedAsset.FilePath);
 }
 
 void engine::editor::AssetSelector::UpdateSearchSize()
@@ -190,10 +193,10 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 			AssetPath->SetText(Name);
 			SelectedAsset = AssetRef::FromPath(Path);
 			ChangedText = false;
-			if (this->OnChanged)
-				OnChanged();
 			UpdateSelection();
 			RemoveSearchResults();
+			if (this->OnChanged)
+				OnChanged();
 		}))
 			->SetMinWidth(UISize::Parent(1))
 			->AddChild((new UIText(11_px,

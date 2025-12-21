@@ -34,6 +34,7 @@ void engine::editor::PropertyPanel::Update()
 			&& OldObjectTransform.Matrix != SelectedObj->ObjectTransform.Matrix)
 		{
 			this->UpdateTimer.Reset();
+			OldObjectTransform = SelectedObj->ObjectTransform.Matrix;
 			Properties->UpdateProperties();
 		}
 	}
@@ -88,6 +89,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	Properties->AddInfoEntry("Class", Reflection::ObjectTypes[Object->TypeID].Name);
 
 	Properties->CreateNewHeading(Reflection::ObjectTypes[Object->TypeID].Name);
+	OldObjectTransform = SelectedObj->ObjectTransform.Matrix;
 
 	for (ObjPropertyBase* i : Object->Properties)
 	{
@@ -129,6 +131,19 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			});
 			break;
 		}
+		case PropertyType::Vector3:
+		{
+			auto* Ref = static_cast<ObjProperty<Vector3>*>(i);
+			Properties->AddVecEntry(Ref->Name, Ref->Value, [Object, Ref]()
+			{
+				Viewport::Current->OnObjectChanged(Object);
+				if (Ref->OnChanged)
+					Ref->OnChanged();
+
+			});
+			break;
+		}
+
 		default:
 			break;
 		}

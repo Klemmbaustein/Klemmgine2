@@ -206,23 +206,23 @@ engine::editor::EditorUI::EditorUI()
 
 	AddMenuBarItem("File",
 		{
-			DropdownMenu::Option("New", Asset("Plus.png")),
+			DropdownMenu::Option("New", "", Asset("Plus.png")),
 			DropdownMenu::Option("Open Project"),
-			DropdownMenu::Option("Build Project", Asset("Build.png"), []() {
+			DropdownMenu::Option("Build Project", "", Asset("Build.png"), []() {
 				new BuildWindow();
 			}),
-			DropdownMenu::Option("Exit", Asset("X.png"), []() {
+			DropdownMenu::Option("Exit", "Alt+F4", Asset("X.png"), []() {
 				Engine::Instance->ShouldQuit = true;
 			}),
 		});
 
 	AddMenuBarItem("Edit",
 		{
-			DropdownMenu::Option("Undo", Asset("Undo.png"), [vp]() {
+			DropdownMenu::Option("Undo", "Ctrl+Z", Asset("Undo.png"), [vp]() {
 				vp->UndoLast();
 			}),
-			DropdownMenu::Option("Redo", Asset("Redo.png")),
-			DropdownMenu::Option("Settings", Asset("Settings.png"), []() {
+			DropdownMenu::Option("Redo", "Ctrl+Y", Asset("Redo.png")),
+			DropdownMenu::Option("Settings", "", Asset("Settings.png"), []() {
 				new SettingsWindow();
 			}),
 			DropdownMenu::Option("Project settings"),
@@ -230,8 +230,11 @@ engine::editor::EditorUI::EditorUI()
 
 	AddMenuBarItem("Scene",
 		{
-			DropdownMenu::Option("Save"),
-			DropdownMenu::Option("Open"),
+			DropdownMenu::Option("Save", "Alt+S", Asset("Save.png")),
+			DropdownMenu::Option("Open", "", Asset("Open.png")),
+			DropdownMenu::Option("Run", "F5", Asset("Run.png"), []() {
+				Viewport::Current->Run();
+			}),
 			DropdownMenu::Option("View..."),
 		});
 	AddMenuBarItem("Window",
@@ -241,7 +244,7 @@ engine::editor::EditorUI::EditorUI()
 		});
 
 	AddMenuBarItem("Help",
-		{ DropdownMenu::Option("About", Asset("Info.png"), [vp]() {
+		{ DropdownMenu::Option("About", "", Asset("Info.png"), [vp]() {
 				new AboutWindow();
 			}), DropdownMenu::Option("Source code") }
 	);

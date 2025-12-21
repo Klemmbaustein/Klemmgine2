@@ -2,6 +2,7 @@
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Engine.h>
 #include <Engine/Stats.h>
+#include <iostream>
 
 using namespace engine;
 
@@ -56,14 +57,25 @@ void engine::MoveComponent::Update()
 	Rotation3 Rotation;
 	WorldTransform.Decompose(Position, Rotation, Scale);
 
-	Vector3 MoveDir = Vector3(MovementVelocity.X, 0, MovementVelocity.Y).ProjectToPlane(0, GroundNormal) * stats::DeltaTime;
+	Vector3 MoveDir = Vector3(MovementVelocity.X, 0, MovementVelocity.Y).ProjectToPlane(0, GroundNormal)
+		* stats::DeltaTime;
 	LastMoveSuccessful = true;
-	Vector3 Moved = TryMove(MoveDir, MoveDir, Position, false);
-	RootObject->Position += Moved;
 
+	auto Move = TryMove(MoveDir, MoveDir, Position, false);
+	RootObject->Position += Move.Offset;
+
+	if (!LastMoveSuccessful && !Move.Stairs && Move.Normal.Y < 0.25f)
+	{
+		float Angle = 1 - Vector3::Dot(LastHitNormal, -GetVelocity().Normalize());
+
+		Vector3 NewVelocity = (GetVelocity().ProjectToPlane(0, LastHitNormal)
+			* Angle);
+
+		MovementVelocity = Vector2(NewVelocity.X, NewVelocity.Z);
+	}
 
 	MoveDir = Vector3(0, (VerticalVelocity - 1.0f + (Jumping ? JumpHeight : 0)) * stats::DeltaTime, 0);
-	Vector3 GravityMovement = TryMove(MoveDir, MoveDir, Position, true);
+	Vector3 GravityMovement = TryMove(MoveDir, MoveDir, Position, true).Offset;
 
 	RootObject->Position += GravityMovement;
 
@@ -80,8 +92,10 @@ void engine::MoveComponent::Update()
 	InputDirection = 0;
 }
 
-Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirection, Vector3 Pos, bool GravityPass, uint32 Depth)
+MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirection,
+	Vector3 Pos, bool GravityPass, uint32 Depth)
 {
+	MoveResult Result;
 	float Distance = Direction.Length() + 0.001f;
 
 	auto Hits = Collider->ShapeCast(
@@ -93,12 +107,14 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 
 	if (Depth >= MoveMaxDepth)
 	{
+		Result.Hit = true;
+		Result.Normal = Direction.Normalize();
 		if (!GravityPass)
 		{
 			LastMoveSuccessful = false;
-			LastHitNormal = Direction.Normalize();
+			LastHitNormal = Result.Normal;
 		}
-		return 0;
+		return Result;
 	}
 
 	if (!Hits.size())
@@ -111,7 +127,9 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 		{
 			GroundNormal = Vector3(0, 1, 0);
 		}
-		return Direction;
+
+		Result.Offset = Direction;
+		return Result;
 	}
 
 	Vector3 HitNormal = Vector3(0, 0, 0);
@@ -159,6 +177,7 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 		if (HitStep)
 		{
 			HitNormal = Vector3(0, 1, 0);
+			Result.Stairs = true;
 		}
 	}
 
@@ -176,7 +195,8 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 			GroundedTimer = 5;
 			GroundNormal = HitNormal;
 			StoodOn = Hits[0].HitComponent;
-			return SnapToSurface;
+			Result.Offset = SnapToSurface;
+			return Result;
 		}
 	}
 	else
@@ -193,6 +213,8 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 		);
 		LeftOver = LeftOver * Scale;
 
+		Result.Hit = true;
+		Result.Normal = HitNormal;
 		LastMoveSuccessful = false;
 		LastHitNormal = HitNormal;
 	}
@@ -202,7 +224,8 @@ Vector3 engine::MoveComponent::TryMove(Vector3 Direction, Vector3 InitialDirecti
 		SnapToSurface += HitNormal * stats::DeltaTime * (HitStep ? 5.0f : 1.0f) * StepSize;
 	}
 
-	return SnapToSurface + TryMove(LeftOver, InitialDirection, Pos + SnapToSurface, GravityPass, Depth + 1);
+	Result.Offset = SnapToSurface + TryMove(LeftOver, InitialDirection, Pos + SnapToSurface, GravityPass, Depth + 1).Offset;
+	return Result;
 }
 
 bool engine::MoveComponent::GetIsOnGround() const

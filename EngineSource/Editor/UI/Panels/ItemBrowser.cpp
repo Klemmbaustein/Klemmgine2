@@ -86,6 +86,14 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 		Filter = str::Lower(Heading->searchBox->field->GetText());
 		UpdateItems();
 	};
+
+	AddShortcut(Key::BACKSPACE, {}, [this]() {
+		Back();
+	});
+
+	AddShortcut(Key::r, Key::LCTRL, [this]() {
+		UpdateItems();
+	});
 }
 
 void engine::editor::ItemBrowser::OnThemeChanged()

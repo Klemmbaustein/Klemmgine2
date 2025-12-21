@@ -562,6 +562,34 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({ },
 			nullptr, "jump", &MoveComponent_jump));
 
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "acceleration",
+		.offset = offsetof(MoveComponent, Acceleration),
+		.type = FloatInst
+		});
+
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "gravity",
+		.offset = offsetof(MoveComponent, Gravity),
+		.type = FloatInst
+		});
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "maxSpeed",
+		.offset = offsetof(MoveComponent, MaxSpeed),
+		.type = FloatInst
+		});
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "deceleration",
+		.offset = offsetof(MoveComponent, Deceleration),
+		.type = FloatInst
+		});
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "active",
+		.offset = offsetof(MoveComponent, Active),
+		.type = BoolType::getInstance()
+		});
+	MoveComponentType->makePointerClass();
+
 	auto CameraComponentType = EngineModule.createClass<MoveComponent*>("CameraComponent", ComponentType);
 
 	EngineModule.addClassConstructor(CameraComponentType,
@@ -656,6 +684,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineModuleData OutData;
 	OutData.Vector3Type = EngineModule.getType("Vector3")->id;
 	OutData.ScriptObjectType = EngineModule.getType("SceneObject")->id;
+	OutData.AssetRefType = EngineModule.getType("AssetRef")->id;
 
 	return OutData;
 }

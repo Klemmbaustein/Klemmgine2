@@ -257,6 +257,7 @@ void engine::editor::Viewport::Update()
 	LoadingScreenBox->IsVisible = !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
 	PolledForText = Win->Input.PollForText;
 
+
 	if ((StatsRedrawTimer.Get() > 1 || RedrawStats))
 	{
 		SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
@@ -314,6 +315,8 @@ void engine::editor::Viewport::Update()
 
 	if (Current)
 	{
+		Current->AlwaysRedraw = this->Visible;
+
 		if (SelectedObjects.size())
 		{
 			Translate->SetVisible(true);

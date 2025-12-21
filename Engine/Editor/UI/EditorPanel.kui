@@ -59,7 +59,7 @@ element DraggedPanelTab
 		child UIBackground
 		{
 			color = Color_Text;
-			image = "file:Engine/Editor/Assets/TabDrag.png";
+			image = "file:Engine/Editor/Assets/Open.png";
 			size = 20px;
 			padding = 5px
 		}

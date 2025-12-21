@@ -1,7 +1,6 @@
 #include "AssetRef.h"
 #include "Resource.h"
 #include <Core/File/FileUtil.h>
-#include <filesystem>
 
 using namespace engine;
 
@@ -34,6 +33,14 @@ engine::AssetRef engine::AssetRef::FromName(string Name, string Extension)
 	};
 }
 
+AssetRef engine::AssetRef::EmptyAsset(string Extension)
+{
+	return AssetRef{
+		.FilePath = "",
+		.Extension = Extension,
+	};
+}
+
 engine::AssetRef engine::AssetRef::FromPath(string Path)
 {
 	size_t Dot = Path.find_last_of(".");
@@ -46,7 +53,7 @@ engine::AssetRef engine::AssetRef::FromPath(string Path)
 
 engine::AssetRef engine::AssetRef::Convert(std::string PathOrName)
 {
-	if (std::filesystem::exists(PathOrName))
+	if (resource::FileExists(PathOrName))
 	{
 		return AssetRef::FromPath(PathOrName);
 	}
