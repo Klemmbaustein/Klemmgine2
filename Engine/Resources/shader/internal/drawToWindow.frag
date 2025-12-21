@@ -17,7 +17,10 @@ void main()
 	{
 		f_color.xyz = clamp(texture(u_texture, viewportTexCoords).xyz, vec3(0.0), vec3(1.0));
 	}
-
+	else
+	{
+		f_color.xyz = vec3(0.0);
+	}
 	vec4 uiColor = texture(u_ui, v_texcoords);
 
 	float uiAlpha = texture(u_alpha, v_texcoords).x;
