@@ -47,7 +47,13 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
 
+#if WINDOWS
 	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
+#else
+	// High pixel density is broken on linux
+	// TODO: Fix
+	int SDLFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
+#endif
 
 	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
 	{

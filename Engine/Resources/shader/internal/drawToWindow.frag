@@ -13,9 +13,9 @@ void main()
 	vec2 viewportTexCoords = (v_texcoords - u_pos) / u_size;
 
 	if (viewportTexCoords.x >= 0.0 && viewportTexCoords.y >= 0.0
-		&& viewportTexCoords.x <= 1.0 && viewportTexCoords.y != 1.0)
+		&& viewportTexCoords.x <= 1.0 && viewportTexCoords.y <= 1.0)
 	{
-		f_color.xyz = texture(u_texture, viewportTexCoords).xyz;
+		f_color.xyz = clamp(texture(u_texture, viewportTexCoords).xyz, vec3(0.0), vec3(1.0));
 	}
 
 	vec4 uiColor = texture(u_ui, v_texcoords);
