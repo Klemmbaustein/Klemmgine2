@@ -39,7 +39,7 @@ namespace engine::editor
 		/// A darker version of the highlight color.
 		kui::Vec3f HighlightDark = kui::Vec3f(0.15f, 0.15f, 0.35f);
 		/// Highlighted text.
-		kui::Vec3f HighlightText = 0;
+		kui::Vec3f HighlightText = kui::Vec3f(0.8f, 0.7f, 1);
 
 		/// If the theme is light, brighter colors will be used for the log and similar elements not covered by this theme.
 		bool IsLight = false;

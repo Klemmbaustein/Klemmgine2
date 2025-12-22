@@ -32,6 +32,8 @@ namespace engine::editor
 
 	private:
 
+		ScriptEditorContext ScriptContext;
+
 		void UpdateTabSize(ScriptEditorTab* Tab);
 
 		kui::UIBox* CenterBox = nullptr;

@@ -6,16 +6,10 @@
 #include <kui/UI/FileEditorProvider.h>
 #include <kui/UI/UIScrollBox.h>
 #include <stack>
+#include "ScriptEditorContext.h"
 
 namespace engine::editor
 {
-	struct ScriptError
-	{
-		kui::EditorPosition At;
-		size_t Length = 0;
-		std::string Description;
-	};
-
 	struct ScriptSyntaxHighlight
 	{
 		size_t Start = 0;
@@ -26,11 +20,12 @@ namespace engine::editor
 	class ScriptEditorProvider : public kui::FileEditorProvider
 	{
 	public:
-		ScriptEditorProvider(std::string ScriptFile);
+		ScriptEditorProvider(string ScriptFile, ScriptEditorContext* Context);
+		ScriptEditorProvider(const ScriptEditorProvider&) = delete;
+		~ScriptEditorProvider();
 
-		std::string ScriptFile;
-		ds::LanguageService* ScriptService = nullptr;
-		std::vector<ScriptError> Errors;
+		string ScriptFile;
+		ScriptEditorContext* Context = nullptr;
 
 		void GetHighlightsForRange(size_t Begin, size_t Length) override;
 		void RemoveLines(size_t Start, size_t Length) override;
@@ -50,7 +45,7 @@ namespace engine::editor
 
 		void UpdateAutoComplete();
 
-		void ShowAutoComplete(bool MembersOnly);
+		void ShowAutoComplete(bool MembersOnly, std::string Filter = "");
 
 		void LoadRemoteFile();
 
@@ -63,6 +58,8 @@ namespace engine::editor
 		void Redo();
 
 		void ShowDefinitionAt(kui::EditorPosition Position);
+
+		std::string ProcessInput(std::string Text) override;
 
 		struct HoverErrorData
 		{
@@ -91,10 +88,12 @@ namespace engine::editor
 
 	private:
 
+		void InsertCompletion(string CompletionText);
+
 		struct ChangePart
 		{
 			uint64_t Line;
-			std::string Content;
+			string Content;
 			bool IsRemove = false;
 			bool IsAdd = false;
 		};
@@ -124,8 +123,14 @@ namespace engine::editor
 		kui::UIBox* HoveredBox = nullptr;
 		kui::Vec2f LastCursorPosition;
 
+		std::vector<ds::AutoCompleteResult> Completions;
+		std::vector<kui::UIButton*> CompletionButtons;
 		std::map<size_t, std::vector<ScriptSyntaxHighlight>> Highlights;
 		void UpdateLineColorization(size_t Line);
+
+		void ApplyHoverBoxPosition(kui::UIBox* Target, kui::EditorPosition At);
+		void UpdateAutoCompleteEntries(string Filter);
+		kui::EditorPosition CompletePosition;
 
 		void UpdateFile();
 		void UpdateSyntaxHighlight();

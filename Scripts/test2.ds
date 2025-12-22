@@ -2,6 +2,7 @@ using engine
 
 module game
 
-class TheOtherObject : SceneObject
+class SomeClassName
 {
+	string message = "hello"
 }

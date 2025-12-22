@@ -94,6 +94,8 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	AddTab("Scripts/test.ds");
 	AddTab("Scripts/test2.ds");
 
+	ScriptContext.Initialize();
+
 	UpdateEditorTabs();
 }
 
@@ -194,8 +196,8 @@ void engine::editor::ScriptEditorPanel::Update()
 		if (this->Visible)
 		{
 			Tab->MiniMap->Update();
-			this->StatusText->SetText(str::Format("%s | Errors: %i",
-				Tab->Provider->ScriptFile.c_str(), Tab->Provider->Errors.size()));
+			this->StatusText->SetText(str::Format("%s | Errors: %s",
+				Tab->Provider->ScriptFile.c_str(), "Idk refactoring"));
 
 			auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
 			if (sys && !Tab->Provider->Connection)
@@ -229,7 +231,7 @@ void engine::editor::ScriptEditorPanel::OnThemeChanged()
 void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 {
 	auto& NewTab = this->Tabs.emplace_back();
-	NewTab.Provider = new ScriptEditorProvider(File);
+	NewTab.Provider = new ScriptEditorProvider(File, &ScriptContext);
 
 	NewTab.Provider->Keywords = {
 		"int",
@@ -266,7 +268,10 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 	};
 
 	EditorUI::Theme.CodeTheme.ApplyToScript(NewTab.Provider);
-	NewTab.Provider->ScanFile();
+	if (this->ScriptContext.Loaded)
+	{
+		NewTab.Provider->ScanFile();
+	}
 	NewTab.Editor = new UITextEditor(NewTab.Provider, EditorUI::MonospaceFont);
 
 	NewTab.MiniMap = new ScriptMiniMap(NewTab.Editor, NewTab.Provider);

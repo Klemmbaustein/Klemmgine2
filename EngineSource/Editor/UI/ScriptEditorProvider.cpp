@@ -1,7 +1,6 @@
 #include "ScriptEditorProvider.h"
 #include <Engine/Engine.h>
 #include <kui/UI/UITextEditor.h>
-#include <Engine/Script/ScriptSubsystem.h>
 #include <ds/service/languageService.hpp>
 #include <Engine/Input.h>
 #include <Engine/MainThread.h>
@@ -15,31 +14,29 @@ using namespace kui;
 using namespace ds;
 using namespace engine::editor;
 
-engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile)
+engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile, ScriptEditorContext* Context)
 	: FileEditorProvider(ScriptFile)
 {
 	this->ScriptFile = ScriptFile;
-	this->ScriptService = Engine::GetSubsystem<script::ScriptSubsystem>()
-		->ScriptLanguage->startService();
+	this->Context = Context;
+	Context->AddFile(this->GetContent(), ScriptFile);
 
-	this->ScriptService->addString(this->GetContent(), ScriptFile);
+	Context->OnReady.Add(this, [this]() {
+		ParentEditor->FullRefresh();
+		ScanFile();
+	});
+}
 
-	this->ScriptService->parser->errors.errorCallback = [this]
-	(ErrorCode code, std::string File, const Token& At, std::string Description)
-	{
-		this->Errors.push_back(ScriptError{
-			.At = EditorPosition(At.position.startPos, At.position.line),
-			.Length = At.position.endPos - At.position.startPos,
-			.Description = Description,
-			});
-	};
+engine::editor::ScriptEditorProvider::~ScriptEditorProvider()
+{
+	Context->OnReady.Remove(this);
 }
 
 void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)
 {
 	FileEditorProvider::GetHighlightsForRange(Begin, Length);
 
-	for (auto& i : Errors)
+	for (auto& i : Context->Errors[ScriptFile])
 	{
 		ParentEditor->HighlightArea(HighlightedArea{
 			.Start = i.At,
@@ -90,6 +87,16 @@ void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::v
 	}
 }
 
+std::string engine::editor::ScriptEditorProvider::ProcessInput(std::string Text)
+{
+	if (IsAutoCompleteActive && CompletionButtons.size() && Text == "\t")
+	{
+		CompletionButtons[0]->OnButtonClicked();
+		return "";
+	}
+	return Text;
+}
+
 void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vector<TextSegment>& NewLine)
 {
 	NextChange.Parts.push_back(ChangePart{
@@ -101,13 +108,35 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 	FileEditorProvider::SetLine(Index, NewLine);
 
 	Changed.push_back(Index);
-
-	auto& Input = Window::GetActiveWindow()->Input;
-
-	if (Input.Text == ".")
+	if (Index == ParentEditor->SelectionEnd.Line)
 	{
-		ShowAutoComplete(true);
+		auto& Input = Window::GetActiveWindow()->Input;
+		auto Filter = this->Lines[Index].substr(0, ParentEditor->SelectionEnd.Column + 1);
+		string LastWord;
+		if (!Filter.empty())
+		{
+			size_t LastCharAfterSpace = Filter.find_last_of("\t .()-+/*><=") + 1;
+			LastWord = Filter.substr(LastCharAfterSpace);
+		}
+
+		if (Input.Text == ".")
+		{
+			ShowAutoComplete(true);
+		}
+		else if (IsAutoCompleteActive && LastWord.size())
+		{
+			UpdateAutoCompleteEntries(LastWord);
+		}
+		else if (IsAutoCompleteActive && (Input.Text.size() > 1 || !std::isalpha(Input.Text[0])))
+		{
+			CloseAutoComplete();
+		}
+		else if (Input.Text.size() == 1 && std::isalpha(Input.Text[0]))
+		{
+			ShowAutoComplete(false, LastWord);
+		}
 	}
+
 
 	if (Connection)
 	{
@@ -118,6 +147,24 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 			SerializedData("newContent", TextSegment::CombineToString(NewLine)),
 			}));
 	}
+}
+
+void engine::editor::ScriptEditorProvider::InsertCompletion(string CompletionText)
+{
+	auto Position = ParentEditor->GetCursorPosition();
+	string Line = this->Lines[Position.Line];
+	string LineEnd = Line.substr(Position.Column);
+	Line = Line.substr(0, Position.Column);
+	if (!Line.empty())
+	{
+		size_t LastCharAfterSpace = Line.find_last_of("\t .()-+/*><=") + 1;
+		Line = Line.substr(0, LastCharAfterSpace);
+	}
+	Position.Column = Line.size() + CompletionText.size();
+
+	SetLine(Position.Line, { TextSegment(Line + CompletionText + LineEnd, Vec3f(1)) });
+	ParentEditor->SetCursorPosition(Position);
+	Commit();
 }
 
 void engine::editor::ScriptEditorProvider::Commit()
@@ -233,9 +280,16 @@ void engine::editor::ScriptEditorProvider::Update()
 	HoverErrorData NewHoveredError = GetHoveredError(Pos);
 	HoverSymbolData NewHoveredSymbol = GetHoveredSymbol(Pos);
 
+	if (Win->Input.IsLMBDown)
+	{
+		NewHoveredError = {};
+		NewHoveredSymbol = {};
+	}
+
 	void* NewHovered = NewHoveredError.Error ? (void*)NewHoveredError.Error : (void*)NewHoveredSymbol.Symbol;
 
-	if (IsAutoCompleteActive || DropdownMenu::Current || !Win->UI.HoveredBox || !Win->UI.HoveredBox->IsChildOf(ParentEditor))
+	if (IsAutoCompleteActive || DropdownMenu::Current || !Win->UI.HoveredBox
+		|| !Win->UI.HoveredBox->IsChildOf(ParentEditor))
 	{
 		NewHovered = nullptr;
 	}
@@ -246,7 +300,7 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	if (NewHovered != this->HoveredData || (Time > 0.2f && !HoveredBox && HoveredData))
 	{
-		if (NewHovered != this->HoveredData)
+		if (NewHovered != this->HoveredData && !IsAutoCompleteActive)
 		{
 			HoverTime.Reset();
 			this->HoveredData = NewHovered;
@@ -267,7 +321,7 @@ void engine::editor::ScriptEditorProvider::Update()
 				CreateHoverBox(NewHoveredSymbol.GetHoverData(), NewHoveredSymbol.At);
 			}
 		}
-		else if (!NewHovered)
+		else if (!NewHovered && !IsAutoCompleteActive)
 		{
 			delete this->HoveredBox;
 			this->HoveredBox = nullptr;
@@ -365,16 +419,25 @@ UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content,
 	this->HoveredBox = (new UIBlurBackground(true, 0, EditorUI::Theme.LightBackground))
 		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
-	this->HoveredBox
-		->AddChild(Content);
-	this->HoveredBox->UpdateElement();
+	if (Content)
+	{
+		this->HoveredBox
+			->AddChild(Content);
+	}
 	this->HoveredBox->HasMouseCollision = true;
+
+	ApplyHoverBoxPosition(HoveredBox, At);
+
+	return this->HoveredBox;
+}
+
+void engine::editor::ScriptEditorProvider::ApplyHoverBoxPosition(kui::UIBox* Target, EditorPosition At)
+{
+	this->HoveredBox->UpdateElement();
 
 	this->HoveredBox->SetPosition(ParentEditor->EditorToScreen(At)
 		+ Vec2f(0, ParentEditor->EditorScrollBox->GetScrollObject()->GetOffset())
 		- Vec2f(0, this->HoveredBox->GetUsedSize().GetScreen().Y) + Vec2f(0, (1_px).GetScreen().Y));
-
-	return this->HoveredBox;
 }
 
 void engine::editor::ScriptEditorProvider::UpdateAutoComplete()
@@ -396,49 +459,89 @@ void engine::editor::ScriptEditorProvider::UpdateAutoComplete()
 	ShowAutoComplete(false);
 }
 
-void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly)
+void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly, std::string Filter)
 {
-	auto pos = ParentEditor->SelectionStart;
+	CompletePosition = ParentEditor->SelectionStart;
 
-	auto c = this->ScriptService->completeAt(&ScriptService->files.begin()->second, pos.Column, pos.Line,
-		MembersOnly ? CompletionType::member : CompletionType::all);
+	Completions = Context->ScriptService->completeAt(&Context->ScriptService->files[ScriptFile],
+		CompletePosition.Column, CompletePosition.Line,
+		MembersOnly ? CompletionType::classMembers : CompletionType::all);
 
-	if (c.empty())
+	if (Completions.empty())
 	{
 		return;
 	}
 
-	UIBox* content = new UIScrollBox(false, 0, true);
+	auto box = CreateHoverBox(nullptr, CompletePosition);
+	AutoCompleteBox = new UIScrollBox(false, 0, true);
+	box->AddChild(AutoCompleteBox);
 
-	for (auto& i : c)
-	{
-		content->AddChild((new UIButton(true, 0, EditorUI::Theme.Background, [this, i]() {
-			CloseAutoComplete();
-			ParentEditor->Edit();
-			ParentEditor->InsertAtCursor(i.name, true);
-		}))
-			->SetMinWidth(UISize::Parent(1))
-			->AddChild((new UIText(12_px, EditorUI::Theme.Text, i.name, EditorUI::EditorFont))
-				->SetPadding(3_px)));
-	}
+	AutoCompleteBox->SetMinSize(SizeVec(150_px, 0));
+	AutoCompleteBox->SetMaxSize(SizeVec(150_px, 200_px));
+	AutoCompleteBox->SetPadding(3_px);
 
-	//if (c.size())
-	//{
-	//	ParentEditor->Insert(c[0].name, pos, false);
-	//}
-
-	content->SetMinSize(SizeVec(150_px, 50_px));
-	content->SetMaxSize(SizeVec(150_px, 200_px));
-	content->SetPadding(3_px);
-
+	UpdateAutoCompleteEntries(Filter);
 
 	IsAutoCompleteActive = true;
+}
 
-	auto box = CreateHoverBox(content, pos);
+void engine::editor::ScriptEditorProvider::UpdateAutoCompleteEntries(string Filter)
+{
+	AutoCompleteBox->DeleteChildren();
+	CompletionButtons.clear();
+	HoveredBox->IsVisible = false;
+	for (auto& i : Completions)
+	{
+		size_t Found = string::npos;
+
+		if (!Filter.empty())
+		{
+			Found = i.name.find(Filter);
+			if (Found == string::npos)
+			{
+				continue;
+			}
+		}
+		HoveredBox->IsVisible = true;
+
+		auto btn = new UIButton(true, 0, EditorUI::Theme.LightBackground, [this, i = i]() {
+			ParentEditor->Edit();
+			InsertCompletion(i.name);
+			CloseAutoComplete();
+		});
+
+		CompletionButtons.push_back(btn);
+
+		btn->OnlyDrawWhenHovered = true;
+
+		std::vector<TextSegment> Segments;
+
+		if (Found == string::npos)
+		{
+			Segments.push_back({ TextSegment{ i.name, EditorUI::Theme.Text } });
+		}
+		else
+		{
+			Segments.push_back({ TextSegment{ i.name.substr(0, Found), EditorUI::Theme.Text} });
+			Segments.push_back({ TextSegment{ i.name.substr(Found, Filter.size()), EditorUI::Theme.HighlightText} });
+			Segments.push_back({ TextSegment{ i.name.substr(Found + Filter.size()), EditorUI::Theme.Text} });
+		}
+		if (i.type == CompletionType::function || i.type == CompletionType::method)
+		{
+			Segments.push_back({ TextSegment{ "()", EditorUI::Theme.DarkText} });
+		}
+
+		AutoCompleteBox->AddChild(btn
+			->SetMinWidth(UISize::Parent(1))
+			->AddChild((new UIText(12_px, Segments, EditorUI::EditorFont))
+				->SetPadding(3_px)));
+	}
+	ApplyHoverBoxPosition(HoveredBox, CompletePosition);
 }
 
 void engine::editor::ScriptEditorProvider::CloseAutoComplete()
 {
+	CompletionButtons.clear();
 	delete HoveredBox;
 	HoveredBox = nullptr;
 	IsAutoCompleteActive = false;
@@ -486,7 +589,7 @@ ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHo
 {
 	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
 
-	for (auto& i : this->Errors)
+	for (auto& i : Context->Errors[ScriptFile])
 	{
 		if (HoverPosition.Line == i.At.Line
 			&& (HoverPosition.Column >= i.At.Column && HoverPosition.Column <= i.Length + i.At.Column))
@@ -503,7 +606,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 {
 	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
 
-	if (this->ScriptService->files.empty())
+	if (Context->ScriptService->files.empty())
 	{
 		return HoverSymbolData();
 	}
@@ -513,7 +616,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 
 ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetSymbolAt(kui::EditorPosition Position)
 {
-	for (auto& i : this->ScriptService->files.begin()->second.functions)
+	for (auto& i : Context->ScriptService->files[ScriptFile].functions)
 	{
 		if (Position.Line == i.at.position.line
 			&& (Position.Column >= i.at.position.startPos && Position.Column <= i.at.position.endPos))
@@ -570,7 +673,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 		}
 	}
 
-	for (auto& i : this->ScriptService->files.begin()->second.variables)
+	for (auto& i : Context->ScriptService->files[ScriptFile].variables)
 	{
 		if (Position.Line == i.at.position.line
 			&& (Position.Column >= i.at.position.startPos && Position.Column <= i.at.position.endPos))
@@ -655,14 +758,13 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 
 void engine::editor::ScriptEditorProvider::UpdateFile()
 {
-	Errors.clear();
-	this->ScriptService->updateFile(this->GetContent(), this->ScriptFile);
+	Context->UpdateFile(this->GetContent(), this->ScriptFile);
 	ScanFile();
 }
 
 void engine::editor::ScriptEditorProvider::ScanFile()
 {
-	this->ScriptService->commitChanges();
+	Context->Commit();
 	OnUpdated.Invoke();
 	UpdateSyntaxHighlight();
 }
@@ -670,11 +772,8 @@ void engine::editor::ScriptEditorProvider::ScanFile()
 void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 {
 	Highlights.clear();
-	if (!this->ScriptService->files.size())
-	{
-		return;
-	}
-	for (auto& i : this->ScriptService->files.begin()->second.functions)
+	auto& f = Context->ScriptService->files[ScriptFile];
+	for (auto& i : f.functions)
 	{
 		size_t ActualStart = i.at.position.startPos;
 
@@ -692,7 +791,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 			});
 	}
 
-	for (auto& i : this->ScriptService->files.begin()->second.types)
+	for (auto& i : f.types)
 	{
 		size_t ActualStart = i.position.startPos;
 
@@ -710,7 +809,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 			});
 	}
 
-	for (auto& i : this->ScriptService->files.begin()->second.variables)
+	for (auto& i : f.variables)
 	{
 		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
 			.Start = i.at.position.startPos,

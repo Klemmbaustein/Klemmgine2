@@ -523,9 +523,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		});
 
 	ObjectType->members.push_back(ClassMember{
-		.name = "rotation",
+		.name = "scale",
 		.offset = offsetof(SceneObject, Scale),
-		.type = RotType
+		.type = VecType
 		});
 	ObjectType->makePointerClass();
 
