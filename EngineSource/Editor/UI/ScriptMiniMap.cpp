@@ -74,9 +74,9 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 	if (Height * 4 < ScrollBoxHeight)
 	{
 		Height = ScrollBoxHeight / 4;
-		size_t Remnaint = Height - Provider->GetLineCount();
+		size_t Remnant = Height - Provider->GetLineCount();
 
-		DownPadding = Remnaint * 4;
+		DownPadding = Remnant * 4;
 	}
 	else
 	{

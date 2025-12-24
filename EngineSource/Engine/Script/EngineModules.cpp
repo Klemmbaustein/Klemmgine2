@@ -591,7 +591,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(MoveComponentType,
 		NativeFunction({ FunctionArgument(VecType, "newVelocity") },
-			nullptr, "setVelocity", &MoveComponent_getVelocity));
+			nullptr, "setVelocity", &MoveComponent_setVelocity));
 
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "acceleration",

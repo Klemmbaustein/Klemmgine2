@@ -37,7 +37,7 @@ namespace engine
 		 * @param Listener
 		 * A unique pointer identifying this listener.
 		 * @param New
-		 * Thelistener callback to add to the event.
+		 * The listener callback to add to the event.
 		 */
 		void Add(void* Listener, Function New)
 		{

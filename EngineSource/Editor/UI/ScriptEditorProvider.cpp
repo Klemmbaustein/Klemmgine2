@@ -23,7 +23,7 @@ engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFil
 
 	Context->OnReady.Add(this, [this]() {
 		ParentEditor->FullRefresh();
-		ScanFile();
+		UpdateFileData();
 	});
 }
 
@@ -169,7 +169,7 @@ void engine::editor::ScriptEditorProvider::InsertCompletion(string CompletionTex
 
 void engine::editor::ScriptEditorProvider::Commit()
 {
-	UpdateFile();
+	UpdateFileContent();
 	if (NextChange.Parts.size())
 	{
 		this->Changes.push(NextChange);
@@ -475,6 +475,8 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly, st
 	auto box = CreateHoverBox(nullptr, CompletePosition);
 	AutoCompleteBox = new UIScrollBox(false, 0, true);
 	box->AddChild(AutoCompleteBox);
+	AutoCompleteBox->GetScrollBarBackground()->SetOpacity(0);
+	AutoCompleteBox->GetScrollBarSlider()->SetOpacity(0.75f);
 
 	AutoCompleteBox->SetMinSize(SizeVec(150_px, 0));
 	AutoCompleteBox->SetMaxSize(SizeVec(150_px, 200_px));
@@ -549,11 +551,9 @@ void engine::editor::ScriptEditorProvider::CloseAutoComplete()
 
 void engine::editor::ScriptEditorProvider::LoadRemoteFile()
 {
-	Connection->GetFile("Scripts/test.ds", [=](ReadOnlyBufferStream* Stream)
-	{
+	Connection->GetFile("Scripts/test.ds", [this](ReadOnlyBufferStream* Stream) {
 		string Content = Stream->ReadString();
-		thread::ExecuteOnMainThread([=]
-		{
+		thread::ExecuteOnMainThread([this, Content, Stream] {
 			string NextLine;
 
 			this->Lines.clear();
@@ -578,7 +578,7 @@ void engine::editor::ScriptEditorProvider::LoadRemoteFile()
 			this->Lines.push_back(NextLine);
 			delete Stream;
 
-			this->UpdateFile();
+			this->UpdateFileContent();
 			this->UpdateBracketAreas();
 			this->ParentEditor->FullRefresh();
 		});
@@ -587,31 +587,43 @@ void engine::editor::ScriptEditorProvider::LoadRemoteFile()
 
 ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHoveredError(Vec2f ScreenPosition)
 {
-	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
-
-	for (auto& i : Context->Errors[ScriptFile])
+	if (Context->ScriptServiceMutex.try_lock())
 	{
-		if (HoverPosition.Line == i.At.Line
-			&& (HoverPosition.Column >= i.At.Column && HoverPosition.Column <= i.Length + i.At.Column))
+		auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition, false);
+
+		for (auto& i : Context->Errors[ScriptFile])
 		{
-			return HoverErrorData{
-				.Error = &i,
-				.At = HoverPosition,
-			};
+			if (HoverPosition.Line == i.At.Line
+				&& (HoverPosition.Column >= i.At.Column && HoverPosition.Column <= i.Length + i.At.Column))
+			{
+				Context->ScriptServiceMutex.unlock();
+				return HoverErrorData{
+					.Error = &i,
+					.At = HoverPosition,
+				};
+			}
 		}
+		Context->ScriptServiceMutex.unlock();
 	}
 	return HoverErrorData();
 }
 ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetHoveredSymbol(kui::Vec2f ScreenPosition)
 {
-	auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition);
-
-	if (Context->ScriptService->files.empty())
+	if (Context->ScriptServiceMutex.try_lock())
 	{
-		return HoverSymbolData();
-	}
+		auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition, false);
 
-	return GetSymbolAt(HoverPosition);
+		if (Context->ScriptService->files.empty())
+		{
+			Context->ScriptServiceMutex.unlock();
+			return HoverSymbolData();
+		}
+
+		auto sym = GetSymbolAt(HoverPosition);
+		Context->ScriptServiceMutex.unlock();
+		return sym;
+	}
+	return HoverSymbolData();
 }
 
 ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetSymbolAt(kui::EditorPosition Position)
@@ -756,22 +768,36 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 	ParentEditor->ColorizeLine(Line, Segments);
 }
 
-void engine::editor::ScriptEditorProvider::UpdateFile()
+void engine::editor::ScriptEditorProvider::UpdateFileContent()
 {
 	Context->UpdateFile(this->GetContent(), this->ScriptFile);
 	ScanFile();
 }
 
+void engine::editor::ScriptEditorProvider::UpdateFileData()
+{
+	UpdateSyntaxHighlight();
+
+	for (size_t i = 0; i < Lines.size(); i++)
+	{
+		UpdateLineColorization(i);
+	}
+	ParentEditor->RefreshHighlights();
+	//OnUpdated.Invoke();
+}
+
 void engine::editor::ScriptEditorProvider::ScanFile()
 {
-	Context->Commit();
-	OnUpdated.Invoke();
-	UpdateSyntaxHighlight();
+	Context->Commit([this] {
+		UpdateFileData();
+	});
 }
 
 void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 {
 	Highlights.clear();
+	std::lock_guard g{ Context->ScriptServiceMutex };
+
 	auto& f = Context->ScriptService->files[ScriptFile];
 	for (auto& i : f.functions)
 	{

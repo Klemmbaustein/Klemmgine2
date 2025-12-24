@@ -132,7 +132,8 @@ namespace engine::editor
 		void UpdateAutoCompleteEntries(string Filter);
 		kui::EditorPosition CompletePosition;
 
-		void UpdateFile();
+		void UpdateFileContent();
+		void UpdateFileData();
 		void UpdateSyntaxHighlight();
 	};
 }

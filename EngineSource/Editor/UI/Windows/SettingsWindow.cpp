@@ -12,7 +12,7 @@ using namespace kui;
 
 engine::editor::SettingsWindow::SettingsWindow()
 	: IDialogWindow("Editor Settings", {
-		Option{.Name = "Close", .Close = true, } }, Vec2ui(640, 480))
+		Option{.Name = "Close", .Close = true, .IsClose = true } }, Vec2ui(640, 480))
 {
 	this->Open();
 }

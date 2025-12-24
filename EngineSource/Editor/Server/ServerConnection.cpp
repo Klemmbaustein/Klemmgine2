@@ -62,7 +62,7 @@ engine::editor::ServerConnection::ServerConnection(string Url)
 
 			for (auto& i : Callbacks)
 			{
-				auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), true);
+				auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), false);
 				b->OnClose.Add(References, [=] {
 					(*References)--;
 					if (*References == 0)

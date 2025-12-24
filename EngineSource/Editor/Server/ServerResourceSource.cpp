@@ -30,7 +30,7 @@ ReadOnlyBufferStream* engine::editor::ServerResourceSource::GetFile(string Path)
 	bool GotResult = false;
 	ReadOnlyBufferStream* Result = nullptr;
 
-	this->Connection->GetFile(Path, [&](ReadOnlyBufferStream* Buffer) {
+	this->Connection->GetFile(Path, [this, &GotResult, &Result, &cv](ReadOnlyBufferStream* Buffer) {
 		GotResult = true;
 		Result = Buffer;
 

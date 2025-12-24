@@ -6,7 +6,7 @@
 using namespace kui;
 
 engine::editor::AboutWindow::AboutWindow()
-	: IDialogWindow("About Klemmgine 2", { Option{.Name = "Ok", .Close = true} }, Vec2ui(400, 200))
+	: IDialogWindow("About Klemmgine 2", { Option{.Name = "Ok", .Close = true, .IsAccept = true, .IsClose = true, } }, Vec2ui(400, 200))
 {
 	this->Open();
 }

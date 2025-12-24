@@ -34,7 +34,7 @@ class MyObject : SceneObject
 
 		lastY = this.position.y
 	}
-	
+		
 	override fn update()
 	{
 		Rotation3 moveRotation = new(0, this.rotation.y, 0)
@@ -118,7 +118,7 @@ class MyObject : SceneObject
 
 	fn beginSlide()
 	{
-		movement.setVelocity(movement.getVelocity() * new Vector3(5))
+		movement.setVelocity(movement.getVelocity() * new Vector3(2, 1, 2))
 		movement.acceleration = 5
 		movement.canMoveUpSlopes = true
 		slideTimer = 0

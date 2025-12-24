@@ -17,13 +17,16 @@ void engine::thread::ExecuteOnMainThread(std::function<void()> Function)
 void engine::thread::MainThreadUpdate()
 {
 	ENGINE_ASSERT(IsMainThread);
-	std::lock_guard g{ MainThreadFuncsMutex };
 
-	for (auto& i : MainThreadFuncs)
+	MainThreadFuncsMutex.lock();
+	std::vector Functions = MainThreadFuncs;
+	MainThreadFuncs.clear();
+	MainThreadFuncsMutex.unlock();
+
+	for (auto& i : Functions)
 	{
 		i();
 	}
-	MainThreadFuncs.clear();
 }
 
 thread_local bool engine::thread::IsMainThread = false;
