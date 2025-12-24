@@ -1,4 +1,6 @@
 #include "EditorLauncher.h"
+#include "CreateProjectWindow.h"
+#include <Editor/Editor.h>
 #include <Editor/Server/EditorServerSubsystem.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
@@ -6,6 +8,7 @@
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
 #include <kui/Window.h>
+#include <filesystem>
 #include <SDL3/SDL.h>
 
 using namespace engine;
@@ -21,6 +24,8 @@ void engine::editor::launcher::EditorLauncher::InitWindow()
 	EditorUI::InitTheme();
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 	thread::IsMainThread = true;
+
+	editor::OpenEditorAt(std::filesystem::canonical("./Engine/").string());
 
 	LauncherWindow = new Window("Klemmgine 2 Project Manager", Window::WindowFlag::Resizable,
 		Window::POSITION_CENTERED, Vec2ui(700, 500));
@@ -46,8 +51,11 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	LauncherToolbar = new Toolbar(false, Theme.DarkBackground);
 
 	LauncherToolbar->AddButton("New project", EditorUI::Asset("Plus.png"), [this]() {
-		LauncherWindow->Close();
-		this->Result = LauncherResult::LaunchProject;
+		new CreateProjectWindow([this] (std::string ProjectPath) {
+			this->ProjectPathToLaunch = ProjectPath;
+			LauncherWindow->Close();
+			this->Result = LauncherResult::LaunchProject;
+		});
 	});
 	LauncherToolbar->AddButton("Add existing project", EditorUI::Asset("ExitFolder.png"), [this]() {
 	});

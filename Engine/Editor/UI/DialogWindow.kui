@@ -67,7 +67,7 @@ element RenameWindowElement
 		{
 			Size = 220px;
 			HintText = "Rename";
-			Image = "Engine/Editor/Assets/Rename.png";
+			Image = $"Rename.png";
 			padding = 5px;
 		}
 	}

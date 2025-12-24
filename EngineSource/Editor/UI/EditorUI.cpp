@@ -144,7 +144,6 @@ engine::editor::EditorUI::EditorUI()
 		MonospaceFont = new Font(Asset("EditorMono.ttf"));
 		MonospaceFont->CharacterSize *= 1.1f;
 		VideoSystem->MainWindow->Markup.AddFont("mono", MonospaceFont);
-		VideoSystem->MainWindow->Markup.SetGetStringFunction(&EditorUI::Asset);
 	}
 
 	Root = new UIBackground(false, -1, Theme.DarkBackground, 2);
@@ -326,6 +325,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Markup.SetGlobal("Color_HighlightDark", Theme.HighlightDark);
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
 	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
+	Target->Markup.SetGetStringFunction(&EditorUI::Asset);
 
 	Target->Colors.ScrollBackgroundColor = Theme.Background;
 	Target->Colors.ScrollBackgroundBorderColor = Theme.Background;
@@ -411,5 +411,5 @@ void engine::editor::EditorUI::AddMenuBarItem(string Name, std::vector<DropdownM
 
 engine::string engine::editor::EditorUI::Asset(const string& Path)
 {
-	return GetEditorPath() + "Editor/Assets/" + Path;
+	return GetEditorPath() + "/Editor/Assets/" + Path;
 }

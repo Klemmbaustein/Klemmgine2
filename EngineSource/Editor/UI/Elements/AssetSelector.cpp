@@ -202,7 +202,7 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 			->AddChild((new UIText(11_px,
 				{
 					TextSegment(First, EditorUI::Theme.Text),
-					TextSegment(Second, EditorUI::Theme.Highlight1),
+					TextSegment(Second, EditorUI::Theme.HighlightText),
 					TextSegment(Third, EditorUI::Theme.Text),
 				}, EditorUI::EditorFont))
 				->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - (10_px).GetScreen().X))

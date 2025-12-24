@@ -38,7 +38,7 @@ element ConsolePanelElement
 		{
 			HintText = "Execute command";
 			Size = 400px;
-			Image = "Engine/Editor/Assets/Command.png";
+			Image = $"Command.png";
 			padding = 5px;
 		}
 
@@ -46,8 +46,7 @@ element ConsolePanelElement
 		{
 			Size = 200px;
 			HintText = "Search log";
-			Image = "Engine/Editor/Assets/Search.png";
-			//padding = 5px;
+			Image = $"Search.png";
 		}
 	}
 }

@@ -2,7 +2,13 @@ using engine
 
 module game
 
-class SomeClassName
+class SomeClassName : SceneObject
 {
+	[Export]
 	string message = "hello"
+	
+	override fn begin()
+	{
+		info(this.message)
+	}
 }

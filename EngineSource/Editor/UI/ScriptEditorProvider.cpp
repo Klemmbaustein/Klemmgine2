@@ -757,6 +757,11 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 
 	for (ScriptSyntaxHighlight& i : found->second)
 	{
+		if (i.Start <= LastStart)
+		{
+			continue;
+		}
+
 		Segments.push_back(EditorColorizeSegment{
 			.Offset = i.Start - LastStart,
 			.Length = i.Length,
@@ -801,6 +806,11 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 	auto& f = Context->ScriptService->files[ScriptFile];
 	for (auto& i : f.functions)
 	{
+		if (i.kind == ScannedFunction::Kind::constructor)
+		{
+			continue;
+		}
+
 		size_t ActualStart = i.at.position.startPos;
 
 		size_t Colon = i.at.string.find_last_of(':');
@@ -840,7 +850,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
 			.Start = i.at.position.startPos,
 			.Length = i.at.position.endPos - i.at.position.startPos,
-			.Color = VariableColor,
+			.Color = i.isThis ? KeywordColor : VariableColor,
 			});
 	}
 }

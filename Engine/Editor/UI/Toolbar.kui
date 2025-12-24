@@ -34,7 +34,7 @@ element ToolBarButton
 
 		child UIBackground dropdownButton
 		{
-			image = "Engine/Editor/Assets/DownArrow.png"
+			image = $"DownArrow.png"
 			size = 14px
 			color = Color_Text
 			leftPadding = -3px

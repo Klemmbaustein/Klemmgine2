@@ -1,6 +1,5 @@
 #include "Engine.h"
 #include "Version.h"
-#include "Editor/Editor.h"
 #include "Graphics/VideoSubsystem.h"
 #include "Subsystem/InputSubsystem.h"
 #include "Subsystem/ConsoleSubsystem.h"
@@ -67,13 +66,6 @@ void Engine::Run()
 {
 	while (!ShouldQuit)
 	{
-#ifdef EDITOR
-		if (input::IsRMBClicked && !editor::IsActive())
-		{
-			LoadSubsystem(new EditorSubsystem());
-		}
-#endif
-
 		for (Subsystem* System : LoadedSystems)
 		{
 			System->Update();

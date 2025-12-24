@@ -93,7 +93,7 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 	{
 		std::vector<TextSegment> l;
 
-		Editor->Get(EditorPosition(0, y), SIZE_MAX, l, true);
+		Editor->GetLocking(EditorPosition(0, y), SIZE_MAX, l, true);
 
 		TextSegment* CurrentSegment = l.size() ? & *l.begin() : nullptr;
 

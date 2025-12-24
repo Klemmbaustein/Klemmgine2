@@ -3,7 +3,7 @@
 using namespace engine;
 using namespace engine::subsystem;
 
-static string EditorPath = "Engine/";
+static string EditorPath = "Engine";
 
 const bool editor::IsActive()
 {
@@ -17,5 +17,9 @@ string engine::editor::GetEditorPath()
 
 void engine::editor::OpenEditorAt(string Path)
 {
+#ifdef WINDOWS
+	EditorPath = str::ReplaceChar(Path, '\\', '/');
+#else
 	EditorPath = Path;
+#endif
 }

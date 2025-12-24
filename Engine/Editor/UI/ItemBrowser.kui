@@ -20,7 +20,7 @@ element ItemBrowserHeading
 				size = 20px;
 				padding = 6px;
 				color = Color_Text;
-				image = "Engine/Editor/Assets/ExitFolder.png"
+				image = $"ExitFolder.png"
 			}
 			child UIText
 			{
@@ -37,14 +37,14 @@ element ItemBrowserHeading
 			{
 				size = 12px;
 				color = Color_Text;
-				image = "Engine/Editor/Assets/DownArrow.png";
+				image = $"DownArrow.png";
 			}
 		}
 
 		child EditorTextField searchBox
 		{
 			HintText = "Search";
-			Image = "Engine/Editor/Assets/Search.png";
+			Image = $"Search.png";
 			Size = 200px;
 			padding = 5px;
 		}

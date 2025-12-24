@@ -2,7 +2,7 @@ element EditorTextField
 {
 	var Size = 250px;
 	var HintText = "Search";
-	var Image = "Engine/Editor/Assets/Search.png";
+	var Image = $"Search.png";
 
 	verticalAlign = centered;
 

@@ -9,7 +9,7 @@ element ObjectListHeader
 	child EditorTextField search
 	{
 		HintText = "Search objects";
-		Image = "Engine/Editor/Assets/Search.png";
+		Image = $"Search.png";
 		Size = 100px;
 		padding = 5px;
 	}
@@ -29,7 +29,7 @@ element ObjectEntryElement
 	var Color = 0.1;
 	var TextColor = 1;
 	var LeftPadding = 5px;
-	var ArrowImage = "Engine/Editor/Assets/DownArrow.png";
+	var ArrowImage = $"DownArrow.png";
 
 	width = 1pn;
 	orientation = vertical;

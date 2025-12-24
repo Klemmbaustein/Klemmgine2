@@ -34,7 +34,7 @@ class MyObject : SceneObject
 
 		lastY = this.position.y
 	}
-		
+
 	override fn update()
 	{
 		Rotation3 moveRotation = new(0, this.rotation.y, 0)
@@ -131,9 +131,5 @@ class MyObject : SceneObject
 		movement.deceleration = 40
 		movement.canMoveUpSlopes = false
 		camera.position.y = 0.8
-	}
-
-	override fn destroy()
-	{
 	}
 }

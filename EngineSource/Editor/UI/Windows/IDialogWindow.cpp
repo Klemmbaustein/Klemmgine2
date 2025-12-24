@@ -92,9 +92,13 @@ void engine::editor::IDialogWindow::PressButton(const Option& o)
 		else
 		{
 			o.OnClicked();
+			if (o.Close)
+			{
+				Close();
+			}
 		}
 	}
-	if (o.Close && o.OnMainThread)
+	else if (o.Close)
 	{
 		Close();
 	}
