@@ -1,6 +1,7 @@
 #include "TranslateGizmo.h"
 #include <Editor/UI/Panels/Viewport.h>
 #include <Engine/Physics/Physics.h>
+#include <Editor/UI/EditorUI.h>
 #include <kui/Window.h>
 #include <Editor/UI/Effects/Outline.h>
 
@@ -9,7 +10,7 @@ using namespace kui;
 engine::editor::TranslateGizmo::TranslateGizmo()
 {
 	GizmoMesh = new MeshComponent();
-	GizmoMesh->Load("Engine/Editor/Assets/Models/Arrows.kmdl"_asset);
+	GizmoMesh->Load(AssetRef::FromPath(EditorUI::Asset("Models/Arrows.kmdl")), false);
 	GizmoMesh->Rotation.Y = -90;
 	GizmoMesh->DrawStencil = true;
 	GizmoMesh->CastShadow = false;
@@ -19,7 +20,7 @@ engine::editor::TranslateGizmo::TranslateGizmo()
 	Collider = new CollisionComponent();
 	Collider->Manager = &this->Physics;
 	Collider->Rotation.Y = -90;
-	Collider->Load("Engine/Editor/Assets/Models/Arrows.kmdl"_asset);
+	Collider->Load(AssetRef::FromPath(EditorUI::Asset("Models/Arrows.kmdl")));
 }
 
 engine::editor::TranslateGizmo::~TranslateGizmo()

@@ -330,7 +330,18 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)
 				{
-					i->Events.push_back(ev);
+					if (ev.type == SDL_EVENT_TEXT_INPUT)
+					{
+						std::lock_guard g{ i->InputMutex };
+						if (!i->Parent->Input.IsKeyDown(Key::LCTRL))
+						{
+							i->TextInput += ev.text.text;
+						}
+					}
+					else
+					{
+						i->Events.push_back(ev);
+					}
 				}
 			}
 		}
@@ -375,6 +386,7 @@ kui::Vec2ui kui::systemWM::GetScreenSize()
 
 std::string kui::systemWM::GetTextInput(SysWindow* Target)
 {
+	std::lock_guard g{ Target->InputMutex };
 	std::string Out = Target->TextInput;
 	Target->TextInput.clear();
 	return Out;
@@ -527,6 +539,7 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 {
 	using namespace engine::subsystem;
 	using namespace engine;
+	std::lock_guard g{ InputMutex };
 
 	if (k == SDLK_TAB && IsDown)
 	{
@@ -560,12 +573,6 @@ void kui::systemWM::SysWindow::UpdateEvents()
 		{
 		case SDL_EVENT_WINDOW_RESIZED:
 			Parent->OnResized();
-			break;
-		case SDL_EVENT_TEXT_INPUT:
-			if (!this->Parent->Input.IsKeyDown(Key::LCTRL))
-			{
-				TextInput += ev.text.text;
-			}
 			break;
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 			Parent->Close();

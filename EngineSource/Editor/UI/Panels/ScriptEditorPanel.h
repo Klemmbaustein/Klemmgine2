@@ -15,7 +15,7 @@ namespace engine::editor
 		bool NeedsRefresh = false;
 	};
 
-	class ScriptEditorPanel : public EditorPanel
+	class ScriptEditorPanel : public EditorPanel, public ScriptEditorContext
 	{
 	public:
 		ScriptEditorPanel();
@@ -30,9 +30,10 @@ namespace engine::editor
 
 		void OpenTab(size_t Tab);
 
-	private:
+		// Inherited via ScriptEditorContext
+		void NavigateTo(std::string File, ds::TokenPos at) override;
 
-		ScriptEditorContext ScriptContext;
+	private:
 
 		void UpdateTabSize(ScriptEditorTab* Tab);
 

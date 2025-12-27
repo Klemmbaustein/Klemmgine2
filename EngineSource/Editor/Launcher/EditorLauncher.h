@@ -31,6 +31,8 @@ namespace engine::editor::launcher
 		void InitWindow();
 		void InitLayout();
 
+		void ClearSelection();
+
 		kui::Font* WindowFont = nullptr;
 		LauncherElement* Element = nullptr;
 		kui::UIScrollBox* ProjectList = nullptr;

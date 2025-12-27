@@ -48,12 +48,12 @@ static std::map<engine::string, Vec3f> FileNameColors =
 };
 static std::map<string, string> FileNameIcons =
 {
-	{ "", "Engine/Editor/Assets/Document.png" },
-	{ "png", "Engine/Editor/Assets/Texture.png" },
-	{ "kmt", "Engine/Editor/Assets/Material.png" },
+	{ "", "Document.png" },
+	{ "png", "Texture.png" },
+	{ "kmt", "Material.png" },
 	{ "kts", "" },
-	{ "kmdl", "Engine/Editor/Assets/Model.png" },
-	{ "dir/", "Engine/Editor/Assets/Folder.png" },
+	{ "kmdl", "Model.png" },
+	{ "dir/", "Folder.png" },
 };
 
 void engine::editor::EditorUI::StartAssetDrag(DraggedItem With)
@@ -88,7 +88,9 @@ std::pair<engine::string, kui::Vec3f> engine::editor::EditorUI::GetExtIconAndCol
 	if (!FileNameIcons.contains(Extension))
 		Extension = "";
 
-	return { FileNameIcons[Extension], FileNameColors[Extension] };
+	auto& Icon = FileNameIcons[Extension];
+
+	return { Icon.empty() ? "" : EditorUI::Asset(Icon), FileNameColors[Extension] };
 }
 
 void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Type)
@@ -324,13 +326,14 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Markup.SetGlobal("Color_Highlight1", Theme.Highlight1);
 	Target->Markup.SetGlobal("Color_HighlightDark", Theme.HighlightDark);
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
+	Target->Markup.SetGlobal("Color_SelectedText", Theme.SelectedText);
 	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
 	Target->Markup.SetGetStringFunction(&EditorUI::Asset);
 
 	Target->Colors.ScrollBackgroundColor = Theme.Background;
 	Target->Colors.ScrollBackgroundBorderColor = Theme.Background;
 	Target->Colors.ScrollBarColor = Theme.DarkText;
-	Target->Colors.TextFieldSelection = Vec3f::Lerp(Theme.Highlight1, Theme.DarkBackground, 0.33f);
+	Target->Colors.TextFieldSelection = Theme.SelectedText;
 	Target->Colors.TextFieldTextDefaultColor = Theme.Text;
 
 	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1, Theme.CornerSize.Value > 0, Target);

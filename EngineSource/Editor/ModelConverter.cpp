@@ -21,7 +21,7 @@ struct ConvertContext
 
 static void ProcessMesh(const aiMesh* TargetMesh, ConvertContext Context, string OutDir)
 {
-	ModelData::Mesh& OutMesh = Context.Data->Meshes.emplace_back();
+	ModelData::Mesh& OutMesh = Context.Data->Meshes.emplace_back(true);
 
 	OutMesh.Vertices.reserve(TargetMesh->mNumVertices);
 	for (uint32 i = 0; i < TargetMesh->mNumVertices; i++)

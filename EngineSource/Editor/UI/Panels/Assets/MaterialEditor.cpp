@@ -62,11 +62,11 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	MaterialParamsBox->SetPadding(5_px);
 
 	Toolbar* MaterialToolbar = new Toolbar();
-	MaterialToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
+	MaterialToolbar->AddButton("Save", EditorUI::Asset("Save.png"),
 		[this] {
 		Save();
 	});
-	MaterialToolbar->AddButton("Reload shaders", "file:Engine/Editor/Assets/Reload.png",
+	MaterialToolbar->AddButton("Reload shaders", EditorUI::Asset("Reload.png"),
 		[this] {
 		Engine::GetSubsystem<VideoSubsystem>()->Shaders.ReloadAll();
 		LoadedMaterial->UpdateShader();

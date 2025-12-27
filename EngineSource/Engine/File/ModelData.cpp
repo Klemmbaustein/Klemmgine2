@@ -15,8 +15,10 @@ std::mutex ModelDataMutex;
 const engine::string FormatName = "kmdl";
 std::unordered_map<engine::string, engine::GraphicsModel> engine::GraphicsModel::Models;
 
-engine::ModelData::ModelData(string FilePath)
+engine::ModelData::ModelData(string FilePath, bool LoadMaterials)
 {
+	this->LoadMaterials = LoadMaterials;
+
 	std::vector<SerializedData> File;
 
 	IBinaryStream* BinaryFile = resource::GetBinaryFile(FilePath);
@@ -105,7 +107,7 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 
 		for (SerializedValue& Elem : Array)
 		{
-			Meshes.emplace_back().DeSerialize(&Elem);
+			Meshes.emplace_back(LoadMaterials).DeSerialize(&Elem);
 		}
 		return;
 	}
@@ -118,7 +120,7 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 
 	for (SerializedValue& Elem : MeshesArray)
 	{
-		Mesh& NewMesh = Meshes.emplace_back();
+		Mesh& NewMesh = Meshes.emplace_back(LoadMaterials);
 		NewMesh.DeSerialize(&Elem);
 		this->Bounds.Position += NewMesh.Bounds.Position;
 		this->Bounds.Extents = Vector3(
@@ -130,10 +132,6 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 
 	CastShadow = From->At("shadow").GetBool();
 	HasCollision = From->At("collision").GetBool();
-}
-
-engine::ModelData::Mesh::Mesh()
-{
 }
 
 engine::ModelData::Mesh::Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
@@ -182,7 +180,10 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 	for (auto& i : InVertices.GetArray())
 	{
 		if (!CheckedUV)
+		{
 			HasUV = i.Contains("uv");
+			CheckedUV = true;
+		}
 
 		if (HasUV)
 		{
@@ -216,7 +217,7 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 		Indices.push_back(i.GetInt());
 	}
 
-	if (From->Contains("mat"))
+	if (LoadMaterials && From->Contains("mat"))
 	{
 		this->Material = From->At("mat").GetString();
 	}
@@ -251,7 +252,7 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(const ModelData& Mes
 	return New;
 }
 
-engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool Lock)
+engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool LoadMaterials, bool Lock)
 {
 	if (Lock)
 		ModelDataMutex.lock();
@@ -270,7 +271,7 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool
 	GraphicsModel* NewModel = nullptr;
 	try
 	{
-		New = new ModelData(Asset.FilePath);
+		New = new ModelData(Asset.FilePath, LoadMaterials);
 	}
 	catch (SerializeReadException& e)
 	{
@@ -302,7 +303,7 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool
 	return NewModel;
 }
 
-engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
+engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset, bool LoadMaterials)
 {
 	std::lock_guard g{ ModelDataMutex };
 	auto Found = Models.find(Asset.FilePath);
@@ -310,13 +311,16 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset)
 	{
 		if (resource::FileExists(Asset.FilePath))
 		{
-			RegisterModel(Asset, false);
+			RegisterModel(Asset, LoadMaterials, false);
 			Found = Models.find(Asset.FilePath);
 			if (Found == Models.end())
 				return nullptr;
 		}
-		else
+		else if (!Asset.FilePath.empty())
+		{
+			Log::Warn(str::Format("Failed to load model: %s", Asset.FilePath));
 			return nullptr;
+		}
 	}
 	else
 	{
@@ -436,7 +440,7 @@ engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 		Cube = new GraphicsModel();
 		Cube->Data = new ModelData();
 
-		auto& m = Cube->Data->Meshes.emplace_back();
+		auto& m = Cube->Data->Meshes.emplace_back(false);
 
 		auto AddFace = [&](Vector3 Dir, Vector3 Up, Vector3 Right) {
 			AddPlane(Dir, Dir, Up, Right, m);
@@ -464,7 +468,7 @@ GraphicsModel* engine::GraphicsModel::UnitPlane()
 		Plane = new GraphicsModel();
 		Plane->Data = new ModelData();
 
-		auto& m = Plane->Data->Meshes.emplace_back();
+		auto& m = Plane->Data->Meshes.emplace_back(false);
 
 		AddPlane(Vector3(0, 1, 0), 0, Vector3(1, 0, 0), Vector3(0, 0, 1), m);
 		AddPlane(Vector3(0, -1, 0), 0, Vector3(-1, 0, 0), Vector3(0, 0, 1), m);

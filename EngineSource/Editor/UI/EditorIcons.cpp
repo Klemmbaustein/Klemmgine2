@@ -1,4 +1,5 @@
 #include "EditorIcons.h"
+#include <Editor/UI/EditorUI.h>
 
 using namespace engine;
 using namespace engine::editor;
@@ -14,7 +15,7 @@ string EditorIcons::GetObjectIcon(ObjectTypeID ObjType)
 
 	if (FoundIcon == Icons.end())
 	{
-		return DEFAULT_ICON;
+		return EditorUI::Asset(DEFAULT_ICON);
 	}
 
 	return FoundIcon->second;

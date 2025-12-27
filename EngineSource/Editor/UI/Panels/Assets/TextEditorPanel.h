@@ -1,7 +1,7 @@
 #pragma once
 #include "AssetEditor.h"
 #include <kui/UI/UITextEditor.h>
-#include <kui/UI/FileEditorProvider.h>
+#include <Editor/UI/EngineTextEditorProvider.h>
 
 namespace engine::editor
 {
@@ -9,16 +9,18 @@ namespace engine::editor
 	{
 	public:
 		TextEditorPanel(AssetRef Asset);
+		~TextEditorPanel() override;
 
 		virtual void OnResized() override;
 		virtual void Save() override;
 
+		void OnThemeChanged() override;
+
 	private:
 
 		kui::UITextEditor* Editor = nullptr;
-		kui::FileEditorProvider* Provider = nullptr;
+		EngineTextEditorProvider* Provider = nullptr;
 		string NameFormat;
 		bool Saved = true;
-		void UpdateName();
 	};
 }

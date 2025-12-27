@@ -3,7 +3,7 @@
 #include <ds/language.hpp>
 #include <Editor/Server/ServerConnection.h>
 #include <kui/Timer.h>
-#include <kui/UI/FileEditorProvider.h>
+#include "EngineTextEditorProvider.h"
 #include <kui/UI/UIScrollBox.h>
 #include <stack>
 #include "ScriptEditorContext.h"
@@ -17,15 +17,18 @@ namespace engine::editor
 		kui::Vec3f Color;
 	};
 
-	class ScriptEditorProvider : public kui::FileEditorProvider
+	struct SymbolDefinition
+	{
+		ds::Token Token;
+		string File;
+	};
+
+	class ScriptEditorProvider : public EngineTextEditorProvider
 	{
 	public:
 		ScriptEditorProvider(string ScriptFile, ScriptEditorContext* Context);
 		ScriptEditorProvider(const ScriptEditorProvider&) = delete;
 		~ScriptEditorProvider();
-
-		string ScriptFile;
-		ScriptEditorContext* Context = nullptr;
 
 		void GetHighlightsForRange(size_t Begin, size_t Length) override;
 		void RemoveLines(size_t Start, size_t Length) override;
@@ -42,6 +45,7 @@ namespace engine::editor
 
 		kui::UIBox* CreateHoverBox(kui::UIBox* Content, kui::EditorPosition At);
 		ServerConnection* Connection = nullptr;
+		ScriptEditorContext* Context = nullptr;
 
 		void UpdateAutoComplete();
 
@@ -54,10 +58,7 @@ namespace engine::editor
 		void RefreshAll();
 		void ScanFile();
 
-		void Undo();
-		void Redo();
-
-		void ShowDefinitionAt(kui::EditorPosition Position);
+		void ClearHovered();
 
 		std::string ProcessInput(std::string Text) override;
 
@@ -72,7 +73,7 @@ namespace engine::editor
 			void* Symbol = nullptr;
 			kui::EditorPosition At;
 			std::function<kui::UIBox* ()> GetHoverData;
-			std::function<ds::Token()> GetDefinition;
+			std::function<SymbolDefinition()> GetDefinition;
 		};
 
 		Event<> OnUpdated;
@@ -86,31 +87,12 @@ namespace engine::editor
 
 		void CloseAutoComplete();
 
+		std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At) override;
+		void OnRightClick() override;
+
 	private:
-
-		void InsertCompletion(string CompletionText);
-
-		struct ChangePart
-		{
-			uint64_t Line;
-			string Content;
-			bool IsRemove = false;
-			bool IsAdd = false;
-		};
-
-		struct Change
-		{
-			std::vector<ChangePart> Parts;
-		};
-
-		Change ApplyChange(const Change& Target);
-
-		Change NextChange;
-
-		std::stack<Change> Changes;
-		std::stack<Change> UnDoneChanges;
-
 		std::vector<size_t> Changed;
+		void InsertCompletion(string CompletionText);
 
 		kui::UIScrollBox* AutoCompleteBox = nullptr;
 

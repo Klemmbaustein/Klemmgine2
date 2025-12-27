@@ -1,5 +1,6 @@
 using engine
 using engine::input
+using system::math
 
 module game
 
@@ -66,13 +67,7 @@ class MyObject : SceneObject
 		rotation.y -= mouseMovement.x
 		camera.rotation.p -= mouseMovement.y
 
-		if camera.rotation.p < -90 {
-			camera.rotation.p = -90
-		}
-
-		if camera.rotation.p > 90 {
-			camera.rotation.p = 90
-		}
+		camera.rotation.p = clampF(camera.rotation.p, -90.0, 90.0)
 
 		if isKeyDown(Key::shift)
 		{

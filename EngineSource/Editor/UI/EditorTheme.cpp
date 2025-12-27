@@ -29,9 +29,10 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 			{"highlight1", this->Highlight1},
 			{"highlightDark", this->HighlightDark},
 			{"highlightText", this->HighlightText},
+			{"selectedText", this->SelectedText},
 		};
 
-		auto ColorData = ThemeData.At("colors");
+		auto& ColorData = ThemeData.At("colors");
 
 		this->IsLight = ThemeData.Contains("isLight") && ThemeData.At("isLight").GetBool();
 		this->CornerSize = ThemeData.Contains("cornerSize") ? UISize::Pixels(ThemeData.At("cornerSize").GetInt()) : 5_px;

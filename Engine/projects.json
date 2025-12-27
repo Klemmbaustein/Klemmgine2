@@ -1,6 +1,14 @@
 [
-  {
-    "name": "Testing",
-    "path": "./"
-  }
+	{
+		"name": "Testing",
+		"path": "./"
+	},
+	{
+		"name": "test",
+		"path": "F:/Klemmgine/Projects/test"
+	},
+	{
+		"name": "test2",
+		"path": "F:/Klemmgine/Projects/test2"
+	}
 ]

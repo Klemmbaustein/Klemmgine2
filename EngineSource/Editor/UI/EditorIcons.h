@@ -33,6 +33,6 @@ namespace engine::editor
 
 	private:
 		std::map<ObjectTypeID, string> Icons;
-		static constexpr const char* DEFAULT_ICON = "Engine/Editor/Assets/Object.png";
+		static constexpr const char* DEFAULT_ICON = "Object.png";
 	};
 }

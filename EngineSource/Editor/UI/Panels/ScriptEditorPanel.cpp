@@ -7,6 +7,7 @@
 #include <Core/File/FileUtil.h>
 #include <Editor/Server/EditorServerSubsystem.h>
 #include <fstream>
+#include <filesystem>
 
 using namespace kui;
 using namespace engine::script;
@@ -62,7 +63,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	AddShortcut(Key::s, Key::LCTRL, [this] {
 		Save();
-		EditorUI::SetStatusMessage(str::Format("Saved script file '%s'", GetSelectedTab()->Provider->ScriptFile.c_str()),
+		EditorUI::SetStatusMessage(str::Format("Saved script file '%s'", GetSelectedTab()->Provider->EditedFile.c_str()),
 			EditorUI::StatusType::Info);
 	}, ShortcutOptions::AllowInText);
 
@@ -80,10 +81,9 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		if (Hovered.GetDefinition)
 		{
 			auto Def = Hovered.GetDefinition();
-			GetSelectedTab()->Provider->NavigateTo(EditorPosition(Def.position.startPos, Def.position.line),
-				EditorPosition(Def.position.endPos, Def.position.line));
+			NavigateTo(Def.File, Def.Token.position);
 			EditorUI::SetStatusMessage(str::Format("Navigated to definition of '%s'",
-				Def.string.c_str()), EditorUI::StatusType::Info);
+				Def.Token.string.c_str()), EditorUI::StatusType::Info);
 		}
 		else
 		{
@@ -94,7 +94,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	AddTab("Scripts/test.ds");
 	AddTab("Scripts/test2.ds");
 
-	ScriptContext.Initialize();
+	this->ScriptEditorContext::Initialize();
 
 	UpdateEditorTabs();
 }
@@ -145,7 +145,7 @@ void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetMinWidth(UISize::Parent(1))
 			->SetPadding(5_px, 0, 5_px, 5_px)
-			->AddChild((new UIText(12_px, EditorUI::Theme.Text, file::FileName(t.Provider->ScriptFile), EditorUI::EditorFont))
+			->AddChild((new UIText(12_px, EditorUI::Theme.Text, file::FileName(t.Provider->EditedFile), EditorUI::EditorFont))
 				->SetTextWidthOverride(152_px)
 				->SetPadding(4_px))
 			->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, nullptr))
@@ -161,7 +161,9 @@ void engine::editor::ScriptEditorPanel::Save()
 
 	if (Tab)
 	{
-		std::ofstream out = std::ofstream(Tab->Provider->ScriptFile);
+		std::filesystem::create_directories("Scripts/");
+
+		std::ofstream out = std::ofstream(Tab->Provider->EditedFile);
 
 		out << Tab->Provider->GetContent();
 		out.close();
@@ -172,6 +174,29 @@ void engine::editor::ScriptEditorPanel::Save()
 	else
 	{
 		EditorUI::SetStatusMessage("Could not save scripts because no file is active.", EditorUI::StatusType::Info);
+	}
+}
+
+void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, ds::TokenPos at)
+{
+	for (size_t i = 0; i < Tabs.size(); i++)
+	{
+		if (Tabs[i].Provider->EditedFile != File)
+		{
+			continue;
+		}
+
+		if (SelectedTab == i)
+		{
+			Tabs[i].Provider->NavigateTo(EditorPosition(at.startPos, at.line),
+				EditorPosition(at.endPos, at.line));
+		}
+		else
+		{
+			OpenTab(i);
+			Tabs[i].Provider->NavigateTo(EditorPosition(at.startPos, at.line),
+				EditorPosition(at.endPos, at.line));
+		}
 	}
 }
 
@@ -197,7 +222,7 @@ void engine::editor::ScriptEditorPanel::Update()
 		{
 			Tab->MiniMap->Update();
 			this->StatusText->SetText(str::Format("%s | Errors: %s",
-				Tab->Provider->ScriptFile.c_str(), "Idk refactoring"));
+				Tab->Provider->EditedFile.c_str(), "Idk refactoring"));
 
 			auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
 			if (sys && !Tab->Provider->Connection)
@@ -223,6 +248,8 @@ void engine::editor::ScriptEditorPanel::OnThemeChanged()
 	{
 		Tab->MiniMap->BackgroundColor = EditorUI::Theme.Background;
 		EditorUI::Theme.CodeTheme.ApplyToScript(Tab->Provider);
+		Tab->Provider->ParentEditor->SelectionColor = EditorUI::Theme.SelectedText;
+		Tab->Provider->ParentEditor->CursorColor = EditorUI::Theme.Text;
 		Tab->Provider->RefreshAll();
 		UpdateEditorTabs();
 	}
@@ -231,7 +258,7 @@ void engine::editor::ScriptEditorPanel::OnThemeChanged()
 void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 {
 	auto& NewTab = this->Tabs.emplace_back();
-	NewTab.Provider = new ScriptEditorProvider(File, &ScriptContext);
+	NewTab.Provider = new ScriptEditorProvider(File, this);
 
 	NewTab.Provider->Keywords = {
 		"int",
@@ -268,7 +295,7 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 	};
 
 	EditorUI::Theme.CodeTheme.ApplyToScript(NewTab.Provider);
-	if (this->ScriptContext.Loaded)
+	if (this->Loaded)
 	{
 		NewTab.Provider->ScanFile();
 	}
@@ -277,10 +304,17 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 	NewTab.MiniMap = new ScriptMiniMap(NewTab.Editor, NewTab.Provider);
 
 	NewTab.MiniMap->BackgroundColor = EditorUI::Theme.Background;
+
+	this->AdditionalBoxes.push_back(NewTab.Editor);
 }
 
 void engine::editor::ScriptEditorPanel::OpenTab(size_t Tab)
 {
+	if (auto Previous = GetSelectedTab())
+	{
+		Previous->Provider->CloseAutoComplete();
+	}
+
 	SelectedTab = Tab;
 	UpdateEditorTabs();
 	OnResized();

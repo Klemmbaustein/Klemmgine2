@@ -1,8 +1,6 @@
 #include "ScriptEditorProvider.h"
-#include <Engine/Engine.h>
 #include <kui/UI/UITextEditor.h>
 #include <ds/service/languageService.hpp>
-#include <Engine/Input.h>
 #include <Engine/MainThread.h>
 #include <Editor/UI/DropdownMenu.h>
 #include <algorithm>
@@ -15,9 +13,8 @@ using namespace ds;
 using namespace engine::editor;
 
 engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile, ScriptEditorContext* Context)
-	: FileEditorProvider(ScriptFile)
+	: EngineTextEditorProvider(ScriptFile)
 {
-	this->ScriptFile = ScriptFile;
 	this->Context = Context;
 	Context->AddFile(this->GetContent(), ScriptFile);
 
@@ -36,7 +33,7 @@ void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, s
 {
 	FileEditorProvider::GetHighlightsForRange(Begin, Length);
 
-	for (auto& i : Context->Errors[ScriptFile])
+	for (auto& i : Context->Errors[EditedFile])
 	{
 		ParentEditor->HighlightArea(HighlightedArea{
 			.Start = i.At,
@@ -50,18 +47,13 @@ void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, s
 
 void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Length)
 {
-	NextChange.Parts.push_back(ChangePart{
-		.Line = Start,
-		.Content = Lines[Start],
-		.IsRemove = true,
-		});
-	FileEditorProvider::RemoveLines(Start, Length);
+	EngineTextEditorProvider::RemoveLines(Start, Length);
 
 	if (Connection)
 	{
 		Connection->SendMessage("scriptEdit", SerializedValue({
 			SerializedData("editType", "delete"),
-			SerializedData("file", this->ScriptFile),
+			SerializedData("file", this->EditedFile),
 			SerializedData("line", int32(Start)),
 			SerializedData("length", int32(Length)),
 			}));
@@ -70,17 +62,13 @@ void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Leng
 
 void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::vector<TextSegment>& Content)
 {
-	NextChange.Parts.push_back(ChangePart{
-		.Line = Index,
-		.IsAdd = true,
-		});
-	FileEditorProvider::InsertLine(Index, Content);
+	EngineTextEditorProvider::InsertLine(Index, Content);
 
 	if (Connection)
 	{
 		Connection->SendMessage("scriptEdit", SerializedValue({
 			SerializedData("editType", "insert"),
-			SerializedData("file", this->ScriptFile),
+			SerializedData("file", this->EditedFile),
 			SerializedData("line", int32(Index)),
 			SerializedData("newContent", TextSegment::CombineToString(Content)),
 			}));
@@ -97,16 +85,26 @@ std::string engine::editor::ScriptEditorProvider::ProcessInput(std::string Text)
 	return Text;
 }
 
+void engine::editor::ScriptEditorProvider::RefreshAll()
+{
+	UpdateSyntaxHighlight();
+	ParentEditor->FullRefresh();
+}
+
+void engine::editor::ScriptEditorProvider::Commit()
+{
+	EngineTextEditorProvider::Commit();
+	UpdateFileContent();
+	for (size_t Index : Changed)
+	{
+		UpdateLineColorization(Index);
+	}
+	Changed.clear();
+}
+
 void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vector<TextSegment>& NewLine)
 {
-	NextChange.Parts.push_back(ChangePart{
-		.Line = Index,
-		.Content = this->Lines[Index],
-		});
-	UnDoneChanges = {};
-
-	FileEditorProvider::SetLine(Index, NewLine);
-
+	EngineTextEditorProvider::SetLine(Index, NewLine);
 	Changed.push_back(Index);
 	if (Index == ParentEditor->SelectionEnd.Line)
 	{
@@ -137,12 +135,11 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 		}
 	}
 
-
 	if (Connection)
 	{
 		Connection->SendMessage("scriptEdit", SerializedValue({
 			SerializedData("editType", "modify"),
-			SerializedData("file", this->ScriptFile),
+			SerializedData("file", this->EditedFile),
 			SerializedData("line", int32(Index)),
 			SerializedData("newContent", TextSegment::CombineToString(NewLine)),
 			}));
@@ -167,100 +164,6 @@ void engine::editor::ScriptEditorProvider::InsertCompletion(string CompletionTex
 	Commit();
 }
 
-void engine::editor::ScriptEditorProvider::Commit()
-{
-	UpdateFileContent();
-	if (NextChange.Parts.size())
-	{
-		this->Changes.push(NextChange);
-	}
-	for (size_t Index : Changed)
-	{
-		UpdateLineColorization(Index);
-	}
-	Changed.clear();
-
-	NextChange = Change();
-}
-
-void engine::editor::ScriptEditorProvider::RefreshAll()
-{
-	UpdateSyntaxHighlight();
-	ParentEditor->FullRefresh();
-}
-
-void engine::editor::ScriptEditorProvider::Undo()
-{
-	if (Changes.empty())
-	{
-		return;
-	}
-
-	auto& c = Changes.top();
-
-	UnDoneChanges.push(ApplyChange(c));
-	Changes.pop();
-	Commit();
-}
-
-void engine::editor::ScriptEditorProvider::Redo()
-{
-	if (UnDoneChanges.empty())
-	{
-		return;
-	}
-
-	auto& c = UnDoneChanges.top();
-
-	Changes.push(ApplyChange(c));
-	UnDoneChanges.pop();
-	Commit();
-}
-
-ScriptEditorProvider::Change engine::editor::ScriptEditorProvider::ApplyChange(const Change& Target)
-{
-	Change DoneChanges;
-
-	for (auto p = Target.Parts.rbegin(); p < Target.Parts.rend(); p++)
-	{
-		if (p->IsAdd)
-		{
-			DoneChanges.Parts.push_back(ChangePart{
-				.Line = p->Line,
-				.Content = this->Lines[p->Line],
-				.IsRemove = true,
-				});
-			ParentEditor->RemoveLine(p->Line);
-		}
-		else if (p->IsRemove)
-		{
-			DoneChanges.Parts.push_back(ChangePart{
-				.Line = p->Line,
-				.IsAdd = true,
-				});
-			std::vector<TextSegment> s = { TextSegment(p->Content, 1) };
-			ParentEditor->AddLine(p->Line, s);
-		}
-		else
-		{
-			DoneChanges.Parts.push_back(ChangePart{
-				.Line = p->Line,
-				.Content = this->Lines[p->Line],
-				});
-			std::vector<TextSegment> s = { TextSegment(p->Content, 1) };
-			FileEditorProvider::SetLine(p->Line, s);
-			Changed.push_back(p->Line);
-			this->Lines[p->Line] = p->Content;
-		}
-	}
-
-	NextChange = {};
-
-	Log::Info(str::Format("Applied change with %i part(s)", Target.Parts.size()));
-
-	return DoneChanges;
-}
-
 void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector<TextSegment>& To)
 {
 	FileEditorProvider::GetLine(LineIndex, To);
@@ -271,8 +174,41 @@ void engine::editor::ScriptEditorProvider::OnLoaded()
 {
 }
 
+void engine::editor::ScriptEditorProvider::OnRightClick()
+{
+	delete this->HoveredBox;
+	this->HoveredBox = nullptr;
+}
+
+std::vector<DropdownMenu::Option> engine::editor::ScriptEditorProvider::GetRightClickOptions(kui::EditorPosition At)
+{
+	auto Pos = Window::GetActiveWindow()->Input.MousePosition;
+
+	auto Options = EngineTextEditorProvider::GetRightClickOptions(At);
+	HoverSymbolData NewHoveredSymbol = GetHoveredSymbol(Pos);
+
+	if (NewHoveredSymbol.GetDefinition)
+	{
+		Options.insert(Options.begin(), DropdownMenu::Option{
+			.Name = "Go to definition",
+			.Shortcut = "F12",
+			.Icon = EditorUI::Asset("Open.png"),
+			.OnClicked = [this, NewHoveredSymbol]
+			{
+				auto def = NewHoveredSymbol.GetDefinition();
+				Context->NavigateTo(def.File, def.Token.position);
+			},
+			.Separator = true,
+			});
+	}
+
+	return Options;
+}
+
 void engine::editor::ScriptEditorProvider::Update()
 {
+	EngineTextEditorProvider::Update();
+
 	auto Win = Window::GetActiveWindow();
 
 	auto Pos = Win->Input.MousePosition;
@@ -305,8 +241,7 @@ void engine::editor::ScriptEditorProvider::Update()
 			HoverTime.Reset();
 			this->HoveredData = NewHovered;
 			Time = 0;
-			delete this->HoveredBox;
-			this->HoveredBox = nullptr;
+			ClearHovered();
 		}
 
 		if (NewHovered && Time > 0.2f)
@@ -323,8 +258,7 @@ void engine::editor::ScriptEditorProvider::Update()
 		}
 		else if (!NewHovered && !IsAutoCompleteActive)
 		{
-			delete this->HoveredBox;
-			this->HoveredBox = nullptr;
+			ClearHovered();
 		}
 	}
 
@@ -333,64 +267,13 @@ void engine::editor::ScriptEditorProvider::Update()
 		HoverTime.Reset();
 	}
 
-	if (input::IsRMBClicked)
-	{
-		std::vector<DropdownMenu::Option> Options;
-
-		if (NewHoveredSymbol.GetDefinition)
-		{
-			Options.push_back(DropdownMenu::Option{
-				.Name = "Go to definition",
-				.Shortcut = "F12",
-				.Icon = EditorUI::Asset("Open.png"),
-				.OnClicked = [this, NewHoveredSymbol]
-				{
-					auto def = NewHoveredSymbol.GetDefinition();
-					NavigateTo(EditorPosition(def.position.startPos, def.position.line),
-						EditorPosition(def.position.endPos, def.position.line));
-				},
-				.Separator = true,
-				});
-		}
-
-		Options.push_back(DropdownMenu::Option{
-			.Name = "Cut",
-			.Shortcut = "Ctrl+X",
-			.OnClicked = [this] {
-				Window::GetActiveWindow()->Input.SetClipboard(ParentEditor->GetSelectedText());
-				ParentEditor->DeleteSelection();
-		} });
-
-		Options.push_back(DropdownMenu::Option{
-			.Name = "Copy",
-			.Shortcut = "Ctrl+C",
-			.OnClicked = [this] {
-				Window::GetActiveWindow()->Input.SetClipboard(ParentEditor->GetSelectedText());
-		} });
-
-		Options.push_back(DropdownMenu::Option{
-			.Name = "Paste",
-			.Shortcut = "Ctrl+V",
-			.OnClicked = [this] {
-				ParentEditor->DeleteSelection();
-				ParentEditor->Insert(Window::GetActiveWindow()->Input.GetClipboard(),
-					ParentEditor->GetCursorPosition(), true);
-			}
-			});
-
-		new DropdownMenu(Options, Pos);
-
-		if (ParentEditor->GetSelectedText().empty())
-		{
-			ParentEditor->SetCursorPosition(ParentEditor->ScreenToEditor(Pos));
-		}
-		delete this->HoveredBox;
-		this->HoveredBox = nullptr;
-	}
-
 	LastCursorPosition = Win->Input.MousePosition;
 }
-
+void engine::editor::ScriptEditorProvider::ClearHovered()
+{
+	delete this->HoveredBox;
+	this->HoveredBox = nullptr;
+}
 void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Position)
 {
 	NavigateTo(Position, Position);
@@ -403,10 +286,6 @@ void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition StartP
 		EditorPosition(EndPosition));
 	ParentEditor->ScrollTo(ParentEditor->SelectionStart);
 	ParentEditor->Edit();
-}
-
-void engine::editor::ScriptEditorProvider::ShowDefinitionAt(kui::EditorPosition Position)
-{
 }
 
 UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content, EditorPosition At)
@@ -463,7 +342,7 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly, st
 {
 	CompletePosition = ParentEditor->SelectionStart;
 
-	Completions = Context->ScriptService->completeAt(&Context->ScriptService->files[ScriptFile],
+	Completions = Context->ScriptService->completeAt(&Context->ScriptService->files[EditedFile],
 		CompletePosition.Column, CompletePosition.Line,
 		MembersOnly ? CompletionType::classMembers : CompletionType::all);
 
@@ -546,6 +425,7 @@ void engine::editor::ScriptEditorProvider::CloseAutoComplete()
 	CompletionButtons.clear();
 	delete HoveredBox;
 	HoveredBox = nullptr;
+	AutoCompleteBox = nullptr;
 	IsAutoCompleteActive = false;
 }
 
@@ -591,7 +471,7 @@ ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHo
 	{
 		auto HoverPosition = ParentEditor->ScreenToEditor(ScreenPosition, false);
 
-		for (auto& i : Context->Errors[ScriptFile])
+		for (auto& i : Context->Errors[EditedFile])
 		{
 			if (HoverPosition.Line == i.At.Line
 				&& (HoverPosition.Column >= i.At.Column && HoverPosition.Column <= i.Length + i.At.Column))
@@ -628,7 +508,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetH
 
 ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetSymbolAt(kui::EditorPosition Position)
 {
-	for (auto& i : Context->ScriptService->files[ScriptFile].functions)
+	for (auto& i : Context->ScriptService->files[EditedFile].functions)
 	{
 		if (Position.Line == i.at.position.line
 			&& (Position.Column >= i.at.position.startPos && Position.Column <= i.at.position.endPos))
@@ -658,7 +538,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 				}
 
 				HoverString.push_back(TextSegment(Fn->definition ?
-					"\nDefined in " + Fn->definition->file->name
+					"\nDefined in " + Fn->definition->file
 					+ " at line " + std::to_string(Fn->definition->at.position.line + 1)
 					: "\nDefined in native code.", this->TextColor));
 
@@ -667,12 +547,12 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 					->SetPadding(5_px);
 			};
 
-			std::function<Token()> GetDefinition;
+			std::function<SymbolDefinition()> GetDefinition;
 
 			if (i.definition)
 			{
 				GetDefinition = [i] {
-					return i.definition->at;
+					return SymbolDefinition{ i.definition->at, i.definition->file };
 				};
 			}
 
@@ -685,7 +565,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 		}
 	}
 
-	for (auto& i : Context->ScriptService->files[ScriptFile].variables)
+	for (auto& i : Context->ScriptService->files[EditedFile].variables)
 	{
 		if (Position.Line == i.at.position.line
 			&& (Position.Column >= i.at.position.startPos && Position.Column <= i.at.position.endPos))
@@ -717,12 +597,12 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 					->SetPadding(5_px);
 			};
 
-			std::function<Token()> GetDefinition;
+			std::function<SymbolDefinition()> GetDefinition;
 
 			if (i.definition && i.definition->at.position.line != 0 || i.definition->at.position.endPos != 0)
 			{
 				GetDefinition = [i] {
-					return i.definition->at;
+					return SymbolDefinition{ i.definition->at, i.definition->file };
 				};
 			}
 
@@ -741,6 +621,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 {
 	auto found = Highlights.find(Line);
+	std::vector<EditorColorizeSegment> Segments;
 
 	if (found == Highlights.end())
 	{
@@ -752,7 +633,6 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 		return a.Start < b.Start;
 	});
 
-	std::vector<EditorColorizeSegment> Segments;
 	size_t LastStart = 0;
 
 	for (ScriptSyntaxHighlight& i : found->second)
@@ -770,12 +650,12 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 		LastStart = i.Start + i.Length;
 	}
 
-	ParentEditor->ColorizeLine(Line, Segments);
+	ParentEditor->ColorizeLineLocking(Line, Segments);
 }
 
 void engine::editor::ScriptEditorProvider::UpdateFileContent()
 {
-	Context->UpdateFile(this->GetContent(), this->ScriptFile);
+	Context->UpdateFile(this->GetContent(), this->EditedFile);
 	ScanFile();
 }
 
@@ -803,7 +683,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 	Highlights.clear();
 	std::lock_guard g{ Context->ScriptServiceMutex };
 
-	auto& f = Context->ScriptService->files[ScriptFile];
+	auto& f = Context->ScriptService->files[EditedFile];
 	for (auto& i : f.functions)
 	{
 		if (i.kind == ScannedFunction::Kind::constructor)

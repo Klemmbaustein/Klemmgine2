@@ -171,6 +171,31 @@ void engine::editor::EditorPanel::AddShortcut(kui::Key NewKey,
 	Shortcuts.push_back(NewKey);
 }
 
+bool engine::editor::EditorPanel::IsHovered()
+{
+	auto HoveredBox = PanelElement->GetParentWindow()->UI.HoveredBox;
+
+	if (!HoveredBox)
+	{
+		return false;
+	}
+
+	if (HoveredBox->IsChildOf(PanelElement))
+	{
+		return true;
+	}
+
+	for (auto& i : this->AdditionalBoxes)
+	{
+		if (i == HoveredBox || HoveredBox->IsChildOf(i))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void engine::editor::EditorPanel::UpdatePanel()
 {
 	if (ShouldUpdate)
@@ -183,9 +208,9 @@ void engine::editor::EditorPanel::UpdatePanel()
 		if (Visible)
 		{
 			bool IsFocused = EditorUI::FocusedPanel == this;
-			auto HoveredBox = PanelElement->GetParentWindow()->UI.HoveredBox;
-			if (!IsFocused && HoveredBox && PanelElement->GetParentWindow()->Input.IsLMBClicked
-				&& HoveredBox->IsChildOf(PanelElement))
+
+			if (!IsFocused && PanelElement->GetParentWindow()->Input.IsLMBClicked
+				&& IsHovered())
 			{
 				SetFocused();
 			}

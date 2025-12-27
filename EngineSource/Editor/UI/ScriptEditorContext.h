@@ -24,7 +24,7 @@ namespace engine::editor
 
 		ScriptEditorContext();
 		ScriptEditorContext(const ScriptEditorContext&) = delete;
-		~ScriptEditorContext();
+		virtual ~ScriptEditorContext();
 
 		void AddFile(const std::string& Content, const std::string& Name);
 		void UpdateFile(const std::string& Content, const std::string& Name);
@@ -37,6 +37,8 @@ namespace engine::editor
 		std::mutex ScriptServiceMutex;
 
 		Event<> OnReady;
+
+		virtual void NavigateTo(std::string File, ds::TokenPos at) = 0;
 
 	private:
 		bool SendUpdateEvent = false;

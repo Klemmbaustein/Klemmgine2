@@ -168,9 +168,13 @@ namespace engine::editor
 		bool Visible = true;
 		size_t SelectedTab = 0;
 
+		std::vector<kui::UIBox*> AdditionalBoxes;
+
 		static EditorPanel* DraggedPanel;
 		static bool DraggingHorizontal;
 		static float DragStartPosition;
+
+		bool IsHovered();
 
 		/**
 		 * @brief

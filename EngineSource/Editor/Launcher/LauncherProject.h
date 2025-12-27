@@ -9,5 +9,6 @@ namespace engine::editor::launcher
 		string Path;
 
 		static std::vector<LauncherProject> GetProjects();
+		static void SaveProjects(std::vector<LauncherProject> Projects);
 	};
 }

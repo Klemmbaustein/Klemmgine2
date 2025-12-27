@@ -18,7 +18,7 @@ namespace engine
 		virtual void Draw(graphics::Camera* From) override;
 		virtual void SimpleDraw(graphics::ShaderObject* With) override;
 
-		void Load(AssetRef From);
+		void Load(AssetRef From, bool LoadMaterials = true);
 		void Load(GraphicsModel* From);
 
 		void OnAttached() override;

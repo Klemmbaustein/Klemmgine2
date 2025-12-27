@@ -18,6 +18,8 @@
 #include <ds/parser/types/arrayType.hpp>
 #include <Core/Log.h>
 
+#include "Bindings/MathBindings.h"
+
 using namespace ds;
 using namespace engine::input;
 using namespace engine;
@@ -324,54 +326,6 @@ static void AssetRef_emptyAsset(InterpretContext* context)
 	context->pushValue(Asset);
 }
 
-#pragma region Vector3
-
-static void Vector3_Forward(InterpretContext* context)
-{
-	context->pushValue(Vector3::Forward(context->popValue<Rotation3>().EulerVector()));
-}
-
-static void Vector3_Right(InterpretContext* context)
-{
-	context->pushValue(Vector3::Right(context->popValue<Rotation3>().EulerVector()));
-}
-
-static void Vector3_add(InterpretContext* context)
-{
-	context->pushValue(context->popValue<Vector3>() + context->popValue<Vector3>());
-}
-
-static void Vector3_multiply(InterpretContext* context)
-{
-	context->pushValue(context->popValue<Vector3>() * context->popValue<Vector3>());
-}
-
-static void Vector3_subtract(InterpretContext* context)
-{
-	Vector3 b = context->popValue<Vector3>();
-	Vector3 a = context->popValue<Vector3>();
-	context->pushValue(a - b);
-}
-
-static void Vector3_divide(InterpretContext* context)
-{
-	Vector3 b = context->popValue<Vector3>();
-	Vector3 a = context->popValue<Vector3>();
-	context->pushValue(a / b);
-}
-
-static void Vector3_UnaryMinus(InterpretContext* context)
-{
-	context->pushValue(-context->popValue<Vector3>());
-}
-
-static void Vector3_length(InterpretContext* context)
-{
-	context->pushValue(context->popValue<Vector3>().Length());
-}
-
-#pragma endregion
-
 engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
@@ -380,84 +334,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	auto StrType = StringType::getInstance();
 	auto FloatInst = FloatType::getInstance();
 
-	auto VecType = DS_CREATE_STRUCT(Vector3);
-
-	DS_STRUCT_MEMBER_NAME(VecType, Vector3, X, x, FloatInst);
-	DS_STRUCT_MEMBER_NAME(VecType, Vector3, Y, y, FloatInst);
-	DS_STRUCT_MEMBER_NAME(VecType, Vector3, Z, z, FloatInst);
-
-	VecType->operators.push_back({
-		Operator::add,
-		EngineModule.addFunction(NativeFunction({FunctionArgument(VecType, "a"), FunctionArgument(VecType, "b")},
-			VecType, "Vector3.add", &Vector3_add))
-		});
-
-	VecType->operators.push_back({
-		Operator::multiply,
-		EngineModule.addFunction(NativeFunction({FunctionArgument(VecType, "a"), FunctionArgument(VecType, "b")},
-			VecType, "Vector3.multiply", &Vector3_multiply))
-		});
-
-	VecType->operators.push_back({
-		Operator::subtract,
-		EngineModule.addFunction(NativeFunction({FunctionArgument(VecType, "a"), FunctionArgument(VecType, "b")},
-			VecType, "Vector3.subtract", &Vector3_subtract))
-		});
-
-	VecType->operators.push_back({
-		Operator::divide,
-		EngineModule.addFunction(NativeFunction({FunctionArgument(VecType, "a"), FunctionArgument(VecType, "b")},
-			VecType, "Vector3.divide", &Vector3_divide))
-		});
-
-	VecType->operators.push_back({
-		Operator::unaryMinus,
-		EngineModule.addFunction(NativeFunction({FunctionArgument(VecType, "a")},
-			VecType, "Vector3.unaryMinus", &Vector3_UnaryMinus))
-		});
-
-	EngineModule.addStructMethod(VecType, NativeFunction({},
-		FloatInst, "length", &Vector3_length));
-
-	auto Vec3Function = EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "z") },
-			VecType, "vec3", [](InterpretContext* context) {}));
-
-	VecType->addConstructor(Vec3Function);
-	VecType->addConstructor(EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "xyz") },
-			VecType, "Vector3.new.xyz", [](InterpretContext* context) {
-		float xyz = context->popValue<Float>();
-
-		context->pushValue(Vector3(xyz));
-	})));
-
-	auto Vec2Type = DS_CREATE_STRUCT(Vector2);
-
-	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, X, x, FloatInst);
-	DS_STRUCT_MEMBER_NAME(Vec2Type, Vector2, Y, y, FloatInst);
-
-	auto Vec2Function = EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y") },
-			Vec2Type, "vec2", [](InterpretContext* context) {}));
-
-	Vec2Type->addConstructor(Vec2Function);
-
-	auto RotType = DS_CREATE_STRUCT(Rotation3);
-
-	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, P, p, FloatInst);
-	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, Y, y, FloatInst);
-	DS_STRUCT_MEMBER_NAME(RotType, Rotation3, R, r, FloatInst);
-
-	auto Rot3Function = EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "p"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "r") },
-			RotType, "rot3", [](InterpretContext* context) {}));
-
-	RotType->addConstructor(Rot3Function);
-
-	EngineModule.types.push_back(RotType);
-	EngineModule.types.push_back(VecType);
-	EngineModule.types.push_back(Vec2Type);
+	MathBindings Math = AddMathModule(EngineModule);
 
 	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
 
@@ -484,19 +361,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	ComponentType->members.push_back(ClassMember{
 		.name = "position",
 		.offset = offsetof(ObjectComponent, Position),
-		.type = VecType
+		.type = Math.Vec3
 		});
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "rotation",
 		.offset = offsetof(ObjectComponent, Rotation),
-		.type = RotType
+		.type = Math.Rot
 		});
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "scale",
 		.offset = offsetof(ObjectComponent, Scale),
-		.type = VecType
+		.type = Math.Vec3
 		});
 
 	ComponentType->makePointerClass();
@@ -513,19 +390,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	ObjectType->members.push_back(ClassMember{
 		.name = "position",
 		.offset = offsetof(SceneObject, Position),
-		.type = VecType
+		.type = Math.Vec3
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "rotation",
 		.offset = offsetof(SceneObject, Rotation),
-		.type = RotType
+		.type = Math.Rot
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "scale",
 		.offset = offsetof(SceneObject, Scale),
-		.type = VecType
+		.type = Math.Vec3
 		});
 	ObjectType->makePointerClass();
 
@@ -574,7 +451,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			nullptr, "MoveComponent.new", &MoveComponent_new));
 
 	EngineModule.addClassMethod(MoveComponentType,
-		NativeFunction({ FunctionArgument(VecType, "direction") },
+		NativeFunction({ FunctionArgument(Math.Vec3, "direction") },
 			nullptr, "addInput", &MoveComponent_addInput));
 
 	EngineModule.addClassMethod(MoveComponentType,
@@ -587,10 +464,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(MoveComponentType,
 		NativeFunction({ },
-			VecType, "getVelocity", &MoveComponent_getVelocity));
+			Math.Vec3, "getVelocity", &MoveComponent_getVelocity));
 
 	EngineModule.addClassMethod(MoveComponentType,
-		NativeFunction({ FunctionArgument(VecType, "newVelocity") },
+		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") },
 			nullptr, "setVelocity", &MoveComponent_setVelocity));
 
 	MoveComponentType->members.push_back(ClassMember{
@@ -642,16 +519,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			nullptr, "setFOV", &CameraComponent_setFOV));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(VecType, "message") },
+		NativeFunction({ FunctionArgument(Math.Vec3, "message") },
 			nullptr, "writeVec", &WriteVec));
 
-	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(RotType, "rotation") },
-			VecType, "forward", &Vector3_Forward));
-
-	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(RotType, "rotation") },
-			VecType, "right", &Vector3_Right));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "extension") },
@@ -713,7 +583,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		BoolType::getInstance(), "isRMBClicked", &Input_IsRMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({ },
-		Vec2Type, "getMouseMovement", &Input_GetMouseMovement));
+		Math.Vec2, "getMouseMovement", &Input_GetMouseMovement));
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);

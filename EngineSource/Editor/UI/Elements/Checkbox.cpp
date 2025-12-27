@@ -8,7 +8,7 @@ UICheckbox::UICheckbox(bool Value, std::function<void()> OnClicked)
 	: UIButton(true, 0, 1, OnClicked)
 {
 	this->Value = Value;
-	SetUseTexture(Value, "Engine/Editor/Assets/Checkbox.png");
+	SetUseTexture(Value, EditorUI::Asset("Checkbox.png"));
 	SetMinSize(16_px);
 	SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
 }
@@ -16,6 +16,6 @@ UICheckbox::UICheckbox(bool Value, std::function<void()> OnClicked)
 void UICheckbox::OnButtonClicked()
 {
 	this->Value = not this->Value;
-	SetUseTexture(this->Value, "Engine/Editor/Assets/Checkbox.png");
+	SetUseTexture(this->Value, EditorUI::Asset("Checkbox.png"));
 	UIButton::OnButtonClicked();
 }

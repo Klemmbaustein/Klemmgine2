@@ -32,6 +32,9 @@ namespace kui::systemWM
 		void HandleKey(SDL_Keycode k, bool IsDown);
 
 		void UpdateEvents();
+
+		std::mutex InputMutex;
+
 		// @endcond
 	};
 }

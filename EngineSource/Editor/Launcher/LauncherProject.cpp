@@ -21,3 +21,19 @@ std::vector<LauncherProject> engine::editor::launcher::LauncherProject::GetProje
 
 	return OutProjects;
 }
+
+void engine::editor::launcher::LauncherProject::SaveProjects(std::vector<LauncherProject> Projects)
+{
+	SerializedValue val = std::vector<SerializedValue>();
+
+	string FilePath = GetEditorPath() + "/projects.json";
+
+	for (auto& i : Projects)
+	{
+		val.GetArray().push_back(SerializedValue({
+			SerializedData("name", i.Name),
+			SerializedData("path", i.Path)
+			}));
+	}
+	JsonSerializer::ToFile(val, GetEditorPath() + "/projects.json", JsonSerializer::WriteOptions(true));
+}

@@ -27,9 +27,9 @@ void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 	}
 }
 
-void engine::MeshComponent::Load(AssetRef From)
+void engine::MeshComponent::Load(AssetRef From, bool LoadMaterials)
 {
-	Load(GraphicsModel::GetModel(From));
+	Load(GraphicsModel::GetModel(From, LoadMaterials));
 }
 
 void engine::MeshComponent::Load(GraphicsModel* From)

@@ -15,5 +15,6 @@
 		"highlightDark": vec3 = <1, 1, 1>;
 		"highlight2": vec3 = <0.1, 0.1, 0.1>;
 		"highlightText": vec3 = <0, 0, 0.2>;
+		"selectedText": vec3 = <0.5, 0.7, 1>;
 	};
 }

@@ -17,7 +17,10 @@ namespace engine
 	{
 		struct Mesh : ISerializable
 		{
-			Mesh();
+			Mesh(bool LoadMaterials)
+			{
+				this->LoadMaterials = LoadMaterials;
+			}
 			Mesh(const std::vector<graphics::Vertex>& Vertices, const std::vector<uint32>& Indices);
 
 			std::vector<graphics::Vertex> Vertices;
@@ -27,9 +30,10 @@ namespace engine
 			virtual SerializedValue Serialize() override;
 			virtual void DeSerialize(SerializedValue* From) override;
 
+			bool LoadMaterials = true;
 			string Material;
 		};
-		ModelData(string FilePath);
+		ModelData(string FilePath, bool LoadMaterials);
 		ModelData();
 		~ModelData();
 
@@ -45,6 +49,7 @@ namespace engine
 		std::vector<Mesh> Meshes;
 		bool HasCollision = true;
 		bool CastShadow = true;
+		bool LoadMaterials = true;
 	};
 
 	struct GraphicsModel
@@ -55,8 +60,8 @@ namespace engine
 		std::map<void*, std::function<void()>> OnDereferenced;
 
 		static GraphicsModel* RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
-		static GraphicsModel* RegisterModel(AssetRef Asset, bool Lock = true);
-		static GraphicsModel* GetModel(AssetRef Asset);
+		static GraphicsModel* RegisterModel(AssetRef Asset, bool LoadMaterials = true, bool Lock = true);
+		static GraphicsModel* GetModel(AssetRef Asset, bool LoadMaterials = true);
 		static void ReferenceModel(GraphicsModel* Target);
 		static void UnloadModel(GraphicsModel* Target);
 		static void UnloadModel(AssetRef Asset);

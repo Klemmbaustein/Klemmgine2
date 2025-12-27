@@ -5,11 +5,8 @@
 #include <Editor/UI/Elements/AssetSelector.h>
 #include <kui/UI/UISpinner.h>
 #include <kui/Window.h>
-#include <Toolbar.kui.hpp>
-#include <Editor/UI/Windows/MessageWindow.h>
 #include <Core/Log.h>
 #include <Editor/UI/Elements/Toolbar.h>
-#include <Engine/Input.h>
 using namespace kui;
 
 engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
@@ -39,7 +36,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	auto ModelToolbar = new Toolbar(false);
 
-	ModelToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
+	ModelToolbar->AddButton("Save", EditorUI::Asset("Save.png"),
 		[this] {
 		Save();
 	});

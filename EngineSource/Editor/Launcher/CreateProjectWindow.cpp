@@ -1,9 +1,11 @@
 #include "CreateProjectWindow.h"
+#include "LauncherProject.h"
 #include <Engine/MainThread.h>
+#include <filesystem>
 
 using namespace kui;
 
-engine::editor::CreateProjectWindow::CreateProjectWindow(std::function<void(std::string Path)> OnAccept)
+engine::editor::launcher::CreateProjectWindow::CreateProjectWindow(std::function<void(std::string Path)> OnAccept)
 	: IDialogWindow("Create new project", {
 	Option{
 			.Name = "Create",
@@ -24,22 +26,36 @@ engine::editor::CreateProjectWindow::CreateProjectWindow(std::function<void(std:
 	Open();
 }
 
-void engine::editor::CreateProjectWindow::Begin()
+void engine::editor::launcher::CreateProjectWindow::Begin()
 {
 	IDialogWindow::Begin();
 	Element = new NewProjectWindowElement();
 	Background->AddChild(Element);
 }
 
-void engine::editor::CreateProjectWindow::Update()
+void engine::editor::launcher::CreateProjectWindow::Update()
 {
 }
 
-void engine::editor::CreateProjectWindow::Destroy()
+void engine::editor::launcher::CreateProjectWindow::Destroy()
 {
 }
 
-void engine::editor::CreateProjectWindow::Accept()
+void engine::editor::launcher::CreateProjectWindow::Accept()
 {
-	thread::ExecuteOnMainThread(std::bind(OnAccept, Element->nameField->field->GetText()));
+	string Name = Element->nameField->field->GetText();
+	string Path = "F:/Klemmgine/Projects/" + Name;
+
+	std::filesystem::create_directories(Path + "/Assets");
+
+	auto Projects = LauncherProject::GetProjects();
+
+	Projects.push_back(LauncherProject{
+		.Name = Name,
+		.Path = Path,
+		});
+
+	LauncherProject::SaveProjects(Projects);
+
+	thread::ExecuteOnMainThread(std::bind(OnAccept, Path));
 }

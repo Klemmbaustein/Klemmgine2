@@ -1,6 +1,7 @@
 #include "CodeEditorTheme.h"
 #include <Core/File/TextSerializer.h>
 #include <Core/Log.h>
+#include <Editor/Editor.h>
 
 using namespace engine;
 
@@ -31,7 +32,8 @@ void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
 
 	try
 	{
-		SerializedValue ThemeData = TextSerializer::FromFile("Engine/Editor/Themes/Code/" + ThemeName + ".k2et");
+		SerializedValue ThemeData = TextSerializer::FromFile(GetEditorPath()
+			+ "/Editor/Themes/Code/" + ThemeName + ".k2et");
 
 		std::map<string, kui::Vec3f&> Colors =
 		{

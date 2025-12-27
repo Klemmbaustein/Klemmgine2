@@ -43,12 +43,12 @@ engine::editor::Viewport::Viewport()
 
 	ViewportToolbar = new Toolbar();
 
-	ViewportToolbar->AddButton("Save", "file:Engine/Editor/Assets/Save.png",
+	ViewportToolbar->AddButton("Save", EditorUI::Asset("Save.png"),
 		[this]() {
 		SaveCurrentScene();
 	});
 
-	ViewportToolbar->AddDropdown("View", "file:Engine/Editor/Assets/Options.png",
+	ViewportToolbar->AddDropdown("View", EditorUI::Asset("Options.png"),
 		{
 			DropdownMenu::Option{.Name = "Default"},
 			DropdownMenu::Option{.Name = "Unlit"},
@@ -56,7 +56,7 @@ engine::editor::Viewport::Viewport()
 			DropdownMenu::Option{.Name = "Collision"}
 		});
 
-	ViewportToolbar->AddButton("Run", "file:Engine/Editor/Assets/Run.png",
+	ViewportToolbar->AddButton("Run", EditorUI::Asset("Run.png"),
 		std::bind(&Viewport::Run, this));
 
 	ViewportStatusText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
@@ -195,7 +195,7 @@ engine::editor::Viewport::Viewport()
 	Grid = new MeshComponent();
 
 	Grid->Load(GraphicsModel::UnitPlane());
-	Grid->Materials[0] = new graphics::Material(AssetRef::FromPath("Engine/Editor/Assets/Models/Grid.kmt"));
+	Grid->Materials[0] = new graphics::Material(AssetRef::FromPath(EditorUI::Asset("Models/Grid.kmt")));
 	Grid->IsTransparent = true;
 	Grid->CastShadow = false;
 	Grid->Scale = 1000;

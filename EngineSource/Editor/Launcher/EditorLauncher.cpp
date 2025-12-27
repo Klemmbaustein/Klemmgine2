@@ -5,7 +5,6 @@
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Engine/Engine.h>
-#include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
 #include <kui/Window.h>
 #include <filesystem>
@@ -37,9 +36,6 @@ void engine::editor::launcher::EditorLauncher::InitWindow()
 
 	auto& Theme = EditorUI::Theme;
 	EditorUI::UpdateTheme(LauncherWindow, false);
-
-	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text,
-		Theme.Highlight1, Theme.CornerSize.Value > 0, LauncherWindow);
 }
 
 void engine::editor::launcher::EditorLauncher::InitLayout()
@@ -59,16 +55,16 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	});
 	LauncherToolbar->AddButton("Add existing project", EditorUI::Asset("ExitFolder.png"), [this]() {
 	});
-	LauncherToolbar->AddButton("Add server", "", [this]() {
-		new ServerConnectDialog([this](ConnectResult r) {
-			if (r.Connect)
-			{
-				this->Connection = r;
-				this->Result = LauncherResult::ConnectToServer;
-				LauncherWindow->Close();
-			}
-		});
-	});
+	//LauncherToolbar->AddButton("Add server", "", [this]() {
+	//	new ServerConnectDialog([this](ConnectResult r) {
+	//		if (r.Connect)
+	//		{
+	//			this->Connection = r;
+	//			this->Result = LauncherResult::ConnectToServer;
+	//			LauncherWindow->Close();
+	//		}
+	//	});
+	//});
 
 	LauncherToolbar->AddButton("Settings", EditorUI::Asset("Settings.png"), [this]() {
 		new SettingsWindow();
@@ -87,6 +83,7 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 
 	Element->openButton->btn->OnClicked = [this]() {
 		LauncherWindow->Close();
+		ProjectPathToLaunch = SelectedProject->Path;
 		this->Result = LauncherResult::LaunchProject;
 	};
 
@@ -96,6 +93,15 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	});
 
 	OnWindowResized();
+}
+
+void engine::editor::launcher::EditorLauncher::ClearSelection()
+{
+	for (auto& i : Projects)
+	{
+		i->SetBorderSize(0);
+		i->SetColor(EditorUI::Theme.LightBackground);
+	}
 }
 
 void engine::editor::launcher::EditorLauncher::Run()
@@ -117,6 +123,8 @@ void engine::editor::launcher::EditorLauncher::Run()
 	{
 	case engine::editor::launcher::LauncherResult::LaunchProject:
 	{
+		std::filesystem::current_path(ProjectPathToLaunch);
+
 		auto Engine = Engine::Init();
 		Engine->Run();
 		break;
@@ -137,11 +145,14 @@ void engine::editor::launcher::EditorLauncher::Run()
 
 void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 {
+	Projects.clear();
+	SelectedProject = {};
+
 	ProjectList->DeleteChildren();
 
-	auto Projects = LauncherProject::GetProjects();
+	auto FoundProjects = LauncherProject::GetProjects();
 
-	for (auto& i : Projects)
+	for (auto& i : FoundProjects)
 	{
 		auto Elem = new LauncherProjectElement();
 
@@ -150,8 +161,11 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 		Elem->SetColor(EditorUI::Theme.LightBackground);
 		Elem->SetBorderSize(0);
 		Elem->btn->OnClicked = [this, Elem, i]() {
+			ClearSelection();
+
 			if (SelectedProject && SelectedProject->Path == i.Path)
 			{
+				ProjectPathToLaunch = i.Path;
 				LauncherWindow->Close();
 				Result = LauncherResult::LaunchProject;
 			}
@@ -163,6 +177,7 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 			Element->UpdateElement();
 			Element->openButton->RedrawElement();
 		};
+		Projects.push_back(Elem);
 
 		ProjectList->AddChild(Elem);
 	}

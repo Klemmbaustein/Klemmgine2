@@ -1,18 +1,14 @@
 #include "TextEditorPanel.h"
-#include <Core/Log.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Elements/Toolbar.h>
 #include <ds/language.hpp>
-#include <ds/modules/standardLibrary.hpp>
-#include <Engine/Engine.h>
-#include <Engine/Script/ScriptSubsystem.h>
 
 using namespace kui;
 
 engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 	: AssetEditor("Raw view: %s", Asset)
 {
-	Provider = new FileEditorProvider(Asset.FilePath);
+	Provider = new EngineTextEditorProvider(Asset.FilePath);
 
 	Provider->Keywords = {
 	"int",
@@ -36,7 +32,6 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 	this->Background->AddChild(EditorToolbar);
 
 	Editor = new UITextEditor(Provider, EditorUI::MonospaceFont);
-	//Editor->EditorScrollBox->ScrollBarWidth = 20;
 	EditorUI::Theme.CodeTheme.ApplyToFile(Provider);
 
 	this->Background->AddChild(Editor
@@ -46,6 +41,29 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 
 	this->Background->AddChild((new UIText(12_px, EditorUI::Theme.Text, Asset.FilePath, EditorUI::EditorFont))
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
+
+
+	AddShortcut(Key::z, Key::LCTRL, [this] {
+		Provider->Undo();
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::y, Key::LCTRL, [this] {
+		Provider->Redo();
+	}, ShortcutOptions::AllowInText);
+
+
+	EditorToolbar->AddButton("Undo", EditorUI::Asset("Undo.png"), [this]() {
+		Provider->Undo();
+	});
+
+	EditorToolbar->AddButton("Redo", EditorUI::Asset("Redo.png"), [this]() {
+		Provider->Redo();
+	});
+}
+
+engine::editor::TextEditorPanel::~TextEditorPanel()
+{
+	delete Provider;
 }
 
 void engine::editor::TextEditorPanel::OnResized()
@@ -59,4 +77,12 @@ void engine::editor::TextEditorPanel::Save()
 	std::ofstream out = std::ofstream(this->EditedAsset.FilePath);
 
 	out << this->Provider->GetContent();
+}
+
+void engine::editor::TextEditorPanel::OnThemeChanged()
+{
+	EditorUI::Theme.CodeTheme.ApplyToFile(Provider);
+	Editor->SelectionColor = EditorUI::Theme.SelectedText;
+	Editor->CursorColor = EditorUI::Theme.Text;
+	Editor->FullRefresh();
 }

@@ -2,7 +2,7 @@
 #include <Editor/UI/Windows/IDialogWindow.h>
 #include <NewProjectWindow.kui.hpp>
 
-namespace engine::editor
+namespace engine::editor::launcher
 {
 	class CreateProjectWindow : public IDialogWindow
 	{
