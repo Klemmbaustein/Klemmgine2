@@ -10,6 +10,8 @@ namespace engine::editor
 
 		ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Provider);
 
+		~ScriptMiniMap();
+
 		void Update();
 		void GenerateTexture(uint32 ScrollBoxHeight);
 		bool ReGenerate = false;

@@ -6,6 +6,7 @@
 #include <Editor/UI/Elements/PropertyMenu.h>
 #include <kui/UI/UIButton.h>
 #include <kui/UI/UIText.h>
+#include <Editor/Settings/EditorSettings.h>
 #include <Editor/UI/EditorUI.h>
 
 using namespace kui;
@@ -57,6 +58,13 @@ void engine::editor::SettingsWindow::Destroy()
 	{
 		delete i;
 	}
+
+	Settings::GetInstance()->Save();
+}
+
+void engine::editor::SettingsWindow::OnThemeChanged()
+{
+	ShowPage(ActivePage);
 }
 
 void engine::editor::SettingsWindow::GenerateTabs()

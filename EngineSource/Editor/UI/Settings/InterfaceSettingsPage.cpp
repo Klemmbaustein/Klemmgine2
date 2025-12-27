@@ -1,4 +1,5 @@
 #include "InterfaceSettingsPage.h"
+#include <Editor/Settings/EditorSettings.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Editor/UI/EditorUI.h>
 #include <Engine/MainThread.h>
@@ -8,6 +9,8 @@ using namespace kui;
 engine::editor::InterfaceSettingsPage::InterfaceSettingsPage()
 {
 	this->Name = "Interface";
+
+	UIScale = Settings::GetInstance()->Interface.GetSetting("uiScale", 1.0f).GetFloat() * 100.0f;
 }
 
 engine::editor::InterfaceSettingsPage::~InterfaceSettingsPage()
@@ -17,7 +20,9 @@ engine::editor::InterfaceSettingsPage::~InterfaceSettingsPage()
 void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, SettingsWindow* TargetWindow)
 {
 	Target->CreateNewHeading("Interface");
-	Target->AddIntEntry("UI Scale %", UIScale, nullptr);
+	Target->AddIntEntry("UI Scale %", UIScale, [this]() {
+		Settings::GetInstance()->Interface.SetSetting("uiScale", float(UIScale / 100.0f));
+	});
 
 	std::vector Options = {
 	UIDropdown::Option{
@@ -46,12 +51,6 @@ void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, Setti
 	});
 
 	Target->AddDropdownEntry("Theme", Options, [Target, TargetWindow](UIDropdown::Option o) {
-		EditorUI::Instance->Theme.LoadFromFile(o.Name);
-		EditorUI::Instance->UpdateTheme(Target->GetParentWindow(), true);
-		TargetWindow->ShowPage(TargetWindow->ActivePage);
-
-		thread::ExecuteOnMainThread([] {
-			EditorUI::Instance->UpdateTheme(Window::GetActiveWindow(), true);
-		});
+		Settings::GetInstance()->Interface.SetSetting("theme", o.Name);
 	}, std::distance(Options.begin(), Index));
 }

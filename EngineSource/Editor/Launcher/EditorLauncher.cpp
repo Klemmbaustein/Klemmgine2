@@ -4,6 +4,7 @@
 #include <Editor/Server/EditorServerSubsystem.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
+#include <Editor/Settings/EditorSettings.h>
 #include <Engine/Engine.h>
 #include <Engine/MainThread.h>
 #include <kui/Window.h>
@@ -55,6 +56,7 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	});
 	LauncherToolbar->AddButton("Add existing project", EditorUI::Asset("ExitFolder.png"), [this]() {
 	});
+
 	//LauncherToolbar->AddButton("Add server", "", [this]() {
 	//	new ServerConnectDialog([this](ConnectResult r) {
 	//		if (r.Connect)

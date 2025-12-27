@@ -14,6 +14,8 @@ namespace engine::editor
 		void Update() override;
 		void Destroy() override;
 
+		void OnThemeChanged() override;
+
 		void ShowPage(SettingsPage* Page);
 
 		void GenerateTabs();

@@ -14,6 +14,7 @@
 #include "Windows/BuildWindow.h"
 #include "Windows/SettingsWindow.h"
 #include <Editor/Editor.h>
+#include <Editor/Settings/EditorSettings.h>
 #include <Engine/Engine.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
@@ -120,7 +121,7 @@ void engine::editor::EditorUI::SetStatusMainThread(string NewMessage, StatusType
 
 void engine::editor::EditorUI::InitTheme()
 {
-	Theme.LoadFromFile("Dark");
+	Theme.LoadFromFile(Settings::GetInstance()->Interface.GetSetting("theme", "Dark").GetString());
 }
 
 engine::editor::EditorUI::EditorUI()

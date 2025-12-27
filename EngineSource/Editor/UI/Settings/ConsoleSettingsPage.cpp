@@ -1,10 +1,6 @@
 #include "ConsoleSettingsPage.h"
 #include <Core/Log.h>
-#include <Engine/MainThread.h>
-#include <iostream>
-#if WINDOWS
-#include <Windows.h>
-#endif
+#include <Editor/Settings/EditorSettings.h>
 
 engine::editor::ConsoleSettingsPage::ConsoleSettingsPage()
 {
@@ -20,6 +16,6 @@ void engine::editor::ConsoleSettingsPage::Generate(PropertyMenu* Target, Setting
 	VerboseLog = Log::IsVerbose;
 	Target->CreateNewHeading("Console");
 	Target->AddBooleanEntry("Verbose log", VerboseLog, [this]() {
-		Log::IsVerbose = VerboseLog;
+		Settings::GetInstance()->Console.SetSetting("verboseLog", SerializedValue(VerboseLog));
 	});
 }

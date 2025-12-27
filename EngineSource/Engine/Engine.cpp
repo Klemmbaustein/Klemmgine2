@@ -113,7 +113,7 @@ subsystem::Subsystem* Engine::LoadSubsystem(Subsystem* NewSubsystem)
 
 void engine::Engine::InitSystems()
 {
-	Log::IsVerbose = launchArgs::GetArg("verbose").has_value();
+	Log::IsVerbose = launchArgs::GetArg("verbose").has_value() ? true : Log::IsVerbose;
 
 	error::InitForThread("Main");
 	error::OnErrorCallback = ErrorCallback;

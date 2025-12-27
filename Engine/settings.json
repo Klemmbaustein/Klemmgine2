@@ -1,0 +1,12 @@
+{
+	"interface": {
+		"theme": "Dark",
+		"uiScale": 1
+	},
+	"script": {
+		"miniMap": true
+	},
+	"console": {
+		"verboseLog": true
+	}
+}

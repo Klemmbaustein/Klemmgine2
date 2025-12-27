@@ -1,13 +1,14 @@
 #include "ScriptEditorPanel.h"
-#include <Editor/UI/Elements/Toolbar.h>
-#include <Editor/UI/CodeEditorTheme.h>
-#include <Engine/Engine.h>
-#include <Engine/Script/ScriptSubsystem.h>
-#include <Editor/UI/EditorUI.h>
 #include <Core/File/FileUtil.h>
 #include <Editor/Server/EditorServerSubsystem.h>
-#include <fstream>
+#include <Editor/Settings/EditorSettings.h>
+#include <Editor/UI/CodeEditorTheme.h>
+#include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Elements/Toolbar.h>
+#include <Engine/Engine.h>
+#include <Engine/Script/ScriptSubsystem.h>
 #include <filesystem>
+#include <fstream>
 
 using namespace kui;
 using namespace engine::script;
@@ -96,22 +97,45 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 	this->ScriptEditorContext::Initialize();
 
+	Settings::GetInstance()->Script.ListenToSetting(this, "miniMap", [this](SerializedValue val) {
+		if (val.GetBool())
+		{
+			for (auto& i : this->Tabs)
+			{
+				i.MiniMap = new ScriptMiniMap(i.Editor, i.Provider);
+				i.MiniMap->BackgroundColor = EditorUI::Theme.Background;
+			}
+		}
+		else
+		{
+			for (auto& i : this->Tabs)
+			{
+				delete i.MiniMap;
+				i.MiniMap = nullptr;
+			}
+		}
+	});
+
 	UpdateEditorTabs();
 }
 
 engine::editor::ScriptEditorPanel::~ScriptEditorPanel()
 {
+	Settings::GetInstance()->Script.RemoveListener(this);
+
 	for (auto& i : Tabs)
 	{
+		if (i.MiniMap)
+			delete i.MiniMap;
 		delete i.Editor;
 		delete i.Provider;
-		delete i.MiniMap;
 	}
 }
 
 void engine::editor::ScriptEditorPanel::UpdateTabSize(ScriptEditorTab* Tab)
 {
-	Tab->MiniMap->ReGenerate = true;
+	if (Tab->MiniMap)
+		Tab->MiniMap->ReGenerate = true;
 	Tab->Editor->UpdateElement();
 }
 
@@ -220,7 +244,10 @@ void engine::editor::ScriptEditorPanel::Update()
 
 		if (this->Visible)
 		{
-			Tab->MiniMap->Update();
+			if (Tab->MiniMap)
+			{
+				Tab->MiniMap->Update();
+			}
 			this->StatusText->SetText(str::Format("%s | Errors: %s",
 				Tab->Provider->EditedFile.c_str(), "Idk refactoring"));
 
@@ -246,7 +273,8 @@ void engine::editor::ScriptEditorPanel::OnThemeChanged()
 
 	if (Tab)
 	{
-		Tab->MiniMap->BackgroundColor = EditorUI::Theme.Background;
+		if (Tab->MiniMap)
+			Tab->MiniMap->BackgroundColor = EditorUI::Theme.Background;
 		EditorUI::Theme.CodeTheme.ApplyToScript(Tab->Provider);
 		Tab->Provider->ParentEditor->SelectionColor = EditorUI::Theme.SelectedText;
 		Tab->Provider->ParentEditor->CursorColor = EditorUI::Theme.Text;
@@ -301,9 +329,11 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 	}
 	NewTab.Editor = new UITextEditor(NewTab.Provider, EditorUI::MonospaceFont);
 
-	NewTab.MiniMap = new ScriptMiniMap(NewTab.Editor, NewTab.Provider);
-
-	NewTab.MiniMap->BackgroundColor = EditorUI::Theme.Background;
+	if (Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool())
+	{
+		NewTab.MiniMap = new ScriptMiniMap(NewTab.Editor, NewTab.Provider);
+		NewTab.MiniMap->BackgroundColor = EditorUI::Theme.Background;
+	}
 
 	this->AdditionalBoxes.push_back(NewTab.Editor);
 }

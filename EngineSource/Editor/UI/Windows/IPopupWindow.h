@@ -33,6 +33,7 @@ namespace engine::editor
 		 */
 		virtual void Destroy() = 0;
 
+		virtual void OnThemeChanged();
 
 		/**
 		 * @brief

@@ -74,7 +74,7 @@ void engine::JsonSerializer::ValueToString(const SerializedValue& Target, std::o
 		Stream << int32(Target.GetByte());
 		break;
 	case SerializedData::DataType::Boolean:
-		Stream << Target.GetBool() ? "true" : "false";
+		Stream << (Target.GetBool() ? "true" : "false");
 		break;
 	case SerializedData::DataType::Float:
 		Stream << str::FloatToString(Target.GetFloat());

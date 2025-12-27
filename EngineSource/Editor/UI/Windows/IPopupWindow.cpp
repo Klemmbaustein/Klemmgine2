@@ -1,5 +1,6 @@
 #include "IPopupWindow.h"
 #include <Editor/UI/EditorUI.h>
+#include <Editor/Settings/EditorSettings.h>
 #include <thread>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
@@ -7,6 +8,10 @@
 using namespace engine::editor;
 
 static IPopupWindow* OpenPopup = nullptr;
+
+void engine::editor::IPopupWindow::OnThemeChanged()
+{
+}
 
 void engine::editor::IPopupWindow::Open()
 {
@@ -58,6 +63,15 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	Popup->DPIMultiplier = EditorUI::Instance ? EditorUI::Instance->MainBackground->GetParentWindow()->DPIMultiplier : 1;
 	EditorUI::UpdateTheme(Popup, false);
 
+	bool ReloadTheme = false;
+
+	Settings::GetInstance()->Interface.ListenToSetting(this, "theme", [&ReloadTheme](SerializedValue val) {
+		ReloadTheme = true;
+	});
+
+	Settings::GetInstance()->Interface.ListenToSetting(this, "uiScale", [this](SerializedValue val) {
+		Popup->DPIMultiplier = val.GetFloat();
+	});
 	auto Video = Engine::GetSubsystem<VideoSubsystem>();
 
 	DefaultFont = new kui::Font(Video ? Video->DefaultFontName : "res:DefaultFont.ttf");
@@ -75,6 +89,14 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 		{
 			break;
 		}
+
+		if (ReloadTheme)
+		{
+			EditorUI::UpdateTheme(Popup, true);
+			OnThemeChanged();
+			ReloadTheme = false;
+		}
+
 		this->Update();
 	}
 	this->Destroy();
@@ -82,4 +104,6 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	delete DefaultFont;
 	delete Popup;
 	delete this;
+
+	Settings::GetInstance()->Interface.RemoveListener(this);
 }

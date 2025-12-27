@@ -31,6 +31,19 @@ ScriptMiniMap::ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Pr
 	ReGenerate = true;
 }
 
+engine::editor::ScriptMiniMap::~ScriptMiniMap()
+{
+	if (Image)
+	{
+		image::UnloadImage(Image);
+	}
+	Editor->EditorScrollBox->UseDefaultColors = true;
+	Editor->EditorScrollBox->ScrollBarWidth = 10;
+	Editor->EditorScrollBox->ScrollDownPadding = 0;
+	Editor->EditorScrollBox->GetScrollBarBackground()->SetUseImage(false);
+	Editor->EditorScrollBox->Update();
+}
+
 void ScriptMiniMap::Update()
 {
 	if (OldLength != Editor->GetLoadedLines())
