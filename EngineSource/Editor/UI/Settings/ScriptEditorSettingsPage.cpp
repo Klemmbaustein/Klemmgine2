@@ -24,22 +24,44 @@ void engine::editor::ScriptEditorSettingsPage::Generate(PropertyMenu* Target, Se
 		.Name = "Same as interface",
 	},
 	UIDropdown::Option{
-		.Name = "Dark",
+		.Name = "Klemmgine Dark",
 	},
 	UIDropdown::Option{
-		.Name = "Light",
+		.Name = "Klemmgine Light",
 	},
 	UIDropdown::Option{
 		.Name = "Solarized",
-	}
+	},
+	UIDropdown::Option{
+		.Name = "Catppuccin",
+	},
+	UIDropdown::Option{
+		.Name = "Visual Studio Dark",
+	},
 	};
+
+	auto& Script = Settings::GetInstance()->Script;
 
 	Target->AddBooleanEntry("Editor MiniMap", HasMiniMap, [this]() {
 		Settings::GetInstance()->Script.SetSetting("miniMap", SerializedValue(HasMiniMap));
 	});
 
-	size_t Index = 0;
+	auto Index = std::ranges::find_if(Options,
+		[](const UIDropdown::Option& o) {
+		return o.Name == EditorUI::Theme.CodeTheme.Name;
+	});
 
 	Target->AddDropdownEntry("Theme", Options, [Target, TargetWindow](UIDropdown::Option o) {
-	}, Index);
+		auto& Script = Settings::GetInstance()->Script;
+
+		if (o.Name == "Same as interface")
+		{
+			Script.SetSetting("useMainThemeColors", true);
+		}
+		else
+		{
+			Script.SetSetting("useMainThemeColors", false);
+			Script.SetSetting("editorTheme", o.Name);
+		}
+	}, Script.GetSetting("useMainThemeColors", true).GetBool() ? 0 : std::distance(Options.begin(), Index));
 }

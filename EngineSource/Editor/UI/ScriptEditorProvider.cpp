@@ -238,7 +238,6 @@ void engine::editor::ScriptEditorProvider::Update()
 	{
 		if (NewHovered != this->HoveredData && !IsAutoCompleteActive)
 		{
-			HoverTime.Reset();
 			this->HoveredData = NewHovered;
 			Time = 0;
 			ClearHovered();
@@ -269,11 +268,17 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	LastCursorPosition = Win->Input.MousePosition;
 }
+
 void engine::editor::ScriptEditorProvider::ClearHovered()
 {
-	delete this->HoveredBox;
-	this->HoveredBox = nullptr;
+	if (this->HoveredBox)
+	{
+		delete this->HoveredBox;
+		this->HoveredBox = nullptr;
+		HoverTime.Reset();
+	}
 }
+
 void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Position)
 {
 	NavigateTo(Position, Position);
@@ -290,10 +295,7 @@ void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition StartP
 
 UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content, EditorPosition At)
 {
-	if (this->HoveredBox)
-	{
-		delete this->HoveredBox;
-	}
+	ClearHovered();
 
 	this->HoveredBox = (new UIBlurBackground(true, 0, EditorUI::Theme.LightBackground))
 		->SetCorner(EditorUI::Theme.CornerSize)

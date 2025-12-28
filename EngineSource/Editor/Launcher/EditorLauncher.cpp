@@ -150,6 +150,8 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 	Projects.clear();
 	SelectedProject = {};
 
+	Element->openButton->IsCollapsed = true;
+
 	ProjectList->DeleteChildren();
 
 	auto FoundProjects = LauncherProject::GetProjects();

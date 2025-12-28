@@ -269,16 +269,14 @@ void engine::editor::ScriptEditorPanel::OnThemeChanged()
 		i->SetColor(EditorUI::Theme.BackgroundHighlight);
 	}
 
-	auto Tab = GetSelectedTab();
-
-	if (Tab)
+	for (auto& Tab : Tabs)
 	{
-		if (Tab->MiniMap)
-			Tab->MiniMap->BackgroundColor = EditorUI::Theme.Background;
-		EditorUI::Theme.CodeTheme.ApplyToScript(Tab->Provider);
-		Tab->Provider->ParentEditor->SelectionColor = EditorUI::Theme.SelectedText;
-		Tab->Provider->ParentEditor->CursorColor = EditorUI::Theme.Text;
-		Tab->Provider->RefreshAll();
+		if (Tab.MiniMap)
+			Tab.MiniMap->BackgroundColor = EditorUI::Theme.Background;
+		EditorUI::Theme.CodeTheme.ApplyToScript(Tab.Provider);
+		Tab.Provider->ParentEditor->SelectionColor = EditorUI::Theme.SelectedText;
+		Tab.Provider->ParentEditor->CursorColor = EditorUI::Theme.Text;
+		Tab.Provider->RefreshAll();
 		UpdateEditorTabs();
 	}
 }
@@ -342,7 +340,7 @@ void engine::editor::ScriptEditorPanel::OpenTab(size_t Tab)
 {
 	if (auto Previous = GetSelectedTab())
 	{
-		Previous->Provider->CloseAutoComplete();
+		Previous->Provider->ClearHovered();
 	}
 
 	SelectedTab = Tab;

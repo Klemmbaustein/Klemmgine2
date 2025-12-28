@@ -22,6 +22,7 @@ namespace engine::editor
 
 		SerializedValue GetSetting(string Name, SerializedValue Default);
 		void SetSetting(string Name, SerializedValue NewValue);
+		void UpdateSetting(string Name);
 
 		void ListenToSetting(void* Listener, string Name, SettingsListener OnChanged);
 		void RemoveListener(void* Listener);

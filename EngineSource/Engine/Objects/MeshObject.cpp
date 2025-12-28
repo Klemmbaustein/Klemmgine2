@@ -28,7 +28,8 @@ void engine::MeshObject::Begin()
 	Attach(Collider);
 
 	ModelName.OnChanged = [this]() {
-		LoadMesh(ModelName.Value);
+		if (ModelName.Value.IsValid())
+			LoadMesh(ModelName.Value);
 	};
 	ModelName.OnChanged();
 

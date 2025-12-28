@@ -3,6 +3,7 @@
 #include <Core/Log.h>
 #include <map>
 #include <Editor/Editor.h>
+#include <Editor/Settings/EditorSettings.h>
 
 using namespace kui;
 
@@ -38,7 +39,12 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 		this->CornerSize = ThemeData.Contains("cornerSize") ? UISize::Pixels(ThemeData.At("cornerSize").GetInt()) : 5_px;
 
 		this->CodeTheme = CodeEditorTheme();
-		if (ThemeData.Contains("editorTheme"))
+
+		if (!Settings::GetInstance()->Script.GetSetting("useMainThemeColors", true).GetBool())
+		{
+			this->CodeTheme.LoadFromFile(Settings::GetInstance()->Script.GetSetting("editorTheme", "").GetString());
+		}
+		else if (ThemeData.Contains("editorTheme"))
 		{
 			this->CodeTheme.LoadFromFile(ThemeData.At("editorTheme").GetString());
 		}
@@ -52,7 +58,7 @@ void engine::editor::EditorTheme::LoadFromFile(string ThemeName)
 			}
 		}
 	}
-	catch (SerializeReadException e)
+	catch (SerializeException e)
 	{
 		Log::Warn(e.what());
 	}

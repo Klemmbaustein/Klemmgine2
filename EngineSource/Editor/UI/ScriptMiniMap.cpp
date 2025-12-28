@@ -41,6 +41,7 @@ engine::editor::ScriptMiniMap::~ScriptMiniMap()
 	Editor->EditorScrollBox->ScrollBarWidth = 10;
 	Editor->EditorScrollBox->ScrollDownPadding = 0;
 	Editor->EditorScrollBox->GetScrollBarBackground()->SetUseImage(false);
+	Editor->EditorScrollBox->GetScrollBarSlider()->SetOpacity(1);
 	Editor->EditorScrollBox->Update();
 }
 

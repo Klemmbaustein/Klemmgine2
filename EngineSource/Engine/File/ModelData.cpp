@@ -318,7 +318,7 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset, bool Load
 		}
 		else if (!Asset.FilePath.empty())
 		{
-			Log::Warn(str::Format("Failed to load model: %s", Asset.FilePath));
+			Log::Warn(str::Format("Failed to load model: %s", Asset.FilePath.c_str()));
 			return nullptr;
 		}
 	}

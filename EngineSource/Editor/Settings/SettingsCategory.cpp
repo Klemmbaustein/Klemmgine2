@@ -63,6 +63,34 @@ void engine::editor::SettingsCategory::SetSetting(string Name, SerializedValue N
 	}
 }
 
+void engine::editor::SettingsCategory::UpdateSetting(string Name)
+{
+	if (!SettingsObject.Contains(Name))
+	{
+		return;
+	}
+
+	auto& Value = SettingsObject.At(Name);
+
+	for (auto& i : Listeners)
+	{
+		for (auto& evt : i.second)
+		{
+			if (evt.first == Name)
+			{
+				if (!thread::IsMainThread)
+				{
+					thread::ExecuteOnMainThread(std::bind(evt.second, Value));
+				}
+				else
+				{
+					evt.second(Value);
+				}
+			}
+		}
+	}
+}
+
 void engine::editor::SettingsCategory::ListenToSetting(void* Listener, string Name, SettingsListener OnChanged)
 {
 	this->Listeners[Listener].insert({ Name, OnChanged });
