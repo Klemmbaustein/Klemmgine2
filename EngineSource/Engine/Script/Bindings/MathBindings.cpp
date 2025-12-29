@@ -1,4 +1,5 @@
 #include "MathBindings.h"
+#include <ds/parser/types/stringType.hpp>
 #include <Core/Vector.h>
 #include <Core/Transform.h>
 
@@ -49,6 +50,45 @@ static void Vector3_length(InterpretContext* context)
 	context->pushValue(context->popValue<Vector3>().Length());
 }
 
+static void Vector3_dot(InterpretContext* context)
+{
+	Vector3 b = context->popValue<Vector3>();
+	Vector3 a = context->popValue<Vector3>();
+
+	context->pushValue(Vector3::Dot(a, b));
+}
+
+static void Vector3_cross(InterpretContext* context)
+{
+	Vector3 b = context->popValue<Vector3>();
+	Vector3 a = context->popValue<Vector3>();
+
+	context->pushValue(Vector3::Cross(a, b));
+}
+
+static void Vector3_normalized(InterpretContext* context)
+{
+	context->pushValue(context->popValue<Vector3>().Normalize());
+}
+
+static void Vector3_projectToPlane(InterpretContext* context)
+{
+	Vector3 ThisVec = context->popValue<Vector3>();
+	Vector3 PlaneNormal = context->popValue<Vector3>();
+	Vector3 PlaneOrigin = context->popValue<Vector3>();
+
+	context->pushValue(ThisVec.ProjectToPlane(PlaneOrigin, PlaneNormal));
+}
+
+static void Vector3_toString(InterpretContext* context)
+{
+	Vector3 ThisVec = context->popValue<Vector3>();
+
+	auto str = ThisVec.ToString();
+
+	context->pushRuntimeString(RuntimeStr(str.data(), str.size()));
+}
+
 script::MathBindings engine::script::AddMathModule(ds::NativeModule& To)
 {
 	script::MathBindings Math;
@@ -93,6 +133,22 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To)
 
 	To.addStructMethod(Math.Vec3, NativeFunction({},
 		FloatInst, "length", &Vector3_length));
+
+	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "other") },
+		FloatInst, "dot", &Vector3_dot));
+
+	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "other") },
+		Math.Vec3, "cross", &Vector3_cross));
+
+	To.addStructMethod(Math.Vec3, NativeFunction({},
+		Math.Vec3, "normalized", &Vector3_normalized));
+
+	To.addStructMethod(Math.Vec3, NativeFunction({},
+		StringType::getInstance(), "toString", &Vector3_toString));
+
+	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "planeOrigin"),
+		FunctionArgument(Math.Vec3, "planeNormal") },
+		Math.Vec3, "projectToPlane", &Vector3_projectToPlane));
 
 	auto Vec3Function = To.addFunction(
 		NativeFunction({
@@ -141,9 +197,9 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To)
 
 	Math.Vec2->addConstructor(Vec2Function);
 
-	To.types.push_back(Math.Rot);
-	To.types.push_back(Math.Vec3);
-	To.types.push_back(Math.Vec2);
+	To.addType(Math.Rot);
+	To.addType(Math.Vec3);
+	To.addType(Math.Vec2);
 
 	return Math;
 }

@@ -381,10 +381,6 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 
 		std::lock_guard g{ LoadedModelsMutex };
 
-		Vector3 Position, Scale;
-		Rotation3 Rotation;
-		Body->BodyTransform.Decompose(Position, Rotation, Scale);
-
 		JPH::HeightFieldShapeSettings Settings = JPH::HeightFieldShapeSettings(MapPtr->Samples.data(),
 			ToJPHVec3(Position), ToJPHVec3(Scale), MapPtr->Size);
 		JPH::ShapeSettings::ShapeResult r;

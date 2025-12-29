@@ -88,7 +88,7 @@ float getShadowStrength()
 	// select cascade layer
 	float depthValue = abs(v_screenPosition.z);
 
-	int layer = -1;
+	int layer = u_shadowCascadeCount;
 	float difference = 10;
 	float differenceScale = 0;
 	for (int i = 0; i < u_shadowCascadeCount; ++i)
@@ -105,11 +105,6 @@ float getShadowStrength()
 	if (difference < differenceScale && mod(rand(v_screenPosition.xy), differenceScale) > difference)
 	{
 		layer++;
-	}
-
-	if (layer == -1)
-	{
-		layer = u_shadowCascadeCount;
 	}
 
 	vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(v_position, 1.0);
@@ -143,7 +138,9 @@ float getShadowStrength()
 		{
 			float pcfDepth = texture(u_shadowMaps, vec3(projCoords.xy
 				+ ivec2(x - PCF_HALF_SIZE, y - PCF_HALF_SIZE) * texelSize.xy, layer)).r;
+
 			bool isLight = currentDepth > pcfDepth + bias;
+
 			shadowValues[x][y] = isLight ? 1.0 : 0.0;
 			if (isLight)
 				allValuesLight = false;

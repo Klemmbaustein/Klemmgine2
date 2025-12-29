@@ -12,13 +12,14 @@
 #include <ds/modules/system.hpp>
 #include <ds/modules/system.async.hpp>
 #include <ds/native/nativeModule.hpp>
-#include <ds/native/nativeStructType.hpp>
 #include <ds/parser/types/stringType.hpp>
 #include <ds/parser/types/taskType.hpp>
 #include <ds/parser/types/arrayType.hpp>
 #include <Core/Log.h>
 
 #include "Bindings/MathBindings.h"
+
+#define ENGINE_OFFSETOF(T, m)  (::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
 
 using namespace ds;
 using namespace engine::input;
@@ -30,6 +31,7 @@ public:
 	ExportAttribute()
 	{
 		this->name = "Export";
+		this->attributeParameters = { "name" };
 	}
 };
 
@@ -527,7 +529,6 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({ FunctionArgument(StrType, "extension") },
 			AssetRefType, "emptyAsset", AssetRef_emptyAsset));
 
-	EngineModule.attributes.push_back(new ExportAttribute());
 
 	NativeModule EngineInputModule;
 	EngineInputModule.name = "engine::input";
@@ -585,10 +586,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineInputModule.addFunction(NativeFunction({ },
 		Math.Vec2, "getMouseMovement", &Input_GetMouseMovement));
 
+	EngineModuleData OutData;
+	OutData.ExportAttributeType = EngineModule.addAttribute(new ExportAttribute());
+
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);
 
-	EngineModuleData OutData;
 	OutData.Vector3Type = EngineModule.getType("Vector3")->id;
 	OutData.ScriptObjectType = EngineModule.getType("SceneObject")->id;
 	OutData.AssetRefType = EngineModule.getType("AssetRef")->id;

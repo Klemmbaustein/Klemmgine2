@@ -1,8 +1,12 @@
 #if WINDOWS
 #pragma once
+#include <Core/Platform/CodeAnalysis.h>
+
 #include <Core/Networking/Http.h>
+CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
 #include <Windows.h>
 #include <wininet.h>
+CODE_ANALYSIS_END_EXTERNAL_HEADER
 
 namespace engine::http::win32
 {

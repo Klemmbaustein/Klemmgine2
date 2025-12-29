@@ -28,7 +28,7 @@ namespace engine::editor
 		// Inherited via IDialogWindow
 		void Destroy() override;
 
-		void UpdateColor();
+		void UpdateColor(bool UpdateFields = true);
 
 		kui::UIBackground* PreviewColor = nullptr;
 

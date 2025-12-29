@@ -17,6 +17,7 @@ option(ENGINE_SERVER "Is a server" OFF)
 option(ENGINE_EDITOR "Compile the editor" OFF)
 option(ENGINE_CSHARP "Include the C# plugin" ON)
 option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
+option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF)
 
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
@@ -200,6 +201,13 @@ target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
 target_link_libraries(KlemmgineCore PUBLIC DSharp)
 target_link_libraries(KlemmUI PUBLIC KlemmgineLib)
+
+if(ENGINE_RUN_MSVC_CODE_ANALYSIS)
+	target_compile_definitions(KlemmgineCore PUBLIC	ENGINE_RUN_CODE_ANALYSIS)
+	target_compile_options(KlemmgineCore PRIVATE "/analyze" "/WX")
+	target_compile_options(KlemmgineEditor PRIVATE "/analyze" "/WX")
+	target_compile_options(KlemmgineLib PRIVATE "/analyze" "/WX")
+endif()
 
 target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
 

@@ -1,7 +1,9 @@
 #pragma once
 #include <Engine/Physics/Physics.h>
+#include <Core/Platform/CodeAnalysis.h>
 #include <unordered_map>
 #include <utility>
+CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -19,6 +21,7 @@
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
+CODE_ANALYSIS_END_EXTERNAL_HEADER
 
 class JoltJobSystemImpl;
 

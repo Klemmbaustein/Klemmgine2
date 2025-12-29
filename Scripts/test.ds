@@ -6,7 +6,7 @@ module game
 
 class MyObject : SceneObject
 {
-	[Export]
+	[Export name="cool name"]
 	AssetRef testModel = emptyAsset("kmdl")
 
 	MoveComponent movement = new()

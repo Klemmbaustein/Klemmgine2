@@ -62,6 +62,13 @@ void engine::script::ScriptObject::LoadScriptData()
 
 	for (auto& i : this->Class.members)
 	{
+		if (i.attributeType != Script->ScriptEngine.ExportAttributeType)
+		{
+			continue;
+		}
+
+		string Name = i.getParameterValue("name").value_or(i.name);
+
 		if (i.type == Script->ScriptEngine.AssetRefType)
 		{
 			auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
@@ -73,7 +80,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			ClassRef<AssetRef*> MemberValue = member;
 
-			auto p = new ObjProperty<AssetRef>(i.name, *MemberValue.getValue(), this);
+			auto p = new ObjProperty<AssetRef>(Name, *MemberValue.getValue(), this);
 
 			p->OnChanged = [this, i, p]
 			{
@@ -91,7 +98,7 @@ void engine::script::ScriptObject::LoadScriptData()
 		{
 			auto& member = *reinterpret_cast<Vector3*>(this->ScriptData->getBody() + i.offset);
 
-			auto p = new ObjProperty<Vector3>(i.name, member, this);
+			auto p = new ObjProperty<Vector3>(Name, member, this);
 
 			p->OnChanged = [this, i, p]
 			{
@@ -108,7 +115,7 @@ void engine::script::ScriptObject::LoadScriptData()
 				str = RuntimeStrRef("", 0);
 			}
 
-			auto p = new ObjProperty<string>(i.name, string(str.ptr(), str.length()), this);
+			auto p = new ObjProperty<string>(Name, string(str.ptr(), str.length()), this);
 
 			p->OnChanged = [this, i, p]
 			{

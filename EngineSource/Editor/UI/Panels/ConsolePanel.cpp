@@ -113,10 +113,10 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 
 		auto& DefaultColor = Colors->at(Log::LogColor::Default);
 
-		for (const Log::LogPrefix& i : LogMessages[i].Prefixes)
+		for (const Log::LogPrefix& pref : LogMessages[i].Prefixes)
 		{
 			Segments.push_back(TextSegment("[", DefaultColor));
-			Segments.push_back(TextSegment(i.Text, Colors->at(i.Color)));
+			Segments.push_back(TextSegment(pref.Text, Colors->at(pref.Color)));
 			Segments.push_back(TextSegment("]: ", DefaultColor));
 		}
 

@@ -37,7 +37,8 @@
 			"inherits": "x64-debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-				"USE_WINDOWS_SUBSYSTEM": "OFF"
+				"USE_WINDOWS_SUBSYSTEM": "OFF",
+				"ENGINE_RUN_MSVC_CODE_ANALYSIS": "ON"
 			}
 		},
 		{

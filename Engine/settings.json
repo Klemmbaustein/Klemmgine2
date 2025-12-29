@@ -6,7 +6,7 @@
 	"script": {
 		"miniMap": true,
 		"useMainThemeColors": true,
-		"editorTheme": "Catppuccin"
+		"editorTheme": "Klemmgine Dark"
 	},
 	"console": {
 		"verboseLog": true

@@ -1,7 +1,10 @@
 #ifdef KLEMMGINE_WEBSOCKETS
 #include "HttpWebSocket.h"
+#include <Core/Platform/CodeAnalysis.h>
+CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
 #include <ixwebsocket/IXWebSocket.h>
 #include <ixwebsocket/IXNetSystem.h>
+CODE_ANALYSIS_END_EXTERNAL_HEADER
 #include <Core/Log.h>
 
 engine::http::WebSocketConnection::WebSocketConnection(string Url)

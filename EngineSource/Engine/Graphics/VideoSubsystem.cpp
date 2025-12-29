@@ -155,7 +155,7 @@ kui::Vec2ui engine::VideoSubsystem::GetWindowSize()
 		if (WindowSize.X < 600 || WindowSize.Y < 400)
 		{
 			Print("Invalid window size, setting to default: " + WindowSize.ToString(), LogType::Warning);
-			Vec2ui WindowSize = Window::SIZE_DEFAULT;
+			WindowSize = Window::SIZE_DEFAULT;
 		}
 	}
 

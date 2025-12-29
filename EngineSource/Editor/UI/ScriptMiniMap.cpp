@@ -109,7 +109,7 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 
 		Editor->Get(EditorPosition(0, y), SIZE_MAX, l, true, true);
 
-		TextSegment* CurrentSegment = l.size() ? & *l.begin() : nullptr;
+		TextSegment* CurrentSegment = l.size() ? &*l.begin() : nullptr;
 
 		size_t CurrentCharIndex = 0;
 		size_t CurrentSegmentIndex = 0;

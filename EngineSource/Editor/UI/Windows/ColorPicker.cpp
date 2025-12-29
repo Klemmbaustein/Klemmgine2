@@ -175,8 +175,19 @@ void engine::editor::ColorPicker::Begin()
 		UIBox* b = new UIBox(true);
 		b->SetVerticalAlign(UIBox::Align::Centered);
 
-		auto f = new UITextField(0, EditorUI::Theme.DarkBackground, DefaultFont, [this] {
+		auto f = new UITextField(0, EditorUI::Theme.DarkBackground, DefaultFont, [this, i] {
+			try
+			{
+				this->RgbColorValue[i] = std::stof(this->PartFields[i]->GetText());
+				this->SelectedHsv = RgbToHsv(RgbColor(RgbColorValue.X * 255.0f,
+					RgbColorValue.Y * 255.0f, RgbColorValue.Z * 255.0f));
+				UpdateColor(false);
+				HueBackground->RedrawElement();
+			}
+			catch (std::exception& e)
+			{
 
+			}
 		});
 
 		f->SetText(str::FloatToString(RgbColorValue[i]));
@@ -277,15 +288,18 @@ void engine::editor::ColorPicker::Destroy()
 	delete HueShader;
 }
 
-void engine::editor::ColorPicker::UpdateColor()
+void engine::editor::ColorPicker::UpdateColor(bool UpdateFields)
 {
 	RgbColorValue = HsvToRgb(SelectedHsv).Vec();
 
 	PreviewColor->SetColor(Vec3f(RgbColorValue.X, RgbColorValue.Y, RgbColorValue.Z));
 
-	for (uint32 i = 0; i < 3; i++)
+	if (UpdateFields)
 	{
-		PartFields[i]->SetText(str::FloatToString(RgbColorValue[i], 3));
+		for (uint32 i = 0; i < 3; i++)
+		{
+			PartFields[i]->SetText(str::FloatToString(RgbColorValue[i], 3));
+		}
 	}
 
 	if (OnChange)

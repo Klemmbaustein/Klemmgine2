@@ -166,7 +166,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 		Vector3 NewDir = (-HitNormal * Vector3(1, 0, 1)).Normalize() * 1;
 		Vector3 TestPos = Pos + Vector3(0, StepSize, 0);
 
-		auto Hits = Collider->ShapeCast(
+		Hits = Collider->ShapeCast(
 			Transform(TestPos, 0, Vector3(ColliderSize.X, ColliderSize.Y, ColliderSize.X)),
 			TestPos + NewDir,
 			physics::Layer::Static,

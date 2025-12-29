@@ -101,9 +101,9 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	}
 	this->Destroy();
 	OpenPopup = nullptr;
+	Settings::GetInstance()->Interface.RemoveListener(this);
+
 	delete DefaultFont;
 	delete Popup;
 	delete this;
-
-	Settings::GetInstance()->Interface.RemoveListener(this);
 }

@@ -76,7 +76,7 @@ void engine::ObjProperty<float>::DeSerialize(SerializedValue* From)
 
 SerializedValue engine::ObjProperty<AssetRef>::Serialize()
 {
-	return Value.FilePath;
+	return Value.IsValid() ? Value.FilePath : ("." + Value.Extension);
 }
 
 SerializedValue engine::ObjProperty<bool>::Serialize()
