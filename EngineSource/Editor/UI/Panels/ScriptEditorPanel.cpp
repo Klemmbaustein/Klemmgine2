@@ -248,8 +248,8 @@ void engine::editor::ScriptEditorPanel::Update()
 			{
 				Tab->MiniMap->Update();
 			}
-			this->StatusText->SetText(str::Format("%s | Errors: %s",
-				Tab->Provider->EditedFile.c_str(), "Idk refactoring"));
+			this->StatusText->SetText(str::Format("%s | Errors: %i",
+				Tab->Provider->EditedFile.c_str(), this->Errors[Tab->Provider->EditedFile].size()));
 
 			auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
 			if (sys && !Tab->Provider->Connection)
@@ -338,12 +338,18 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 
 void engine::editor::ScriptEditorPanel::OpenTab(size_t Tab)
 {
+	if (SelectedTab == Tab)
+	{
+		return;
+	}
+
 	if (auto Previous = GetSelectedTab())
 	{
 		Previous->Provider->ClearHovered();
 	}
 
 	SelectedTab = Tab;
+	GetSelectedTab()->Editor->FullRefresh();
 	UpdateEditorTabs();
 	OnResized();
 }
