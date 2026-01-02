@@ -4,7 +4,6 @@
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/OpenGL.h>
 #include <Engine/Internal/OpenGL.h>
-#include <Engine/Scene.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/vec4.hpp>
@@ -152,7 +151,7 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 	}
 	FrustumCenter /= float(Corners.size());
 
-	const float SnapSize = FarPlane / 5;
+	const float SnapSize = FarPlane / 10;
 
 	FrustumCenter.x = std::floor(FrustumCenter.x / SnapSize) * SnapSize;
 	FrustumCenter.y = std::floor(FrustumCenter.y / SnapSize) * SnapSize;

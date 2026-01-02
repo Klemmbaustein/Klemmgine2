@@ -220,3 +220,13 @@ std::pair<string, string> engine::http::HttpResponse::ParseHeader(string fullHea
 	string name = str::Trim(fullHeader.substr(0, colon)), value = str::Trim(fullHeader.substr(colon + 1));
 	return { name, value };
 }
+
+engine::http::HttpException::HttpException(const string& Message)
+{
+	this->Message = str::Format("Http error: %s", Message.c_str());
+}
+
+const char* engine::http::HttpException::what() const noexcept
+{
+	return Message.c_str();
+}

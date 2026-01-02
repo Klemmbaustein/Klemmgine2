@@ -4,14 +4,16 @@
 #include <Engine/Objects/Components/CameraComponent.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Script/ScriptSubsystem.h>
+#include <Engine/Script/ScriptObject.h>
 #include <Engine/Scene.h>
 #include <Engine/Input.h>
 #include <Engine/Engine.h>
 #include <Engine/Stats.h>
 #include <ds/language.hpp>
+#include <ds/native/nativeGeneric.hpp>
+#include <ds/native/nativeModule.hpp>
 #include <ds/modules/system.hpp>
 #include <ds/modules/system.async.hpp>
-#include <ds/native/nativeModule.hpp>
 #include <ds/parser/types/stringType.hpp>
 #include <ds/parser/types/taskType.hpp>
 #include <ds/parser/types/arrayType.hpp>
@@ -69,9 +71,7 @@ static void Scene_getObjects(InterpretContext* context)
 
 	for (auto& i : TargetScene.getValue()->Objects)
 	{
-		ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(Scene*), nullptr);
-		NewObject.getValue() = i;
-		FoundObjects.push_back(NewObject.classPtr);
+		FoundObjects.push_back(script::CreateSceneObject(i));
 	}
 
 	auto outArray = modules::system::createArray<RuntimeClass*>(FoundObjects.data(), FoundObjects.size(), true);
@@ -84,6 +84,26 @@ static void Scene_getName(InterpretContext* context)
 
 	auto& Name = TargetScene.getValue()->Name;
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
+}
+
+static void Scene_createNewObject(InterpretContext* context)
+{
+	auto obj = GenericData(context);
+
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	auto NewObject = TargetScene.getValue()->CreateObjectFromID(script::ScriptSubsystem::Instance->ScriptObjectIds.at(obj.id));
+
+	auto ScriptObject = dynamic_cast<script::ScriptObject*>(NewObject);
+	if (ScriptObject)
+	{
+		ScriptObject->ScriptData->addRef();
+		context->pushValue(ScriptObject->ScriptData);
+	}
+	else
+	{
+		context->pushValue(script::CreateSceneObject(NewObject));
+	}
 }
 
 #pragma endregion
@@ -333,10 +353,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	NativeModule EngineModule;
 	EngineModule.name = "engine";
 
-	auto StrType = StringType::getInstance();
-	auto FloatInst = FloatType::getInstance();
+	auto StrType = ToContext->registry.getEntry<StringType>();
+	auto FloatInst = ToContext->registry.getEntry<FloatType>();
+	auto BoolInst = ToContext->registry.getEntry<BoolType>();
 
-	MathBindings Math = AddMathModule(EngineModule);
+	MathBindings Math = AddMathModule(EngineModule, ToContext);
 
 	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
 
@@ -354,6 +375,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, StrType, "getName", &Scene_getName));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeGenericFunction({}, {GenericArgument("T", ObjectType)}, GenericArgumentType::getInstance(0, true), "createNewObject", &Scene_createNewObject));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, ArrayType::getInstance(ObjectType), "getObjects", &Scene_getObjects));
@@ -421,16 +445,16 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			"getName", &SceneObject_getName));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(StringType::getInstance(), "message") },
+		NativeFunction({ FunctionArgument(StrType, "message")},
 			nullptr, "info", &Log_Info));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(StringType::getInstance(), "message") },
+		NativeFunction({ FunctionArgument(StrType, "message") },
 			nullptr, "warn", &Log_Warn));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds") },
-			TaskType::getInstance(nullptr), "wait", &Wait));
+			TaskType::getInstance(nullptr, &ToContext->registry), "wait", &Wait));
 
 	EngineModule.addFunction(
 		NativeFunction({ },
@@ -462,7 +486,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(MoveComponentType,
 		NativeFunction({ },
-			BoolType::getInstance(), "isOnGround", &MoveComponent_isOnGround));
+			BoolInst, "isOnGround", &MoveComponent_isOnGround));
 
 	EngineModule.addClassMethod(MoveComponentType,
 		NativeFunction({ },
@@ -496,12 +520,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "active",
 		.offset = offsetof(MoveComponent, Active),
-		.type = BoolType::getInstance()
+		.type = BoolInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "canMoveUpSlopes",
 		.offset = offsetof(MoveComponent, CanMoveUpSlopes),
-		.type = BoolType::getInstance()
+		.type = BoolInst
 		});
 
 	MoveComponentType->makePointerClass();
@@ -569,19 +593,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineInputModule.addEnumValue(KeyType, "ctrl", Key::LCTRL);
 	EngineInputModule.addEnumValue(KeyType, "enter", Key::RETURN);
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
-		BoolType::getInstance(), "isKeyDown", &Input_IsKeyDown));
+		BoolInst, "isKeyDown", &Input_IsKeyDown));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isLMBDown", &Input_IsLMBDown));
+		BoolInst, "isLMBDown", &Input_IsLMBDown));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isRMBDown", &Input_IsRMBDown));
+		BoolInst, "isRMBDown", &Input_IsRMBDown));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isLMBClicked", &Input_IsLMBClicked));
+		BoolInst, "isLMBClicked", &Input_IsLMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({},
-		BoolType::getInstance(), "isRMBClicked", &Input_IsRMBClicked));
+		BoolInst, "isRMBClicked", &Input_IsRMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({ },
 		Math.Vec2, "getMouseMovement", &Input_GetMouseMovement));
@@ -606,6 +630,13 @@ ds::RuntimeClass* engine::script::CreateAssetRef()
 
 	NewAssetRef.getValue() = new AssetRef();
 	return NewAssetRef.classPtr;
+}
+
+ds::RuntimeClass* engine::script::CreateSceneObject(SceneObject* From)
+{
+	ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(SceneObject*), nullptr);
+	NewObject.getValue() = From;
+	return NewObject.classPtr;
 }
 
 void engine::script::UpdateWaitTasks()

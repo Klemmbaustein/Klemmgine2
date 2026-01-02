@@ -1,12 +1,12 @@
 using engine
 using engine::input
-using system::math
+using system
 
 module game
 
 class MyObject : SceneObject
 {
-	[Export name="cool name"]
+	[Export name="hello"]
 	AssetRef testModel = emptyAsset("kmdl")
 
 	MoveComponent movement = new()
@@ -31,9 +31,15 @@ class MyObject : SceneObject
 		camera.position = new(0, 0.8, 0)
 
 		movement.gravity = 15
-		movement.maxSpeed = 8
+		movement.maxSpeed = 5
 
 		lastY = this.position.y
+
+		Map<string, string> myMap = new()
+
+		myMap.insert("hi", "hello")
+
+		myMap.remove("hi")
 	}
 
 	override fn update()
@@ -67,7 +73,7 @@ class MyObject : SceneObject
 		rotation.y -= mouseMovement.x
 		camera.rotation.p -= mouseMovement.y
 
-		camera.rotation.p = clampF(camera.rotation.p, -90.0, 90.0)
+		camera.rotation.p = math::clampF(camera.rotation.p, -90.0, 90.0)
 
 		if isKeyDown(Key::shift)
 		{
@@ -113,7 +119,10 @@ class MyObject : SceneObject
 
 	fn beginSlide()
 	{
-		movement.setVelocity(movement.getVelocity() * new Vector3(2, 1, 2))
+		if movement.isOnGround()
+		{
+			movement.setVelocity(movement.getVelocity() * new Vector3(2, 1, 2))
+		}
 		movement.acceleration = 5
 		movement.canMoveUpSlopes = true
 		slideTimer = 0

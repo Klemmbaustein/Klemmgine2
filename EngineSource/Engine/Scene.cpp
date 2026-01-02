@@ -283,7 +283,11 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 			i->ClearComponents();
 		}
 
-		for (SceneObject* i : Objects)
+		// Begin() might create new objects in some cases, which would invalidate the iterator
+		// if we looped over the array directly. Objects spawned like this will already call Begin()
+		// themselves so it doesn't matter we're not going over them here.
+		std::vector ObjCopy = Objects;
+		for (SceneObject* i : ObjCopy)
 		{
 			i->Begin();
 			i->BeginCalled = true;

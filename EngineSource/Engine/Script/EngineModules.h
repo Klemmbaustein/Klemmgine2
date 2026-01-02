@@ -1,5 +1,6 @@
 #pragma once
 #include <ds/typeId.hpp>
+#include <Engine/Objects/SceneObject.h>
 
 namespace ds
 {
@@ -20,6 +21,8 @@ namespace engine::script
 	EngineModuleData RegisterEngineModules(ds::LanguageContext* ToContext);
 
 	ds::RuntimeClass* CreateAssetRef();
+
+	ds::RuntimeClass* CreateSceneObject(SceneObject* From);
 
 	void UpdateWaitTasks();
 }

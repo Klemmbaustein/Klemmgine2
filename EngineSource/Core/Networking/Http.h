@@ -2,9 +2,21 @@
 #include <Core/Types.h>
 #include <Core/File/BinaryStream.h>
 #include <map>
+#include <exception>
 
 namespace engine::http
 {
+	class HttpException : public std::exception
+	{
+	public:
+
+		HttpException(const string& Message);
+
+		const char* what() const noexcept override;
+
+		string Message = "";
+	};
+
 	namespace methods
 	{
 		constexpr auto GET = "GET";

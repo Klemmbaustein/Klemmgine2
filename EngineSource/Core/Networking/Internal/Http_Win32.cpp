@@ -1,6 +1,7 @@
 #if defined(WINDOWS)
 #include <Core/Networking/Http.h>
 #include <Core/Closeable.h>
+#include <Core/Platform/Platform.h>
 #include <Core/Log.h>
 #include <cstdlib>
 #include <format>
@@ -52,18 +53,14 @@ engine::http::win32::HttpConnection::HttpConnection(HttpUrl url, string method, 
 
 	if (!this->InternetHandle)
 	{
-		return;
-		//return HttpResponse::HttpError("Failed to open internet handle");
+		throw HttpException("InternetOpen() call failed.");
 	}
 
 	this->ConnectionHandle = InternetConnectA(this->InternetHandle, url.HostName.c_str(), url.Port, "", "", INTERNET_SERVICE_HTTP, 0, 0);
 
 	if (!this->ConnectionHandle)
 	{
-		Log::Error("No no connection :(");
-		return;
-		//connection.Invalidate();
-		//return HttpResponse::HttpError("Failed to open connection");
+		throw HttpException(str::Format("Failed to connect to url %s", url.HostName));
 	}
 
 	// Create a request and add headers
@@ -72,10 +69,7 @@ engine::http::win32::HttpConnection::HttpConnection(HttpUrl url, string method, 
 
 	if (!RequestHandle)
 	{
-		Log::Error("No request :(");
-		return;
-		//request.Invalidate();
-		//return HttpResponse::HttpError("Failed to create request");
+		throw HttpException("Failed to create HTTP request");
 	}
 
 	for (auto& [name, value] : options.Headers)
@@ -88,9 +82,7 @@ engine::http::win32::HttpConnection::HttpConnection(HttpUrl url, string method, 
 	BOOL success = HttpSendRequestA(RequestHandle, NULL, 0, (LPVOID)options.Body.c_str(), options.Body.size());
 	if (!success)
 	{
-		Log::Error("No success :(");
-		return;
-		//return HttpResponse::HttpError("Failed to send http request");
+		throw HttpException("Failed to send request");
 	}
 
 	this->Connection = new HttpConnectionStream(this);
@@ -167,8 +159,7 @@ size_t engine::http::win32::HttpConnectionStream::WriteCount(uByte* Buffer, size
 
 		if (!HasWritten)
 		{
-			Log::Error(std::format("InternetWriteFile error: {}", GetLastError()));
-			return ResponsePosition;
+			throw HttpException(str::Format("InternetWriteFile error: {}", platform::GetLastErrorString()));
 		}
 
 		if (NumWritten == 0)
@@ -196,8 +187,7 @@ size_t engine::http::win32::HttpConnectionStream::ReadCount(uByte* To, size_t Si
 
 		if (!hasRead)
 		{
-			Log::Error(std::format("InternetReadFile error: {}", GetLastError()));
-			return ResponsePosition;
+			throw HttpException(str::Format("InternetReadFile error: {}", platform::GetLastErrorString()));
 		}
 
 		if (numBytesRead == 0)

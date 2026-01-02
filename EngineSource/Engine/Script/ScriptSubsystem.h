@@ -3,6 +3,8 @@
 #include <list>
 #include "ScriptProvider.h"
 #include "EngineModules.h"
+#include <Engine/Objects/Reflection/ObjectReflection.h>
+#include <map>
 
 namespace ds
 {
@@ -42,6 +44,10 @@ namespace engine::script
 		virtual void Update() override;
 
 		EngineModuleData ScriptEngine;
+
+		static ScriptSubsystem* Instance;
+
+		std::map<uint32, ObjectTypeID> ScriptObjectIds;
 
 		void Reload();
 	};

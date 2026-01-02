@@ -2,10 +2,10 @@
 #include "EngineModules.h"
 #include "Engine/Engine.h"
 #include "ScriptSubsystem.h"
-#include <Engine/Engine.h>
 #include <ds/modules/system.async.hpp>
 #include <ds/interpreter.hpp>
 #include <ds/parser/types/stringType.hpp>
+#include <ds/language.hpp>
 
 using namespace ds;
 using ds::modules::system::async::Task;
@@ -43,7 +43,7 @@ void engine::script::ScriptObject::Update()
 
 void engine::script::ScriptObject::LoadScriptData()
 {
-	auto Script = Engine::GetSubsystem<ScriptSubsystem>();
+	auto Script = ScriptSubsystem::Instance;
 
 	if (this->ScriptData)
 	{
@@ -106,7 +106,7 @@ void engine::script::ScriptObject::LoadScriptData()
 				member = p->Value;
 			};
 		}
-		else if (i.type == StringType::getInstance()->id)
+		else if (i.type == Script->ScriptLanguage->registry.getEntry<StringType>()->id)
 		{
 			RuntimeStrRef str = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
 
@@ -120,6 +120,8 @@ void engine::script::ScriptObject::LoadScriptData()
 			p->OnChanged = [this, i, p]
 			{
 				auto& memberPtr = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
+
+				this->Interpreter->destruct(memberPtr);
 				RuntimeStrRef str = RuntimeStrRef(p->Value.c_str(), p->Value.size());
 
 				memberPtr = str.classPtr;

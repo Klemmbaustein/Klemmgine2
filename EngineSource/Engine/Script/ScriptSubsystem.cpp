@@ -9,15 +9,18 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/Scene.h>
 #include <Core/ThreadPool.h>
-#include <filesystem>
 #include <ds/modules/system.async.hpp>
 
-using namespace ds::modules::system::async;
 using namespace ds;
+using namespace ds::modules::system::async;
+
+engine::script::ScriptSubsystem* engine::script::ScriptSubsystem::Instance = nullptr;
 
 engine::script::ScriptSubsystem::ScriptSubsystem()
 	: subsystem::Subsystem("Script", Log::LogColor::Yellow)
 {
+	Instance = this;
+
 	this->ScriptLanguage = new LanguageContext();
 	modules::registerStandardLibrary(this->ScriptLanguage);
 	ScriptEngine = RegisterEngineModules(this->ScriptLanguage);
@@ -26,6 +29,10 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 	Runtime = this->ScriptLanguage->createRuntime();
 	Runtime->createBackgroundThread = [](std::function<void()> function) {
 		ThreadPool::Main()->AddJob(function);
+	};
+
+	this->Runtime->writeError = [this](const char* Message) {
+		Print(Message, LogType::Error);
 	};
 
 	Scripts = new FileScriptProvider();
@@ -144,7 +151,7 @@ void engine::script::ScriptSubsystem::Reload()
 		string Name = TypeInfo.name.substr(LastColon + 1);
 		string Path = TypeInfo.name.substr(0, LastColon - 1);
 
-		Reflection::RegisterObject(Name, [&TypeInfo, this]() -> SceneObject* {
+		ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [&TypeInfo, this]() -> SceneObject* {
 			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
 		}, Path);
 	}

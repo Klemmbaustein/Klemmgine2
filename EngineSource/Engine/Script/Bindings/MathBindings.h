@@ -11,5 +11,5 @@ namespace engine::script
 		ds::NativeStructType* Rot = nullptr;
 	};
 
-	MathBindings AddMathModule(ds::NativeModule& To);
+	MathBindings AddMathModule(ds::NativeModule& To, ds::LanguageContext* ToContext);
 }

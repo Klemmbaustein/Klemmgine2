@@ -2,6 +2,7 @@
 #include <ds/parser/types/stringType.hpp>
 #include <Core/Vector.h>
 #include <Core/Transform.h>
+#include <ds/language.hpp>
 
 using namespace ds;
 using namespace engine;
@@ -89,11 +90,12 @@ static void Vector3_toString(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(str.data(), str.size()));
 }
 
-script::MathBindings engine::script::AddMathModule(ds::NativeModule& To)
+script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
 	script::MathBindings Math;
 
-	auto FloatInst = FloatType::getInstance();
+	auto FloatInst = ToContext->registry.getEntry<FloatType>();
+	auto StrInst = ToContext->registry.getEntry<StringType>();
 
 	Math.Vec3 = DS_CREATE_STRUCT(Vector3);
 
@@ -144,7 +146,7 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To)
 		Math.Vec3, "normalized", &Vector3_normalized));
 
 	To.addStructMethod(Math.Vec3, NativeFunction({},
-		StringType::getInstance(), "toString", &Vector3_toString));
+		StrInst, "toString", &Vector3_toString));
 
 	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "planeOrigin"),
 		FunctionArgument(Math.Vec3, "planeNormal") },
