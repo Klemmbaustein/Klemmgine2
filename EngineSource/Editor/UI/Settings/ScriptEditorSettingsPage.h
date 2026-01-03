@@ -14,5 +14,6 @@ namespace engine::editor
 	private:
 
 		bool HasMiniMap = true;
+		bool TrimWhitespace = true;
 	};
 }

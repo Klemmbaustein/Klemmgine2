@@ -214,7 +214,7 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 	bool EmptyIsDefault)
 {
 	auto* New = CreateNewEntry(Name);
-	auto* Selector = new AssetSelector(Value, ElementSize, nullptr);
+	auto* Selector = new AssetSelector(Value, ElementSize, nullptr, EmptyIsDefault);
 
 	Selector->OnChanged = [Selector, &Value, OnChanged] {
 		if (!Value.Extension.empty()
@@ -224,8 +224,6 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 		if (OnChanged)
 			OnChanged();
 	};
-
-	Selector->EmptyIsDefault = EmptyIsDefault;
 
 	New->valueBox->AddChild(Selector);
 }

@@ -6,7 +6,8 @@
 	"script": {
 		"miniMap": true,
 		"useMainThemeColors": true,
-		"editorTheme": "Klemmgine Dark"
+		"editorTheme": "Klemmgine Dark",
+		"trimWhitespace": true
 	},
 	"console": {
 		"verboseLog": true

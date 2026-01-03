@@ -23,6 +23,16 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 		Current = nullptr;
 	}
 
+	bool HasShortcut = false;
+
+	for (auto& i : Options)
+	{
+		if (!i.Shortcut.empty())
+		{
+			HasShortcut = true;
+		}
+	}
+
 	Box = (new UIBlurBackground(false, Position, 1, 0))
 		->SetCorner(EditorUI::Theme.CornerSize);
 
@@ -59,15 +69,19 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 			->SetMinSize(SizeVec::Pixels(200, 24))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIText(11_px, EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
-				->SetTextWidthOverride(120_px)
-				->SetWrapEnabled(true, 120_px)
-				->SetPadding(3_px, 3_px, HasImage ? 0 : 28_px, 3_px))
-			->AddChild((new UIBox(true))
+				->SetTextWidthOverride(HasShortcut ? 120_px : 170_px)
+				->SetWrapEnabled(true, HasShortcut ? 120_px : 170_px)
+				->SetPadding(3_px, 3_px, HasImage ? 0 : 28_px, 3_px)));
+
+		if (HasShortcut)
+		{
+			Button->AddChild((new UIBox(true))
 				->SetPadding(4_px)
 				->SetMinWidth(50_px)
 				->SetHorizontalAlign(UIBox::Align::Reverse)
 				->AddChild((new UIText(10_px, EditorUI::Theme.DarkText, i->Shortcut, EditorUI::EditorFont))
-					->SetWrapEnabled(true, 50_px))));
+					->SetWrapEnabled(true, 50_px)));
+		}
 	}
 
 	Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = Box;

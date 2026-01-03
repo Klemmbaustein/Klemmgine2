@@ -35,6 +35,41 @@ void engine::editor::EngineTextEditorProvider::Update()
 	}
 }
 
+void engine::editor::EngineTextEditorProvider::TrimWhitespace(size_t IgnoreLine)
+{
+	bool Changed = false;
+	for (size_t i = 0; i < Lines.size(); i++)
+	{
+		if (IgnoreLine == i)
+		{
+			continue;
+		}
+
+		auto& str = Lines[i];
+
+		auto lastChar = str.find_last_not_of("\t ");
+
+		if (lastChar == str.size())
+		{
+			continue;
+		}
+
+		auto sub = str.substr(0, lastChar + 1);
+
+		if (ParentEditor->IsLineLoaded(i))
+		{
+			SetLine(i, { TextSegment(sub, TextColor) });
+		}
+		else
+		{
+			this->Lines[i] = sub;
+		}
+		Changed = true;
+	}
+
+	Commit();
+}
+
 std::vector<DropdownMenu::Option> engine::editor::EngineTextEditorProvider::GetRightClickOptions(EditorPosition At)
 {
 	std::vector<DropdownMenu::Option> Options;

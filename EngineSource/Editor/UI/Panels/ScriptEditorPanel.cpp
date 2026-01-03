@@ -30,6 +30,21 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		GetSelectedTab()->Provider->Redo();
 	});
 
+
+	EditorToolbar->AddDropdown("Settings", EditorUI::Asset("Settings.png"),
+		[this]() -> std::vector<DropdownMenu::Option> {
+		auto TrimWhitespace = Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool();
+		return {
+			DropdownMenu::Option{
+				.Name = "Trim whitespace on save",
+				.Icon = TrimWhitespace ? EditorUI::Asset("Dot.png") : "",
+				.OnClicked = [TrimWhitespace]() {
+					Settings::GetInstance()->Script.SetSetting("trimWhitespace", !TrimWhitespace);
+				},
+			},
+		};
+	});
+
 	EditorToolbar->SetLeftPadding(0);
 
 	SeparatorBackgrounds[0] = new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight,
@@ -188,6 +203,11 @@ void engine::editor::ScriptEditorPanel::Save()
 		std::filesystem::create_directories("Scripts/");
 
 		std::ofstream out = std::ofstream(Tab->Provider->EditedFile);
+
+		if (Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool())
+		{
+			Tab->Provider->TrimWhitespace(Tab->Editor->SelectionEnd.Line);
+		}
 
 		out << Tab->Provider->GetContent();
 		out.close();
@@ -349,7 +369,7 @@ void engine::editor::ScriptEditorPanel::OpenTab(size_t Tab)
 	}
 
 	SelectedTab = Tab;
-	GetSelectedTab()->Editor->FullRefresh();
+	GetSelectedTab()->Editor->UpdateHighlights = true;
 	UpdateEditorTabs();
 	OnResized();
 }

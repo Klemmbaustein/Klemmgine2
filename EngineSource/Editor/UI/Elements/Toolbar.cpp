@@ -63,6 +63,21 @@ void engine::editor::Toolbar::AddDropdown(string Name, string Icon, std::vector<
 	this->Buttons.push_back(Button);
 }
 
+void engine::editor::Toolbar::AddDropdown(string Name, string Icon,
+	std::function<std::vector<DropdownMenu::Option>()> Options)
+{
+	auto Button = new ToolBarButton();
+	Button->SetName(Name);
+	Button->SetIcon(Icon);
+	Button->SetColor(this->GetColor());
+	Button->btn->OnClicked = [Options, Button]()
+	{
+		new DropdownMenu(Options(), Button->btn->GetPosition());
+	};
+	AddChild(Button);
+	this->Buttons.push_back(Button);
+}
+
 void engine::editor::Toolbar::SetToolbarColor(kui::Vec3f NewColor)
 {
 	SetColor(NewColor);

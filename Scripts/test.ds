@@ -34,12 +34,6 @@ class MyObject : SceneObject
 		movement.maxSpeed = 5
 
 		lastY = this.position.y
-
-		Map<string, string> myMap = new()
-
-		myMap.insert("hi", "hello")
-
-		myMap.remove("hi")
 	}
 
 	override fn update()
@@ -133,6 +127,7 @@ class MyObject : SceneObject
 	{
 		movement.acceleration = 30
 		movement.deceleration = 40
+		movement.maxSpeed = 5
 		movement.canMoveUpSlopes = false
 		camera.position.y = 0.8
 	}

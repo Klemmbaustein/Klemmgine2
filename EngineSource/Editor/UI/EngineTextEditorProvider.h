@@ -25,5 +25,7 @@ namespace engine::editor
 		virtual std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At);
 
 		virtual void OnRightClick();
+
+		void TrimWhitespace(size_t IgnoreLine);
 	};
 }

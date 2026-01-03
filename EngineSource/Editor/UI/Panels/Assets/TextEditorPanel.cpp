@@ -6,7 +6,7 @@
 using namespace kui;
 
 engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
-	: AssetEditor("Raw view: %s", Asset)
+	: AssetEditor("Text view: %s", Asset)
 {
 	Provider = new EngineTextEditorProvider(Asset.FilePath);
 

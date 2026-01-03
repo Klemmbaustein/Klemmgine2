@@ -34,7 +34,6 @@ namespace engine::editor
 		void NavigateTo(std::string File, ds::TokenPos at) override;
 
 	private:
-
 		void UpdateTabSize(ScriptEditorTab* Tab);
 
 		kui::UIBox* CenterBox = nullptr;

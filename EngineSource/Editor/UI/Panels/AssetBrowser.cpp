@@ -162,7 +162,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			if (Extension != "dir/")
 			{
 				Options.push_back(DropdownMenu::Option{
-					.Name = "View raw",
+					.Name = "View text",
 					.Icon = EditorUI::Asset("Code.png"),
 					.OnClicked = [FilePath]
 					{

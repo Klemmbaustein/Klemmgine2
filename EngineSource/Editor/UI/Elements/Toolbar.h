@@ -16,6 +16,7 @@ namespace engine::editor
 
 		void AddButton(string Name, string Icon, std::function<void()> OnClicked);
 		void AddDropdown(string Name, string Icon, std::vector<DropdownMenu::Option> Options);
+		void AddDropdown(string Name, string Icon, std::function<std::vector<DropdownMenu::Option>()> Options);
 
 		void SetToolbarColor(kui::Vec3f NewColor);
 

@@ -9,6 +9,7 @@ engine::editor::ScriptEditorSettingsPage::ScriptEditorSettingsPage()
 	this->Name = "Script Editor";
 
 	HasMiniMap = Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool();
+	TrimWhitespace = Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool();
 }
 
 engine::editor::ScriptEditorSettingsPage::~ScriptEditorSettingsPage()
@@ -64,4 +65,8 @@ void engine::editor::ScriptEditorSettingsPage::Generate(PropertyMenu* Target, Se
 			Script.SetSetting("editorTheme", o.Name);
 		}
 	}, Script.GetSetting("useMainThemeColors", true).GetBool() ? 0 : std::distance(Options.begin(), Index));
+
+	Target->AddBooleanEntry("Trim whitespace on save", TrimWhitespace, [this]() {
+		Settings::GetInstance()->Script.SetSetting("trimWhitespace", SerializedValue(TrimWhitespace));
+	});
 }
