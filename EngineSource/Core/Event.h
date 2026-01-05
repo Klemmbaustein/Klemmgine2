@@ -54,5 +54,10 @@ namespace engine
 		{
 			Callbacks.erase(Listener);
 		}
+
+		bool IsListener(void* Listener)
+		{
+			return Callbacks.contains(Listener);
+		}
 	};
 }

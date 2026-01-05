@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "MaterialEditor.h"
 #include <Editor/UI/Elements/AssetSelector.h>
 #include <Editor/UI/Elements/Checkbox.h>
@@ -246,7 +245,6 @@ void engine::editor::MaterialEditor::LoadUI()
 		switch (i.FieldType)
 		{
 		case Material::Field::Type::Int:
-		case Material::Field::Type::Bool:
 			Field->field->field->SetText(std::to_string(i.Int));
 			Field->field->field->OnChanged = [this, field = Field->field->field, &i]()
 			{
@@ -387,4 +385,3 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 
 	Parent->AddChild(TexElement);
 }
-#endif

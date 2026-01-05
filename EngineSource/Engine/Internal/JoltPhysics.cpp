@@ -273,10 +273,9 @@ JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(GraphicsModel
 	auto BodyModel = From;
 	// Unload the Jolt Mesh Shape when the model data is unloaded.
 	// It will also be unloaded when the physics body itself is destroyed.
-	BodyModel->OnDereferenced.insert({ this, [this, BodyModel]()
-		{
-			UnloadMesh(BodyModel);
-		} });
+	BodyModel->OnDereferenced.Add(this, [this, BodyModel]() {
+		UnloadMesh(BodyModel);
+	});
 
 	Shape->AddRef();
 
@@ -427,8 +426,8 @@ engine::internal::JoltInstance::~JoltInstance()
 	auto MeshCopy = LoadedMeshes;
 	for (auto& i : MeshCopy)
 	{
-		if (i.first->OnDereferenced.contains(this))
-			i.first->OnDereferenced.erase(this);
+		if (i.first->OnDereferenced.IsListener(this))
+			i.first->OnDereferenced.Remove(this);
 		UnloadMesh(i.first);
 	}
 

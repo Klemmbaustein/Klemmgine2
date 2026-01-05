@@ -41,26 +41,36 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 
 	DrawnModel = From;
 
+	if (DrawnModel)
+	{
+		auto UpdateMaterials = [this] {
+			Materials.clear();
+			for (auto& m : DrawnModel->Data->Meshes)
+			{
+				if (m.Material.empty())
+				{
+					Materials.push_back(graphics::Material::MakeDefault());
+					continue;
+				}
+				AssetRef Ref = AssetRef::FromName(m.Material, "kmt");
+
+				if (Ref.Exists())
+					Materials.push_back(new graphics::Material(Ref));
+				else
+				{
+					Ref = AssetRef::FromName(m.Material, "kbm");
+					Materials.push_back(new graphics::Material(Ref));
+				}
+			}
+		};
+
+		DrawnModel->OnMaterialsChanged.Add(this, UpdateMaterials);
+
+		UpdateMaterials();
+	}
+
 	if (DrawnModel && DrawnModel->Drawable)
 	{
-		for (auto& m : DrawnModel->Data->Meshes)
-		{
-			if (m.Material.empty())
-			{
-				Materials.push_back(graphics::Material::MakeDefault());
-				continue;
-			}
-			AssetRef Ref = AssetRef::FromName(m.Material, "kmt");
-
-			if (Ref.Exists())
-				Materials.push_back(new graphics::Material(Ref));
-			else
-			{
-				Ref = AssetRef::FromName(m.Material, "kbm");
-				Materials.push_back(new graphics::Material(Ref));
-			}
-		}
-
 		if (!IsRegistered && (RootObject || ParentObject))
 			GetRootObject()->GetScene()->AddDrawnComponent(this);
 		IsRegistered = true;
@@ -82,7 +92,10 @@ engine::MeshComponent::~MeshComponent()
 void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 {
 	if (DrawnModel)
+	{
+		DrawnModel->OnMaterialsChanged.Remove(this);
 		GraphicsModel::UnloadModel(DrawnModel);
+	}
 	DrawnModel = nullptr;
 
 	for (graphics::Material* Mat : Materials)

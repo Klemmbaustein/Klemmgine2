@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/Types.h>
+#include <Core/Event.h>
 #include <vector>
 #include <Engine/Graphics/Vertex.h>
 #include <Engine/Graphics/BoundingBox.h>
@@ -57,7 +58,8 @@ namespace engine
 		ModelData* Data = nullptr;
 		graphics::Model* Drawable = nullptr;
 		size_t References = 0;
-		std::map<void*, std::function<void()>> OnDereferenced;
+		Event<> OnDereferenced;
+		Event<> OnMaterialsChanged;
 
 		static GraphicsModel* RegisterModel(const ModelData& Mesh, string Name, bool Lock = true);
 		static GraphicsModel* RegisterModel(AssetRef Asset, bool LoadMaterials = true, bool Lock = true);

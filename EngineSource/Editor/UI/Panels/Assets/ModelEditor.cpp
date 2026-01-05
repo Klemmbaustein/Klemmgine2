@@ -130,13 +130,18 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	Sidebar->SetMode(PropertyMenu::Mode::DisplayEntries);
 	Sidebar->CreateNewHeading("Materials");
 
+	auto ModelChanged = [this] {
+		OnChanged();
+		OnModelChanged();
+	};
+
 	size_t it = 0;
 	for (ModelData::Mesh& m : Data->Data->Meshes)
 	{
 		auto NewEntry = Sidebar->CreateNewEntry(std::to_string(it++));
 		auto* NewSelector = new AssetSelector(AssetRef::FromName(m.Material, "kmt"), Sidebar->ElementSize, nullptr);
 		NewSelector->SelectedAsset.Extension = "kmt";
-		NewSelector->OnChanged = [this, &m, NewSelector]()
+		NewSelector->OnChanged = [this, &m, NewSelector, ModelChanged, Data]()
 		{
 			auto NewMaterial = NewSelector->SelectedAsset.DisplayName();
 
@@ -144,8 +149,8 @@ void engine::editor::ModelEditor::OnModelLoaded()
 				return;
 
 			m.Material = NewMaterial;
-			OnChanged();
-			OnModelChanged();
+			ModelChanged();
+			Data->OnMaterialsChanged.Invoke();
 		};
 
 		NewEntry->valueBox->AddChild(NewSelector);
@@ -154,11 +159,6 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	UIBox* PropertiesBox = new UIBox(false);
 
 	Sidebar->CreateNewHeading("Properties");
-
-	auto ModelChanged = [this] {
-		OnChanged();
-		OnModelChanged();
-	};
 
 	size_t Vertices = 0;
 	size_t Indices = 0;
@@ -186,6 +186,7 @@ void engine::editor::ModelEditor::OnModelChanged()
 	EditorScene->Redraw = true;
 	SceneBackground->RedrawElement();
 }
+
 void engine::editor::ModelEditor::Update()
 {
 	AssetEditor::Update();

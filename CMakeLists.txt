@@ -135,33 +135,18 @@ if(ENGINE_SERVER)
 elseif(ENGINE_EDITOR)
 	set(ASSIMP_INSTALL OFF)
 	set(ASSIMP_WARNINGS_AS_ERRORS OFF)
-	set(BUILD_SHARED_LIBS ON)
+	set(BUILD_SHARED_LIBS OFF)
 	set(ASSIMP_BUILD_TESTS OFF)
 	set(ASSIMP_NO_EXPORT ON)
 	set(ASSIMP_BUILD_ZLIB ON)
 	SET(ASSIMP_INJECT_DEBUG_POSTFIX OFF)
-	if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-		set(USING_MSVC ON)
-	else()
-		set(USING_MSVC OFF)
-	endif()
 
-	if (WIN32 AND USING_MSVC)
-		# assimp causes hundreds of warnings with MSVC if this is on because they for some reason manually add
-		# /Zi to generate debug files for debug builds.
-		# (which then causes warnings because it conflicts with /ZI used for hotreloading above)
-		set(MSVC OFF)
-
-		# Add some other compile flags that cause warnings with MSVC
+	if(MSVC)
+		# Add some compile flags that cause warnings with MSVC
 		add_compile_definitions("_CRT_SECURE_NO_WARNINGS" "_CRT_NONSTDC_NO_WARNINGS")
 		add_compile_options(/wd4244)
 	endif()
 	add_subdirectory("Dependencies/assimp" EXCLUDE_FROM_ALL)
-
-	if (WIN32 AND USING_MSVC)
-		set(MSVC ON)
-		target_compile_options(KlemmgineLib PUBLIC "/w44244")
-	endif()
 
 	target_link_libraries(KlemmgineLib PUBLIC assimp::assimp)
 	target_compile_definitions(KlemmgineLib PUBLIC EDITOR)
@@ -214,11 +199,6 @@ target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
 if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC" AND ENGINE_EDITOR)
 	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
 endif()
-
-if(UNIX)
-	target_link_options(Klemmgine PUBLIC "-Wl,-rpath,$ORIGIN")
-endif()
-
 
 klemmui_resources(KlemmgineLib "Engine/Resources")
 

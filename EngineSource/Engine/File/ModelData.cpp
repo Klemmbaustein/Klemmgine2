@@ -366,10 +366,7 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 		{
 			delete i.second.Data;
 			delete i.second.Drawable;
-			for (auto& fn : i.second.OnDereferenced)
-			{
-				fn.second();
-			}
+			i.second.OnDereferenced.Invoke();
 			Target->Data = nullptr;
 			Target->Drawable = nullptr;
 			Models.erase(i.first);
@@ -391,10 +388,7 @@ void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 		{
 			delete i.second.Data;
 			delete i.second.Drawable;
-			for (auto& fn : i.second.OnDereferenced)
-			{
-				fn.second();
-			}
+			i.second.OnDereferenced.Invoke();
 			i.second.Data = nullptr;
 			i.second.Drawable = nullptr;
 			Models.erase(i.first);
