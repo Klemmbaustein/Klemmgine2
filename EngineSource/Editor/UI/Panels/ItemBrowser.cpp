@@ -113,7 +113,8 @@ void engine::editor::ItemBrowser::Update()
 		- SizeVec(1_px, 25_px).GetScreen());
 	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
 
-	bool ScrollBoxHovered = ItemsScrollBox->IsBeingHovered();
+	bool ScrollBoxHovered = Win->UI.HoveredBox != nullptr && (Win->UI.HoveredBox == ItemsScrollBox
+		|| Win->UI.HoveredBox->IsChildOf(ItemsScrollBox));
 
 	if (input::IsLMBClicked && ScrollBoxHovered)
 	{

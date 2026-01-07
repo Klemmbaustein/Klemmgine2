@@ -1,11 +1,9 @@
 #include "AmbientOcclusion.h"
 #include "PostProcess.h"
-#include <algorithm>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Graphics/ShaderLoader.h>
 #include <Engine/Internal/OpenGL.h>
 #include <random>
-#include <Core/Log.h>
-#include <Engine/Scene.h>
 
 const size_t AO_SAMPLES = 24;
 
@@ -51,14 +49,16 @@ engine::graphics::AmbientOcclusion::AmbientOcclusion()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	AoShader = ShaderLoader::Current->Get("res:shader/internal/postProcess.vert", "res:shader/effects/ssao.frag");
+	AoShader = ShaderLoader::Current->Get("res:shader/internal/postProcess.vert",
+		"res:shader/effects/ssao.frag");
 	AoShader->Bind();
 	for (size_t i = 0; i < AO_SAMPLES; i++)
 	{
 		glUniform3fv(AoShader->GetUniformLocation("samples[" + std::to_string(i) + "]"), 1, &AoKernel[i].X);
 	}
 
-	AoMergeShader = ShaderLoader::Current->Get("res:shader/internal/postProcess.vert", "res:shader/effects/ssaoMerge.frag");
+	AoMergeShader = ShaderLoader::Current->Get("res:shader/internal/postProcess.vert",
+		"res:shader/effects/ssaoMerge.frag");
 }
 
 void engine::graphics::AmbientOcclusion::OnBufferResized(uint32 Width, uint32 Height)
@@ -78,7 +78,8 @@ void engine::graphics::AmbientOcclusion::OnBufferResized(uint32 Width, uint32 He
 
 uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
 {
-	if (!Cam->UsedEnvironment->RenderSettings.AmbientOcclusion)
+	if (!Cam->UsedEnvironment->RenderSettings.AmbientOcclusion
+		|| !VideoSubsystem::Current->DrawAmbientOcclusion)
 	{
 		return Texture;
 	}

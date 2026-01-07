@@ -13,6 +13,7 @@ namespace engine::editor
 
 	private:
 		bool Vsync = true;
-		bool AntiAliasing = false;
+		bool Shadows = true;
+		bool AmbientOcclusion = true;
 	};
 }

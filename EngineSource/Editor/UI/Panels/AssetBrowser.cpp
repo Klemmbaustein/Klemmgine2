@@ -45,7 +45,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 					IDialogWindow::Option{
 						.Name = "Yes",
 						.OnClicked = [this, i]() {
-							std::filesystem::remove_all(i.first.Path);
+							EditorUI::Instance->AssetsProvider->DeleteFile(i.first.Path);
 							resource::ScanForAssets();
 							UpdateItems();
 						},

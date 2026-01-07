@@ -4,6 +4,7 @@
 #include "InterfaceSettings.h"
 #include "ScriptSettings.h"
 #include "ConsoleSettings.h"
+#include "GraphicsSettings.h"
 
 namespace engine::editor
 {
@@ -24,6 +25,7 @@ namespace engine::editor
 		InterfaceSettings Interface;
 		ScriptSettings Script;
 		ConsoleSettings Console;
+		GraphicsSettings Graphics;
 
 	private:
 

@@ -32,7 +32,6 @@ std::vector<editor::AssetFile> editor::FileAssetListProvider::GetFiles(string Pa
 void engine::editor::FileAssetListProvider::DeleteFile(string Path)
 {
 	std::filesystem::remove_all(Path);
-	OnChanged.Invoke();
 }
 
 void engine::editor::FileAssetListProvider::NewFile(string Path)

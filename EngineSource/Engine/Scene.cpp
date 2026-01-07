@@ -114,12 +114,20 @@ void engine::Scene::Draw()
 		UsedCamera->UsedEnvironment = &this->SceneEnvironment;
 	}
 
-	Shadows.Update(UsedCamera);
-
+	if (VideoSubsystem::Current->DrawShadows)
 	{
-		std::unique_lock g{ DrawSortMutex };
+		Shadows.Enabled = true;
+		Shadows.Update(UsedCamera);
 
-		Shadows.Draw(DrawnComponents);
+		{
+			std::unique_lock g{ DrawSortMutex };
+
+			Shadows.Draw(DrawnComponents);
+		}
+	}
+	else
+	{
+		Shadows.Enabled = false;
 	}
 
 	Buffer->Bind();

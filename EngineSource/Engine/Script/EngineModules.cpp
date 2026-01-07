@@ -21,7 +21,7 @@
 
 #include "Bindings/MathBindings.h"
 
-#define ENGINE_OFFSETOF(T, m)  (::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
+#define ENGINE_OFFSETOF(T, m)  (::ds::Size)(::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
 
 using namespace ds;
 using namespace engine::input;
@@ -377,7 +377,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({}, StrType, "getName", &Scene_getName));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeGenericFunction({}, {GenericArgument("T", ObjectType)}, GenericArgumentType::getInstance(0, true), "createNewObject", &Scene_createNewObject));
+		NativeGenericFunction({}, { GenericArgument("T", ObjectType) },
+			GenericArgumentType::getInstance(0, true), "createNewObject", &Scene_createNewObject));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, ArrayType::getInstance(ObjectType), "getObjects", &Scene_getObjects));
@@ -386,19 +387,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "position",
-		.offset = offsetof(ObjectComponent, Position),
+		.offset = ENGINE_OFFSETOF(ObjectComponent, Position),
 		.type = Math.Vec3
 		});
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "rotation",
-		.offset = offsetof(ObjectComponent, Rotation),
+		.offset = ENGINE_OFFSETOF(ObjectComponent, Rotation),
 		.type = Math.Rot
 		});
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "scale",
-		.offset = offsetof(ObjectComponent, Scale),
+		.offset = ENGINE_OFFSETOF(ObjectComponent, Scale),
 		.type = Math.Vec3
 		});
 
@@ -415,19 +416,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "position",
-		.offset = offsetof(SceneObject, Position),
+		.offset = ENGINE_OFFSETOF(SceneObject, Position),
 		.type = Math.Vec3
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "rotation",
-		.offset = offsetof(SceneObject, Rotation),
+		.offset = ENGINE_OFFSETOF(SceneObject, Rotation),
 		.type = Math.Rot
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "scale",
-		.offset = offsetof(SceneObject, Scale),
+		.offset = ENGINE_OFFSETOF(SceneObject, Scale),
 		.type = Math.Vec3
 		});
 	ObjectType->makePointerClass();
@@ -445,7 +446,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			"getName", &SceneObject_getName));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(StrType, "message")},
+		NativeFunction({ FunctionArgument(StrType, "message") },
 			nullptr, "info", &Log_Info));
 
 	EngineModule.addFunction(
@@ -498,33 +499,33 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "acceleration",
-		.offset = offsetof(MoveComponent, Acceleration),
+		.offset = ENGINE_OFFSETOF(MoveComponent, Acceleration),
 		.type = FloatInst
 		});
 
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "gravity",
-		.offset = offsetof(MoveComponent, Gravity),
+		.offset = ENGINE_OFFSETOF(MoveComponent, Gravity),
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "maxSpeed",
-		.offset = offsetof(MoveComponent, MaxSpeed),
+		.offset = ENGINE_OFFSETOF(MoveComponent, MaxSpeed),
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "deceleration",
-		.offset = offsetof(MoveComponent, Deceleration),
+		.offset = ENGINE_OFFSETOF(MoveComponent, Deceleration),
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "active",
-		.offset = offsetof(MoveComponent, Active),
+		.offset = ENGINE_OFFSETOF(MoveComponent, Active),
 		.type = BoolInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "canMoveUpSlopes",
-		.offset = offsetof(MoveComponent, CanMoveUpSlopes),
+		.offset = ENGINE_OFFSETOF(MoveComponent, CanMoveUpSlopes),
 		.type = BoolInst
 		});
 

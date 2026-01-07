@@ -123,8 +123,14 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 
 void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Target) const
 {
-	if (!Target || !ShouldRender())
+	if (!Target)
 		return;
+
+	if (!ShouldRender())
+	{
+		Target->SetInt(Target->GetUniformLocation("u_drawShadows"), 0);
+		return;
+	}
 
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{

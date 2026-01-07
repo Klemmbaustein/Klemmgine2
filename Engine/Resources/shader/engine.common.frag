@@ -34,6 +34,8 @@ uniform vec3 u_groundColor = vec3(1);
 #export //!
 uniform float u_ambientStrength = 0.2;
 
+uniform bool u_drawShadows = true;
+
 #export //!
 uniform vec3 u_cameraPos = vec3(0);
 
@@ -85,6 +87,11 @@ float SampleFromShadowMap(vec2 distances)
 
 float getShadowStrength()
 {
+	if (!u_drawShadows)
+	{
+		return 1.0;
+	}
+
 	// select cascade layer
 	float depthValue = abs(v_screenPosition.z);
 

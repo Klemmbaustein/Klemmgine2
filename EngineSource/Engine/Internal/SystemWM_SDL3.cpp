@@ -47,13 +47,10 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
 
-#if WINDOWS
 	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
-#else
 	// High pixel density is broken on linux
 	// TODO: Fix
-	int SDLFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
-#endif
+	//int SDLFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
 
 	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
 	{
@@ -88,6 +85,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 			SDL_SetWindowModal(OutWindow->SDLWindow, true);
 		}
 
+#ifndef LINUX
 		if (!OutWindow->IsEngineWindow)
 		{
 			Vec2f OldSize = GetWindowSize(OutWindow);
@@ -97,6 +95,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 			SetWindowPosition(OutWindow, Pos - (NewSize - OldSize) / 2);
 		}
+#endif
 
 		OutWindow->IsMain = ActiveWindows.empty();
 		ActiveWindows.push_back(OutWindow);
@@ -311,7 +310,7 @@ void kui::systemWM::ActivateContext(SysWindow* Target)
 kui::Vec2ui kui::systemWM::GetWindowSize(SysWindow* Target)
 {
 	int w, h;
-	SDL_GetWindowSize(Target->SDLWindow, &w, &h);
+	SDL_GetWindowSizeInPixels(Target->SDLWindow, &w, &h);
 	return Vec2ui(w, h);
 }
 
@@ -370,7 +369,12 @@ kui::Vec2i kui::systemWM::GetCursorPosition(SysWindow* Target)
 	int winX, winY;
 	SDL_GetWindowPosition(Target->SDLWindow, &winX, &winY);
 
-	return { int(x) - winX, int(y) - winY };
+	Vec2i Position = { int(x) - winX, int(y) - winY };
+
+#ifdef LINUX
+	Position = Vec2f(Position) * Vec2f(GetDPIScale(Target));
+#endif
+	return Position;
 }
 
 kui::Vec2ui kui::systemWM::GetScreenSize()
@@ -419,7 +423,11 @@ void kui::systemWM::SetWindowCursor(SysWindow* Target, Window::Cursor NewCursor)
 
 float kui::systemWM::GetDPIScale(SysWindow* Target)
 {
+#ifdef LINUX
+	float Density = SDL_GetWindowPixelDensity(Target->SDLWindow);
+#else
 	float Density = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(Target->SDLWindow));
+#endif
 
 	if (Density == 0)
 	{
@@ -601,6 +609,7 @@ void kui::systemWM::SysWindow::UpdateEvents()
 		}
 	}
 }
+
 #else
 #error Server unsupported right now
 #endif

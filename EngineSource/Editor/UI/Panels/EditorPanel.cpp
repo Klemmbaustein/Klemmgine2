@@ -749,7 +749,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 		NewTab->SetBorderColor(Focused ? EditorUI::Theme.Highlight1 : EditorUI::Theme.BackgroundHighlight);
 		NewTab->SetColor(Focused ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
 		NewTab->SetBorderSize(1_px);
-		NewTab->SetPaddingSize(UISize::Pixels(-1));
+		NewTab->SetPaddingSize(UISize::Pixels(-0.85f));
 		NewTab->mainButton->SetMinHeight(25_px);
 		NewTab->mainButton->SetMaxHeight(25_px);
 	}

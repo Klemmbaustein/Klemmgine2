@@ -24,6 +24,8 @@ namespace engine
 		graphics::TextureLoader Textures;
 
 		bool VSyncEnabled = true;
+		bool DrawShadows = true;
+		bool DrawAmbientOcclusion = true;
 
 		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
 		static string DefaultFontName;
