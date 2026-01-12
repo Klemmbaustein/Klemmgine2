@@ -243,7 +243,28 @@ void engine::platform::Init()
 
 std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDialogFilter> Filters)
 {
-	// TODO: implement
+	if (CommandExists("kdialog"))
+	{
+		string FilterString;
+
+		for (auto& i : Filters)
+		{
+			if (i.Name == "_ALL")
+			{
+				FilterString = "'*'";
+				break;
+			}
+
+			for (auto& t : i.FileTypes)
+			{
+				FilterString.append("'*" + t + "'");
+			}
+		}
+
+		string Result = GetCommandOutput("/usr/bin/env kdialog --getopenfilename . " + FilterString);
+		Log::Info(Result);
+		return str::Split(Result, "\n");
+	}
 	return {};
 }
 

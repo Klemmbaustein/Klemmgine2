@@ -10,6 +10,7 @@
 #include "Panels/ScenePanel.h"
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/Viewport.h"
+#include "Layout/SaveLayout.h"
 #include "Windows/AboutWindow.h"
 #include "Windows/BuildWindow.h"
 #include "Windows/SettingsWindow.h"
@@ -24,6 +25,7 @@
 #include <Engine/Objects/MeshObject.h>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
+#include <filesystem>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -174,34 +176,44 @@ engine::editor::EditorUI::EditorUI()
 
 	RootPanel = new EditorPanel("root");
 
-	EditorPanel* Left = new EditorPanel("panel");
-	Left->AddChild(new AssetBrowser(), EditorPanel::Align::Tabs);
-	Left->AddChild(new ClassBrowser(), EditorPanel::Align::Tabs);
+	string LayoutFile = GetLayoutConfigPath() + "/lastLayout.k2b";
 
-	RootPanel->AddChild(Left->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+	if (!std::filesystem::exists(LayoutFile))
+	{
+		EditorPanel* Left = new EditorPanel("panel");
+		Left->AddChild(new AssetBrowser(), EditorPanel::Align::Tabs);
+		Left->AddChild(new ClassBrowser(), EditorPanel::Align::Tabs);
 
-	EditorPanel* Center = new EditorPanel("panel");
-	EditorPanel* LowerPanel = new EditorPanel("panel");
-	Center->AddChild(LowerPanel->SetWidth(0.2f), EditorPanel::Align::Vertical);
-	LowerPanel->AddChild(new ConsolePanel(), EditorPanel::Align::Tabs);
-	LowerPanel->AddChild(new MessagePanel(), EditorPanel::Align::Tabs);
+		RootPanel->AddChild(Left->SetWidth(0.15f), EditorPanel::Align::Horizontal);
 
-	auto vp = new Viewport();
+		EditorPanel* Center = new EditorPanel("panel");
+		EditorPanel* LowerPanel = new EditorPanel("panel");
+		Center->AddChild(LowerPanel->SetWidth(0.2f), EditorPanel::Align::Vertical);
+		LowerPanel->AddChild(new ConsolePanel(), EditorPanel::Align::Tabs);
+		LowerPanel->AddChild(new MessagePanel(), EditorPanel::Align::Tabs);
 
-	Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
-	RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
-	EditorPanel* Right = new EditorPanel("panel");
-	auto Properties = new EditorPanel("panel");
-	Right->AddChild(Properties, EditorPanel::Align::Vertical);
+		auto vp = new Viewport();
 
-	Properties->AddChild(new PropertyPanel(), EditorPanel::Align::Tabs);
-	Properties->AddChild(new ScenePanel(), EditorPanel::Align::Tabs);
+		Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
+		RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
+		EditorPanel* Right = new EditorPanel("panel");
+		auto Properties = new EditorPanel("panel");
+		Right->AddChild(Properties, EditorPanel::Align::Vertical);
 
-	Right->AddChild(new ObjectListPanel(), EditorPanel::Align::Vertical);
-	RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+		Properties->AddChild(new PropertyPanel(), EditorPanel::Align::Tabs);
+		Properties->AddChild(new ScenePanel(), EditorPanel::Align::Tabs);
 
-	FocusedPanel = vp;
-	vp->AddChild(new ScriptEditorPanel(), EditorPanel::Align::Tabs, false);
+		Right->AddChild(new ObjectListPanel(), EditorPanel::Align::Vertical);
+		RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+
+		vp->AddChild(new ScriptEditorPanel(), EditorPanel::Align::Tabs, false);
+	}
+	else
+	{
+		layout::LoadLayout(RootPanel, LayoutFile);
+	}
+
+	FocusedPanel = Viewport::Current;
 
 	SetStatusMainThread("Editor loaded", StatusType::Info);
 	input::ShowMouseCursor = true;
@@ -220,8 +232,8 @@ engine::editor::EditorUI::EditorUI()
 
 	AddMenuBarItem("Edit",
 		{
-			DropdownMenu::Option("Undo", "Ctrl+Z", Asset("Undo.png"), [vp]() {
-				vp->UndoLast();
+			DropdownMenu::Option("Undo", "Ctrl+Z", Asset("Undo.png"), []() {
+				Viewport::Current->UndoLast();
 			}),
 			DropdownMenu::Option("Redo", "Ctrl+Y", Asset("Redo.png")),
 			DropdownMenu::Option("Settings", "", Asset("Settings.png"), []() {
@@ -246,7 +258,7 @@ engine::editor::EditorUI::EditorUI()
 		});
 
 	AddMenuBarItem("Help",
-		{ DropdownMenu::Option("About", "", Asset("Info.png"), [vp]() {
+		{ DropdownMenu::Option("About", "", Asset("Info.png"), []() {
 				new AboutWindow();
 			}), DropdownMenu::Option("Source code") }
 	);
@@ -258,6 +270,11 @@ engine::editor::EditorUI::~EditorUI()
 {
 	using namespace subsystem;
 
+	string LayoutPath = GetLayoutConfigPath();
+
+	std::filesystem::create_directories(GetLayoutConfigPath());
+	layout::LayoutToFile(RootPanel, LayoutPath + "/lastLayout.k2b");
+
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
 	VideoSystem->OnResizedCallbacks.erase(this);
@@ -266,6 +283,11 @@ engine::editor::EditorUI::~EditorUI()
 
 	VideoSystem->OnResized();
 	input::ShowMouseCursor = false;
+}
+
+string engine::editor::EditorUI::GetLayoutConfigPath()
+{
+	return editor::GetEditorPath() + "/Config/Layout/";
 }
 
 engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)

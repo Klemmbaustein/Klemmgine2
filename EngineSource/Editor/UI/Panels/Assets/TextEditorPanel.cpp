@@ -43,11 +43,11 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
 
 
-	AddShortcut(Key::z, Key::LCTRL, [this] {
+	AddShortcut(Key::z, Key::CTRL, [this] {
 		Provider->Undo();
 	}, ShortcutOptions::AllowInText);
 
-	AddShortcut(Key::y, Key::LCTRL, [this] {
+	AddShortcut(Key::y, Key::CTRL, [this] {
 		Provider->Redo();
 	}, ShortcutOptions::AllowInText);
 

@@ -81,7 +81,7 @@ void engine::script::ScriptSubsystem::Update()
 	}
 }
 
-void engine::script::ScriptSubsystem::Reload()
+bool engine::script::ScriptSubsystem::Reload()
 {
 	ThreadPool::Main()->AwaitJoin();
 	auto CurrentScene = Scene::GetMain();
@@ -105,7 +105,7 @@ void engine::script::ScriptSubsystem::Reload()
 
 	if (NewInstructions.code.empty())
 	{
-		return;
+		return false;
 	}
 
 	if (CurrentScene)
@@ -155,4 +155,5 @@ void engine::script::ScriptSubsystem::Reload()
 			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
 		}, Path);
 	}
+	return true;
 }

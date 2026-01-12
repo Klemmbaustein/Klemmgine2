@@ -10,6 +10,8 @@
 #include <Engine/MainThread.h>
 #include "WMOptions.h"
 
+using namespace kui;
+
 #if WINDOWS
 #pragma comment(linker, "\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
@@ -144,7 +146,6 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	return OutWindow;
 }
 
-using namespace kui;
 static std::map<int, kui::Key> Keys =
 {
 	{ SDLK_ESCAPE, Key::ESCAPE },
@@ -187,12 +188,12 @@ static std::map<int, kui::Key> Keys =
 	{ SDLK_LEFT, Key::LEFT },
 	{ SDLK_UP, Key::UP },
 	{ SDLK_DOWN, Key::DOWN },
-	{ SDLK_LSHIFT, Key::LSHIFT },
-	{ SDLK_RSHIFT, Key::LSHIFT },
-	{ SDLK_LCTRL, Key::LCTRL },
-	{ SDLK_RCTRL, Key::LCTRL },
-	{ SDLK_LALT, Key::LALT },
-	{ SDLK_RALT, Key::LALT },
+	{ SDLK_LSHIFT, Key::SHIFT },
+	{ SDLK_RSHIFT, Key::SHIFT },
+	{ SDLK_LCTRL, Key::CTRL },
+	{ SDLK_RCTRL, Key::CTRL },
+	{ SDLK_LALT, Key::ALT },
+	{ SDLK_RALT, Key::ALT },
 	{ SDLK_A, Key::a },
 	{ SDLK_B, Key::b },
 	{ SDLK_C, Key::c },
@@ -332,7 +333,7 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 					if (ev.type == SDL_EVENT_TEXT_INPUT)
 					{
 						std::lock_guard g{ i->InputMutex };
-						if (!i->Parent->Input.IsKeyDown(Key::LCTRL))
+						if (!i->Parent->Input.IsKeyDown(Key::CTRL))
 						{
 							i->TextInput += ev.text.text;
 						}

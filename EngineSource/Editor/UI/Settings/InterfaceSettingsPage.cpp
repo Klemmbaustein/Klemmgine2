@@ -45,8 +45,7 @@ void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, Setti
 	},
 	};
 
-	auto Index = std::ranges::find_if(Options,
-		[](const UIDropdown::Option& o) {
+	auto Index = std::ranges::find_if(Options, [](const UIDropdown::Option& o) {
 		return o.Name == EditorUI::Theme.Name;
 	});
 

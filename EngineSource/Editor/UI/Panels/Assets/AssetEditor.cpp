@@ -8,7 +8,7 @@ engine::editor::AssetEditor::AssetEditor(string NameFormat, AssetRef Asset)
 	this->NameFormat = NameFormat;
 	this->EditedAsset = Asset;
 
-	AddShortcut(kui::Key::s, kui::Key::LCTRL, [this]() {
+	AddShortcut(kui::Key::s, kui::Key::CTRL, [this]() {
 		if (!Saved)
 		{
 			Save();
@@ -20,7 +20,6 @@ void engine::editor::AssetEditor::OnChanged()
 {
 	if (Saved)
 	{
-		Saved = false;
 		UpdateName();
 	}
 }
@@ -44,23 +43,18 @@ bool engine::editor::AssetEditor::OnClosed()
 		return true;
 
 	new MessageWindow(str::Format("Save changes to '%s'?", EditedAsset.DisplayName().c_str()), "Unsaved changes", {
-		IDialogWindow::Option
-		{
+		IDialogWindow::Option{
 			.Name = "Yes",
 			.OnClicked = [this]() {
 			Save();
 			delete this;
-		}
-		},
-		IDialogWindow::Option
-		{
+		}},
+		IDialogWindow::Option{
 			.Name = "No",
 			.OnClicked = [this]() {
 			delete this;
-		}
-		},
-		IDialogWindow::Option
-		{
+		}},
+		IDialogWindow::Option{
 			.Name = "Cancel",
 		} });
 	return false;

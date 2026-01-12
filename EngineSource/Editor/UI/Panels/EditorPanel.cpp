@@ -3,11 +3,11 @@
 #include <kui/UI/UIBlurBackground.h>
 #include <kui/UI/UIScrollBox.h>
 #include <Editor/UI/EditorUI.h>
-#include <cmath>
-#include <Core/Log.h>
 #include <Core/Error/EngineError.h>
+#include <Engine/Input.h>
 using namespace kui;
 using namespace engine::editor;
+using namespace engine;
 
 const float PANEL_PADDING = 3;
 const float TABS_SIZE = 25;
@@ -56,6 +56,15 @@ engine::editor::EditorPanel::~EditorPanel()
 		i->Parent = nullptr;
 		delete i;
 	}
+}
+
+SerializedValue engine::editor::EditorPanel::Serialize()
+{
+	return SerializedValue();
+}
+
+void engine::editor::EditorPanel::DeSerialize(SerializedValue* FromData)
+{
 }
 
 void engine::editor::EditorPanel::UpdateLayout()
@@ -153,7 +162,14 @@ void engine::editor::EditorPanel::AddShortcut(kui::Key NewKey,
 	Background->GetParentWindow()->Input.RegisterOnKeyDownCallback(NewKey, this,
 		[this, OnPressed, Modifier, AllowInText, Global]() {
 
-		if (!AllowInText && Background->GetParentWindow()->Input.PollForText)
+		auto TargetWindow = Background->GetParentWindow();
+
+		if (!input::ShowMouseCursor && !AllowInText)
+		{
+			return;
+		}
+
+		if (!AllowInText && TargetWindow->Input.PollForText)
 		{
 			return;
 		}
@@ -163,7 +179,7 @@ void engine::editor::EditorPanel::AddShortcut(kui::Key NewKey,
 			return;
 		}
 
-		if ((!Modifier.has_value() || Background->GetParentWindow()->Input.IsKeyDown(*Modifier)))
+		if ((!Modifier.has_value() || TargetWindow->Input.IsKeyDown(*Modifier)))
 		{
 			OnPressed();
 		}

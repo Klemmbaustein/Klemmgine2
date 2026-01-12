@@ -49,6 +49,6 @@ namespace engine::script
 
 		std::map<uint32, ObjectTypeID> ScriptObjectIds;
 
-		void Reload();
+		bool Reload();
 	};
 }

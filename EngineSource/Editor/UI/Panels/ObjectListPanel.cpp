@@ -1,9 +1,7 @@
-#ifdef EDITOR
 #include "ObjectListPanel.h"
 #include <Engine/Scene.h>
 #include <Core/File/FileUtil.h>
 #include "Viewport.h"
-#include <iostream>
 #include <Engine/Input.h>
 #include <Editor/UI/EditorUI.h>
 using namespace kui;
@@ -61,7 +59,7 @@ void engine::editor::ObjectListPanel::Update()
 	if (LastSelectedLength != Viewport::Current->SelectedObjects.size())
 	{
 		LastSelectedLength = Viewport::Current->SelectedObjects.size();
-		LastSelectedObj = LastSelectedLength  ? *Viewport::Current->SelectedObjects.begin() : nullptr;
+		LastSelectedObj = LastSelectedLength ? *Viewport::Current->SelectedObjects.begin() : nullptr;
 		DisplayList();
 	}
 	else if (LastSelectedLength && *Viewport::Current->SelectedObjects.begin() != LastSelectedObj)
@@ -112,7 +110,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 		auto& Entry = SceneMap[TypeInfo.Path];
 
 		Entry.Children.insert(
-			{ std::to_string(Number++), ListObject(i->Name, i, Viewport::Current->SelectedObjects.contains(i))}
+			{ std::to_string(Number++), ListObject(i->Name, i, Viewport::Current->SelectedObjects.contains(i)) }
 		);
 		if (Entry.Name.empty())
 		{
@@ -162,26 +160,25 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		if (Obj.Children.empty())
 			delete Elem->arrow;
 
-		Elem->button->OnClicked = [this, Obj]()
-			{
-				if (!input::IsKeyDown(input::Key::LSHIFT))
-					Viewport::Current->ClearSelected();
+		Elem->button->OnClicked = [this, Obj]() {
+			if (!input::IsKeyDown(input::Key::SHIFT))
+				Viewport::Current->ClearSelected();
 
-				if (Obj.From)
-					Viewport::Current->SelectedObjects.insert(Obj.From);
+			if (Obj.From)
+				Viewport::Current->SelectedObjects.insert(Obj.From);
+			else
+			{
+				if (Collapsed.contains(Obj.Name))
+				{
+					Collapsed.erase(Obj.Name);
+				}
 				else
 				{
-					if (Collapsed.contains(Obj.Name))
-					{
-						Collapsed.erase(Obj.Name);
-					}
-					else
-					{
-						Collapsed.insert(Obj.Name);
-					}
+					Collapsed.insert(Obj.Name);
 				}
-				DisplayList();
-			};
+			}
+			DisplayList();
+		};
 		Heading->listBox->AddChild(Elem);
 
 		if (HasChildren && !IsCollapsed)
@@ -190,4 +187,3 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		}
 	}
 }
-#endif

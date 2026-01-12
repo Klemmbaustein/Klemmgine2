@@ -173,6 +173,8 @@ namespace engine::editor
 		static string Asset(const string& Path);
 		AssetListProvider* AssetsProvider = new FileAssetListProvider();
 
+		static string GetLayoutConfigPath();
+
 	private:
 		kui::UIBackground* Root = nullptr;
 		kui::UIBackground* MenuBar = nullptr;

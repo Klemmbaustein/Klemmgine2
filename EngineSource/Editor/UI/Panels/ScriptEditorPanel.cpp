@@ -77,17 +77,15 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	CenterBox->AddChild(StatusText
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
 
-	AddShortcut(Key::s, Key::LCTRL, [this] {
+	AddShortcut(Key::s, Key::CTRL, [this] {
 		Save();
-		EditorUI::SetStatusMessage(str::Format("Saved script file '%s'", GetSelectedTab()->Provider->EditedFile.c_str()),
-			EditorUI::StatusType::Info);
 	}, ShortcutOptions::AllowInText);
 
-	AddShortcut(Key::z, Key::LCTRL, [this] {
+	AddShortcut(Key::z, Key::CTRL, [this] {
 		GetSelectedTab()->Provider->Undo();
 	}, ShortcutOptions::AllowInText);
 
-	AddShortcut(Key::y, Key::LCTRL, [this] {
+	AddShortcut(Key::y, Key::CTRL, [this] {
 		GetSelectedTab()->Provider->Redo();
 	}, ShortcutOptions::AllowInText);
 
@@ -212,12 +210,19 @@ void engine::editor::ScriptEditorPanel::Save()
 		out << Tab->Provider->GetContent();
 		out.close();
 
-		Engine::Instance->GetSubsystem<ScriptSubsystem>()->Reload();
-		EditorUI::SetStatusMessage("Compiled scripts", EditorUI::StatusType::Info);
+		bool CompileResult = Engine::Instance->GetSubsystem<ScriptSubsystem>()->Reload();
+		if (CompileResult)
+		{
+			EditorUI::SetStatusMessage("Compiled scripts", EditorUI::StatusType::Info);
+		}
+		else
+		{
+			EditorUI::SetStatusMessage("Failed to compile scripts", EditorUI::StatusType::Error);
+		}
 	}
 	else
 	{
-		EditorUI::SetStatusMessage("Could not save scripts because no file is active.", EditorUI::StatusType::Info);
+		EditorUI::SetStatusMessage("Could not save scripts because no file is active.", EditorUI::StatusType::Warning);
 	}
 }
 
@@ -234,12 +239,14 @@ void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, ds::TokenPo
 		{
 			Tabs[i].Provider->NavigateTo(EditorPosition(at.startPos, at.line),
 				EditorPosition(at.endPos, at.line));
+			return;
 		}
 		else
 		{
 			OpenTab(i);
 			Tabs[i].Provider->NavigateTo(EditorPosition(at.startPos, at.line),
 				EditorPosition(at.endPos, at.line));
+			return;
 		}
 	}
 }
@@ -254,14 +261,17 @@ void engine::editor::ScriptEditorPanel::OnResized()
 
 void engine::editor::ScriptEditorPanel::Update()
 {
+	for (auto& Tab : Tabs)
+	{
+		Tab.Editor->SetMinWidth(EditorBox->GetUsedSize().X);
+		Tab.Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
+		Tab.Editor->SetPosition(EditorBox->GetScreenPosition());
+	}
+
 	auto Tab = GetSelectedTab();
 	if (Tab)
 	{
 		Tab->Editor->IsVisible = this->Visible;
-		Tab->Editor->SetMinWidth(EditorBox->GetUsedSize().X);
-		Tab->Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
-		Tab->Editor->SetPosition(EditorBox->GetScreenPosition());
-
 		if (this->Visible)
 		{
 			if (Tab->MiniMap)

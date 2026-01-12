@@ -7,6 +7,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/vec4.hpp>
+#include <iostream>
 using namespace engine;
 using namespace engine::graphics;
 
@@ -134,7 +135,8 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{
-		Target->SetFloat(Target->GetUniformLocation("cascadePlaneDistances[" + std::to_string(i) + "]"), ShadowCascadeLevels[i]);
+		Target->SetFloat(Target->GetUniformLocation("cascadePlaneDistances[" + std::to_string(i) + "]"),
+			ShadowCascadeLevels[i]);
 	}
 
 	glActiveTexture(GL_TEXTURE0);
@@ -156,12 +158,11 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 		FrustumCenter += glm::vec3(v);
 	}
 	FrustumCenter /= float(Corners.size());
+	const float SnapSize = 1.0f;
 
-	const float SnapSize = FarPlane / 10;
-
-	FrustumCenter.x = std::floor(FrustumCenter.x / SnapSize) * SnapSize;
-	FrustumCenter.y = std::floor(FrustumCenter.y / SnapSize) * SnapSize;
-	FrustumCenter.z = std::floor(FrustumCenter.z / SnapSize) * SnapSize;
+	FrustumCenter.x = std::round(FrustumCenter.x / SnapSize) * SnapSize;
+	FrustumCenter.y = std::round(FrustumCenter.y / SnapSize) * SnapSize;
+	FrustumCenter.z = std::round(FrustumCenter.z / SnapSize) * SnapSize;
 
 	const auto LightView = glm::lookAt(
 		FrustumCenter + glm::vec3(LightDirection.X, LightDirection.Y, LightDirection.Z),
@@ -182,23 +183,23 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 	for (const auto& v : Corners)
 	{
 		const auto trf = LightView * v;
-		MinX = std::min(MinX, trf.x - SnapSize);
-		MaxX = std::max(MaxX, trf.x + SnapSize);
-		MinY = std::min(MinY, trf.y - SnapSize);
-		MaxY = std::max(MaxY, trf.y + SnapSize);
-		MinZ = std::min(MinZ, trf.z - SnapSize);
-		MaxZ = std::max(MaxZ, trf.z + SnapSize);
+		MinX = std::min(MinX, trf.x);
+		MaxX = std::max(MaxX, trf.x);
+		MinY = std::min(MinY, trf.y);
+		MaxY = std::max(MaxY, trf.y);
+		MinZ = std::min(MinZ, trf.z);
+		MaxZ = std::max(MaxZ, trf.z);
 	}
 
 
-	MinX = std::floor(MinX / SnapSize) * SnapSize;
-	MinY = std::floor(MinY / SnapSize) * SnapSize;
-	MinZ = std::floor(MinZ / SnapSize) * SnapSize;
-	MaxX = std::floor(MaxX / SnapSize) * SnapSize;
-	MaxY = std::floor(MaxY / SnapSize) * SnapSize;
-	MaxZ = std::floor(MaxZ / SnapSize) * SnapSize;
+	MinX = std::floor(MinX) - 0.5f;
+	MinY = std::floor(MinY) - 0.5f;
+	MinZ = std::floor(MinZ) - 0.5f;
+	MaxX = std::ceil(MaxX) + 0.5f;
+	MaxY = std::ceil(MaxY) + 0.5f;
+	MaxZ = std::ceil(MaxZ) + 0.5f;
 
-	constexpr float DepthMultiplier = 20;
+	constexpr float DepthMultiplier = 10;
 	if (MinZ < 0)
 	{
 		MinZ *= DepthMultiplier;
@@ -215,6 +216,7 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 	{
 		MaxZ *= DepthMultiplier;
 	}
+
 	const glm::mat4 LightProjection = glm::ortho(MinX, MaxX, MinY, MaxY, MinZ, MaxZ);
 
 	return LightProjection * LightView;

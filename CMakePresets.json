@@ -76,6 +76,9 @@
 				"lhs": "${hostSystemName}",
 				"rhs": "Linux"
 			},
+			"environment": {
+				"WAYLAND_DISPLAY": "wayland-0"
+			},
 			"vendor": {
 				"microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
 					"sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
@@ -91,6 +94,9 @@
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
 				"ENGINE_EDITOR": "ON"
+			},
+			"environment": {
+				"WAYLAND_DISPLAY": "wayland-0"
 			},
 			"condition": {
 				"type": "equals",

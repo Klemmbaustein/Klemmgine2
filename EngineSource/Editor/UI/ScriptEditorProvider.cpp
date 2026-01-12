@@ -332,7 +332,7 @@ void engine::editor::ScriptEditorProvider::UpdateAutoComplete()
 		ParentEditor->Edit();
 	}
 
-	if (!Input.IsKeyDown(Key::SPACE) || !Input.IsKeyDown(Key::LCTRL))
+	if (!Input.IsKeyDown(Key::SPACE) || !Input.IsKeyDown(Key::CTRL))
 	{
 		return;
 	}

@@ -90,6 +90,9 @@ namespace engine::editor
 		void OnResized() override;
 		void OnThemeChanged() override;
 
+		SerializedValue Serialize() override;
+		void DeSerialize(SerializedValue* From) override;
+
 		/**
 		 * @brief
 		 * Refreshes the items shown in the panel.

@@ -1,4 +1,6 @@
 #include "Platform.h"
+using namespace engine;
+
 #ifdef WINDOWS
 #include <Windows.h>
 #include <map>
@@ -218,7 +220,9 @@ engine::string engine::platform::GetSystemUserName()
 
 engine::string engine::platform::GetThreadName()
 {
-	return "<Unknown thread>";
+	char ThreadBuffer[8000];
+	pthread_getname_np(pthread_self(), ThreadBuffer, sizeof(ThreadBuffer));
+	return ThreadBuffer;
 }
 engine::string engine::platform::GetExecutablePath()
 {
@@ -247,3 +251,30 @@ engine::string engine::platform::GetExecutablePath()
 }
 
 #endif
+
+#if WINDOWS
+#define popen _popen
+#define pclose _pclose
+#endif
+
+string engine::platform::GetCommandOutput(string Command)
+{
+	FILE* CommandPipe = popen(Command.c_str(), "r");
+
+	string Output;
+
+	if (CommandPipe == nullptr)
+	{
+		return Output;
+	}
+
+	while (!feof(CommandPipe))
+	{
+		char NewDataBuffer[8000];
+		size_t Read = fread(NewDataBuffer, 1, sizeof(NewDataBuffer) - 1, CommandPipe);
+		NewDataBuffer[Read] = 0;
+		Output.append(NewDataBuffer);
+	}
+	pclose(CommandPipe);
+	return Output;
+}

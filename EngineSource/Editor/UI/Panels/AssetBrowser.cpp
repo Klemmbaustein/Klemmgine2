@@ -61,25 +61,25 @@ engine::editor::AssetBrowser::AssetBrowser()
 		}
 	});
 
-	AddShortcut(kui::Key::i, kui::Key::LCTRL, [this] {
+	AddShortcut(kui::Key::i, kui::Key::CTRL, [this] {
 		Import(GetPathDisplayName());
 	});
 
-	AddShortcut(kui::Key::d, kui::Key::LCTRL, [this] {
+	AddShortcut(kui::Key::d, kui::Key::CTRL, [this] {
 		EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
 	});
 
-	AddShortcut(kui::Key::n, kui::Key::LCTRL, [this] {
+	AddShortcut(kui::Key::n, kui::Key::CTRL, [this] {
 		EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
 		resource::ScanForAssets();
 	});
 
-	AddShortcut(kui::Key::m, kui::Key::LCTRL, [this] {
+	AddShortcut(kui::Key::m, kui::Key::CTRL, [this] {
 		EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
 		resource::ScanForAssets();
 	});
 
-	AddShortcut(kui::Key::t, kui::Key::LCTRL, [this] {
+	AddShortcut(kui::Key::t, kui::Key::CTRL, [this] {
 		EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag");
 		resource::ScanForAssets();
 	});

@@ -1,4 +1,4 @@
-#if defined(__linux__)
+#ifdef LINUX
 #include <Core/Networking/Http.h>
 #include "HttpInternal.hpp"
 #include <Core/Closeable.h>

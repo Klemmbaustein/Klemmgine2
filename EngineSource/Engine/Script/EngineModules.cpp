@@ -20,6 +20,7 @@
 #include <Core/Log.h>
 
 #include "Bindings/MathBindings.h"
+#include "Bindings/SerializeBindings.h"
 
 #define ENGINE_OFFSETOF(T, m)  (::ds::Size)(::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
 
@@ -92,7 +93,8 @@ static void Scene_createNewObject(InterpretContext* context)
 
 	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
 
-	auto NewObject = TargetScene.getValue()->CreateObjectFromID(script::ScriptSubsystem::Instance->ScriptObjectIds.at(obj.id));
+	auto NewObject = TargetScene.getValue()->CreateObjectFromID(
+		script::ScriptSubsystem::Instance->ScriptObjectIds.at(obj.id));
 
 	auto ScriptObject = dynamic_cast<script::ScriptObject*>(NewObject);
 	if (ScriptObject)
@@ -144,7 +146,7 @@ static void SceneObject_getName(InterpretContext* context)
 {
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
 
-	std::string& Name = Data.getValue()->Name;
+	const std::string& Name = Data.getValue()->Name;
 
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
 }
@@ -284,11 +286,6 @@ static void Input_IsRMBClicked(InterpretContext* context)
 
 #pragma endregion
 
-static void WriteVec(InterpretContext* context)
-{
-	Log::Info(context->popValue<Vector3>().ToString());
-}
-
 static void Vector3_Length(InterpretContext* context)
 {
 	context->pushValue(context->popValue<Vector3>().Length());
@@ -358,6 +355,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	auto BoolInst = ToContext->registry.getEntry<BoolType>();
 
 	MathBindings Math = AddMathModule(EngineModule, ToContext);
+	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
 
 	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
 
@@ -546,11 +544,6 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			nullptr, "setFOV", &CameraComponent_setFOV));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(Math.Vec3, "message") },
-			nullptr, "writeVec", &WriteVec));
-
-
-	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "extension") },
 			AssetRefType, "emptyAsset", AssetRef_emptyAsset));
 
@@ -590,8 +583,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineInputModule.addEnumValue(KeyType, "left", Key::LEFT);
 	EngineInputModule.addEnumValue(KeyType, "right", Key::RIGHT);
 	EngineInputModule.addEnumValue(KeyType, "space", Key::SPACE);
-	EngineInputModule.addEnumValue(KeyType, "shift", Key::LSHIFT);
-	EngineInputModule.addEnumValue(KeyType, "ctrl", Key::LCTRL);
+	EngineInputModule.addEnumValue(KeyType, "shift", Key::SHIFT);
+	EngineInputModule.addEnumValue(KeyType, "ctrl", Key::CTRL);
 	EngineInputModule.addEnumValue(KeyType, "enter", Key::RETURN);
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
 		BoolInst, "isKeyDown", &Input_IsKeyDown));

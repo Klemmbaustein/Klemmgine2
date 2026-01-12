@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/Types.h>
+#include <Core/File/SerializedData.h>
 #include <kui/Vec2.h>
 #include <EditorPanel.kui.hpp>
 #include <kui/Input.h>
@@ -7,7 +8,7 @@
 
 namespace engine::editor
 {
-	class EditorPanel
+	class EditorPanel : ISerializable
 	{
 	public:
 		/**
@@ -117,6 +118,11 @@ namespace engine::editor
 		void SetFocused();
 		void SetName(string NewName);
 
+		string GetTypeName() const
+		{
+			return TypeName;
+		}
+
 		/**
 		 * @brief
 		 * Function called when the editor theme colors have changed.
@@ -161,6 +167,10 @@ namespace engine::editor
 		 */
 		void AddShortcut(kui::Key NewKey, std::optional<kui::Key> Modifier, std::function<void()> OnPressed,
 			ShortcutOptions Options = ShortcutOptions::None);
+
+		SerializedValue Serialize() override;
+
+		void DeSerialize(SerializedValue* FromData) override;
 
 	protected:
 

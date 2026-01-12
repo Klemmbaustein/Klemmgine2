@@ -27,6 +27,7 @@ void engine::TextSerializer::ToStream(const std::vector<SerializedData>& Target,
 void engine::TextSerializer::ToFile(const std::vector<SerializedData>& Target, string File)
 {
 	std::ofstream Out = std::ofstream(File);
+	Out.exceptions(std::ios::badbit | std::ios::failbit);
 	ToStream(Target, Out);
 	Out.close();
 }

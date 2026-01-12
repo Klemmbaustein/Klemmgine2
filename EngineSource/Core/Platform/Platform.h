@@ -5,6 +5,7 @@
 namespace engine::platform
 {
 	void Execute(string Command);
+	string GetCommandOutput(string Command);
 	void Open(string File);
 
 	void SetConsoleColor(Log::LogColor NewColor);

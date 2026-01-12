@@ -11,7 +11,7 @@ namespace engine
 
 		ENGINE_OBJECT(MeshObject, "Engine");
 
-		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", ".kmdl"_asset, this);
+		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", AssetRef::EmptyAsset("kmdl"), this);
 
 		MeshComponent* Mesh = nullptr;
 		CollisionComponent* Collider = nullptr;

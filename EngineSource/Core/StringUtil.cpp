@@ -21,7 +21,8 @@ std::vector<engine::string> engine::str::Split(string Target, const string& Deli
 		FirstDelim = Target.find_first_of(Delim);
 	}
 
-	Out.push_back(Target);
+	if (!Target.empty())
+		Out.push_back(Target);
 
 	return Out;
 }

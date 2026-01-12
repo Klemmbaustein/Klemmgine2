@@ -5,8 +5,8 @@
 #include <Editor/UI/Elements/DroppableBox.h>
 #include <Core/Log.h>
 #include <filesystem>
-#include <Engine/MainThread.h>
-#include <Core/Error/EngineAssert.h>
+
+using namespace engine;
 using namespace kui;
 using namespace engine::editor;
 
@@ -91,7 +91,7 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 		Back();
 	});
 
-	AddShortcut(Key::r, Key::LCTRL, [this]() {
+	AddShortcut(Key::r, Key::CTRL, [this]() {
 		UpdateItems();
 	});
 }
@@ -100,6 +100,18 @@ void engine::editor::ItemBrowser::OnThemeChanged()
 {
 	UpdateItems();
 	StatusText->SetColor(EditorUI::Theme.Text);
+}
+
+SerializedValue engine::editor::ItemBrowser::Serialize()
+{
+	return std::vector{
+		SerializedData("mode", int32(this->Mode))
+	};
+}
+
+void engine::editor::ItemBrowser::DeSerialize(SerializedValue* From)
+{
+	this->Mode = DisplayMode(From->At("mode").GetInt());
 }
 
 void engine::editor::ItemBrowser::Update()
@@ -162,9 +174,9 @@ void engine::editor::ItemBrowser::OnResized()
 	if (Width > 600)
 	{
 		Heading->container->SetHorizontal(true);
-		Heading->pathButtons->SetMinWidth(UISize::Pixels(Width - 300));
+		Heading->pathButtons->SetMinWidth(UISize::Pixels(Width - 290));
 		Heading->searchBox->SetSize(UISize::Pixels(255));
-		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 360));
+		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 350));
 	}
 	else
 	{
@@ -336,7 +348,7 @@ void engine::editor::ItemBrowser::DisplayList()
 
 			if (!Buttons[i].first.Selected)
 			{
-				if (!input::IsKeyDown(input::Key::LSHIFT))
+				if (!input::IsKeyDown(input::Key::SHIFT))
 				{
 					for (auto& btn : Buttons)
 					{

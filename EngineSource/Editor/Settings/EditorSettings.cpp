@@ -72,5 +72,5 @@ void engine::editor::Settings::AddCategory(SettingsCategory* NewCategory)
 
 string engine::editor::Settings::GetSettingsPath()
 {
-	return GetEditorPath() + "/settings.json";
+	return GetEditorPath() + "/Config/settings.json";
 }

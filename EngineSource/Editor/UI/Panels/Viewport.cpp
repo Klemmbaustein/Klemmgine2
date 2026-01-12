@@ -96,28 +96,28 @@ engine::editor::Viewport::Viewport()
 	auto Win = Window::GetActiveWindow();
 
 	AddShortcut(Key::LEFT, {}, [this, Win] {
-		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, -Speed));
 	});
 
 	AddShortcut(Key::RIGHT, {}, [this, Win] {
-		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, Speed));
 	});
 
 	AddShortcut(Key::DOWN, {}, [this, Win] {
-		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
-		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		bool ShiftDown = Win->Input.IsKeyDown(Key::SHIFT);
+		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, -Speed, 0) : Vector3(-Speed, 0, 0));
 	});
 
 	AddShortcut(Key::UP, {}, [this, Win] {
-		bool ShiftDown = Win->Input.IsKeyDown(Key::LSHIFT);
-		float Speed = (Win->Input.IsKeyDown(Key::LCTRL) ? 10 : 1) * GridSize;
+		bool ShiftDown = Win->Input.IsKeyDown(Key::SHIFT);
+		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
 	});
 
-	AddShortcut(Key::c, Key::LCTRL, [this, Win] {
+	AddShortcut(Key::c, Key::CTRL, [this, Win] {
 		std::stringstream Stream;
 
 		SerializedValue ToCopy = (*SelectedObjects.begin())->Serialize();
@@ -129,7 +129,7 @@ engine::editor::Viewport::Viewport()
 		Win->Input.SetClipboard(Stream.str());
 	});
 
-	AddShortcut(Key::v, Key::LCTRL, [this, Win] {
+	AddShortcut(Key::v, Key::CTRL, [this, Win] {
 
 		std::stringstream Stream;
 		Stream << Win->Input.GetClipboard();
@@ -150,14 +150,14 @@ engine::editor::Viewport::Viewport()
 		Win->Input.SetClipboard(Stream.str());
 	});
 
-	AddShortcut(Key::s, Key::LCTRL, [this] {
+	AddShortcut(Key::s, Key::CTRL, [this] {
 		if (!Engine::IsPlaying && UnsavedChanges)
 		{
 			SaveCurrentScene();
 		}
 	});
 
-	AddShortcut(Key::z, Key::LCTRL, [this] {
+	AddShortcut(Key::z, Key::CTRL, [this] {
 		if (!Engine::IsPlaying)
 		{
 			UndoLast();
@@ -169,7 +169,7 @@ engine::editor::Viewport::Viewport()
 		{
 			return;
 		}
-		if (input::IsKeyDown(input::Key::LSHIFT))
+		if (input::IsKeyDown(input::Key::SHIFT))
 		{
 			EditorUI::FocusedPanel = nullptr;
 		}
@@ -181,7 +181,7 @@ engine::editor::Viewport::Viewport()
 			Viewport::Current->SetName(Viewport::Current->UnsavedChanges
 				? "Viewport*" : "Viewport");
 		}
-	});
+	}, ShortcutOptions::AllowInText);
 
 	AddShortcut(Key::F5, {}, [this] {
 		if (!Engine::IsPlaying)
@@ -354,7 +354,7 @@ void engine::editor::Viewport::Update()
 	{
 		float Speed = stats::DeltaTime * 5;
 
-		if (input::IsKeyDown(input::Key::LSHIFT))
+		if (input::IsKeyDown(input::Key::SHIFT))
 		{
 			Speed *= 5;
 		}
@@ -382,7 +382,7 @@ void engine::editor::Viewport::Update()
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
 		&& input::IsLMBClicked && !Translate->HasGrabbedClick)
 	{
-		if (!input::IsKeyDown(input::Key::LSHIFT))
+		if (!input::IsKeyDown(input::Key::SHIFT))
 		{
 			Viewport::Current->ClearSelected();
 		}
