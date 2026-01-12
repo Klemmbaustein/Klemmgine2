@@ -294,34 +294,66 @@ void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAli
 		NewChild->ClearParent();
 		if (Parent->ChildrenAlign != ChildAlign)
 		{
+			EditorPanel* Parent = this->Parent;
 			EditorPanel* New = new EditorPanel("panel");
-			if (Position > 0)
-				New->Children = { this, NewChild };
+
+			if (Parent->ChildrenAlign == Align::Tabs)
+			{
+				for (EditorPanel* Child : Parent->Children)
+				{
+					Child->Parent = New;
+				}
+
+				New->Children = Parent->Children;
+
+				if (Position > 0)
+					Parent->Children = { New, NewChild };
+				else
+					Parent->Children = { NewChild, New };
+
+				NewChild->Parent = Parent;
+				this->Parent = New;
+				Parent->ChildrenAlign = ChildAlign;
+				New->ChildrenAlign = Align::Tabs;
+				New->SelectedTab = Parent->SelectedTab;
+
+				if (Select)
+				{
+					NewChild->SetFocused();
+				}
+			}
 			else
-				New->Children = { NewChild, this };
+			{
+				if (Position > 0)
+					New->Children = { this, NewChild };
+				else
+					New->Children = { NewChild, this };
+
+				for (EditorPanel*& Child : Parent->Children)
+				{
+					if (Child == this)
+					{
+						Child = New;
+					}
+				}
+
+				NewChild->Parent = New;
+				this->Parent = New;
+				New->ChildrenAlign = ChildAlign;
+
+				if (Select)
+				{
+					New->SelectedTab = 1;
+					NewChild->SetFocused();
+				}
+			}
 
 			New->Parent = this->Parent;
-			New->ChildrenAlign = ChildAlign;
+
 			New->SizeFraction = SizeFraction;
 			this->SizeFraction = 0.5;
 			NewChild->SizeFraction = 0.5;
-
-			for (EditorPanel*& Child : Parent->Children)
-			{
-				if (Child == this)
-				{
-					Child = New;
-				}
-			}
-			if (Select)
-			{
-				New->SelectedTab = 1;
-				NewChild->SetFocused();
-			}
 			Parent->ShouldUpdate = true;
-
-			NewChild->Parent = New;
-			this->Parent = New;
 		}
 		else
 		{

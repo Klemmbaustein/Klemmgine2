@@ -130,7 +130,7 @@ float getShadowStrength()
 	}
 
 	float bias = (1 - (abs(dot(v_normal, u_lightDirection)))) / 75 + 0.01;
-	bias *= max((abs(u_shadowBiasModifier * 1.25)), 0.5) / 15.0;
+	bias *= max((abs(u_shadowBiasModifier * 1.25)), 0.5) / 10.0;
 	if (u_shadowBiasModifier < -0.95)
 		bias *= 1.5;
 	bias *= 0.12;

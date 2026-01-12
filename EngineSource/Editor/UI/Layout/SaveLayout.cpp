@@ -8,6 +8,7 @@
 #include <Editor/UI/Panels/ConsolePanel.h>
 #include <Editor/UI/Panels/PropertyPanel.h>
 #include <Editor/UI/Panels/ScenePanel.h>
+#include <Editor/UI/Panels/MessagePanel.h>
 
 using namespace engine;
 
@@ -107,6 +108,10 @@ void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedVal
 		else if (Type == "scene")
 		{
 			NewPanel = new ScenePanel();
+		}
+		else if (Type == "messages")
+		{
+			NewPanel = new MessagePanel();
 		}
 		else if (Type == "panel")
 		{
