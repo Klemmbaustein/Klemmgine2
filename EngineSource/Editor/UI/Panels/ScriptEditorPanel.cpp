@@ -5,6 +5,7 @@
 #include <Editor/UI/CodeEditorTheme.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Elements/Toolbar.h>
+#include <Editor/UI/Windows/SettingsWindow.h>
 #include <Engine/Engine.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <filesystem>
@@ -40,6 +41,14 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 				.Icon = TrimWhitespace ? EditorUI::Asset("Dot.png") : "",
 				.OnClicked = [TrimWhitespace]() {
 					Settings::GetInstance()->Script.SetSetting("trimWhitespace", !TrimWhitespace);
+				},
+				.Separator = true,
+			},
+			DropdownMenu::Option{
+				.Name = "Open all script settings",
+				.Icon = EditorUI::Asset("Open.png"),
+				.OnClicked = []() {
+					new SettingsWindow("Script Editor");
 				},
 			},
 		};

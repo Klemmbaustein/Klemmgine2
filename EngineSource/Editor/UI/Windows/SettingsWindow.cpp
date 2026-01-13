@@ -12,9 +12,16 @@
 using namespace kui;
 
 engine::editor::SettingsWindow::SettingsWindow()
+	: SettingsWindow("")
+{
+
+}
+
+engine::editor::SettingsWindow::SettingsWindow(string OpenPageName)
 	: IDialogWindow("Editor Settings", {
 		Option{.Name = "Close", .Close = true, .IsClose = true } }, Vec2ui(640, 480))
 {
+	this->OpenPageName = OpenPageName;
 	this->Open();
 }
 
@@ -45,6 +52,14 @@ void engine::editor::SettingsWindow::Begin()
 		->AddChild(Sidebar)
 		->AddChild(SettingsMenu));
 
+	for (size_t i = 0; i < Pages.size(); i++)
+	{
+		if (Pages[i]->Name == OpenPageName)
+		{
+			ShowPage(Pages[i]);
+			return;
+		}
+	}
 	ShowPage(Pages.at(0));
 }
 

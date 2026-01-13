@@ -154,11 +154,7 @@ void engine::editor::ItemBrowser::Update()
 
 		auto* Hovered = GetHoveredButton();
 
-		if (Hovered)
-		{
-			Hovered->first.OnRightClick();
-		}
-		else
+		if (!Hovered)
 		{
 			this->OnBackgroundRightClick(Win->Input.MousePosition);
 		}
@@ -291,8 +287,7 @@ void engine::editor::ItemBrowser::DisplayList()
 			btn->SetMaxWidth(ElementSize);
 			btn->text->SetWrapEnabled(true, ElementSize.GetScreen().X - (20_px).GetScreen().X);
 			btn->SetImage(NewItem.Image);
-			btn->btn->OnDragged = [NewItem](int)
-			{
+			btn->btn->OnDragged = [NewItem](int) {
 				EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
 					.Name = NewItem.Name,
 					.Type = "asset",
@@ -301,6 +296,9 @@ void engine::editor::ItemBrowser::DisplayList()
 					.Color = NewItem.Color,
 					.ObjectType = NewItem.Type,
 					});
+			};
+			btn->btn->OnRightClicked = [NewItem]() {
+				NewItem.OnRightClick();
 			};
 			Element = btn;
 			ElementButton = btn->btn;
@@ -312,8 +310,7 @@ void engine::editor::ItemBrowser::DisplayList()
 			btn->SetColor(NewItem.Color);
 			btn->SetName(NewItem.Name);
 			btn->SetImage(NewItem.Image);
-			btn->button->OnDragged = [NewItem](int)
-			{
+			btn->button->OnDragged = [NewItem](int) {
 				EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
 					.Name = NewItem.Name,
 					.Type = "asset",
@@ -322,6 +319,9 @@ void engine::editor::ItemBrowser::DisplayList()
 					.Color = NewItem.Color,
 					.ObjectType = NewItem.Type,
 					});
+			};
+			btn->button->OnRightClicked = [NewItem]() {
+				NewItem.OnRightClick();
 			};
 			Element = btn;
 			ElementButton = btn->button;

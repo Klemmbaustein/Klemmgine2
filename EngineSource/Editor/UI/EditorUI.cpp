@@ -351,6 +351,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Markup.SetGlobal("Color_HighlightText", Theme.HighlightText);
 	Target->Markup.SetGlobal("Color_SelectedText", Theme.SelectedText);
 	Target->Markup.SetGlobal("Theme_CornerSize", Theme.CornerSize);
+	Target->Markup.SetGlobal("Theme_TabAlign", UIBox::Align::Default);
 	Target->Markup.SetGetStringFunction(&EditorUI::Asset);
 
 	Target->Colors.ScrollBackgroundColor = Theme.Background;
@@ -358,8 +359,10 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Colors.ScrollBarColor = Theme.DarkText;
 	Target->Colors.TextFieldSelection = Theme.SelectedText;
 	Target->Colors.TextFieldTextDefaultColor = Theme.Text;
+	Target->Colors.KeyboardSelectionColor = Theme.Text;
 
-	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1, Theme.CornerSize.Value > 0, Target);
+	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1,
+		Theme.CornerSize.Value > 0, Target);
 
 	if (Full && thread::IsMainThread && Instance)
 	{
@@ -383,9 +386,11 @@ void engine::editor::EditorUI::Update()
 	if (DraggedBox)
 	{
 		if (CurrentDraggedItem.Centered)
-			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - DraggedBox->GetUsedSize().GetScreen() / 2);
+			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition
+				- DraggedBox->GetUsedSize().GetScreen() / 2);
 		else
-			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition - Vec2f(0, DraggedBox->GetUsedSize().GetScreen().Y));
+			DraggedBox->SetPosition(DraggedBox->GetParentWindow()->Input.MousePosition
+				- Vec2f(0, DraggedBox->GetUsedSize().GetScreen().Y));
 		Window::GetActiveWindow()->CurrentCursor = Window::Cursor::Default;
 
 		// Don't hover anything new when dragging something.

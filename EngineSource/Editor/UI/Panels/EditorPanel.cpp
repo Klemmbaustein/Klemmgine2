@@ -77,11 +77,11 @@ void engine::editor::EditorPanel::UpdateLayout()
 
 	if (PanelElement)
 	{
+		Size = UsedSizeToPanelSize(UsedSize);
+		PanelPosition = PositionToPanelPosition(Position);
 		UpdateFocusState();
 		GenerateTabs();
-		Size = UsedSizeToPanelSize(UsedSize);
 		PanelElement->SetSize(SizeVec(Size));
-		PanelPosition = PositionToPanelPosition(Position);
 		PanelElement->SetPosition(PanelPosition);
 	}
 
@@ -348,7 +348,7 @@ void engine::editor::EditorPanel::AddChild(EditorPanel* NewChild, Align ChildAli
 				}
 			}
 
-			New->Parent = this->Parent;
+			New->Parent = Parent;
 
 			New->SizeFraction = SizeFraction;
 			this->SizeFraction = 0.5;
@@ -602,8 +602,8 @@ void engine::editor::EditorPanel::MovePanel()
 	Move.HighlightBackground = new UIBlurBackground(true, 0, EditorUI::Theme.HighlightDark);
 	Move.HighlightBackground
 		->SetOpacity(0.5f)
-		->SetBorder(UISize::Pixels(3), EditorUI::Theme.Highlight1)
-		->SetCorner(UISize::Pixels(5))
+		->SetBorder(3_px, EditorUI::Theme.Highlight1)
+		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetVerticalAlign(UIBox::Align::Centered);
 

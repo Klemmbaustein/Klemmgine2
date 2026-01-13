@@ -252,7 +252,7 @@ void engine::editor::PropertyMenu::AddInfoEntry(string Name, string Value)
 {
 	auto* New = CreateNewEntry(Name);
 
-	New->valueBox->AddChild((new UITextField(0, 0, this->MenuFont, nullptr))
+	New->valueBox->AddChild((new UITextField(0, EditorUI::Theme.Background, this->MenuFont, nullptr))
 		->SetCanEdit(false)
 		->SetText(Value)
 		->SetTextSize(11_px)

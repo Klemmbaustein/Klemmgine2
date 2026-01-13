@@ -11,3 +11,4 @@ global Color_HighlightDark = (0.15, 0.15, 0.35);
 global Color_HighlightText = 0;
 
 global Theme_CornerSize = 5px;
+global Theme_TabAlign = default;

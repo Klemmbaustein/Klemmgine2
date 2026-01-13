@@ -115,6 +115,7 @@ element EditorPanelElement
 	child UIBackground tabBox
 	{
 		verticalAlign = default;
+		horizontalAlign = Theme_TabAlign;
 		corners = Theme_CornerSize;
 		bottomLeftCorner = false;
 		bottomRightCorner = false;

@@ -8,6 +8,7 @@ namespace engine::editor
 	{
 	public:
 		SettingsWindow();
+		SettingsWindow(string OpenPageName);
 		virtual ~SettingsWindow();
 
 		void Begin() override;
@@ -27,5 +28,8 @@ namespace engine::editor
 		PropertyMenu* SettingsMenu = nullptr;
 
 		kui::UIScrollBox* Sidebar = nullptr;
+
+	private:
+		string OpenPageName;
 	};
 }
