@@ -194,6 +194,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				{
 					EditorUI::Instance->AssetsProvider->DeleteFile(FilePath);
 					resource::ScanForAssets();
+					UpdateItems();
 				},
 				});
 

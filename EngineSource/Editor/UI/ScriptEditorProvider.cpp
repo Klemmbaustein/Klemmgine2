@@ -622,11 +622,19 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 
 void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 {
+	if (!ParentEditor->IsLineLoaded(Line))
+	{
+		return;
+	}
+
 	auto found = Highlights.find(Line);
 	std::vector<EditorColorizeSegment> Segments;
 
 	if (found == Highlights.end())
 	{
+		std::vector<TextSegment> Segments;
+		EngineTextEditorProvider::GetLine(Line, Segments);
+		UpdateLine(Line, Segments);
 		return;
 	}
 

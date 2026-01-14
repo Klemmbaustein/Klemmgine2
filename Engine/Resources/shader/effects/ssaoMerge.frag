@@ -10,13 +10,12 @@ float getAo()
 {
 	float depth = -texture(u_position, v_texcoords).z;
 
-
 	vec2 texelSize = 1.0 / vec2(textureSize(u_aoTexture, 0));
 	int sampled = 0;
 	float result = 0;
-	for (int x = -1; x < 1; ++x)
+	for (int x = -1; x < 2; ++x)
 	{
-		for (int y = -1; y < 1; ++y)
+		for (int y = -1; y < 2; ++y)
 		{
 			vec2 offset = vec2(float(x), float(y)) * texelSize;
 			vec2 aoValue = texture(u_aoTexture, v_texcoords + offset).xy;

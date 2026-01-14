@@ -21,14 +21,9 @@ void main()
 {
 	vec3 fragPos = texture(gPosition, v_texcoords).xyz;
 
-	if (fragPos.y < -100)
-	{
-		FragColor = vec4(1, -fragPos.z, 0, 1);
-		return;
-	}
-
 	vec3 normal = normalize(texture(gNormal, v_texcoords).rgb);
 	vec3 randomVec = normalize(texture(texNoise, v_texcoords * noiseScale).xyz);
+
 	// create TBN change-of-basis matrix: from tangent-space to view-space
 	vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
 	vec3 bitangent = cross(normal, tangent);

@@ -211,8 +211,7 @@ vec3 fragment();
 void main()
 {
 	f_color.rgb = fragment();
-	//f_color.rgb = texture(u_shadowMaps, vec3(v_texCoord, 0)).rrr;
 	f_color.a = opacity;
 	f_position = v_screenPosition;
-	f_normal = v_screenNormal != vec3(0) ? normalize(v_screenNormal) : vec3(0, 1, 0);
+	f_normal = v_screenNormal != vec3(0) ? normalize(v_screenNormal) : vec3(0, 0, 0);
 }

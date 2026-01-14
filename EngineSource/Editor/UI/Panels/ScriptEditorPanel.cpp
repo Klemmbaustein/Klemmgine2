@@ -31,7 +31,6 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		GetSelectedTab()->Provider->Redo();
 	});
 
-
 	EditorToolbar->AddDropdown("Settings", EditorUI::Asset("Settings.png"),
 		[this]() -> std::vector<DropdownMenu::Option> {
 		auto TrimWhitespace = Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool();
