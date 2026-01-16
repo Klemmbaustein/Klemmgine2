@@ -264,7 +264,7 @@ void engine::editor::Viewport::Update()
 		uint64 Fps = uint64(std::round(float(FameCount) / StatsRedrawTimer.Get()));
 
 		int ObjCount = 0;
-		string SceneName = "<No name> (Unsaved)";
+		string SceneName = "<No scene>";
 
 		if (SceneSystem->Main)
 		{
@@ -506,6 +506,8 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 
 	if (Dropped.Extension != "kmdl")
 	{
+		EditorUI::SetStatusMessage("Cannot add an item of type '" + Dropped.Extension + "' into the scene",
+			EditorUI::StatusType::Error);
 		return;
 	}
 

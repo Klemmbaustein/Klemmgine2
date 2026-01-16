@@ -190,7 +190,6 @@ void engine::LandscapeComponent::Draw(graphics::Camera* From)
 
 void engine::LandscapeComponent::SimpleDraw(graphics::ShaderObject* With)
 {
-	With->Bind();
 	this->LandscapeMaterial->ApplySimple(With);
 	glUniformMatrix4fv(With->ModelUniform, 1, false, &WorldTransform.Matrix[0][0]);
 	LandscapeMesh->Draw();

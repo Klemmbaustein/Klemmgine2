@@ -305,6 +305,13 @@ void engine::VideoSubsystem::RenderUpdate()
 	PostProcess->SetInt("u_texture", 0);
 	PostProcess->SetInt("u_ui", 1);
 	PostProcess->SetInt("u_alpha", 2);
+	PostProcess->SetInt("u_debugShadowMaps", MainWindow->Input.IsKeyDown(Key::n));
+	if (SceneSystem && SceneSystem->Main)
+	{
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, graphics::CascadedShadows::LightDepthMaps);
+		PostProcess->SetInt("u_shadowMaps", 3);
+	}
 
 #if EDITOR
 	if (EditorSubsystem::Active)

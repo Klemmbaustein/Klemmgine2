@@ -628,7 +628,6 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 	}
 
 	auto found = Highlights.find(Line);
-	std::vector<EditorColorizeSegment> Segments;
 
 	if (found == Highlights.end())
 	{
@@ -644,6 +643,7 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 	});
 
 	size_t LastStart = 0;
+	std::vector<EditorColorizeSegment> Segments;
 
 	for (ScriptSyntaxHighlight& i : found->second)
 	{

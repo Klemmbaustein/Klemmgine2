@@ -234,8 +234,7 @@ void engine::editor::PropertyMenu::AddDropdownEntry(string Name,
 {
 	auto* New = CreateNewEntry(Name);
 	auto* Dropdown = new UIDropdown(0, ElementSize, EditorUI::Theme.DarkBackground,
-		EditorUI::Theme.Text, Values,
-		[Values, OnChanged](int i) {
+		EditorUI::Theme.Text, Values, [Values, OnChanged](int i) {
 		OnChanged(Values[i]);
 	}, this->MenuFont);
 

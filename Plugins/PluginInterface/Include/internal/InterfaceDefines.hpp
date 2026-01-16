@@ -49,6 +49,10 @@ STRUCT_MEMBER(GetDynamicChild, kuiUIBox*, (kuiUIBox * Target, const char* Name),
 { auto c = (kui::markup::UIDynMarkupBox*)Target; return (kuiUIBox*)c->NamedChildren[Name]; })
 STRUCT_MEMBER(GetCanvasChild, kuiUIBox*, (void* UICanvas, const char* Name), \
 { auto c = (PluginUICanvas*)UICanvas; return (kuiUIBox*)c->GetElement(Name); })
+
+STRUCT_MEMBER(GetCanvasRootBox, kuiUIBox*, (void* UICanvas), \
+{ auto c = (PluginUICanvas*)UICanvas; return (kuiUIBox*)c->GetRootBox(); })
+
 STRUCT_MEMBER(AddChild, void, (kuiUIBox * Parent, kuiUIBox * Child), \
 { ((kui::UIBox*)Parent)->AddChild((kui::UIBox*)Child); })
 

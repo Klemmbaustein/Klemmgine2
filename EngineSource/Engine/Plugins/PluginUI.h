@@ -19,6 +19,8 @@ namespace engine::plugin
 		kui::UIBox* GetElement(string Name);
 		kui::UIBox* CreateElement(string Name);
 
+		kui::UIBox* GetRootBox();
+
 	private:
 
 		plugin::PluginCanvasInterface* Canvas = nullptr;

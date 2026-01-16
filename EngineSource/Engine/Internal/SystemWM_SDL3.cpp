@@ -45,14 +45,14 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	Window* Parent, Vec2ui Size, Vec2ui Pos, std::string Title, Window::WindowFlag Flags)
 {
 	engine::platform::Init();
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
 	SysWindow* OutWindow = new SysWindow();
 	OutWindow->Parent = Parent;
 
 	int SDLFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
-	// High pixel density is broken on linux
-	// TODO: Fix
-	//int SDLFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
 
 	if ((Flags & Window::WindowFlag::Resizable) == Window::WindowFlag::Resizable)
 	{

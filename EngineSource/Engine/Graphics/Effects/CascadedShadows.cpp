@@ -81,9 +81,14 @@ void CascadedShadows::Init()
 	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, MatricesBuffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	ShadowShader->Bind();
-	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), uint32(ShadowCascadeLevels.size() + 1));
+	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), uint32(ShadowCascadeLevels.size()));
+
+	uint32 UniformBlock = glGetUniformBlockIndex(ShadowShader->ShaderID, "LightSpaceMatrices");
+
+	glUniformBlockBinding(ShadowShader->ShaderID, UniformBlock, 0);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
@@ -96,7 +101,6 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 	for (size_t i = 0; i < LightMatrices.size(); ++i)
 	{
 		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4), sizeof(glm::mat4), &LightMatrices[i]);
-		auto vec = LightMatrices[i] * glm::vec4(3, 0, 0, 1);
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -108,10 +112,9 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 	if (!ShouldRender())
 		return 0;
 
-	glEnable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, LightFBO);
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	ShadowShader->Bind();
 	for (DrawableComponent* i : Components)
 	{
@@ -158,7 +161,7 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 		FrustumCenter += glm::vec3(v);
 	}
 	FrustumCenter /= float(Corners.size());
-	const float SnapSize = 1.0f;
+	const float SnapSize = 5.0f * (FarPlane / CAMERA_FAR_PLANE);
 
 	FrustumCenter.x = std::round(FrustumCenter.x / SnapSize) * SnapSize;
 	FrustumCenter.y = std::round(FrustumCenter.y / SnapSize) * SnapSize;
@@ -191,13 +194,12 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 		MaxZ = std::max(MaxZ, trf.z);
 	}
 
-
-	MinX = std::floor(MinX) - 0.5f;
-	MinY = std::floor(MinY) - 0.5f;
-	MinZ = std::floor(MinZ) - 0.5f;
-	MaxX = std::ceil(MaxX) + 0.5f;
-	MaxY = std::ceil(MaxY) + 0.5f;
-	MaxZ = std::ceil(MaxZ) + 0.5f;
+	MinX = std::floor(MinX / SnapSize) * SnapSize - 0.5f;
+	MinY = std::floor(MinY / SnapSize) * SnapSize - 0.5f;
+	MinZ = std::floor(MinZ / SnapSize) * SnapSize - 0.5f;
+	MaxX = std::ceil(MaxX / SnapSize) * SnapSize + 0.5f;
+	MaxY = std::ceil(MaxY / SnapSize) * SnapSize + 0.5f;
+	MaxZ = std::ceil(MaxZ / SnapSize) * SnapSize + 0.5f;
 
 	constexpr float DepthMultiplier = 10;
 	if (MinZ < 0)

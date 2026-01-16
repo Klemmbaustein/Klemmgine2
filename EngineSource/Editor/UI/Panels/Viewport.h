@@ -79,7 +79,6 @@ namespace engine::editor
 
 		Toolbar* ViewportToolbar = nullptr;
 		MeshComponent* Grid = nullptr;
-
 		TranslateGizmo* Translate = nullptr;
 
 		kui::UIText* ViewportStatusText = nullptr;

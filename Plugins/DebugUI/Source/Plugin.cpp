@@ -63,6 +63,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 		{
 			ConsoleBox = Interface->CreateUIBox("Console", UIObject);
 			ConsoleBackground = Interface->GetDynamicChild(ConsoleBox, "bg");
+			Interface->AddChild(Interface->GetCanvasRootBox(UIObject), ConsoleBox);
 
 			auto TextField = Interface->GetDynamicChild(ConsoleBox, "field");
 
@@ -112,6 +113,7 @@ element Overlay
 {
 	width = 100%;
 	height = 100%;
+	position = -1;
 
 	padding = 5px;
 
@@ -123,15 +125,12 @@ element Overlay
 		color = (1, 1, 0.2);
 		size = 15px;
 	}
-
-	child UIBox consoleBox
-	{}
 }
 
 element Console
 {
 	position = -1;
-	size = 2;
+	size = 100%;
 
 	verticalAlign = default;
 	orientation = vertical;
@@ -140,7 +139,7 @@ element Console
 	{
 		textColor = 1;
 		color = 0.1;
-		width = 2;
+		width = 100%;
 		textSize = 12px;
 		font = "mono";
 	}
@@ -152,7 +151,7 @@ element Console
 		leftBorder = false;
 		rightBorder = false;
 
-		width = 2;
+		width = 100%;
 		color = 0;
 		height = 500px;
 		opacity = 0.8;

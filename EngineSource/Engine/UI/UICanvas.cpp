@@ -1,5 +1,6 @@
 #include "UICanvas.h"
 #include <Engine/Scene.h>
+#include <kui/UI/UIBackground.h>
 #include <kui/Window.h>
 #ifdef EDITOR
 #include <Editor/UI/Panels/Viewport.h>
@@ -12,7 +13,7 @@ std::vector<UICanvas*> UICanvas::ActiveCanvases;
 
 engine::UICanvas::UICanvas()
 {
-	CanvasBox = new UIBox(true, -1);
+	CanvasBox = new UICanvasBox(0, 0);
 
 #ifdef EDITOR
 	if (editor::Viewport::Current)
@@ -21,8 +22,8 @@ engine::UICanvas::UICanvas()
 
 		CanvasBox
 			->SetPosition(ViewBackground->GetPosition())
-			->SetMinSize(ViewBackground->GetMinSize())
-			->SetMaxSize(ViewBackground->GetMinSize());
+			->SetSize(ViewBackground->GetMinSize());
+
 		return;
 	}
 #endif

@@ -2,6 +2,7 @@
 #include <Engine/Internal/OpenGL.h>
 #include <Engine/File/ModelData.h>
 #include <Engine/Scene.h>
+#include <Engine/Input.h>
 
 engine::graphics::Model::Model(const ModelData* From)
 {

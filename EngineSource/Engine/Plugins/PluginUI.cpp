@@ -29,6 +29,8 @@ void engine::plugin::PluginUICanvas::LoadElement(string Name, string ElementSour
 	this->Canvas = Canvas;
 	Canvas->UIObject = this;
 	Canvas->Begin();
+	CanvasBox->UpdateElement();
+	CanvasBox->RedrawElement();
 }
 
 kui::UIBox* engine::plugin::PluginUICanvas::GetElement(string Name)
@@ -45,7 +47,10 @@ kui::UIBox* engine::plugin::PluginUICanvas::GetElement(string Name)
 kui::UIBox* engine::plugin::PluginUICanvas::CreateElement(string Name)
 {
 	auto box = new kui::markup::UIDynMarkupBox(&ctx, Name);
-	box->UpdateElement();
-	box->RedrawElement();
 	return box;
+}
+
+kui::UIBox* engine::plugin::PluginUICanvas::GetRootBox()
+{
+	return CanvasBox;
 }

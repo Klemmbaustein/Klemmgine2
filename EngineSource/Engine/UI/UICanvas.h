@@ -1,5 +1,6 @@
 #pragma once
 #include <kui/UI/UIBox.h>
+#include <kui/UI/UICanvasBox.h>
 #include <Engine/Engine.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 
@@ -28,7 +29,7 @@ namespace engine
 		virtual ~UICanvas();
 		virtual void Update();
 
-		kui::UIBox* CanvasBox = nullptr;
+		kui::UICanvasBox* CanvasBox = nullptr;
 
 		static void UpdateAll();
 		static void ClearAll();
