@@ -82,7 +82,7 @@ void CascadedShadows::Init()
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, MatricesBuffer);
 	ShadowShader->Bind();
-	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), uint32(ShadowCascadeLevels.size()));
+	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 
 	uint32 UniformBlock = glGetUniformBlockIndex(ShadowShader->ShaderID, "LightSpaceMatrices");
 
@@ -113,9 +113,9 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 		return 0;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, LightFBO);
+	ShadowShader->Bind();
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	ShadowShader->Bind();
 	for (DrawableComponent* i : Components)
 	{
 		if (i->CastShadow)
@@ -147,7 +147,7 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 	Target->SetInt(Target->GetUniformLocation("u_shadowMaps"), 0);
 	Target->SetFloat(Target->GetUniformLocation("u_shadowBiasModifier"), BiasModifier);
 	Target->SetVec3(Target->GetUniformLocation("u_lightDirection"), LightDirection);
-	Target->SetInt(Target->GetUniformLocation("u_shadowCascadeCount"), uint32(ShadowCascadeLevels.size() + 1));
+	Target->SetInt(Target->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 }
 
 glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float NearPlane, float FarPlane)

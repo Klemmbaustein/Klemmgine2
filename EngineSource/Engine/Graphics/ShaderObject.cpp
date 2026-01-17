@@ -176,7 +176,7 @@ uint32 engine::graphics::ShaderObject::GetUniformLocation(string Name) const
 	return Location;
 }
 
-void engine::graphics::ShaderObject::SetInt(uint32 UniformLocation, uint32 Value)
+void engine::graphics::ShaderObject::SetInt(uint32 UniformLocation, int32 Value)
 {
 	glUniform1i(UniformLocation, Value);
 }

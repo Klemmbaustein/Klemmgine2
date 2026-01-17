@@ -26,7 +26,7 @@ namespace engine::graphics
 
 		uint32 GetUniformLocation(string Name) const;
 
-		void SetInt(uint32 UniformLocation, uint32 Value);
+		void SetInt(uint32 UniformLocation, int32 Value);
 		void SetFloat(uint32 UniformLocation, float Value);
 		void SetVec3(uint32 UniformLocation, Vector3 Value);
 		void SetVec2(uint32 UniformLocation, Vector2 Value);

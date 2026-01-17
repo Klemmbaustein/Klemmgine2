@@ -5,7 +5,7 @@
 #extension GL_ARB_gpu_shader5 : enable
 #endif
 
-layout(triangles, invocations = 5) in;
+layout(triangles, invocations = 3) in;
 layout(triangle_strip, max_vertices = 3) out;
 in vec2 v_texCoord[];
 out vec2 g_texCoord;
