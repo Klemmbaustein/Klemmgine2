@@ -8,11 +8,6 @@ uniform sampler2D u_alpha;
 uniform vec2 u_pos;
 uniform vec2 u_size;
 
-
-uniform bool u_debugShadowMaps = false;
-uniform sampler2DArray u_shadowMaps;
-
-
 void main()
 {
 	vec2 viewportTexCoords = (v_texcoords - u_pos) / u_size;
@@ -20,15 +15,7 @@ void main()
 	if (viewportTexCoords.x >= 0.0 && viewportTexCoords.y >= 0.0
 		&& viewportTexCoords.x <= 1.0 && viewportTexCoords.y <= 1.0)
 	{
-		//f_color.xyz = clamp(texture(u_texture, viewportTexCoords).xyz, vec3(0.0), vec3(1.0));
-		if (u_debugShadowMaps)
-		{
-			f_color = texture(u_shadowMaps, vec3(viewportTexCoords, 0));
-		}
-		else
-		{
-			f_color.xyz = clamp(texture(u_texture, viewportTexCoords).xyz, vec3(0.0), vec3(1.0));
-		}
+		f_color.xyz = clamp(texture(u_texture, viewportTexCoords).xyz, vec3(0.0), vec3(1.0));
 	}
 	else
 	{

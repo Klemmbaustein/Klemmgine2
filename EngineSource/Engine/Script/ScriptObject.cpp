@@ -45,11 +45,6 @@ void engine::script::ScriptObject::LoadScriptData()
 {
 	auto Script = ScriptSubsystem::Instance;
 
-	if (this->ScriptData)
-	{
-		delete this->ScriptData;
-	}
-
 	InitializeScriptPointer();
 
 	std::map<string, ObjPropertyBase*> OldProperties;

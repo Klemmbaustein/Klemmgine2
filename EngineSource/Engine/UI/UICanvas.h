@@ -22,7 +22,6 @@ namespace engine
 			if (!Engine::IsPlaying || !VideoSubsystem::Current)
 				return nullptr;
 			T* New = new T();
-			RegisterSelf(New);
 			return New;
 		}
 

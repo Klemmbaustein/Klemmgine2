@@ -2,7 +2,9 @@
 #include <Engine/Subsystem/Subsystem.h>
 #include <list>
 #include "ScriptProvider.h"
+#include "UI/ParseUI.h"
 #include "EngineModules.h"
+#include "kui/DynamicMarkup.h"
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 #include <map>
 
@@ -48,6 +50,9 @@ namespace engine::script
 		static ScriptSubsystem* Instance;
 
 		std::map<uint32, ObjectTypeID> ScriptObjectIds;
+
+		ui::UIParseData UIData;
+		kui::markup::DynamicMarkupContext UIContext;
 
 		bool Reload();
 	};

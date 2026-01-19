@@ -453,6 +453,10 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		{
 			this->SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
 		}
+		if (SceneInfo.Contains("sunRotation"))
+		{
+			this->SceneEnvironment.SunRotation = SceneInfo.At("sunRotation").GetVector3();
+		}
 
 		if (SceneInfo.Contains("skyColor"))
 		{
@@ -622,6 +626,7 @@ engine::SerializedValue engine::Scene::GetSceneInfo()
 {
 	return std::vector{
 		SerializedData("sunColor", this->SceneEnvironment.SunColor),
+		SerializedData("sunRotation", this->SceneEnvironment.SunRotation.EulerVector()),
 		SerializedData("skyColor", this->SceneEnvironment.SkyColor),
 		SerializedData("groundColor", this->SceneEnvironment.GroundColor),
 		SerializedData("sunIntensity", this->SceneEnvironment.SunIntensity),

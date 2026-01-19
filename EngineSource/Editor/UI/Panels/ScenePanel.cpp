@@ -42,6 +42,7 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 
 	Properties->CreateNewHeading("Lighting");
 	Properties->AddVecEntry("Sun color", Target->SceneEnvironment.SunColor, OnChanged, true);
+	Properties->AddVecEntry("Sun rotation", *(Vector3*)&Target->SceneEnvironment.SunRotation, OnChanged);
 	Properties->AddFloatEntry("Sun intensity", Target->SceneEnvironment.SunIntensity, OnChanged);
 	Properties->AddVecEntry("Sky color", Target->SceneEnvironment.SkyColor, OnChanged, true);
 	Properties->AddVecEntry("Ground color", Target->SceneEnvironment.GroundColor, OnChanged, true);

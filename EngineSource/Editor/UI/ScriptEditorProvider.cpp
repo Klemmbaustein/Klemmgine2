@@ -344,8 +344,7 @@ void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly, st
 {
 	CompletePosition = ParentEditor->SelectionStart;
 
-	Completions = Context->ScriptService->completeAt(&Context->ScriptService->files[EditedFile],
-		CompletePosition.Column, CompletePosition.Line,
+	Completions = Context->CompleteAt(EditedFile, CompletePosition.Column, CompletePosition.Line,
 		MembersOnly ? CompletionType::classMembers : CompletionType::all);
 
 	if (Completions.empty())
@@ -601,7 +600,7 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 
 			std::function<SymbolDefinition()> GetDefinition;
 
-			if (i.definition && i.definition->at.position.line != 0 || i.definition->at.position.endPos != 0)
+			if (i.definition && (i.definition->at.position.line != 0 || i.definition->at.position.endPos != 0))
 			{
 				GetDefinition = [i] {
 					return SymbolDefinition{ i.definition->at, i.definition->file };

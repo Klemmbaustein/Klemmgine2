@@ -66,11 +66,11 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 			->SetCorner(EditorUI::Theme.CornerSize)
 			->SetOpacity(0.65f)
 			->SetCorners(First, First, Last, Last)
-			->SetMinSize(SizeVec::Pixels(200, 24))
+			->SetMinSize(SizeVec::Pixels(220, 24))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIText(11_px, EditorUI::Theme.Text, i->Name, EditorUI::EditorFont))
-				->SetTextWidthOverride(HasShortcut ? 120_px : 170_px)
-				->SetWrapEnabled(true, HasShortcut ? 120_px : 170_px)
+				->SetTextWidthOverride(HasShortcut ? 140_px : 190_px)
+				->SetWrapEnabled(true, HasShortcut ? 140_px : 190_px)
 				->SetPadding(3_px, 3_px, HasImage ? 0 : 28_px, 3_px)));
 
 		if (HasShortcut)

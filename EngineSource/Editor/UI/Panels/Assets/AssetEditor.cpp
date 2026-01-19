@@ -20,6 +20,7 @@ void engine::editor::AssetEditor::OnChanged()
 {
 	if (Saved)
 	{
+		Saved = false;
 		UpdateName();
 	}
 }

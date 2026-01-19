@@ -17,6 +17,8 @@ class MyObject : SceneObject
 	bool isSliding = false
 	float slideTimer = 0
 
+	int health = 15
+
 	override fn begin()
 	{
 		MeshComponent testMesh = new()
@@ -34,6 +36,8 @@ class MyObject : SceneObject
 		movement.maxSpeed = 5
 
 		lastY = this.position.y
+
+		var ui = new PlayerUI(this)
 	}
 
 	override fn update()

@@ -171,11 +171,11 @@ namespace engine::editor
 		SerializedValue Serialize() override;
 
 		void DeSerialize(SerializedValue* FromData) override;
+		bool Visible = true;
 
 	protected:
 
 		bool CanClose = true;
-		bool Visible = true;
 		size_t SelectedTab = 0;
 
 		std::vector<kui::UIBox*> AdditionalBoxes;
@@ -239,4 +239,10 @@ namespace engine::editor
 		kui::Vec2f UsedSizeToPanelSize(kui::Vec2f Used);
 		kui::Vec2f PositionToPanelPosition(kui::Vec2f Pos);
 	};
+}
+
+inline engine::editor::EditorPanel::ShortcutOptions operator|(engine::editor::EditorPanel::ShortcutOptions a,
+	engine::editor::EditorPanel::ShortcutOptions b)
+{
+	return engine::editor::EditorPanel::ShortcutOptions(int(a) | int(b));
 }

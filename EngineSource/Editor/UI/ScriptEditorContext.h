@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <functional>
 #include <queue>
+#include <Engine/Script/UI/ParseUI.h>
 
 namespace engine::editor
 {
@@ -13,21 +14,21 @@ namespace engine::editor
 	{
 		kui::EditorPosition At;
 		size_t Length = 0;
-		std::string Description;
+		string Description;
 	};
 
 	class ScriptEditorContext
 	{
 	public:
 		ds::LanguageService* ScriptService = nullptr;
-		std::map<std::string, std::vector<ScriptError>> Errors;
+		std::map<string, std::vector<ScriptError>> Errors;
 
 		ScriptEditorContext();
 		ScriptEditorContext(const ScriptEditorContext&) = delete;
 		virtual ~ScriptEditorContext();
 
-		void AddFile(const std::string& Content, const std::string& Name);
-		void UpdateFile(const std::string& Content, const std::string& Name);
+		void AddFile(const string& Content, const string& Name);
+		void UpdateFile(const string& Content, const string& Name);
 		void Commit(std::function<void()> Callback);
 
 		void Initialize();
@@ -40,6 +41,9 @@ namespace engine::editor
 
 		virtual void NavigateTo(std::string File, ds::TokenPos at) = 0;
 
+		std::vector<ds::AutoCompleteResult> CompleteAt(const string& FileName, size_t character, size_t line,
+			ds::CompletionType type);
+
 	private:
 		bool SendUpdateEvent = false;
 		bool IsCompiling = false;
@@ -49,9 +53,12 @@ namespace engine::editor
 		std::condition_variable cv;
 		std::mutex TaskMutex;
 		std::mutex TaskReadMutex;
-		std::map<std::string, std::vector<ScriptError>> NewErrors;
+		std::map<string, std::vector<ScriptError>> NewErrors;
+		script::ui::UIParseData ParsedUI;
 
 		void ScheduleContextTask(std::function<void()> Task);
+
+		void PublishUIData(kui::markup::UIElement& For, string File);
 
 		std::queue<std::function<void()>> Tasks;
 

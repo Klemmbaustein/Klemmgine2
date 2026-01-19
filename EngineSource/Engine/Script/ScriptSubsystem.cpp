@@ -8,6 +8,7 @@
 #include <ds/modules/standardLibrary.hpp>
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/Scene.h>
+#include <Core/File/FileUtil.h>
 #include <Core/ThreadPool.h>
 #include <ds/modules/system.async.hpp>
 
@@ -95,10 +96,24 @@ bool engine::script::ScriptSubsystem::Reload()
 		Print(Message, LogType::Error);
 	};
 
-	for (auto& i : Scripts->GetFiles())
+	ui::UIFileParser UIFiles = ui::UIFileParser();
+
+	for (const string& i : Scripts->GetFiles())
 	{
-		Compiler->addString(Scripts->GetFile(i), i);
+		string Extension = file::Extension(i);
+
+		if (Extension == "ds")
+		{
+			Compiler->addString(Scripts->GetFile(i), i);
+		}
+		else
+		{
+			UIFiles.AddFile(i);
+		}
 	}
+
+	UIData = UIFiles.Parse(Compiler);
+	UIContext.Parsed = &UIData.UIData;
 
 	auto NewInstructions = Compiler->compile();
 	delete Compiler;

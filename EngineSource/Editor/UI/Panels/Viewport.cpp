@@ -188,7 +188,7 @@ engine::editor::Viewport::Viewport()
 		{
 			Run();
 		}
-	}, ShortcutOptions::Global);
+	}, ShortcutOptions::Global | ShortcutOptions::AllowInText);
 
 	Translate = new TranslateGizmo();
 

@@ -114,7 +114,8 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	}, ShortcutOptions::AllowInText);
 
 	AddTab("Scripts/test.ds");
-	AddTab("Scripts/test2.ds");
+	//AddTab("Scripts/test2.ds");
+	AddTab("Scripts/player.kui");
 
 	this->ScriptEditorContext::Initialize();
 

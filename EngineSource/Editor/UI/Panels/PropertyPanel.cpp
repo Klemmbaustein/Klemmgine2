@@ -82,7 +82,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	Properties->AddVecEntry("Position", Object->Position, OnObjectChanged);
 	Properties->AddVecEntry("Rotation", *(Vector3*)&Object->Rotation, OnObjectChanged);
-	Properties->AddVecEntry("Scale", *(Vector3*)&Object->Scale, OnObjectChanged);
+	Properties->AddVecEntry("Scale", Object->Scale, OnObjectChanged);
 
 	Properties->AddStringEntry("Name", Object->Name, OnObjectChanged);
 

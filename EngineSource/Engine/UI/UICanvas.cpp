@@ -14,6 +14,7 @@ std::vector<UICanvas*> UICanvas::ActiveCanvases;
 engine::UICanvas::UICanvas()
 {
 	CanvasBox = new UICanvasBox(0, 0);
+	RegisterSelf(this);
 
 #ifdef EDITOR
 	if (editor::Viewport::Current)
@@ -54,6 +55,18 @@ void engine::UICanvas::UpdateAll()
 {
 	for (auto& i : ActiveCanvases)
 	{
+#ifdef EDITOR
+		if (editor::Viewport::Current)
+		{
+			auto ViewBackground = editor::Viewport::Current->ViewportBackground;
+			i->CanvasBox->IsVisible = editor::Viewport::Current->Visible;
+			i->CanvasBox
+				->SetPosition(ViewBackground->GetPosition())
+				->SetSize(ViewBackground->GetMinSize());
+
+		}
+#endif
+
 		i->Update();
 	}
 }

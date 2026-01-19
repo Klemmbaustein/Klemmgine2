@@ -50,7 +50,7 @@ void CascadedShadows::Init()
 		GL_DEPTH_COMPONENT32F,
 		ShadowResolution,
 		ShadowResolution,
-		GLsizei(ShadowCascadeLevels.size()) + 1,
+		GLsizei(ShadowCascadeLevels.size()),
 		0,
 		GL_DEPTH_COMPONENT,
 		GL_FLOAT,
@@ -97,6 +97,7 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 	if (!ShouldRender())
 		return;
 	LightMatrices = GetLightSpaceMatrices(From);
+	this->LightDirection = Vector3::Forward(From->UsedEnvironment->SunRotation.EulerVector());
 	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
 	for (size_t i = 0; i < LightMatrices.size(); ++i)
 	{

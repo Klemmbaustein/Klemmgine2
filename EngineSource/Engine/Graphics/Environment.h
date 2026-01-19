@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/Vector.h>
+#include <Core/Transform.h>
 
 namespace engine::graphics
 {
@@ -21,6 +22,7 @@ namespace engine::graphics
 	struct Environment
 	{
 		Vector3 SunColor = Vector3(1);
+		Rotation3 SunRotation = Rotation3(45, 0, 0);
 		float SunIntensity = 1.0f;
 		float AmbientIntensity = 0.2f;
 		Vector3 SkyColor = Vector3(0.8f, 0.8f, 1.0f);

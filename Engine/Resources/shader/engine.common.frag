@@ -177,7 +177,7 @@ float getLightStrength()
 vec3 applyFog(vec3 color)
 {
 	return u_sceneFogRange > 0
-		? mix(color, u_sceneFogColor, pow(clamp((length(v_screenPosition) - u_sceneFogStart) / u_sceneFogRange, 0.0, 1.0), 2.0))
+		? mix(color, u_sceneFogColor, pow(clamp((length(v_screenPosition) - u_sceneFogStart) / u_sceneFogRange, 0.0, 1.0), 1.25))
 		: color;
 }
 

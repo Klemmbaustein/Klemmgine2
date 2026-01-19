@@ -21,6 +21,7 @@
 
 #include "Bindings/MathBindings.h"
 #include "Bindings/SerializeBindings.h"
+#include "UI/UIBindings.h"
 
 #define ENGINE_OFFSETOF(T, m)  (::ds::Size)(::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
 
@@ -54,7 +55,7 @@ static void Scene_getMainScene(InterpretContext* context)
 
 	if (Main)
 	{
-		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), nullptr);
+		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, nullptr);
 		NewScene.getValue() = Main;
 		context->pushValue(NewScene);
 	}
@@ -132,7 +133,7 @@ static void SceneObject_getScene(InterpretContext* context)
 
 	if (FoundScene)
 	{
-		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), nullptr);
+		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, nullptr);
 		NewScene.getValue() = FoundScene;
 		context->pushValue(NewScene);
 	}
@@ -356,6 +357,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	MathBindings Math = AddMathModule(EngineModule, ToContext);
 	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
+	ui::UIBindings UI = ui::AddUIModule(EngineModule, ToContext);
 
 	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
 
@@ -613,13 +615,14 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	OutData.Vector3Type = EngineModule.getType("Vector3")->id;
 	OutData.ScriptObjectType = EngineModule.getType("SceneObject")->id;
 	OutData.AssetRefType = EngineModule.getType("AssetRef")->id;
+	OutData.UITextType = EngineModule.getType("UIText")->id;
 
 	return OutData;
 }
 
 ds::RuntimeClass* engine::script::CreateAssetRef()
 {
-	ClassRef<AssetRef*> NewAssetRef = RuntimeClass::allocateClass(sizeof(AssetRef*), &AssetRef_vTable);
+	ClassRef<AssetRef*> NewAssetRef = RuntimeClass::allocateClass(sizeof(AssetRef*), 0, &AssetRef_vTable);
 	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
 
 	NewAssetRef.getValue() = new AssetRef();
@@ -628,7 +631,7 @@ ds::RuntimeClass* engine::script::CreateAssetRef()
 
 ds::RuntimeClass* engine::script::CreateSceneObject(SceneObject* From)
 {
-	ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(SceneObject*), nullptr);
+	ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(SceneObject*), 0, nullptr);
 	NewObject.getValue() = From;
 	return NewObject.classPtr;
 }
