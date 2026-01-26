@@ -113,9 +113,9 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		}
 	}, ShortcutOptions::AllowInText);
 
-	AddTab("Scripts/test.ds");
+	AddTab("Assets/Scripts/test.ds");
 	//AddTab("Scripts/test2.ds");
-	AddTab("Scripts/player.kui");
+	AddTab("Assets/Scripts/player.kui");
 
 	this->ScriptEditorContext::Initialize();
 
@@ -358,6 +358,19 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 		"async",
 		"await"
 	};
+
+	if (file::Extension(File) == "kui")
+	{
+		NewTab.Provider->Keywords.insert("element");
+		NewTab.Provider->Keywords.insert("child");
+		NewTab.Provider->Keywords.insert("global");
+		NewTab.Provider->Keywords.insert("horizontal");
+		NewTab.Provider->Keywords.insert("vertical");
+		NewTab.Provider->Keywords.insert("centered");
+		NewTab.Provider->Keywords.insert("reverse");
+		NewTab.Provider->Keywords.insert("default");
+		NewTab.Provider->Keywords.insert("script");
+	}
 
 	EditorUI::Theme.CodeTheme.ApplyToScript(NewTab.Provider);
 	if (this->Loaded)

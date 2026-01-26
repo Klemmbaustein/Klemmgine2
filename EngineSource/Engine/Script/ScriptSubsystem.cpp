@@ -1,7 +1,7 @@
 #include "ScriptSubsystem.h"
 #include "ScriptObject.h"
 #include "FileScriptProvider.h"
-#include "ScriptSerializer.h"
+#include <Engine/File/Resource.h>
 #include <Engine/Stats.h>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <ds/language.hpp>
@@ -98,17 +98,17 @@ bool engine::script::ScriptSubsystem::Reload()
 
 	ui::UIFileParser UIFiles = ui::UIFileParser();
 
-	for (const string& i : Scripts->GetFiles())
+	for (const auto& [Name, Path] : resource::LoadedAssets)
 	{
-		string Extension = file::Extension(i);
+		string Extension = file::Extension(Name);
 
 		if (Extension == "ds")
 		{
-			Compiler->addString(Scripts->GetFile(i), i);
+			Compiler->addString(resource::GetTextFile(Path), Path);
 		}
-		else
+		else if (Extension == "kui")
 		{
-			UIFiles.AddFile(i);
+			UIFiles.AddString(Path, resource::GetTextFile(Path));
 		}
 	}
 

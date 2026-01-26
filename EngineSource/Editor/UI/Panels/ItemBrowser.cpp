@@ -262,7 +262,8 @@ void engine::editor::ItemBrowser::DisplayList()
 	UIBox* CurrentBox = new UIBox(true, 0);
 	ItemsScrollBox->AddChild(CurrentBox);
 
-	UISize ElementSize = UISize::Pixels(std::round((Background->GetUsedSize().GetPixels().X - 10.0f) / ItemsPerRow) - 5.0f);
+	UISize ElementSize = UISize::Pixels(std::round((Background->GetUsedSize().GetPixels().X - 10.0f)
+		/ ItemsPerRow) - 5.0f);
 
 	size_t Column = 0;
 	Buttons.resize(CurrentItems.size());
@@ -306,7 +307,7 @@ void engine::editor::ItemBrowser::DisplayList()
 		else
 		{
 			auto* btn = new ItemBrowserButton();
-			btn->SetBackgroundColor(NewItem.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.DarkBackground);
+			btn->SetBackgroundColor(NewItem.Selected ? EditorUI::Theme.HighlightDark: EditorUI::Theme.DarkBackground);
 			btn->SetColor(NewItem.Color);
 			btn->SetName(NewItem.Name);
 			btn->SetImage(NewItem.Image);

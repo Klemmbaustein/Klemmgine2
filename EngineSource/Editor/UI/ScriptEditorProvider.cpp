@@ -287,10 +287,10 @@ void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Positi
 void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition StartPosition,
 	kui::EditorPosition EndPosition)
 {
+	ParentEditor->Edit();
 	ParentEditor->SetCursorPosition(StartPosition,
 		EditorPosition(EndPosition));
 	ParentEditor->ScrollTo(ParentEditor->SelectionStart);
-	ParentEditor->Edit();
 }
 
 UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content, EditorPosition At)

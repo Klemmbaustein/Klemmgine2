@@ -221,6 +221,7 @@ void engine::editor::ScriptEditorContext::PublishUIData(kui::markup::UIElement& 
 		var.at = Token(i.Name.Text, TokenPos(i.Name.BeginChar, i.Name.EndChar, i.Name.Line));
 		var.name = i.Name.Text;
 		var.defaultValue = i.Value.Text;
+		var.inClass = For.TypeName.Text;
 		FileData.variables.push_back(var);
 	}
 
