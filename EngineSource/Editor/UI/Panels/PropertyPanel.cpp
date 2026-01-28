@@ -93,6 +93,8 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 
 	for (ObjPropertyBase* i : Object->Properties)
 	{
+		if (i->IsHidden)
+			continue;
 		if (i->Type == PropertyType::Unknown)
 			continue;
 

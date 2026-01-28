@@ -222,6 +222,7 @@ void engine::editor::ScriptEditorContext::PublishUIData(kui::markup::UIElement& 
 		var.name = i.Name.Text;
 		var.defaultValue = i.Value.Text;
 		var.inClass = For.TypeName.Text;
+		var.kind = ScannedVariable::Kind::classMember;
 		FileData.variables.push_back(var);
 	}
 

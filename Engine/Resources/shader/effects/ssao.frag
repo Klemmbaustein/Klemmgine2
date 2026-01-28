@@ -10,7 +10,7 @@ uniform sampler2D texNoise;
 uniform vec3 samples[64];
 
 int kernelSize = 24;
-float radius = 0.5;
+float radius = 0.25;
 float bias = 0.025;
 
 uniform vec2 noiseScale = vec2(1600.0/4.0, 900.0/4.0);

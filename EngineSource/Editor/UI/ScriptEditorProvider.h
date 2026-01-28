@@ -1,11 +1,8 @@
 #pragma once
 #include <Core/Event.h>
-#include <ds/language.hpp>
 #include <Editor/Server/ServerConnection.h>
 #include <kui/Timer.h>
 #include "EngineTextEditorProvider.h"
-#include <kui/UI/UIScrollBox.h>
-#include <stack>
 #include "ScriptEditorContext.h"
 
 namespace engine::editor
@@ -43,24 +40,13 @@ namespace engine::editor
 		kui::Vec3f VariableColor = kui::Vec3f(0.71f, 0.96f, 0.95f);
 		kui::Vec3f FunctionColor = kui::Vec3f(0.27f, 0.88f, 0.65f);
 
-		kui::UIBox* CreateHoverBox(kui::UIBox* Content, kui::EditorPosition At);
 		ServerConnection* Connection = nullptr;
 		ScriptEditorContext* Context = nullptr;
-
-		void UpdateAutoComplete();
-
-		void ShowAutoComplete(bool MembersOnly, std::string Filter = "");
-
-		void LoadRemoteFile();
 
 		void Commit() override;
 
 		void RefreshAll();
 		void ScanFile();
-
-		void ClearHovered();
-
-		std::string ProcessInput(std::string Text) override;
 
 		struct HoverErrorData
 		{
@@ -85,34 +71,22 @@ namespace engine::editor
 		void NavigateTo(kui::EditorPosition Position);
 		void NavigateTo(kui::EditorPosition StartPosition, kui::EditorPosition EndPosition);
 
-		void CloseAutoComplete();
-
 		std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At) override;
 		void OnRightClick() override;
 
+		std::vector<ds::AutoCompleteResult> GetCompletionsAt(kui::EditorPosition At,
+			CompletionSource Source) override;
+
 	private:
 		std::vector<size_t> Changed;
-		void InsertCompletion(string CompletionText);
-
-		kui::UIScrollBox* AutoCompleteBox = nullptr;
 
 		kui::Timer HoverTime;
 
-		bool IsAutoCompleteActive = false;
-
 		void* HoveredData = nullptr;
-
-		kui::UIBox* HoveredBox = nullptr;
 		kui::Vec2f LastCursorPosition;
 
-		std::vector<ds::AutoCompleteResult> Completions;
-		std::vector<kui::UIButton*> CompletionButtons;
 		std::map<size_t, std::vector<ScriptSyntaxHighlight>> Highlights;
 		void UpdateLineColorization(size_t Line);
-
-		void ApplyHoverBoxPosition(kui::UIBox* Target, kui::EditorPosition At);
-		void UpdateAutoCompleteEntries(string Filter);
-		kui::EditorPosition CompletePosition;
 
 		void UpdateFileContent();
 		void UpdateFileData();

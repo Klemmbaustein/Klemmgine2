@@ -321,7 +321,15 @@ void engine::editor::ItemBrowser::DisplayList()
 					.ObjectType = NewItem.Type,
 					});
 			};
-			btn->button->OnRightClicked = [NewItem]() {
+			btn->button->OnRightClicked = [this, NewItem]() {
+				auto Selected = GetSelected();
+
+				if (Selected.size() > 1)
+				{
+					this->OnItemsRightClick(Background->GetParentWindow()->Input.MousePosition);
+					return;
+				}
+
 				NewItem.OnRightClick();
 			};
 			Element = btn;

@@ -41,6 +41,7 @@ namespace engine
 		PropertyType Type = PropertyType::Unknown;
 		std::function<void()> OnChanged;
 		string Name;
+		bool IsHidden = false;
 
 	protected:
 		void RegisterSelf(SceneObject* Parent);

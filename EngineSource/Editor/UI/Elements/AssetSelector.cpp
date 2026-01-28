@@ -80,19 +80,6 @@ void engine::editor::AssetSelector::Tick()
 			RemoveSearchResults();
 		}, nullptr, 0));
 	}
-	if (ChangedText && !Window::GetActiveWindow()->Input.IsLMBDown)
-	{
-		auto NewAsset = AssetRef::FromName(AssetPath->GetText(), SelectedAsset.Extension);
-		if (NewAsset.FilePath.empty())
-			return;
-
-		SelectedAsset = AssetPath->GetText().empty() ? AssetRef{ .Extension = SelectedAsset.Extension } : NewAsset;
-		UpdateSelection();
-		ChangedText = false;
-		if (this->OnChanged)
-			this->OnChanged();
-		return;
-	}
 	if (AssetPath->GetIsEdited())
 	{
 		if (!SearchBackground)
@@ -125,6 +112,22 @@ void engine::editor::AssetSelector::Tick()
 		{
 			RemoveSearchList = true;
 		}, nullptr, 0));
+	}
+
+	if (SearchBackground && ChangedText && !Window::GetActiveWindow()->Input.IsLMBDown)
+	{
+		auto NewAsset = AssetRef::FromName(AssetPath->GetText(), SelectedAsset.Extension);
+		if ((!NewAsset.IsValid() && !AssetPath->GetText().empty()) || NewAsset.FilePath == SelectedAsset.FilePath)
+		{
+			ChangedText = false;
+			return;
+		}
+		SelectedAsset = AssetPath->GetText().empty() ? AssetRef{ .Extension = SelectedAsset.Extension } : NewAsset;
+		UpdateSelection();
+		ChangedText = false;
+		if (this->OnChanged)
+			this->OnChanged();
+		return;
 	}
 }
 

@@ -22,7 +22,7 @@ engine::AssetRef engine::AssetRef::FromName(string Name, string Extension)
 	if (Found == resource::LoadedAssets.end())
 	{
 		return AssetRef{
-			.FilePath = FullName,
+			.FilePath = Name.empty() ? "" : FullName,
 			.Extension = Extension
 		};
 	}

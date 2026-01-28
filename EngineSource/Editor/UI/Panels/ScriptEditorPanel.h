@@ -31,7 +31,7 @@ namespace engine::editor
 		void OpenTab(size_t Tab);
 
 		// Inherited via ScriptEditorContext
-		void NavigateTo(std::string File, ds::TokenPos at) override;
+		void NavigateTo(std::string File, std::optional<ds::TokenPos> At) override;
 
 	private:
 		void UpdateTabSize(ScriptEditorTab* Tab);
@@ -47,6 +47,8 @@ namespace engine::editor
 		size_t SelectedTab = 0;
 
 		ScriptEditorTab* GetSelectedTab();
+
+		void CloseTab(size_t Index);
 
 		string NameFormat;
 		bool Saved = true;

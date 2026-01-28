@@ -63,6 +63,7 @@ void engine::script::ScriptObject::LoadScriptData()
 		}
 
 		string Name = i.getParameterValue("name").value_or(i.name);
+		bool Visible = i.getParameterValue("visible").value_or("true") == "true";
 
 		if (i.type == Script->ScriptEngine.AssetRefType)
 		{
@@ -76,6 +77,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			ClassRef<AssetRef*> MemberValue = member;
 
 			auto p = new ObjProperty<AssetRef>(Name, *MemberValue.getValue(), this);
+			p->IsHidden = !Visible;
 
 			p->OnChanged = [this, i, p]
 			{
@@ -94,6 +96,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			auto& member = *reinterpret_cast<Vector3*>(this->ScriptData->getBody() + i.offset);
 
 			auto p = new ObjProperty<Vector3>(Name, member, this);
+			p->IsHidden = !Visible;
 
 			p->OnChanged = [this, i, p]
 			{
@@ -111,6 +114,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			}
 
 			auto p = new ObjProperty<string>(Name, string(str.ptr(), str.length()), this);
+			p->IsHidden = !Visible;
 
 			p->OnChanged = [this, i, p]
 			{

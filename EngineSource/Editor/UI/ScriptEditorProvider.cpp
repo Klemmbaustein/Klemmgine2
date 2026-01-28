@@ -75,16 +75,6 @@ void engine::editor::ScriptEditorProvider::InsertLine(size_t Index, const std::v
 	}
 }
 
-std::string engine::editor::ScriptEditorProvider::ProcessInput(std::string Text)
-{
-	if (IsAutoCompleteActive && CompletionButtons.size() && Text == "\t")
-	{
-		CompletionButtons[0]->OnButtonClicked();
-		return "";
-	}
-	return Text;
-}
-
 void engine::editor::ScriptEditorProvider::RefreshAll()
 {
 	UpdateSyntaxHighlight();
@@ -106,34 +96,6 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 {
 	EngineTextEditorProvider::SetLine(Index, NewLine);
 	Changed.push_back(Index);
-	if (Index == ParentEditor->SelectionEnd.Line)
-	{
-		auto& Input = Window::GetActiveWindow()->Input;
-		auto Filter = this->Lines[Index].substr(0, ParentEditor->SelectionEnd.Column + 1);
-		string LastWord;
-		if (!Filter.empty())
-		{
-			size_t LastCharAfterSpace = Filter.find_last_of("\t .()-+/*><=") + 1;
-			LastWord = Filter.substr(LastCharAfterSpace);
-		}
-
-		if (Input.Text == ".")
-		{
-			ShowAutoComplete(true);
-		}
-		else if (IsAutoCompleteActive && LastWord.size())
-		{
-			UpdateAutoCompleteEntries(LastWord);
-		}
-		else if (IsAutoCompleteActive && (Input.Text.size() > 1 || !std::isalpha(Input.Text[0])))
-		{
-			CloseAutoComplete();
-		}
-		else if (Input.Text.size() == 1 && std::isalpha(Input.Text[0]))
-		{
-			ShowAutoComplete(false, LastWord);
-		}
-	}
 
 	if (Connection)
 	{
@@ -146,24 +108,6 @@ void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vect
 	}
 }
 
-void engine::editor::ScriptEditorProvider::InsertCompletion(string CompletionText)
-{
-	auto Position = ParentEditor->GetCursorPosition();
-	string Line = this->Lines[Position.Line];
-	string LineEnd = Line.substr(Position.Column);
-	Line = Line.substr(0, Position.Column);
-	if (!Line.empty())
-	{
-		size_t LastCharAfterSpace = Line.find_last_of("\t .()-+/*><=") + 1;
-		Line = Line.substr(0, LastCharAfterSpace);
-	}
-	Position.Column = Line.size() + CompletionText.size();
-
-	SetLine(Position.Line, { TextSegment(Line + CompletionText + LineEnd, Vec3f(1)) });
-	ParentEditor->SetCursorPosition(Position);
-	Commit();
-}
-
 void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector<TextSegment>& To)
 {
 	FileEditorProvider::GetLine(LineIndex, To);
@@ -172,12 +116,6 @@ void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector
 
 void engine::editor::ScriptEditorProvider::OnLoaded()
 {
-}
-
-void engine::editor::ScriptEditorProvider::OnRightClick()
-{
-	delete this->HoveredBox;
-	this->HoveredBox = nullptr;
 }
 
 std::vector<DropdownMenu::Option> engine::editor::ScriptEditorProvider::GetRightClickOptions(kui::EditorPosition At)
@@ -205,6 +143,10 @@ std::vector<DropdownMenu::Option> engine::editor::ScriptEditorProvider::GetRight
 	return Options;
 }
 
+void engine::editor::ScriptEditorProvider::OnRightClick()
+{
+}
+
 void engine::editor::ScriptEditorProvider::Update()
 {
 	EngineTextEditorProvider::Update();
@@ -224,7 +166,7 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	void* NewHovered = NewHoveredError.Error ? (void*)NewHoveredError.Error : (void*)NewHoveredSymbol.Symbol;
 
-	if (IsAutoCompleteActive || DropdownMenu::Current || !Win->UI.HoveredBox
+	if (GetIsAutoCompleteActive() || DropdownMenu::Current || !Win->UI.HoveredBox
 		|| !Win->UI.HoveredBox->IsChildOf(ParentEditor))
 	{
 		NewHovered = nullptr;
@@ -234,9 +176,9 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	UpdateAutoComplete();
 
-	if (NewHovered != this->HoveredData || (Time > 0.2f && !HoveredBox && HoveredData))
+	if (NewHovered != this->HoveredData || (Time > 0.2f && !GetHoverBox() && HoveredData))
 	{
-		if (NewHovered != this->HoveredData && !IsAutoCompleteActive)
+		if (NewHovered != this->HoveredData && !GetIsAutoCompleteActive())
 		{
 			this->HoveredData = NewHovered;
 			Time = 0;
@@ -255,7 +197,7 @@ void engine::editor::ScriptEditorProvider::Update()
 				CreateHoverBox(NewHoveredSymbol.GetHoverData(), NewHoveredSymbol.At);
 			}
 		}
-		else if (!NewHovered && !IsAutoCompleteActive)
+		else if (!NewHovered && !GetIsAutoCompleteActive())
 		{
 			ClearHovered();
 		}
@@ -269,14 +211,11 @@ void engine::editor::ScriptEditorProvider::Update()
 	LastCursorPosition = Win->Input.MousePosition;
 }
 
-void engine::editor::ScriptEditorProvider::ClearHovered()
+std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorProvider::GetCompletionsAt(
+	kui::EditorPosition At, CompletionSource Source)
 {
-	if (this->HoveredBox)
-	{
-		delete this->HoveredBox;
-		this->HoveredBox = nullptr;
-		HoverTime.Reset();
-	}
+	return Context->CompleteAt(EditedFile, At.Column, At.Line,
+		Source == CompletionSource::TriggerChar ? CompletionType::classMembers : CompletionType::all);
 }
 
 void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Position)
@@ -291,179 +230,6 @@ void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition StartP
 	ParentEditor->SetCursorPosition(StartPosition,
 		EditorPosition(EndPosition));
 	ParentEditor->ScrollTo(ParentEditor->SelectionStart);
-}
-
-UIBox* engine::editor::ScriptEditorProvider::CreateHoverBox(kui::UIBox* Content, EditorPosition At)
-{
-	ClearHovered();
-
-	this->HoveredBox = (new UIBlurBackground(true, 0, EditorUI::Theme.LightBackground))
-		->SetCorner(EditorUI::Theme.CornerSize)
-		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight);
-	if (Content)
-	{
-		this->HoveredBox
-			->AddChild(Content);
-	}
-	this->HoveredBox->HasMouseCollision = true;
-
-	ApplyHoverBoxPosition(HoveredBox, At);
-
-	return this->HoveredBox;
-}
-
-void engine::editor::ScriptEditorProvider::ApplyHoverBoxPosition(kui::UIBox* Target, EditorPosition At)
-{
-	this->HoveredBox->UpdateElement();
-
-	this->HoveredBox->SetPosition(ParentEditor->EditorToScreen(At)
-		+ Vec2f(0, ParentEditor->EditorScrollBox->GetScrollObject()->GetOffset())
-		- Vec2f(0, this->HoveredBox->GetUsedSize().GetScreen().Y) + Vec2f(0, (1_px).GetScreen().Y));
-}
-
-void engine::editor::ScriptEditorProvider::UpdateAutoComplete()
-{
-	auto& Input = Window::GetActiveWindow()->Input;
-	auto& UI = Window::GetActiveWindow()->UI;
-
-	if (IsAutoCompleteActive && (Input.IsKeyDown(Key::ESCAPE) || (Input.IsLMBDown && UI.HoveredBox != HoveredBox)))
-	{
-		CloseAutoComplete();
-		ParentEditor->Edit();
-	}
-
-	if (!Input.IsKeyDown(Key::SPACE) || !Input.IsKeyDown(Key::CTRL))
-	{
-		return;
-	}
-
-	ShowAutoComplete(false);
-}
-
-void engine::editor::ScriptEditorProvider::ShowAutoComplete(bool MembersOnly, std::string Filter)
-{
-	CompletePosition = ParentEditor->SelectionStart;
-
-	Completions = Context->CompleteAt(EditedFile, CompletePosition.Column, CompletePosition.Line,
-		MembersOnly ? CompletionType::classMembers : CompletionType::all);
-
-	if (Completions.empty())
-	{
-		return;
-	}
-
-	auto box = CreateHoverBox(nullptr, CompletePosition);
-	AutoCompleteBox = new UIScrollBox(false, 0, true);
-	box->AddChild(AutoCompleteBox);
-	AutoCompleteBox->GetScrollBarBackground()->SetOpacity(0);
-	AutoCompleteBox->GetScrollBarSlider()->SetOpacity(0.75f);
-
-	AutoCompleteBox->SetMinSize(SizeVec(150_px, 0));
-	AutoCompleteBox->SetMaxSize(SizeVec(150_px, 200_px));
-	AutoCompleteBox->SetPadding(3_px);
-
-	UpdateAutoCompleteEntries(Filter);
-
-	IsAutoCompleteActive = true;
-}
-
-void engine::editor::ScriptEditorProvider::UpdateAutoCompleteEntries(string Filter)
-{
-	AutoCompleteBox->DeleteChildren();
-	CompletionButtons.clear();
-	HoveredBox->IsVisible = false;
-	for (auto& i : Completions)
-	{
-		size_t Found = string::npos;
-
-		if (!Filter.empty())
-		{
-			Found = i.name.find(Filter);
-			if (Found == string::npos)
-			{
-				continue;
-			}
-		}
-		HoveredBox->IsVisible = true;
-
-		auto btn = new UIButton(true, 0, EditorUI::Theme.LightBackground, [this, i = i]() {
-			ParentEditor->Edit();
-			InsertCompletion(i.name);
-			CloseAutoComplete();
-		});
-
-		CompletionButtons.push_back(btn);
-
-		btn->OnlyDrawWhenHovered = true;
-
-		std::vector<TextSegment> Segments;
-
-		if (Found == string::npos)
-		{
-			Segments.push_back({ TextSegment{ i.name, EditorUI::Theme.Text } });
-		}
-		else
-		{
-			Segments.push_back({ TextSegment{ i.name.substr(0, Found), EditorUI::Theme.Text} });
-			Segments.push_back({ TextSegment{ i.name.substr(Found, Filter.size()), EditorUI::Theme.HighlightText} });
-			Segments.push_back({ TextSegment{ i.name.substr(Found + Filter.size()), EditorUI::Theme.Text} });
-		}
-		if (i.type == CompletionType::function || i.type == CompletionType::method)
-		{
-			Segments.push_back({ TextSegment{ "()", EditorUI::Theme.DarkText} });
-		}
-
-		AutoCompleteBox->AddChild(btn
-			->SetMinWidth(UISize::Parent(1))
-			->AddChild((new UIText(12_px, Segments, EditorUI::EditorFont))
-				->SetPadding(3_px)));
-	}
-	ApplyHoverBoxPosition(HoveredBox, CompletePosition);
-}
-
-void engine::editor::ScriptEditorProvider::CloseAutoComplete()
-{
-	CompletionButtons.clear();
-	delete HoveredBox;
-	HoveredBox = nullptr;
-	AutoCompleteBox = nullptr;
-	IsAutoCompleteActive = false;
-}
-
-void engine::editor::ScriptEditorProvider::LoadRemoteFile()
-{
-	Connection->GetFile("Scripts/test.ds", [this](ReadOnlyBufferStream* Stream) {
-		string Content = Stream->ReadString();
-		thread::ExecuteOnMainThread([this, Content, Stream] {
-			string NextLine;
-
-			this->Lines.clear();
-
-			for (auto c : Content)
-			{
-				if (c == '\r')
-				{
-					continue;
-				}
-				if (c == '\n')
-				{
-					this->Lines.push_back(NextLine);
-					NextLine.clear();
-				}
-				else
-				{
-					NextLine.push_back(c);
-				}
-			}
-
-			this->Lines.push_back(NextLine);
-			delete Stream;
-
-			this->UpdateFileContent();
-			this->UpdateBracketAreas();
-			this->ParentEditor->FullRefresh();
-		});
-	});
 }
 
 ScriptEditorProvider::HoverErrorData engine::editor::ScriptEditorProvider::GetHoveredError(Vec2f ScreenPosition)
@@ -676,9 +442,7 @@ void engine::editor::ScriptEditorProvider::UpdateFileData()
 	{
 		UpdateLineColorization(i);
 	}
-	ParentEditor->RefreshHighlights();
-	//OnUpdated.Invoke();
-}
+	ParentEditor->RefreshHighlights();}
 
 void engine::editor::ScriptEditorProvider::ScanFile()
 {

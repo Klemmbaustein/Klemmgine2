@@ -2,6 +2,7 @@
 #include "Viewport.h"
 #include "Assets/ModelEditor.h"
 #include "Assets/MaterialEditor.h"
+#include "ScriptEditorPanel.h"
 #include <Editor/ModelConverter.h>
 #include <Editor/UI/DropdownMenu.h>
 #include <Editor/UI/Panels/Assets/TextEditorPanel.h>
@@ -95,9 +96,9 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 		UpdateItems();
 	});
 
-	for (auto& File : Items)
+	for (AssetFile& File : Items)
 	{
-		auto FilePath = File.Path;
+		string FilePath = File.Path;
 		string Extension = file::Extension(File.Path);
 		std::function<void()> OnClick = nullptr;
 
@@ -120,6 +121,16 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				delete Scene::GetMain();
 				SceneSubsystem::Current->LoadSceneAsync(FilePath);
 				EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
+			};
+		}
+		else if (Extension == "ds")
+		{
+			OnClick = [this, FilePath]()
+			{
+				EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath](ScriptEditorPanel* p) {
+					p->NavigateTo(FilePath, {});
+					p->SetFocused();
+				});
 			};
 		}
 		else if (Extension == "kmdl")

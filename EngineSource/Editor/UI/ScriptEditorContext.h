@@ -39,7 +39,7 @@ namespace engine::editor
 
 		Event<> OnReady;
 
-		virtual void NavigateTo(std::string File, ds::TokenPos at) = 0;
+		virtual void NavigateTo(std::string File, std::optional<ds::TokenPos> At) = 0;
 
 		std::vector<ds::AutoCompleteResult> CompleteAt(const string& FileName, size_t character, size_t line,
 			ds::CompletionType type);

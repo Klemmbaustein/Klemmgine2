@@ -170,6 +170,20 @@ ScriptEditorTab* engine::editor::ScriptEditorPanel::GetSelectedTab()
 	return &Tabs[SelectedTab];
 }
 
+void engine::editor::ScriptEditorPanel::CloseTab(size_t Index)
+{
+	if (SelectedTab >= Index && SelectedTab > 0)
+	{
+		SelectedTab--;
+	}
+	if (Tabs[Index].MiniMap)
+		delete Tabs[Index].MiniMap;
+	delete Tabs[Index].Editor;
+	delete Tabs[Index].Provider;
+	Tabs.erase(Tabs.begin() + Index);
+	UpdateEditorTabs();
+}
+
 void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 {
 	TabBox->DeleteChildren();
@@ -194,7 +208,9 @@ void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 			->AddChild((new UIText(12_px, EditorUI::Theme.Text, file::FileName(t.Provider->EditedFile), EditorUI::EditorFont))
 				->SetTextWidthOverride(152_px)
 				->SetPadding(4_px))
-			->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, nullptr))
+			->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, [this, i]() {
+			CloseTab(i);
+		}))
 				->SetUseImage(true, EditorUI::Asset("X.png"))
 				->SetMinSize(12_px)
 				->SetPadding(4_px)));
@@ -235,7 +251,7 @@ void engine::editor::ScriptEditorPanel::Save()
 	}
 }
 
-void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, ds::TokenPos at)
+void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, std::optional<ds::TokenPos> At)
 {
 	for (size_t i = 0; i < Tabs.size(); i++)
 	{
@@ -246,18 +262,27 @@ void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, ds::TokenPo
 
 		if (SelectedTab == i)
 		{
-			Tabs[i].Provider->NavigateTo(EditorPosition(at.startPos, at.line),
-				EditorPosition(at.endPos, at.line));
+			if (At)
+			{
+				Tabs[i].Provider->NavigateTo(EditorPosition(At->startPos, At->line),
+					EditorPosition(At->endPos, At->line));
+			}
 			return;
 		}
 		else
 		{
 			OpenTab(i);
-			Tabs[i].Provider->NavigateTo(EditorPosition(at.startPos, at.line),
-				EditorPosition(at.endPos, at.line));
+			if (At)
+			{
+				Tabs[i].Provider->NavigateTo(EditorPosition(At->startPos, At->line),
+					EditorPosition(At->endPos, At->line));
+			}
 			return;
 		}
 	}
+
+	AddTab(File);
+	OpenTab(Tabs.size() - 1);
 }
 
 void engine::editor::ScriptEditorPanel::OnResized()
@@ -289,13 +314,6 @@ void engine::editor::ScriptEditorPanel::Update()
 			}
 			this->StatusText->SetText(str::Format("%s | Errors: %i",
 				Tab->Provider->EditedFile.c_str(), this->Errors[Tab->Provider->EditedFile].size()));
-
-			auto sys = Engine::Instance->GetSubsystem<EditorServerSubsystem>();
-			if (sys && !Tab->Provider->Connection)
-			{
-				Tab->Provider->Connection = sys->Connection;
-				Tab->Provider->LoadRemoteFile();
-			}
 		}
 	}
 }

@@ -35,7 +35,7 @@ public:
 	ExportAttribute()
 	{
 		this->name = "Export";
-		this->attributeParameters = { "name" };
+		this->attributeParameters = { "name", "visible" };
 	}
 };
 

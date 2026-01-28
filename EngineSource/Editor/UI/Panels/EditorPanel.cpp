@@ -399,6 +399,7 @@ void engine::editor::EditorPanel::SetFocused()
 	if (Parent)
 	{
 		Parent->SelectedTab = Parent->IndexOf(this);
+		Parent->ShouldUpdate = true;
 	}
 
 	EditorPanel* Old = EditorUI::FocusedPanel;
