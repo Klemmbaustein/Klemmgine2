@@ -1,11 +1,9 @@
 #include "ScriptEditorProvider.h"
 #include <kui/UI/UITextEditor.h>
 #include <ds/service/languageService.hpp>
-#include <Engine/MainThread.h>
 #include <Editor/UI/DropdownMenu.h>
 #include <algorithm>
 #include <kui/Window.h>
-#include <kui/UI/UIBlurBackground.h>
 #include <Editor/UI/EditorUI.h>
 
 using namespace kui;
