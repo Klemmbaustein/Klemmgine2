@@ -323,7 +323,8 @@ void engine::editor::ItemBrowser::DisplayItems()
 					});
 			};
 			btn->btn->OnRightClicked = [NewItem]() {
-				NewItem.OnRightClick();
+				if (NewItem.OnRightClick)
+					NewItem.OnRightClick();
 			};
 			Element = btn;
 			ElementButton = btn->btn;
@@ -405,7 +406,8 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 				});
 		};
 		btn->btn->OnRightClicked = [NewItem]() {
-			NewItem.OnRightClick();
+			if (NewItem.OnRightClick)
+				NewItem.OnRightClick();
 		};
 		btn->btn->OnClicked = std::bind(&ItemBrowser::OnButtonClicked, this, Index, btn, true);
 

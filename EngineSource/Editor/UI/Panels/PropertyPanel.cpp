@@ -121,6 +121,26 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 			});
 			break;
 		}
+		case PropertyType::Int:
+		{
+			auto* Ref = static_cast<ObjProperty<int32>*>(i);
+			Properties->AddIntEntry(i->Name, Ref->Value, [Object, Ref] {
+				Viewport::Current->OnObjectChanged(Object);
+				if (Ref->OnChanged)
+					Ref->OnChanged();
+			});
+			break;
+		}
+		case PropertyType::Float:
+		{
+			auto* Ref = static_cast<ObjProperty<float>*>(i);
+			Properties->AddFloatEntry(i->Name, Ref->Value, [Object, Ref] {
+				Viewport::Current->OnObjectChanged(Object);
+				if (Ref->OnChanged)
+					Ref->OnChanged();
+			});
+			break;
+		}
 		case PropertyType::Bool:
 		{
 			auto* Ref = static_cast<ObjProperty<bool>*>(i);

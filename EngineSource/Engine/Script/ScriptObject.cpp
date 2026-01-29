@@ -104,7 +104,7 @@ void engine::script::ScriptObject::LoadScriptData()
 				member = p->Value;
 			};
 		}
-		else if (i.type == Script->ScriptLanguage->registry.getEntry<StringType>()->id)
+		else if (i.type == StringType::STRING_ID)
 		{
 			RuntimeStrRef str = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
 
@@ -124,6 +124,34 @@ void engine::script::ScriptObject::LoadScriptData()
 				RuntimeStrRef str = RuntimeStrRef(p->Value.c_str(), p->Value.size());
 
 				memberPtr = str.classPtr;
+			};
+		}
+		else if (i.type == IntType::INT_ID)
+		{
+			ds::Int Value = *reinterpret_cast<ds::Int*>(this->ScriptData->getBody() + i.offset);
+
+			auto p = new ObjProperty<int32>(Name, Value, this);
+			p->IsHidden = !Visible;
+
+			p->OnChanged = [this, i, p]
+			{
+				ds::Int& Value = *reinterpret_cast<ds::Int*>(this->ScriptData->getBody() + i.offset);
+
+				Value = p->Value;
+			};
+		}
+		else if (i.type == FloatType::FLOAT_ID)
+		{
+			ds::Float Value = *reinterpret_cast<ds::Float*>(this->ScriptData->getBody() + i.offset);
+
+			auto p = new ObjProperty<float>(Name, Value, this);
+			p->IsHidden = !Visible;
+
+			p->OnChanged = [this, i, p]
+			{
+				ds::Float& Value = *reinterpret_cast<ds::Float*>(this->ScriptData->getBody() + i.offset);
+
+				Value = p->Value;
 			};
 		}
 		else

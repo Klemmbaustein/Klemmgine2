@@ -75,6 +75,8 @@ int32 engine::SerializedData::DataValue::GetInt() const
 {
 	if (Type == DataType::Int32)
 		return Int;
+	if (Type == DataType::Float)
+		return int32(Float);
 	return 0;
 }
 
@@ -96,6 +98,8 @@ float engine::SerializedData::DataValue::GetFloat() const
 {
 	if (Type == DataType::Float)
 		return Float;
+	if (Type == DataType::Int32)
+		return float(Int);
 	return 0.0f;
 }
 

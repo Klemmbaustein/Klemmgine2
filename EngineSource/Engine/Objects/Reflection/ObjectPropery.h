@@ -18,6 +18,7 @@ namespace engine
 	{
 		/// A float property.
 		Float,
+		Int,
 		/**
 		* A string property.
 		*
@@ -122,6 +123,23 @@ namespace engine
 		void DeSerialize(SerializedValue* From) override;
 
 		float Value;
+	};
+
+	template<>
+	struct ObjProperty<int32> : public ObjPropertyBase
+	{
+		ObjProperty(string Name, int32 Value, SceneObject* Obj);
+
+		ObjProperty<int32>& operator=(const int32& Target)
+		{
+			this->Value = Target;
+			return *this;
+		}
+
+		SerializedValue Serialize() override;
+		void DeSerialize(SerializedValue* From) override;
+
+		int32 Value;
 	};
 
 	template<>

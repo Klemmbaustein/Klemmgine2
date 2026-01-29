@@ -28,6 +28,14 @@ engine::ObjProperty<float>::ObjProperty(string Name, float Value, SceneObject* O
 	RegisterSelf(Obj);
 }
 
+engine::ObjProperty<int32>::ObjProperty(string Name, int32 Value, SceneObject* Obj)
+{
+	this->Type = PropertyType::Int;
+	this->Name = Name;
+	this->Value = Value;
+	RegisterSelf(Obj);
+}
+
 engine::ObjProperty<bool>::ObjProperty(string Name, bool Value, SceneObject* Obj)
 {
 	this->Type = PropertyType::Bool;
@@ -72,6 +80,16 @@ SerializedValue engine::ObjProperty<float>::Serialize()
 void engine::ObjProperty<float>::DeSerialize(SerializedValue* From)
 {
 	Value = From->GetFloat();
+}
+
+SerializedValue engine::ObjProperty<int32>::Serialize()
+{
+	return Value;
+}
+
+void engine::ObjProperty<int32>::DeSerialize(SerializedValue* From)
+{
+	Value = From->GetInt();
 }
 
 SerializedValue engine::ObjProperty<AssetRef>::Serialize()
