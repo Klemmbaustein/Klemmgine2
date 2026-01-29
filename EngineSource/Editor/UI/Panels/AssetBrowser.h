@@ -7,7 +7,7 @@ namespace engine::editor
 	{
 	public:
 		AssetBrowser();
-		std::vector<Item> GetItems() override;
+		std::vector<Item> GetItems(string Path) override;
 		void Back() override;
 		void OnBackgroundRightClick(kui::Vec2f Position) override;
 		void OnItemsRightClick(kui::Vec2f Position) override;

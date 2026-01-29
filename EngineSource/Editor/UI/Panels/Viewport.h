@@ -55,7 +55,7 @@ namespace engine::editor
 		kui::UIBackground* ViewportBackground = nullptr;
 
 		void UndoLast();
-		physics::HitResult RayAtCursor();
+		physics::HitResult RayAtCursor(float Distance, float FallbackDistance);
 
 		Vector3 GetCursorDirection();
 

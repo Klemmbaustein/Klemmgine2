@@ -117,6 +117,7 @@ namespace engine::editor
 			Icons,
 			/// A list of names with smaller icons next to the name. Like Windows' File Explorer's "List" view.
 			List,
+			Tree,
 		};
 
 		/// The display mode to use for the next update.
@@ -167,7 +168,7 @@ namespace engine::editor
 		 * @return
 		 * A list of items that are displayed. They will possibly be filtered after (@see Filter)
 		 */
-		virtual std::vector<Item> GetItems() = 0;
+		virtual std::vector<Item> GetItems(string Path) = 0;
 
 		/**
 		 * @brief
@@ -182,6 +183,10 @@ namespace engine::editor
 		kui::UIText* StatusText;
 		std::pair<Item, kui::UIBox*>* GetHoveredButton();
 		std::vector<Item> CurrentItems;
-		void DisplayList();
+		std::set<string> ExpandedItems;
+		void DisplayItems();
+		void DisplayTree(string Path, const std::vector<Item>& Items, size_t Depth, size_t& Index);
+
+		void OnButtonClicked(size_t i, kui::UIBox* Element, bool IsList);
 	};
 }

@@ -386,7 +386,7 @@ void engine::editor::Viewport::Update()
 		{
 			Viewport::Current->ClearSelected();
 		}
-		auto hit = RayAtCursor();
+		auto hit = RayAtCursor(1000, 0);
 		if (hit.Hit)
 		{
 			this->SelectedObjects.insert(hit.HitComponent->ParentObject);
@@ -490,7 +490,7 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 
 	Window* Win = Window::GetActiveWindow();
 
-	auto hit = RayAtCursor();
+	auto hit = RayAtCursor(100, 10);
 
 	Vector3 EndPosition = Vector3::SnapToGrid(hit.ImpactPoint, 0.1f);
 
@@ -562,17 +562,17 @@ void engine::editor::Viewport::HighlightComponents(DrawableComponent* Target, bo
 	}
 }
 
-physics::HitResult engine::editor::Viewport::RayAtCursor()
+physics::HitResult engine::editor::Viewport::RayAtCursor(float Distance, float FallbackDistance)
 {
 	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
 
 	Vector3 Direction = GetCursorDirection();
-	Vector3 EndPosition = Cam->Position + Direction * 30;
+	Vector3 EndPosition = Cam->Position + Direction * Distance;
 
 	auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic);
 	if (!hit.Hit)
 	{
-		hit.ImpactPoint = Cam->Position + Direction * 10;
+		hit.ImpactPoint = Cam->Position + Direction * FallbackDistance;
 	}
 	return hit;
 }

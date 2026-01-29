@@ -182,6 +182,7 @@ void engine::editor::ScriptEditorProvider::Update()
 		{
 			this->HoveredData = NewHovered;
 			Time = 0;
+			HoverTime.Reset();
 			ClearHovered();
 		}
 
@@ -199,6 +200,7 @@ void engine::editor::ScriptEditorProvider::Update()
 		}
 		else if (!NewHovered && !GetIsAutoCompleteActive())
 		{
+			HoverTime.Reset();
 			ClearHovered();
 		}
 	}

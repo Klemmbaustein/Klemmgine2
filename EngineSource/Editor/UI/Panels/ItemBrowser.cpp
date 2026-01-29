@@ -59,15 +59,16 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	Heading->optionsButton->OnClicked = [this]()
 	{
 		bool IsList = this->Mode == DisplayMode::List;
+		bool IsTree = this->Mode == DisplayMode::Tree;
 
 		new DropdownMenu({
 			DropdownMenu::Option{
 				.Name = "Show icons",
-				.Icon = !IsList ? EditorUI::Asset("Dot.png") : "",
+				.Icon = !IsList && !IsTree ? EditorUI::Asset("Dot.png") : "",
 				.OnClicked = [this]() {
 					this->Mode = DisplayMode::Icons;
 					this->LastItemsPerRow = 0;
-					this->DisplayList();
+					this->DisplayItems();
 				}
 			},
 			DropdownMenu::Option{
@@ -76,7 +77,16 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 				.OnClicked = [this]() {
 					this->Mode = DisplayMode::List;
 					this->LastItemsPerRow = 0;
-					this->DisplayList();
+					this->DisplayItems();
+				}
+			},
+			DropdownMenu::Option{
+				.Name = "Show tree",
+				.Icon = IsTree ? EditorUI::Asset("Dot.png") : "",
+				.OnClicked = [this]() {
+					this->Mode = DisplayMode::Tree;
+					this->LastItemsPerRow = 0;
+					this->DisplayItems();
 				}
 			}, }, Heading->optionsButton->GetScreenPosition());
 	};
@@ -138,7 +148,7 @@ void engine::editor::ItemBrowser::Update()
 				i.first.Selected = false;
 			}
 			this->LastItemsPerRow = 0;
-			DisplayList();
+			DisplayItems();
 		}
 	}
 
@@ -183,18 +193,22 @@ void engine::editor::ItemBrowser::OnResized()
 		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 60));
 	}
 
+	if (CurrentItems.empty())
+	{
+		CurrentItems = GetItems(this->Path);
+	}
+
 	Heading->SetPathText(GetPathDisplayName());
-	CurrentItems = GetItems();
-	DisplayList();
+	DisplayItems();
 }
 
 void engine::editor::ItemBrowser::UpdateItems()
 {
 	Heading->SetPathText(GetPathDisplayName());
 
-	CurrentItems = GetItems();
+	CurrentItems = GetItems(this->Path);
 	LastItemsPerRow = 0;
-	DisplayList();
+	DisplayItems();
 }
 
 std::vector<ItemBrowser::Item*> engine::editor::ItemBrowser::GetSelected()
@@ -233,8 +247,18 @@ std::pair<engine::editor::ItemBrowser::Item, kui::UIBox*>* engine::editor::ItemB
 
 	return nullptr;
 }
-void engine::editor::ItemBrowser::DisplayList()
+
+void engine::editor::ItemBrowser::DisplayItems()
 {
+	if (this->Mode == DisplayMode::Tree)
+	{
+		ItemsScrollBox->DeleteChildren();
+		Buttons.clear();
+		size_t i = 0;
+		DisplayTree("", CurrentItems, 0, i);
+		return;
+	}
+
 	bool IsList = this->Mode == DisplayMode::List;
 
 	size_t ItemsPerRow = size_t(
@@ -270,7 +294,6 @@ void engine::editor::ItemBrowser::DisplayList()
 	for (size_t i = 0; i < CurrentItems.size(); i++)
 	{
 		Item NewItem = CurrentItems[i];
-		NewItem.Selected = Buttons[i].first.Selected;
 
 		if (!Filter.empty() && str::Lower(NewItem.Name).find(Filter) == std::string::npos)
 			continue;
@@ -286,6 +309,7 @@ void engine::editor::ItemBrowser::DisplayList()
 			btn->SetName(NewItem.Name);
 			btn->SetMinWidth(ElementSize);
 			btn->SetMaxWidth(ElementSize);
+			btn->collapseButton->IsCollapsed = true;
 			btn->text->SetWrapEnabled(true, ElementSize.GetScreen().X - (20_px).GetScreen().X);
 			btn->SetImage(NewItem.Image);
 			btn->btn->OnDragged = [NewItem](int) {
@@ -307,7 +331,7 @@ void engine::editor::ItemBrowser::DisplayList()
 		else
 		{
 			auto* btn = new ItemBrowserButton();
-			btn->SetBackgroundColor(NewItem.Selected ? EditorUI::Theme.HighlightDark: EditorUI::Theme.DarkBackground);
+			btn->SetBackgroundColor(NewItem.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.DarkBackground);
 			btn->SetColor(NewItem.Color);
 			btn->SetName(NewItem.Name);
 			btn->SetImage(NewItem.Image);
@@ -330,55 +354,14 @@ void engine::editor::ItemBrowser::DisplayList()
 					return;
 				}
 
-				NewItem.OnRightClick();
+				if (NewItem.OnRightClick)
+					NewItem.OnRightClick();
 			};
 			Element = btn;
 			ElementButton = btn->button;
 		}
 
-		ElementButton->OnClicked = [this, i, Element, IsList]()
-		{
-			auto UpdateButtonSelected = [this, i, IsList](UIBox* b)
-			{
-				if (!IsList)
-				{
-					auto button = static_cast<ItemBrowserButton*>(b);
-					button->SetBackgroundColor(
-						Buttons[i].first.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.DarkBackground);
-				}
-				else
-				{
-					auto entry = static_cast<ItemBrowserListEntry*>(b);
-					entry->btn->SetBorder(Buttons[i].first.Selected ? 1_px : 0, EditorUI::Theme.Highlight1);
-					entry->SetBackgroundColor(
-						Buttons[i].first.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
-				}
-			};
-
-			if (!Buttons[i].first.Selected)
-			{
-				if (!input::IsKeyDown(input::Key::SHIFT))
-				{
-					for (auto& btn : Buttons)
-					{
-						if (btn.first.Selected)
-						{
-							btn.first.Selected = false;
-							UpdateButtonSelected(btn.second);
-						}
-					}
-				}
-				Buttons[i].first.Selected = true;
-				UpdateButtonSelected(Element);
-			}
-			else
-			{
-				Buttons[i].first.Selected = false;
-				UpdateButtonSelected(Element);
-				if (Buttons[i].first.OnClick)
-					Buttons[i].first.OnClick();
-			}
-		};
+		ElementButton->OnClicked = std::bind(&ItemBrowser::OnButtonClicked, this, i, Element, IsList);
 
 		Buttons[i] = { NewItem, Element };
 
@@ -391,5 +374,112 @@ void engine::editor::ItemBrowser::DisplayList()
 
 			Column = 0;
 		}
+	}
+}
+
+void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Item>& Items, size_t Depth, size_t& Index)
+{
+	Buttons.resize(Buttons.size() + Items.size());
+
+	for (size_t i = 0; i < Items.size(); i++)
+	{
+		Item NewItem = Items[i];
+		auto* btn = new ItemBrowserListEntry();
+		btn->SetBackgroundColor(NewItem.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
+		btn->SetColor(NewItem.Color);
+		btn->SetName(NewItem.Name);
+		btn->SetMinWidth(UISize::Parent(1));
+		btn->SetMaxWidth(UISize::Parent(1));
+		btn->collapseButton->IsVisible = NewItem.IsDirectory;
+		btn->SetLeftPadding(UISize::Pixels(16 * Depth + 2));
+		//btn->text->SetWrapEnabled(true, ElementSize.GetScreen().X - (20_px).GetScreen().X);
+		btn->SetImage(NewItem.Image);
+		btn->btn->OnDragged = [NewItem](int) {
+			EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
+				.Name = NewItem.Name,
+				.Type = "asset",
+				.Path = NewItem.Path,
+				.Icon = NewItem.Image,
+				.Color = NewItem.Color,
+				.ObjectType = NewItem.Type,
+				});
+		};
+		btn->btn->OnRightClicked = [NewItem]() {
+			NewItem.OnRightClick();
+		};
+		btn->btn->OnClicked = std::bind(&ItemBrowser::OnButtonClicked, this, Index, btn, true);
+
+		Buttons[Index] = { NewItem, btn };
+		Index++;
+		ItemsScrollBox->AddChild(btn);
+
+		if (NewItem.IsDirectory)
+		{
+			string NewPath = Path + NewItem.Name + "/";
+			btn->collapseButton->OnClicked = [this, NewPath]() {
+				if (ExpandedItems.contains(NewPath))
+				{
+					ExpandedItems.erase(NewPath);
+				}
+				else
+				{
+					ExpandedItems.insert(NewPath);
+				}
+				DisplayItems();
+			};
+
+			bool IsExpanded = ExpandedItems.contains(NewPath);
+
+			btn->collapseButton->SetUseImage(true, IsExpanded ? EditorUI::Asset("DownArrow.png") : EditorUI::Asset("RightArrow.png"));
+
+			if (IsExpanded)
+			{
+				DisplayTree(NewPath, GetItems(NewPath), Depth + 1, Index);
+			}
+		}
+	}
+}
+
+void engine::editor::ItemBrowser::OnButtonClicked(size_t i, kui::UIBox* Element, bool IsList)
+{
+	auto UpdateButtonSelected = [this, i, IsList](UIBox* b)
+	{
+		if (!IsList)
+		{
+			auto button = static_cast<ItemBrowserButton*>(b);
+			button->SetBackgroundColor(
+				Buttons[i].first.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.DarkBackground);
+		}
+		else
+		{
+			auto entry = static_cast<ItemBrowserListEntry*>(b);
+			entry->btn->SetBorder(Buttons[i].first.Selected ? 1_px : 0, EditorUI::Theme.Highlight1);
+			entry->SetBackgroundColor(
+				Buttons[i].first.Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
+		}
+	};
+
+	if (!Buttons[i].first.Selected)
+	{
+		if (!input::IsKeyDown(input::Key::SHIFT))
+		{
+			for (auto& btn : Buttons)
+			{
+				if (btn.first.Selected)
+				{
+					btn.first.Selected = false;
+					UpdateButtonSelected(btn.second);
+				}
+			}
+		}
+		Buttons[i].first.Selected = true;
+		UpdateButtonSelected(Element);
+	}
+	else
+	{
+		Buttons[i].first.Selected = false;
+		UpdateButtonSelected(Element);
+		if (Buttons[i].first.OnClick)
+			Buttons[i].first.OnClick();
 	}
 }

@@ -86,11 +86,11 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 }
 
-std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems()
+std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Path)
 {
 	std::vector<Item> Out;
 
-	auto Items = EditorUI::Instance->AssetsProvider->GetFiles(GetPathDisplayName());
+	auto Items = EditorUI::Instance->AssetsProvider->GetFiles("Assets/" + Path);
 
 	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
 		UpdateItems();
@@ -107,7 +107,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 			Extension = "dir/";
 			OnClick = [this, File]()
 			{
-				Path.append(file::FileName(File.Path) + "/");
+				this->Path.append(file::FileName(File.Path) + "/");
 				ItemsScrollBox->GetScrollObject()->Scrolled = 0;
 				UpdateItems();
 			};

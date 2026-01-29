@@ -108,49 +108,59 @@ element ItemBrowserButton
 
 element ItemBrowserListEntry
 {
-	var Name = "Name";
-	var Image;
-	var Color = (1, 0, 0);
-	var BackgroundColor = 0.1;
+	var Name = "Name"
+	var Image
+	var Color = (1, 0, 0)
+	var BackgroundColor = 0.1
 
-	padding = 1px;
-	leftPadding = 2px;
-	rightPadding = 2px;
+	padding = 1px
+	leftPadding = 2px
+	rightPadding = 2px
+	width = 100%
 
 	child UIButton btn
 	{
-		color = BackgroundColor;
+		color = BackgroundColor
 
-		borderColor = Color_Highlight1;
-		corners = 2px;
+		borderColor = Color_Highlight1
+		corners = 2px
 
-		verticalAlign = centered;
-		width = 100%;
+		verticalAlign = centered
+		width = 100%
+
+		child UIButton collapseButton
+		{
+			size = 16px
+			image = $"DownArrow.png"
+			color = Color_Text
+			leftPadding = 4px
+			rightPadding = 4px
+		}
 
 		child UIBackground
 		{
-			leftPadding = 2px;
-			upPadding = 2px;
-			downPadding = 2px;
-			corners = Theme_CornerSize;
+			leftPadding = 2px
+			upPadding = 2px
+			downPadding = 2px
+			corners = Theme_CornerSize
 
 			child UIBackground
 			{
-				size = 18px;
-				image = Image;
-				padding = 2px;
-				color = 1;
+				size = 18px
+				image = Image
+				padding = 2px
+				color = 1
 			}
-			color = Color;
+			color = Color
 		}
 
 		child UIText text
 		{
-			leftPadding = 5px;
-			color = Color_Text;
-			text = Name;
-			size = 12px;
-			maxWraps = 2;
+			leftPadding = 5px
+			color = Color_Text
+			text = Name
+			size = 12px
+			maxWraps = 2
 		}
 	}
 }
