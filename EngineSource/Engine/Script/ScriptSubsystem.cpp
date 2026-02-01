@@ -166,7 +166,7 @@ bool engine::script::ScriptSubsystem::Reload()
 		string Name = TypeInfo.name.substr(LastColon + 1);
 		string Path = TypeInfo.name.substr(0, LastColon - 1);
 
-		ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [&TypeInfo, this]() -> SceneObject* {
+		ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() -> SceneObject* {
 			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
 		}, Path);
 	}
