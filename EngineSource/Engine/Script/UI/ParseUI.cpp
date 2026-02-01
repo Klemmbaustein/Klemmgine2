@@ -103,6 +103,7 @@ UIParseData engine::script::ui::UIFileParser::Parse(ds::ParseContext* Parser)
 		}
 
 		ds::ParsedClass* cls = nullptr;
+
 		if (this->CompileScript)
 		{
 			cls = CompileScript(ConvertToken(Element.FromToken), "game", DSharpTokens, Element.FilePath);
@@ -113,8 +114,10 @@ UIParseData engine::script::ui::UIFileParser::Parse(ds::ParseContext* Parser)
 				{ { ds::Token("engine::UIElement") } }
 				});
 		}
-
-		RegisterChildren(&Element.Root, cls, Parser);
+		if (cls)
+		{
+			RegisterChildren(&Element.Root, cls, Parser);
+		}
 	}
 
 	return UIParseData{
