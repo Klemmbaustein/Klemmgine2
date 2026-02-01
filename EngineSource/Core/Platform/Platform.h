@@ -25,6 +25,8 @@ namespace engine::platform
 
 	string GetSystemUserName();
 
+	void CreateHiddenDirectory(string Path);
+
 #if WINDOWS
 	std::wstring StrToWstr(const std::string& str);
 	std::string WstrToStr(const std::wstring& wstr);

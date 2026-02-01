@@ -25,6 +25,8 @@ engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFil
 engine::editor::ScriptEditorProvider::~ScriptEditorProvider()
 {
 	Context->OnReady.Remove(this);
+	Context->RemoveFile(this->EditedFile);
+	Context->Commit(nullptr);
 }
 
 void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)

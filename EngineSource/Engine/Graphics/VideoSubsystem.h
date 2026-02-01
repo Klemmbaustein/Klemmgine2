@@ -31,6 +31,8 @@ namespace engine
 		static string DefaultFontName;
 		static VideoSubsystem* Current;
 
+		string OpenGLMode;
+
 		void OnResized();
 
 		void InitGLErrors();

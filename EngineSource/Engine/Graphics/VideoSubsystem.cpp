@@ -97,7 +97,15 @@ engine::VideoSubsystem::VideoSubsystem()
 	if (openGL::GetGLVersion() < openGL::Version::GL430)
 	{
 		Print("Using OpenGL 3.3 instead of 4.3. Some graphics effects might not work.", LogType::Warning);
+		OpenGLMode = "OpenGL 3.3";
 	}
+	else
+	{
+		Print("Using OpenGL 4.3", LogType::Note);
+		OpenGLMode = "OpenGL 4.3+";
+	}
+
+	MainWindow->SetTitle(GetWindowTitle().c_str());
 
 	MainWindow->OnResizedCallback = [this](Window*)
 	{
@@ -135,7 +143,7 @@ engine::string engine::VideoSubsystem::GetWindowTitle()
 {
 #define STR_INNER(x) # x
 #define STR(x) STR_INNER(x)
-	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", STR(ENGINE_COMPILER_ID), "4.3+");
+	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", STR(ENGINE_COMPILER_ID), OpenGLMode.c_str());
 
 #ifdef EDITOR
 	Title.append(" Editor");

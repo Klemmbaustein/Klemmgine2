@@ -3,6 +3,7 @@
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Engine/MainThread.h>
 #include <Core/File/FileUtil.h>
+#include <Engine/File/Resource.h>
 
 using namespace ds;
 using namespace kui;
@@ -24,32 +25,102 @@ engine::editor::ScriptEditorContext::ScriptEditorContext()
 
 	std::thread t = std::thread(&ScriptEditorContext::ContextCompilerThread, this);
 	t.detach();
+	UpdateFilesList();
 }
 
 engine::editor::ScriptEditorContext::~ScriptEditorContext()
 {
 	Quit = true;
 	cv.notify_all();
+
+	std::unique_lock lk(ExitMutex);
+	if (!Exited)
+	{
+		ExitCondition.wait(lk, [this] { return Exited; });
+	}
+}
+
+void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Content, std::string Name, bool Update)
+{
+	script::ui::UIFileParser UIFiles;
+	UIFiles.CompileScript = [this, Update](ds::Token className, string moduleName,
+		ds::TokenStream& stream, string fileName) {
+		if (Update)
+		{
+			return ScriptService->updateClass(className, moduleName, stream, fileName,
+				{ { ds::Token("engine::UIElement") } });
+		}
+		return ScriptService->addClass(className, moduleName, stream, fileName,
+			{ { ds::Token("engine::UIElement") } });
+	};
+	UIFiles.AddString(Name, Content);
+	ParsedUI = UIFiles.Parse(ScriptService->parser);
+}
+
+void engine::editor::ScriptEditorContext::UpdateFilesList()
+{
+	ScheduleContextTask([this] {
+		std::set<string> RemovedFiles = LoadedFiles;
+		std::set<string> NewFiles;
+
+		for (auto& [Name, Path] : resource::LoadedAssets)
+		{
+			string Extension = file::Extension(Name);
+			if (Extension == "ds" || Extension == "kui")
+			{
+				if (RemovedFiles.contains(Path))
+				{
+					RemovedFiles.erase(Path);
+				}
+				else
+				{
+					NewFiles.insert(Path);
+				}
+			}
+		}
+
+		for (auto& Removed : RemovedFiles)
+		{
+			this->ScriptService->removeFile(Removed);
+			LoadedFiles.erase(Removed);
+		}
+
+		for (auto& Added : NewFiles)
+		{
+			string Extension = file::Extension(Added);
+
+			if (Extension != "kui")
+			{
+				this->ScriptService->addString(resource::GetTextFile(Added), Added);
+			}
+			else
+			{
+				CompileUIFile(resource::GetTextFile(Added), Added, false);
+			}
+			LoadedFiles.insert(Added);
+		}
+	});
 }
 
 void engine::editor::ScriptEditorContext::AddFile(const string& Content, const string& Name)
 {
 	ScheduleContextTask([this, Content = Content, Name = Name] {
 
-		if (file::Extension(Name) == "ds")
+		if (file::Extension(Name) == "kui")
 		{
-			this->ScriptService->addString(Content, Name);
+			CompileUIFile(Content, Name, LoadedFiles.contains(Name));
 		}
 		else
 		{
-			script::ui::UIFileParser UIFiles;
-			UIFiles.CompileScript = [this](ds::Token className, string moduleName,
-				ds::TokenStream& stream, string fileName) {
-				return ScriptService->addClass(className, moduleName, stream, fileName,
-					{ { ds::Token("engine::UIElement") } });
-			};
-			UIFiles.AddString(Name, Content);
-			ParsedUI = UIFiles.Parse(ScriptService->parser);
+			if (LoadedFiles.contains(Name))
+			{
+				this->ScriptService->updateFile(Content, Name);
+			}
+			else
+			{
+				this->ScriptService->addString(Content, Name);
+				LoadedFiles.insert(Name);
+			}
 		}
 	});
 }
@@ -60,20 +131,18 @@ void engine::editor::ScriptEditorContext::UpdateFile(const string& Content, cons
 		NewErrors[Name].clear();
 		if (file::Extension(Name) == "kui")
 		{
-			script::ui::UIFileParser UIFiles;
-			UIFiles.CompileScript = [this](ds::Token className, string moduleName,
-				ds::TokenStream& stream, string fileName) {
-				return ScriptService->updateClass(className, moduleName, stream, fileName,
-					{ { ds::Token("engine::UIElement") } });
-			};
-			UIFiles.AddString(Name, Content);
-			ParsedUI = UIFiles.Parse(ScriptService->parser);
+			CompileUIFile(Content, Name, true);
 		}
 		else
 		{
 			this->ScriptService->updateFile(Content, Name);
 		}
 	});
+}
+
+void engine::editor::ScriptEditorContext::RemoveFile(const string& Name)
+{
+	UpdateFilesList();
 }
 
 std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorContext::CompleteAt(const string& FileName,
@@ -274,4 +343,8 @@ void engine::editor::ScriptEditorContext::ContextCompilerThread()
 		}
 		CallbackFunctions.clear();
 	}
+
+	std::unique_lock lk(ExitMutex);
+	Exited = true;
+	ExitCondition.notify_all();
 }

@@ -1,6 +1,6 @@
 #include "ScriptEditorPanel.h"
+#include <Core/File/JsonSerializer.h>
 #include <Core/File/FileUtil.h>
-#include <Editor/Server/EditorServerSubsystem.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Editor/UI/CodeEditorTheme.h>
 #include <Editor/UI/EditorUI.h>
@@ -14,6 +14,7 @@
 using namespace kui;
 using namespace engine::script;
 using namespace engine::editor;
+using namespace engine;
 
 engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 	: EditorPanel("Scripts", "scripts")
@@ -113,9 +114,11 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		}
 	}, ShortcutOptions::AllowInText);
 
-	AddTab("Assets/Scripts/test.ds");
-	//AddTab("Scripts/test2.ds");
-	AddTab("Assets/Scripts/player.kui");
+	auto LastOpened = GetLastOpenedFiles();
+	for (auto& i : LastOpened)
+	{
+		AddTab(i);
+	}
 
 	this->ScriptEditorContext::Initialize();
 
@@ -143,6 +146,7 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 
 engine::editor::ScriptEditorPanel::~ScriptEditorPanel()
 {
+	SaveLastOpenedFiles();
 	Settings::GetInstance()->Script.RemoveListener(this);
 
 	for (auto& i : Tabs)
@@ -156,9 +160,12 @@ engine::editor::ScriptEditorPanel::~ScriptEditorPanel()
 
 void engine::editor::ScriptEditorPanel::UpdateTabSize(ScriptEditorTab* Tab)
 {
-	if (Tab->MiniMap)
-		Tab->MiniMap->ReGenerate = true;
-	Tab->Editor->UpdateElement();
+	if (Tab)
+	{
+		if (Tab->MiniMap)
+			Tab->MiniMap->ReGenerate = true;
+		Tab->Editor->UpdateElement();
+	}
 }
 
 ScriptEditorTab* engine::editor::ScriptEditorPanel::GetSelectedTab()
@@ -249,6 +256,44 @@ void engine::editor::ScriptEditorPanel::Save()
 	{
 		EditorUI::SetStatusMessage("Could not save scripts because no file is active.", EditorUI::StatusType::Warning);
 	}
+}
+
+std::set<string> engine::editor::ScriptEditorPanel::GetLastOpenedFiles()
+{
+	if (!std::filesystem::exists(TABS_OPENED_FILE))
+	{
+		return std::set<string>();
+	}
+
+	try
+	{
+		auto Files = JsonSerializer::FromFile(TABS_OPENED_FILE);
+
+		std::set<string> FoundFiles;
+
+		for (auto& i : Files.GetArray())
+		{
+			FoundFiles.insert(i.GetString());
+		}
+		return FoundFiles;
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(str::Format("Failed to load last saved tabs from the file %s: %s", TABS_OPENED_FILE, e.what()));
+		return {};
+	}
+}
+
+void engine::editor::ScriptEditorPanel::SaveLastOpenedFiles()
+{
+	std::vector<SerializedValue> Result;
+
+	for (auto& i : Tabs)
+	{
+		Result.push_back(SerializedValue(i.Provider->EditedFile));
+	}
+
+	JsonSerializer::ToFile(Result, TABS_OPENED_FILE);
 }
 
 void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, std::optional<ds::TokenPos> At)
@@ -404,6 +449,8 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 	}
 
 	this->AdditionalBoxes.push_back(NewTab.Editor);
+
+	UpdateEditorTabs();
 }
 
 void engine::editor::ScriptEditorPanel::OpenTab(size_t Tab)

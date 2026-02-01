@@ -8,7 +8,6 @@ using namespace engine;
 #include <iostream>
 #include <Lmcons.h>
 
-#undef DELETE
 void engine::platform::Execute(string Command)
 {
 	STARTUPINFO Startup;
@@ -94,6 +93,17 @@ void engine::platform::SetConsoleColor(Log::LogColor NewColor)
 
 	std::cout.flush();
 	SetConsoleTextAttribute(hConsole, WindowsColors[NewColor]);
+}
+
+void engine::platform::CreateHiddenDirectory(string Path)
+{
+	std::wstring WidePath = StrToWstr(Path);
+
+	if (!CreateDirectoryW(WidePath.c_str(), nullptr))
+	{
+		Log::Error(str::Format("Failed to create %s, %s", Path.c_str(), GetLastErrorString().c_str()));
+		SetFileAttributesW(WidePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+	}
 }
 
 void engine::platform::SetThreadName(string Name)

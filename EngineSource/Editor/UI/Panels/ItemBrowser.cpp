@@ -411,8 +411,7 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 		};
 		btn->btn->OnClicked = std::bind(&ItemBrowser::OnButtonClicked, this, Index, btn, true);
 
-		Buttons[Index] = { NewItem, btn };
-		Index++;
+		Buttons[Index++] = { NewItem, btn };
 		ItemsScrollBox->AddChild(btn);
 
 		if (NewItem.IsDirectory)

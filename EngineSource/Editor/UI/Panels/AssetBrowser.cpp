@@ -123,7 +123,7 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
 			};
 		}
-		else if (Extension == "ds")
+		else if (Extension == "ds" || Extension == "kui")
 		{
 			OnClick = [this, FilePath]()
 			{

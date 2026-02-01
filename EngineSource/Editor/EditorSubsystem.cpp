@@ -2,9 +2,11 @@
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/Engine.h>
 #include <Engine/Scene.h>
+#include <Core/Platform/Platform.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <Editor/Editor.h>
 #include <Engine/Input.h>
+#include <filesystem>
 
 bool engine::subsystem::EditorSubsystem::Active = false;
 
@@ -40,6 +42,11 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 			}
 		}
 		});
+
+	if (!std::filesystem::exists(".editor/"))
+	{
+		platform::CreateHiddenDirectory(".editor/");
+	}
 }
 
 engine::subsystem::EditorSubsystem::~EditorSubsystem()

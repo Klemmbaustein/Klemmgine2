@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <functional>
 #include <queue>
+#include <set>
 #include <Engine/Script/UI/ParseUI.h>
 
 namespace engine::editor
@@ -29,6 +30,7 @@ namespace engine::editor
 
 		void AddFile(const string& Content, const string& Name);
 		void UpdateFile(const string& Content, const string& Name);
+		void RemoveFile(const string& Name);
 		void Commit(std::function<void()> Callback);
 
 		void Initialize();
@@ -49,16 +51,25 @@ namespace engine::editor
 		bool IsCompiling = false;
 		bool ReCompileNext = false;
 		bool Quit = false;
+		bool Exited = false;
 
 		std::condition_variable cv;
+		std::condition_variable ExitCondition;
 		std::mutex TaskMutex;
 		std::mutex TaskReadMutex;
+		std::mutex ExitMutex;
 		std::map<string, std::vector<ScriptError>> NewErrors;
+		std::set<string> OpenedFiles;
+		std::set<string> LoadedFiles;
 		script::ui::UIParseData ParsedUI;
 
 		void ScheduleContextTask(std::function<void()> Task);
 
 		void PublishUIData(kui::markup::UIElement& For, string File);
+
+		void UpdateFilesList();
+
+		void CompileUIFile(const std::string& Content, std::string Name, bool Update);
 
 		std::queue<std::function<void()>> Tasks;
 
