@@ -1,81 +1,89 @@
 element ItemBrowserHeading
 {
-	var PathText = "some/path/";
-	var PathWrapping = 100px;
+	var PathText = "some/path/"
+	var PathWrapping = 100px
 
-	width = 100%;
-	orientation = vertical;
+	width = 100%
+	orientation = vertical
 
 	child UIBox container
 	{
-		width = 100%;
-		orientation = horizontal;
+		width = 100%
+		orientation = horizontal
 		child UIBox pathButtons
 		{
-			width = 100%;
-			orientation = horizontal;
-			verticalAlign = centered;
+			width = 100%
+			orientation = horizontal
+			verticalAlign = centered
 			child UIButton backButton
 			{
-				size = 20px;
-				padding = 6px;
-				color = Color_Text;
+				size = 20px
+				padding = 6px
+				color = Color_Text
 				image = $"ExitFolder.png"
 			}
 			child UIText
 			{
-				size = 12px;
-				color = Color_Text;
-				padding = 6px;
-				leftPadding = 0;
-				text = PathText;
-				wrap = PathWrapping;
-				widthOverride = PathWrapping;
+				size = 12px
+				color = Color_Text
+				padding = 6px
+				leftPadding = 0
+				text = PathText
+				wrap = PathWrapping
+				widthOverride = PathWrapping
+			}
+
+			child UIButton addButton
+			{
+				size = 12px
+				color = Color_Text
+				image = $"Plus.png"
+				rightPadding = 12px
 			}
 
 			child UIButton optionsButton
 			{
-				size = 12px;
-				color = Color_Text;
-				image = $"DownArrow.png";
+				size = 12px
+				color = Color_Text
+				image = $"DownArrow.png"
 			}
 		}
 
 		child EditorTextField searchBox
 		{
-			HintText = "Search";
-			Image = $"Search.png";
-			Size = 200px;
-			padding = 5px;
+			HintText = "Search"
+			Image = $"Search.png"
+			Size = 200px
+			padding = 5px
 		}
 	}
 
 	child UIBackground
 	{
-		width = 100%;
-		height = 1px;
-		padding = 1px;
-		color = Color_BackgroundHighlight;
+		width = 100%
+		height = 1px
+		padding = 1px
+		color = Color_BackgroundHighlight
 	}
 }
 
 element ItemBrowserButton
 {
-	var Name = "Name";
-	var Color = (1, 0, 0);
-	var BackgroundColor = 0.1;
-	var Image;
+	var Name = "Name"
+	var Color = (1, 0, 0)
+	var BackgroundColor = 0.1
+	var Image
 
-	leftPadding = 10px;
-	upPadding = 10px;
+	leftPadding = 10px
+	upPadding = 10px
 
 	child UIButton button
 	{
-		color = BackgroundColor;
-		size = (80, 120)px;
-		orientation = vertical;
+		color = BackgroundColor
+		size = (80, 120)px
+		orientation = vertical
 
-		corners = Theme_CornerSize;
+		corners = Theme_CornerSize
 
 		child UIBackground
 		{
@@ -95,13 +103,13 @@ element ItemBrowserButton
 		}
 		child UIText
 		{
-			text = Name;
-			color = Color_Text;
-			wrap = 76px;
-			padding = 2px;
-			upPadding = 0;
-			size = 10px;
-			maxWraps = 2;
+			text = Name
+			color = Color_Text
+			wrap = 76px
+			padding = 2px
+			upPadding = 0
+			size = 10px
+			maxWraps = 2
 		}
 	}
 }

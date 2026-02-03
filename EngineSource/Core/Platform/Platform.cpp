@@ -102,7 +102,10 @@ void engine::platform::CreateHiddenDirectory(string Path)
 	if (!CreateDirectoryW(WidePath.c_str(), nullptr))
 	{
 		Log::Error(str::Format("Failed to create %s, %s", Path.c_str(), GetLastErrorString().c_str()));
-		SetFileAttributesW(WidePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+	}
+	else if (!SetFileAttributesW(WidePath.c_str(), FILE_ATTRIBUTE_HIDDEN))
+	{
+		Log::Error(str::Format("Failed to create %s, %s", Path.c_str(), GetLastErrorString().c_str()));
 	}
 }
 
@@ -164,6 +167,11 @@ engine::string engine::platform::GetExecutablePath()
 #include <errno.h>
 #include <filesystem>
 #include <thread>
+
+void engine::platform::CreateHiddenDirectory(string Path)
+{
+	std::filesystem::create_directory(Path);
+}
 
 void engine::platform::SetConsoleColor(Log::LogColor NewColor)
 {

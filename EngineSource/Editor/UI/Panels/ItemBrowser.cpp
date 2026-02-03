@@ -56,8 +56,7 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 
 	Heading->backButton->OnClicked = [this]() { Back(); };
 
-	Heading->optionsButton->OnClicked = [this]()
-	{
+	Heading->optionsButton->OnClicked = [this]() {
 		bool IsList = this->Mode == DisplayMode::List;
 		bool IsTree = this->Mode == DisplayMode::Tree;
 
@@ -91,8 +90,11 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 			}, }, Heading->optionsButton->GetScreenPosition());
 	};
 
-	Heading->searchBox->field->OnValueChanged = [this]
-	{
+	Heading->addButton->OnClicked = [this]() {
+		OnBackgroundRightClick(Heading->addButton->GetScreenPosition());
+	};
+
+	Heading->searchBox->field->OnValueChanged = [this] {
 		Filter = str::Lower(Heading->searchBox->field->GetText());
 		UpdateItems();
 	};
@@ -182,7 +184,7 @@ void engine::editor::ItemBrowser::OnResized()
 		Heading->container->SetHorizontal(true);
 		Heading->pathButtons->SetMinWidth(UISize::Pixels(Width - 290));
 		Heading->searchBox->SetSize(UISize::Pixels(255));
-		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 350));
+		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 376));
 	}
 	else
 	{
@@ -190,7 +192,7 @@ void engine::editor::ItemBrowser::OnResized()
 		Heading->pathButtons->SetMinWidth(UISize::Parent(1));
 		Heading->searchBox->SetSize(UISize::Screen(Size.X -
 			UIBox::PixelSizeToScreenSize(35, Heading->GetParentWindow()).X));
-		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 60));
+		Heading->SetPathWrapping(UISize::Pixels(Background->GetUsedSize().GetPixels().X - 86));
 	}
 
 	if (CurrentItems.empty())

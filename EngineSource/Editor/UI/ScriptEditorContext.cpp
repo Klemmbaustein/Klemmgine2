@@ -268,6 +268,10 @@ void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback)
 			CallbackFunctions.push_back(Callback);
 		}
 		IsCompiling = false;
+		if (Quit)
+		{
+			return;
+		}
 		thread::ExecuteOnMainThread([this, Callback] {
 			Errors = NewErrors;
 

@@ -15,7 +15,7 @@ namespace engine
 		Rotation3();
 
 		float P = 0, Y = 0, R = 0;
-		
+
 		Vector3 EulerVector(bool Radians = false) const;
 
 		static constexpr float PI = 3.14159265359f;
@@ -47,5 +47,10 @@ namespace engine
 		void Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale) const;
 
 		glm::mat4 Matrix;
+
+		bool operator==(const Transform& other) const
+		{
+			return this->Matrix == other.Matrix;
+		}
 	};
 }

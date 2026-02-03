@@ -26,6 +26,7 @@ namespace engine
 		void Update() override;
 
 	private:
+		Transform LastTransform;
 		bool Added = false;
 		void Clear();
 		physics::PhysicsBody* Body = nullptr;

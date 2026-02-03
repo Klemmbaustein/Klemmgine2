@@ -2,6 +2,7 @@
 #include <Engine/Objects/Components/MeshComponent.h>
 #include <Engine/Objects/Components/MoveComponent.h>
 #include <Engine/Objects/Components/CameraComponent.h>
+#include <Engine/Objects/Components/PhysicsComponent.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Engine/Script/ScriptObject.h>
@@ -21,6 +22,7 @@
 
 #include "Bindings/MathBindings.h"
 #include "Bindings/SerializeBindings.h"
+#include "Bindings/PhysicsBindings.h"
 #include "UI/UIBindings.h"
 
 #define ENGINE_OFFSETOF(T, m)  (::ds::Size)(::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
@@ -165,6 +167,51 @@ static void MeshComponent_load(InterpretContext* context)
 	ClassPtr<AssetRef*> File = context->popPtr<AssetRef*>();
 
 	Component.getValue()->Load(**File);
+}
+
+static void PhysicsComponent_new(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new PhysicsComponent();
+	context->pushValue(Component);
+}
+
+static void PhysicsComponent_createBox(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	physics::Layer Layer = physics::Layer(context->popValue<Int>());
+	physics::MotionType MotionType = physics::MotionType(context->popValue<Int>());
+
+	Component.getValue()->CreateBox(MotionType, Layer);
+}
+
+static void PhysicsComponent_createSphere(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	physics::Layer Layer = physics::Layer(context->popValue<Int>());
+	physics::MotionType MotionType = context->popValue<physics::MotionType>();
+
+	Component.getValue()->CreateSphere(MotionType, Layer);
+}
+
+static void PhysicsComponent_collisionTest(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	physics::Layer Layer = physics::Layer(context->popValue<Int>());
+
+	auto Hit = Component.getValue()->CollisionTest(Layer);
+
+	std::vector<ds::RuntimeClass*> Classes;
+
+	for (auto& h : Hit)
+	{
+		Classes.push_back(NativeModule::makeClass(h));
+	}
+
+	context->pushValue(modules::system::createArray(Classes.data(), Classes.size(), true));
 }
 
 static void MoveComponent_new(InterpretContext* context)
@@ -355,10 +402,6 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	auto FloatInst = ToContext->registry.getEntry<FloatType>();
 	auto BoolInst = ToContext->registry.getEntry<BoolType>();
 
-	MathBindings Math = AddMathModule(EngineModule, ToContext);
-	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
-	ui::UIBindings UI = ui::AddUIModule(EngineModule, ToContext);
-
 	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
 
 	EngineModule.addClassConstructor(AssetRefType, NativeFunction{
@@ -369,6 +412,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	auto SceneType = EngineModule.createClass<Scene*>("Scene");
 	auto ObjectType = EngineModule.createClass<SceneObject*>("SceneObject");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
+
+	MathBindings Math = AddMathModule(EngineModule, ToContext);
+	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
+	ui::UIBindings UI = ui::AddUIModule(EngineModule, ToContext);
+	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
 
 	EngineModule.addClassConstructor(SceneType,
 		NativeFunction({}, nullptr, "Scene.new", &Scene_new));
@@ -461,6 +509,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({ },
 			FloatInst, "getDelta", &Stats_GetDelta));
 
+
 	auto MeshComponentType = EngineModule.createClass<MeshComponent*>("MeshComponent", ComponentType);
 
 	EngineModule.addClassConstructor(MeshComponentType,
@@ -470,6 +519,32 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineModule.addClassMethod(MeshComponentType,
 		NativeFunction({ FunctionArgument(AssetRefType, "file") },
 			nullptr, "load", &MeshComponent_load));
+
+
+	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);
+
+	EngineModule.addClassConstructor(PhysicsComponentType,
+		NativeFunction({}, nullptr, "PhysicsComponent.new",
+			&PhysicsComponent_new));
+
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
+			{ FunctionArgument(Physics.MotionTypeType, "motionType"), FunctionArgument(Physics.LayerType, "layer") },
+			nullptr, "createBox",
+			&PhysicsComponent_createBox));
+
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
+			{ FunctionArgument(Physics.MotionTypeType, "motionType"), FunctionArgument(Physics.LayerType, "layer") },
+			nullptr, "createSphere",
+			&PhysicsComponent_createSphere));
+
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
+			{ FunctionArgument(Physics.LayerType, "layer") },
+			ArrayType::getInstance(Physics.HitResultType), "collisionTest",
+			&PhysicsComponent_collisionTest));
+
 
 	auto MoveComponentType = EngineModule.createClass<MoveComponent*>("MoveComponent", ComponentType);
 
@@ -529,6 +604,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		.type = BoolInst
 		});
 
+	MeshComponentType->makePointerClass();
+	PhysicsComponentType->makePointerClass();
 	MoveComponentType->makePointerClass();
 
 	auto CameraComponentType = EngineModule.createClass<MoveComponent*>("CameraComponent", ComponentType);

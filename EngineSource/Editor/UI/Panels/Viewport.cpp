@@ -569,7 +569,8 @@ physics::HitResult engine::editor::Viewport::RayAtCursor(float Distance, float F
 	Vector3 Direction = GetCursorDirection();
 	Vector3 EndPosition = Cam->Position + Direction * Distance;
 
-	auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic);
+	auto hit = Scene::GetMain()->Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Dynamic
+		| physics::Layer::Trigger | physics::Layer::Layer0 | physics::Layer::Layer1 | physics::Layer::Layer2);
 	if (!hit.Hit)
 	{
 		hit.ImpactPoint = Cam->Position + Direction * FallbackDistance;

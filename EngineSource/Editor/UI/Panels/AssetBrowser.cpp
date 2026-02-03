@@ -382,6 +382,15 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			},
 		},
 		DropdownMenu::Option{
+			.Name = "New script",
+			.Shortcut = "Ctrl+e",
+			.Icon = EditorUI::GetExtIconAndColor("").first,
+			.OnClicked = [this]() {
+				EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds");
+				resource::ScanForAssets();
+			},
+		},
+		DropdownMenu::Option{
 			.Name = "New fragment shader",
 			.Shortcut = "Ctrl+T",
 			.Icon = EditorUI::GetExtIconAndColor("kmt").first,

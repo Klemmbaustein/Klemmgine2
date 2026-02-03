@@ -110,7 +110,6 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoComplete()
 	{
 		ShowAutoComplete(CompletionSource::Shortcut);
 	}
-
 }
 
 void engine::editor::EngineTextEditorProvider::InsertCompletion(string CompletionText)

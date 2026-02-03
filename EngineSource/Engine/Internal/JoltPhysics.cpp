@@ -54,6 +54,11 @@ public:
 
 	static bool ShouldLayersCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2)
 	{
+		if (LayerMask((Layer)inObject1, Layer::Trigger))
+		{
+			return true;
+		}
+
 		if (CheckForStaticDynamic((Layer)inObject1, (Layer)inObject2)) return true;
 		if (CheckForStaticDynamic((Layer)inObject2, (Layer)inObject1)) return true;
 		return inObject1 & inObject2;
@@ -192,10 +197,8 @@ namespace engine::internal
 	ObjectLayerPairFilterImpl ObjectVsObjectFilter;
 }
 
-// Callback for traces, connect this to your own trace function if you have one
 static void JoltPhysicsTrace(const char* inFMT, ...)
 {
-	// Format the message
 	va_list list;
 	va_start(list, inFMT);
 	char buffer[2048];
@@ -669,9 +672,15 @@ class BodyFilterImpl : public JPH::BodyFilter
 public:
 	std::set<SceneObject*>* ObjectsToIgnore = nullptr;
 	internal::JoltInstance* Instance = nullptr;
+	JPH::BodyID ThisBody;
 
 	virtual bool ShouldCollide(const JPH::BodyID& inObject) const override
 	{
+		if (ThisBody == inObject)
+		{
+			return false;
+		}
+
 		if (ObjectsToIgnore->empty())
 			return true;
 		PhysicsBody* BodyInfo = Instance->Bodies[inObject].Body;
@@ -741,10 +750,8 @@ std::vector<physics::HitResult> engine::internal::JoltInstance::CollisionTest(Tr
 	ObjF.ObjectsToIgnore = &ObjectsToIgnore;
 	ObjF.Instance = this;
 
-	JPH::Vec3 ObjectScale = ToJPHVec3(1);
-
 	System->GetNarrowPhaseQuery().CollideShape(JoltShape->GetShape(),
-		ObjectScale, ResultMat, Settings, JPH::Vec3(), cl, BplF, LayerF, ObjF);
+		JPH::Vec3(1, 1, 1), ResultMat, Settings, JPH::Vec3(), cl, BplF, LayerF, ObjF);
 
 	return cl.Hits;
 }

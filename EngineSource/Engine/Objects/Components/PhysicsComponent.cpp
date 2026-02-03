@@ -19,7 +19,7 @@ void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, phys
 		Clear();
 	}
 
-	Body = new physics::SphereBody(Position,
+	Body = new physics::SphereBody(WorldTransform.ApplyTo(0),
 		Rotation,
 		(Scale.X + Scale.Y + Scale.Z) / 3,
 		Movability,
@@ -44,7 +44,7 @@ void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics
 		Clear();
 	}
 
-	Body = new physics::BoxBody(Position,
+	Body = new physics::BoxBody(WorldTransform.ApplyTo(0),
 		Rotation,
 		Scale,
 		Movability,
@@ -69,7 +69,7 @@ void engine::PhysicsComponent::CreateCapsule(physics::MotionType Movability, phy
 		Clear();
 	}
 
-	Body = new physics::CapsuleBody(Position,
+	Body = new physics::CapsuleBody(WorldTransform.ApplyTo(0),
 		Rotation,
 		Vector2(Scale.X, Scale.Y),
 		Movability,
@@ -80,7 +80,8 @@ void engine::PhysicsComponent::CreateCapsule(physics::MotionType Movability, phy
 	Added = true;
 }
 
-std::vector<physics::HitResult> engine::PhysicsComponent::ShapeCast(Transform Start, Vector3 End, physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+std::vector<physics::HitResult> engine::PhysicsComponent::ShapeCast(Transform Start, Vector3 End,
+	physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
 {
 	if (!Body)
 	{
@@ -89,7 +90,8 @@ std::vector<physics::HitResult> engine::PhysicsComponent::ShapeCast(Transform St
 	return Body->ShapeCast(Start, End, Layers, ObjectsToIgnore);
 }
 
-std::vector<physics::HitResult> engine::PhysicsComponent::CollisionTest(physics::Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
+std::vector<physics::HitResult> engine::PhysicsComponent::CollisionTest(physics::Layer Layers,
+	std::set<SceneObject*> ObjectsToIgnore)
 {
 	if (!Body)
 	{
@@ -167,6 +169,21 @@ bool engine::PhysicsComponent::GetActive() const
 
 void engine::PhysicsComponent::Update()
 {
+	if (!Body->IsActive || !Body || !Body->IsCollisionEnabled)
+	{
+		return;
+	}
+	if (LastTransform != WorldTransform)
+	{
+		if (Body->ColliderMovability != physics::MotionType::Dynamic)
+		{
+			Vector3 Position, Scale;
+			Rotation3 Rotation;
+			WorldTransform.Decompose(Position, Rotation, Scale);
+			Body->SetPositionAndRotation(Position, Rotation);
+		}
+		LastTransform = WorldTransform;
+	}
 }
 
 void engine::PhysicsComponent::Clear()
