@@ -472,6 +472,10 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		{
 			this->SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
 		}
+		if (SceneInfo.Contains("ambientIntensity"))
+		{
+			this->SceneEnvironment.AmbientIntensity = SceneInfo.At("ambientIntensity").GetFloat();
+		}
 		if (SceneInfo.Contains("fogColor"))
 		{
 			this->SceneEnvironment.FogColor = SceneInfo.At("fogColor").GetVector3();
