@@ -82,6 +82,13 @@ static void Scene_getObjects(InterpretContext* context)
 	context->pushValue(outArray);
 }
 
+static void Scene_getPhysics(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	context->pushValue(NativeModule::makePointerClass(&TargetScene.getValue()->Physics));
+}
+
 static void Scene_getName(InterpretContext* context)
 {
 	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
@@ -152,6 +159,13 @@ static void SceneObject_getName(InterpretContext* context)
 	const std::string& Name = Data.getValue()->Name;
 
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
+}
+
+static void ObjectComponent_GetWorldPosition(InterpretContext* context)
+{
+	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
+
+	context->pushValue(Component.getValue()->GetWorldTransform().ApplyTo(0));
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -431,6 +445,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, ArrayType::getInstance(ObjectType), "getObjects", &Scene_getObjects));
 
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({}, Physics.PhysicsManagerType, "getPhysics", &Scene_getPhysics));
+
 	EngineModule.addFunction(NativeFunction({}, SceneType->nullable, "getMainScene", &Scene_getMainScene));
 
 	ComponentType->members.push_back(ClassMember{
@@ -509,6 +526,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({ },
 			FloatInst, "getDelta", &Stats_GetDelta));
 
+	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Vec3, "getWorldPosition", &ObjectComponent_GetWorldPosition));
 
 	auto MeshComponentType = EngineModule.createClass<MeshComponent*>("MeshComponent", ComponentType);
 

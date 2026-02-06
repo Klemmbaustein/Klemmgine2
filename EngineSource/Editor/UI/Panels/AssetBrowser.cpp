@@ -383,7 +383,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		},
 		DropdownMenu::Option{
 			.Name = "New script",
-			.Shortcut = "Ctrl+e",
+			.Shortcut = "Ctrl+E",
 			.Icon = EditorUI::GetExtIconAndColor("").first,
 			.OnClicked = [this]() {
 				EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds");

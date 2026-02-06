@@ -88,7 +88,6 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 	}
 
 	IFileOpenDialog* pFileOpen = nullptr;
-
 	hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
 		IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 

@@ -419,7 +419,7 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 		if (NewItem.IsDirectory)
 		{
 			string NewPath = Path + NewItem.Name + "/";
-			btn->collapseButton->OnClicked = [this, NewPath]() {
+			auto OnClicked = [this, NewPath]() {
 				if (ExpandedItems.contains(NewPath))
 				{
 					ExpandedItems.erase(NewPath);
@@ -429,6 +429,18 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 					ExpandedItems.insert(NewPath);
 				}
 				DisplayItems();
+			};
+
+			btn->collapseButton->OnClicked = OnClicked;
+			btn->btn->OnClicked = [this, OnClicked, Index, btn]() {
+				if (Background->GetParentWindow()->Input.IsKeyDown(Key::SHIFT))
+				{
+					ItemBrowser::OnButtonClicked(Index, btn, true);
+				}
+				else
+				{
+					OnClicked();
+				}
 			};
 
 			bool IsExpanded = ExpandedItems.contains(NewPath);

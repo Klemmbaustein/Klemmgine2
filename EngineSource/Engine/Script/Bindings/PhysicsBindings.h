@@ -9,6 +9,7 @@ namespace engine::script
 		ds::Type* MotionTypeType = nullptr;
 		ds::Type* LayerType = nullptr;
 		ds::ClassType* HitResultType = nullptr;
+		ds::ClassType* PhysicsManagerType = nullptr;
 	};
 
 	PhysicsBindings AddPhysicsModule(ds::NativeModule& To, ds::LanguageContext* ToContext);

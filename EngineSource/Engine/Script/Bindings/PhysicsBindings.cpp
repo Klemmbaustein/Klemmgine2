@@ -1,12 +1,35 @@
 #include "PhysicsBindings.h"
 #include <ds/parser/types/stringType.hpp>
-#include <Core/Vector.h>
 #include <Engine/Physics/Physics.h>
-#include <Core/Transform.h>
+#include <ds/modules/system.hpp>
+#include <ds/parser/types/arrayType.hpp>
 #include <ds/language.hpp>
 
 using namespace ds;
 using namespace engine;
+
+using ds::modules::system::ArrayData;
+
+static void Physics_rayCast(InterpretContext* context)
+{
+	ClassRef<physics::PhysicsManager*> Manager = context->popValue<RuntimeClass*>();
+
+	ClassPtr<ArrayData> IgnoredObjects = context->popPtr<ArrayData>();
+	physics::Layer Layer = physics::Layer(context->popValue<Int>());
+	Vector3 End = context->popValue<Vector3>();
+	Vector3 Start = context->popValue<Vector3>();
+
+	std::set<SceneObject*> IgnoredSet;
+
+	for (uint32_t i = 0; i < IgnoredObjects->length; i++)
+	{
+		IgnoredSet.insert(IgnoredObjects->at<SceneObject*>(i));
+	}
+
+	auto hit = Manager.getValue()->RayCast(Start, End, Layer, IgnoredSet);
+
+	context->pushValue(hit.Hit ? NativeModule::makeClass(hit) : nullptr);
+}
 
 script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
@@ -37,12 +60,6 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 	auto HitResultType = To.createClass<physics::HitResult>("HitResult");
 
 	HitResultType->members.push_back(ClassMember{
-		.name = "hit",
-		.offset = offsetof(physics::HitResult, Hit),
-		.type = BoolInst
-		});
-
-	HitResultType->members.push_back(ClassMember{
 		.name = "depth",
 		.offset = offsetof(physics::HitResult, Depth),
 		.type = FloatInst
@@ -66,9 +83,27 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 		.type = VecType
 		});
 
+	auto PhysicsManagerType = To.createClass<physics::PhysicsManager*>("PhysicsManager");
+
+	To.addClassMethod(PhysicsManagerType, NativeFunction({
+		FunctionArgument(VecType, "start"),
+		FunctionArgument(VecType, "end"),
+		FunctionArgument(PhysicsLayerType, "layer"),
+		FunctionArgument(ArrayType::getInstance(ObjectType), "ignoredObjects")
+		}, HitResultType->nullable, "rayCast", &Physics_rayCast));
+
+	PhysicsManagerType->members.push_back(ClassMember{
+		.name = "isActive",
+		.offset = offsetof(physics::PhysicsManager, Active),
+		.type = BoolInst,
+		});
+
+	PhysicsManagerType->makePointerClass();
+
 	Physics.MotionTypeType = PhysicsMotionType;
 	Physics.LayerType = PhysicsLayerType;
 	Physics.HitResultType = HitResultType;
+	Physics.PhysicsManagerType = PhysicsManagerType;
 
 	return Physics;
 }

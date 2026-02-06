@@ -55,5 +55,8 @@ namespace engine::script
 		kui::markup::DynamicMarkupContext UIContext;
 
 		bool Reload();
+
+	private:
+		std::map<SceneObject*, ds::RuntimeClass*> ScriptObjectMappings;
 	};
 }

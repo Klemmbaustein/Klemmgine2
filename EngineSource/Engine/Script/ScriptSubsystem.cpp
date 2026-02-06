@@ -52,7 +52,7 @@ engine::script::ScriptSubsystem::~ScriptSubsystem()
 void engine::script::ScriptSubsystem::RegisterCommands(ConsoleSubsystem* System)
 {
 	System->AddCommand(console::Command{
-		.Name = "script_reload",
+		.Name = "script.reload",
 		.Args = {},
 		.OnCalled = [this](const console::Command::CallContext&)
 		{
