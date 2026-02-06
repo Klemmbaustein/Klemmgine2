@@ -306,7 +306,6 @@ static void ImportThread(engine::string CurrentPath)
 	using namespace engine;
 	using namespace engine::internal;
 
-
 	std::vector Files = platform::OpenFileDialog({
 		platform::FileDialogFilter{
 			.Name = "3D Models",
@@ -320,10 +319,10 @@ static void ImportThread(engine::string CurrentPath)
 			.Name = "Sound",
 			.FileTypes = { "wav" }
 		},
-		platform::FileDialogFilter{
-			.Name = "Klemmgine 2 Assets",
-			.FileTypes = { "kmdl", "kts", "kbs" }
-		},
+		//platform::FileDialogFilter{
+		//	.Name = "Klemmgine 2 Assets",
+		//	.FileTypes = { "kmdl", "kts", "kbs" }
+		//},
 		platform::FileDialogFilter{
 			.Name = "_ALL",
 		},
