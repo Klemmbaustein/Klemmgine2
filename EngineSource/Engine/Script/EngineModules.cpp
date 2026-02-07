@@ -443,7 +443,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			GenericArgumentType::getInstance(0, true), "createNewObject", &Scene_createNewObject));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeFunction({}, ArrayType::getInstance(ObjectType), "getObjects", &Scene_getObjects));
+		NativeFunction({}, ToContext->registry.getArray(ObjectType), "getObjects", &Scene_getObjects));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, Physics.PhysicsManagerType, "getPhysics", &Scene_getPhysics));
@@ -560,7 +560,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
 			{ FunctionArgument(Physics.LayerType, "layer") },
-			ArrayType::getInstance(Physics.HitResultType), "collisionTest",
+			ToContext->registry.getArray(Physics.HitResultType), "collisionTest",
 			&PhysicsComponent_collisionTest));
 
 

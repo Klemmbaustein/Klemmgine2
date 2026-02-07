@@ -89,7 +89,7 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 		FunctionArgument(VecType, "start"),
 		FunctionArgument(VecType, "end"),
 		FunctionArgument(PhysicsLayerType, "layer"),
-		FunctionArgument(ArrayType::getInstance(ObjectType), "ignoredObjects")
+		FunctionArgument(ToContext->registry.getArray(ObjectType), "ignoredObjects")
 		}, HitResultType->nullable, "rayCast", &Physics_rayCast));
 
 	PhysicsManagerType->members.push_back(ClassMember{

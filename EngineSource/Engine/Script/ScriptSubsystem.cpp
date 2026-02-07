@@ -130,7 +130,7 @@ bool engine::script::ScriptSubsystem::Reload()
 			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
 			if (ScriptObj)
 			{
-				ScriptObj->UnloadScriptData();
+				ScriptObj->OnDestroyed();
 			}
 		}
 	}
@@ -149,7 +149,7 @@ bool engine::script::ScriptSubsystem::Reload()
 			if (ScriptObj)
 			{
 				ScriptObj->Class = ScriptInstructions->reflect.types[ScriptObj->Class.hash];
-				ScriptObj->LoadScriptData();
+				ScriptObj->Begin();
 			}
 		}
 	}
