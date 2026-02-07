@@ -112,7 +112,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoComplete()
 	}
 }
 
-void engine::editor::EngineTextEditorProvider::InsertCompletion(string CompletionText)
+void engine::editor::EngineTextEditorProvider::InsertCompletion(const AutoCompleteResult& Result)
 {
 	auto Position = ParentEditor->GetCursorPosition();
 	string Line = this->Lines[Position.Line];
@@ -123,9 +123,17 @@ void engine::editor::EngineTextEditorProvider::InsertCompletion(string Completio
 		size_t LastCharAfterSpace = Line.find_last_of("\t .()-+/*><=") + 1;
 		Line = Line.substr(0, LastCharAfterSpace);
 	}
-	Position.Column = Line.size() + CompletionText.size();
+	Position.Column = Line.size() + Result.name.size();
 
-	SetLine(Position.Line, { TextSegment(Line + CompletionText + LineEnd, Vec3f(1)) });
+	SetLine(Position.Line, { TextSegment(Line + Result.name + LineEnd, Vec3f(1)) });
+
+	if (!Result.completionModule.empty())
+	{
+		ParentEditor->Insert("using " + Result.completionModule + "\n", EditorPosition(0, 0), true, false);
+		Position.Line++;
+	}
+
+
 	ParentEditor->SetCursorPosition(Position);
 	Commit();
 }
@@ -188,7 +196,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 		auto btn = new UIButton(true, 0, EditorUI::Theme.LightBackground, [this, i = i]() {
 			ParentEditor->Edit();
-			InsertCompletion(i.name);
+			InsertCompletion(i);
 			CloseAutoComplete();
 		});
 
@@ -215,9 +223,21 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 		AutoCompleteBox->AddChild(btn
 			->SetMinWidth(UISize::Parent(1))
+			->SetVerticalAlign(UIBox::Align::Centered)
 			->AddChild((new UIText(12_px, Segments, EditorUI::EditorFont))
+				->SetTextWidthOverride(150_px)
 				->SetPadding(3_px)));
+
+		if (!i.completionModule.empty() && !Filter.empty())
+		{
+			btn->AddChild((new UIText(11_px,
+				{ TextSegment{ i.completionModule, EditorUI::Theme.DarkText} },
+				EditorUI::EditorFont))
+				->SetTextWidthOverride(80_px)
+				->SetPadding(2_px));
+		}
 	}
+
 	ApplyHoverBoxPosition(HoverBox, CompletePosition);
 }
 
@@ -247,8 +267,8 @@ void engine::editor::EngineTextEditorProvider::ShowAutoComplete(CompletionSource
 	AutoCompleteBox->GetScrollBarBackground()->SetOpacity(0);
 	AutoCompleteBox->GetScrollBarSlider()->SetOpacity(0.75f);
 
-	AutoCompleteBox->SetMinSize(SizeVec(150_px, 0));
-	AutoCompleteBox->SetMaxSize(SizeVec(150_px, 200_px));
+	AutoCompleteBox->SetMinSize(SizeVec(250_px, 0));
+	AutoCompleteBox->SetMaxSize(SizeVec(250_px, 200_px));
 	AutoCompleteBox->SetPadding(3_px);
 
 	UpdateAutoCompleteEntries(Filter);

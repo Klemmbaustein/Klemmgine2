@@ -33,9 +33,9 @@ static void Physics_rayCast(InterpretContext* context)
 
 script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
-	auto StrType = ToContext->registry.getEntry<StringType>();
-	auto FloatInst = ToContext->registry.getEntry<FloatType>();
-	auto BoolInst = ToContext->registry.getEntry<BoolType>();
+	auto StrType = ToContext->registry->getEntry<StringType>();
+	auto FloatInst = ToContext->registry->getEntry<FloatType>();
+	auto BoolInst = ToContext->registry->getEntry<BoolType>();
 
 	PhysicsBindings Physics;
 
@@ -89,7 +89,7 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 		FunctionArgument(VecType, "start"),
 		FunctionArgument(VecType, "end"),
 		FunctionArgument(PhysicsLayerType, "layer"),
-		FunctionArgument(ToContext->registry.getArray(ObjectType), "ignoredObjects")
+		FunctionArgument(ToContext->registry->getArray(ObjectType), "ignoredObjects")
 		}, HitResultType->nullable, "rayCast", &Physics_rayCast));
 
 	PhysicsManagerType->members.push_back(ClassMember{

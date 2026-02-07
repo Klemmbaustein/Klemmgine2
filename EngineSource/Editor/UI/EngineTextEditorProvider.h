@@ -46,7 +46,7 @@ namespace engine::editor
 		void UpdateAutoComplete();
 		void CloseAutoComplete();
 		void UpdateAutoCompleteEntries(string Filter);
-		void InsertCompletion(string CompletionText);
+		void InsertCompletion(const ds::AutoCompleteResult& Result);
 
 		void ShowAutoComplete(CompletionSource Source, string Filter = "");
 		std::string ProcessInput(std::string Text) override;

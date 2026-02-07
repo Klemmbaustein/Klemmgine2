@@ -94,8 +94,8 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 {
 	script::MathBindings Math;
 
-	auto FloatInst = ToContext->registry.getEntry<FloatType>();
-	auto StrInst = ToContext->registry.getEntry<StringType>();
+	auto FloatInst = ToContext->registry->getEntry<FloatType>();
+	auto StrInst = ToContext->registry->getEntry<StringType>();
 
 	Math.Vec3 = DS_CREATE_STRUCT(Vector3);
 

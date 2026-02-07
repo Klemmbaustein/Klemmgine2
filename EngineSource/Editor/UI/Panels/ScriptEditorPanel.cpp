@@ -389,10 +389,6 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 	NewTab.Provider = new ScriptEditorProvider(File, this);
 
 	NewTab.Provider->Keywords = {
-		"int",
-		"float",
-		"bool",
-		"string",
 		"if",
 		"else",
 		"for",
@@ -419,7 +415,9 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 		"fn",
 		"enum",
 		"async",
-		"await"
+		"await",
+		"as",
+		"is"
 	};
 
 	if (file::Extension(File) == "kui")

@@ -412,9 +412,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	NativeModule EngineModule;
 	EngineModule.name = "engine";
 
-	auto StrType = ToContext->registry.getEntry<StringType>();
-	auto FloatInst = ToContext->registry.getEntry<FloatType>();
-	auto BoolInst = ToContext->registry.getEntry<BoolType>();
+	auto StrType = ToContext->registry->getEntry<StringType>();
+	auto FloatInst = ToContext->registry->getEntry<FloatType>();
+	auto BoolInst = ToContext->registry->getEntry<BoolType>();
 
 	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
 
@@ -443,7 +443,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			GenericArgumentType::getInstance(0, true), "createNewObject", &Scene_createNewObject));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeFunction({}, ToContext->registry.getArray(ObjectType), "getObjects", &Scene_getObjects));
+		NativeFunction({}, ToContext->registry->getArray(ObjectType), "getObjects", &Scene_getObjects));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, Physics.PhysicsManagerType, "getPhysics", &Scene_getPhysics));
@@ -520,7 +520,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds") },
-			TaskType::getInstance(nullptr, &ToContext->registry), "wait", &Wait));
+			TaskType::getInstance(nullptr, ToContext->registry), "wait", &Wait));
 
 	EngineModule.addFunction(
 		NativeFunction({ },
@@ -560,7 +560,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
 			{ FunctionArgument(Physics.LayerType, "layer") },
-			ToContext->registry.getArray(Physics.HitResultType), "collisionTest",
+			ToContext->registry->getArray(Physics.HitResultType), "collisionTest",
 			&PhysicsComponent_collisionTest));
 
 

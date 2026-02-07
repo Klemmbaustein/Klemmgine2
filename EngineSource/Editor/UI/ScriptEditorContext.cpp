@@ -38,6 +38,8 @@ engine::editor::ScriptEditorContext::~ScriptEditorContext()
 	{
 		ExitCondition.wait(lk, [this] { return Exited; });
 	}
+
+	delete ScriptService;
 }
 
 void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Content, std::string Name, bool Update)

@@ -49,7 +49,7 @@ static void UIText_setText(InterpretContext* context)
 
 UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::LanguageContext* ToContext)
 {
-	auto StrType = ToContext->registry.getEntry<StringType>();
+	auto StrType = ToContext->registry->getEntry<StringType>();
 
 	auto UIBoxType = To.createClass<kui::UIBox*>("UIBox");
 
