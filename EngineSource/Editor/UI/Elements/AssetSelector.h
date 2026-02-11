@@ -23,13 +23,13 @@ namespace engine::editor
 		kui::UITextField* AssetPath = nullptr;
 		kui::UIScrollBox* SearchBackground = nullptr;
 		kui::UIText* PathText = nullptr;
+		void UpdateSelection();
 
 		virtual void Tick() override;
 	private:
 		string LastEnteredText;
 		bool RemoveSearchList = false;
 		bool ChangedText = false;
-		void UpdateSelection();
 		void UpdateSearchSize();
 		void RemoveSearchResults();
 		void UpdateSearchResults();

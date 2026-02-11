@@ -1,6 +1,8 @@
 #include "CreateProjectWindow.h"
 #include "LauncherProject.h"
 #include <Engine/MainThread.h>
+#include <Core/Platform/Platform.h>
+#include <kui/App.h>
 #include <filesystem>
 
 using namespace kui;
@@ -19,9 +21,16 @@ engine::editor::launcher::CreateProjectWindow::CreateProjectWindow(std::function
 			.Close = true,
 			.IsClose = true,
 		}
-		}, Vec2ui(640, 480))
+		}, Vec2ui(400, 300))
 {
 	this->OnAccept = OnAccept;
+
+#if WINDOWS
+	// Parity with Visual Studio source code path.
+	this->Path = platform::GetSystemHomeDir() + "\\source\\Klemmgine";
+#else
+	this->Path = platform::GetSystemHomeDir() + "/src/Klemmgine";
+#endif
 
 	Open();
 }
@@ -29,12 +38,32 @@ engine::editor::launcher::CreateProjectWindow::CreateProjectWindow(std::function
 void engine::editor::launcher::CreateProjectWindow::Begin()
 {
 	IDialogWindow::Begin();
-	Element = new NewProjectWindowElement();
-	Background->AddChild(Element);
+	Menu = new PropertyMenu(this->DefaultFont);
+	Menu->SetMinWidth(350_px);
+	Menu->SetMaxWidth(350_px);
+	Background->AddChild(Menu);
+	Background->SetHorizontalAlign(UIBox::Align::Centered);
+
+
+	Menu->CreateNewHeading("Create new project");
+	Menu->AddStringEntry("Name", this->ProjectName, nullptr);
+	Menu->AddStringEntry("Path", this->Path, nullptr);
+	Menu->AddButtonEntry("", "Browse", [this]() {
+		this->Path = kui::app::SelectFileDialog(true);
+		Menu->UpdateProperties();
+	});
+
+	auto ResultElement = Menu->CreateNewEntry("Result");
+
+	ResultText = new UIText(12_px, EditorUI::Theme.Text, "", this->DefaultFont);
+	ResultElement->valueBox->AddChild(ResultText
+		->SetWrapEnabled(true, 200_px));
 }
 
 void engine::editor::launcher::CreateProjectWindow::Update()
 {
+	ResultText->SetText(str::Format("Project Path: %s\nName: %s",
+		(Path + "/" + ProjectName.c_str()).c_str(), ProjectName.c_str()));
 }
 
 void engine::editor::launcher::CreateProjectWindow::Destroy()
@@ -43,19 +72,18 @@ void engine::editor::launcher::CreateProjectWindow::Destroy()
 
 void engine::editor::launcher::CreateProjectWindow::Accept()
 {
-	string Name = Element->nameField->field->GetText();
-	string Path = "F:/Klemmgine/Projects/" + Name;
+	string ResultPath = this->Path + "/" + ProjectName;
 
-	std::filesystem::create_directories(Path + "/Assets");
+	std::filesystem::create_directories(ResultPath + "/Assets");
 
 	auto Projects = LauncherProject::GetProjects();
 
 	Projects.push_back(LauncherProject{
-		.Name = Name,
-		.Path = Path,
+		.Name = ProjectName,
+		.Path = std::filesystem::canonical(ResultPath).string(),
 		});
 
 	LauncherProject::SaveProjects(Projects);
 
-	thread::ExecuteOnMainThread(std::bind(OnAccept, Path));
+	thread::ExecuteOnMainThread(std::bind(OnAccept, ResultPath));
 }

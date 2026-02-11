@@ -496,6 +496,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		.offset = ENGINE_OFFSETOF(SceneObject, Scale),
 		.type = Math.Vec3
 		});
+
 	ObjectType->makePointerClass();
 
 	EngineModule.addClassMethod(ObjectType,

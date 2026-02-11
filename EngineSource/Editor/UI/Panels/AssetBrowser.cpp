@@ -21,6 +21,9 @@
 #include <thread>
 #include <algorithm>
 
+using namespace engine::editor;
+using namespace engine;
+
 static void Import(engine::string CurrentPath);
 
 engine::editor::AssetBrowser::AssetBrowser()
@@ -86,7 +89,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 }
 
-std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Path)
+std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Path)
 {
 	std::vector<Item> Out;
 
@@ -175,13 +178,20 @@ std::vector<engine::editor::AssetBrowser::Item> engine::editor::AssetBrowser::Ge
 				Options.push_back(DropdownMenu::Option{
 					.Name = "View text",
 					.Icon = EditorUI::Asset("Code.png"),
-					.OnClicked = [FilePath]
-					{
+					.OnClicked = [FilePath]() {
 						Viewport::Current->AddChild(
 							new TextEditorPanel(AssetRef::FromPath(FilePath)),
 							Align::Tabs, true);
 					},
 					});
+			}
+			else if (this->Mode == DisplayMode::Tree)
+			{
+				Options.push_back(DropdownMenu::Option{
+					.Name = "Add",
+					.Icon = EditorUI::Asset("Plus.png"),
+					.SubMenu = GetAddOptions(),
+				});
 			}
 
 			Options.push_back(DropdownMenu::Option{
@@ -303,9 +313,6 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 
 static void ImportThread(engine::string CurrentPath)
 {
-	using namespace engine;
-	using namespace engine::internal;
-
 	std::vector Files = platform::OpenFileDialog({
 		platform::FileDialogFilter{
 			.Name = "3D Models",
@@ -345,8 +352,73 @@ static void Import(engine::string CurrentPath)
 
 void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
-	new DropdownMenu(
-		{
+	std::vector<DropdownMenu::Option> Options = GetAddOptions();
+
+	Options.push_back(DropdownMenu::Option{
+		.Name = "Open in file explorer",
+		.Icon = EditorUI::Asset("Open.png"),
+		.OnClicked = [this]() {
+#if WINDOWS
+			platform::Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
+#else
+			std::thread([this]() {platform::Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
+#endif
+	}, });
+
+	new DropdownMenu(Options, Position);
+}
+
+void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
+{
+	new DropdownMenu({
+	DropdownMenu::Option{
+		.Name = "Delete",
+		.Icon = EditorUI::Asset("X.png"),
+		.OnClicked = [this]() {
+			auto Selected = GetSelected();
+			for (Item* i : Selected)
+			{
+				EditorUI::Instance->AssetsProvider->DeleteFile(i->Path);
+			}
+			resource::ScanForAssets();
+			UpdateItems();
+		},
+	} }, MousePosition);
+
+}
+
+engine::string engine::editor::AssetBrowser::GetPathDisplayName()
+{
+	return "Assets/" + Path;
+}
+
+void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
+{
+	if (std::filesystem::is_directory(FilePath))
+	{
+		std::filesystem::copy(FilePath, file::FilePath(FilePath) + " (Copy)");
+	}
+	else
+	{
+		std::filesystem::copy(FilePath, file::FilePath(FilePath) + "/" +
+			file::FileNameWithoutExt(FilePath) + " (Copy)." + file::Extension(FilePath));
+	}
+	resource::ScanForAssets();
+	UpdateItems();
+}
+
+void engine::editor::AssetBrowser::RenameFile(string FilePath)
+{
+	new RenameWindow(FilePath, [this, FilePath](string NewPath) {
+		std::filesystem::rename(FilePath, NewPath);
+		resource::ScanForAssets();
+		UpdateItems();
+	});
+}
+
+std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions()
+{
+	return {
 		DropdownMenu::Option{
 			.Name = "Import...",
 			.Shortcut = "Ctrl+I",
@@ -399,67 +471,5 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 			},
 			.Separator = true
 		},
-		DropdownMenu::Option{
-			.Name = "Open in file explorer",
-			.Icon = EditorUI::Asset("Open.png"),
-			.OnClicked = [this]()
-			{
-				using namespace engine::platform;
-#if WINDOWS
-				Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
-#else
-				std::thread([this]() {Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
-#endif
-		}, },
-		},
-		Position);
-}
-
-void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
-{
-	new DropdownMenu({
-	DropdownMenu::Option{
-		.Name = "Delete",
-		.OnClicked = [this]()
-		{
-			auto Selected = GetSelected();
-			for (Item* i : Selected)
-			{
-				EditorUI::Instance->AssetsProvider->DeleteFile(i->Path);
-			}
-			resource::ScanForAssets();
-			UpdateItems();
-		},
-	} }, MousePosition);
-
-}
-
-engine::string engine::editor::AssetBrowser::GetPathDisplayName()
-{
-	return "Assets/" + Path;
-}
-
-void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
-{
-	if (std::filesystem::is_directory(FilePath))
-	{
-		std::filesystem::copy(FilePath, file::FilePath(FilePath) + " (Copy)");
-	}
-	else
-	{
-		std::filesystem::copy(FilePath, file::FilePath(FilePath) + "/" +
-			file::FileNameWithoutExt(FilePath) + " (Copy)." + file::Extension(FilePath));
-	}
-	resource::ScanForAssets();
-	UpdateItems();
-}
-
-void engine::editor::AssetBrowser::RenameFile(string FilePath)
-{
-	new RenameWindow(FilePath, [this, FilePath](string NewPath)
-	{
-		std::filesystem::rename(FilePath, NewPath);
-		resource::ScanForAssets();
-		UpdateItems();
-	});
+	};
 }

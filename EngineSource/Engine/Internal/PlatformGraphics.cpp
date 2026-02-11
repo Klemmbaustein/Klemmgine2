@@ -264,6 +264,30 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 		Log::Info(Result);
 		return str::Split(Result, "\n");
 	}
+
+	if (CommandExists("zenity"))
+	{
+		string FilterString;
+
+		for (auto& i : Filters)
+		{
+			if (i.Name == "_ALL")
+			{
+				FilterString = "'*'";
+				break;
+			}
+
+			for (auto& t : i.FileTypes)
+			{
+				FilterString.append("'*" + t + "'");
+			}
+		}
+
+		string Result = GetCommandOutput("/usr/bin/env zenity --file-selection --multiple --file-filter " + FilterString);
+		Log::Info(Result);
+		return str::Split(Result, "\n");
+	}
+
 	return {};
 }
 

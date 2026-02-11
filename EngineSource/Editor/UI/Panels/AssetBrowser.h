@@ -1,5 +1,6 @@
 #pragma once
 #include "ItemBrowser.h"
+#include <Editor/UI/DropdownMenu.h>
 
 namespace engine::editor
 {
@@ -17,5 +18,7 @@ namespace engine::editor
 	private:
 		void DuplicateFile(string FilePath);
 		void RenameFile(string FilePath);
+
+		std::vector<DropdownMenu::Option> GetAddOptions();
 	};
 }

@@ -7,6 +7,7 @@ using namespace engine;
 #include <filesystem>
 #include <iostream>
 #include <Lmcons.h>
+#include <ShlObj_core.h>
 
 void engine::platform::Execute(string Command)
 {
@@ -142,6 +143,15 @@ engine::string engine::platform::GetSystemUserName()
 	return WstrToStr(std::wstring(UserName, Length));
 }
 
+string engine::platform::GetSystemHomeDir()
+{
+	wchar_t PathBuffer[MAX_PATH + 1]{ 0 };
+
+	SHGetFolderPathW(nullptr, CSIDL_PROFILE, nullptr, SHGFP_TYPE_CURRENT, PathBuffer);
+
+	return WstrToStr(PathBuffer);
+}
+
 void* engine::platform::GetLibraryFunction(SharedLibrary* Library, string Name)
 {
 	return GetProcAddress(HMODULE(Library), Name.c_str());
@@ -167,6 +177,8 @@ engine::string engine::platform::GetExecutablePath()
 #include <errno.h>
 #include <filesystem>
 #include <thread>
+#include <sys/types.h>
+#include <pwd.h>
 
 void engine::platform::CreateHiddenDirectory(string Path)
 {
@@ -228,12 +240,29 @@ void engine::platform::Open(string File)
 
 void engine::platform::SetThreadName(string Name)
 {
-
+	pthread_setname_np(pthread_self(), Name.c_str());
 }
 
 engine::string engine::platform::GetSystemUserName()
 {
-	return getenv("USER");
+	const char* UserName = getenv("USER");
+
+	if (!UserName)
+	{
+		UserName = getpwuid(getuid())->pw_name;
+	}
+	return UserName;
+}
+
+string engine::platform::GetSystemHomeDir()
+{
+	const char* HomeDir = getenv("HOME");
+
+	if (!HomeDir)
+	{
+		HomeDir = getpwuid(getuid())->pw_dir;
+	}
+	return HomeDir;
 }
 
 engine::string engine::platform::GetThreadName()

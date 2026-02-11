@@ -395,7 +395,7 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 		btn->SetMaxWidth(UISize::Parent(1));
 		btn->collapseButton->IsVisible = NewItem.IsDirectory;
 		btn->SetLeftPadding(UISize::Pixels(16 * Depth + 2));
-		//btn->text->SetWrapEnabled(true, ElementSize.GetScreen().X - (20_px).GetScreen().X);
+		btn->text->SetWrapEnabled(true, this->Size.X - (UISize::Pixels(Depth * 16 + 2)).GetScreen().X);
 		btn->SetImage(NewItem.Image);
 		btn->btn->OnDragged = [NewItem](int) {
 			EditorUI::Instance->StartAssetDrag(EditorUI::DraggedItem{
@@ -407,7 +407,9 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 				.ObjectType = NewItem.Type,
 				});
 		};
-		btn->btn->OnRightClicked = [NewItem]() {
+		btn->btn->OnRightClicked = [this, Index, btn, NewItem]() {
+			if (!NewItem.Selected)
+				ItemBrowser::OnButtonClicked(Index, btn, true);
 			if (NewItem.OnRightClick)
 				NewItem.OnRightClick();
 		};

@@ -56,7 +56,6 @@ namespace engine::script
 
 		bool Reload();
 
-	private:
 		std::map<SceneObject*, ds::RuntimeClass*> ScriptObjectMappings;
 	};
 }

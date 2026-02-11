@@ -105,6 +105,9 @@ void engine::editor::PropertyMenu::AddStringEntry(string Name, string& Value, st
 		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetMinWidth(ElementSize)
 		->SetMaxWidth(ElementSize));
+	UpdatePropertiesCallback.push_back([NameField, &Value] {
+		NameField->SetText(Value);
+	});
 }
 
 void engine::editor::PropertyMenu::AddBooleanEntry(string Name, bool& Value, std::function<void()> OnChanged)
@@ -174,6 +177,10 @@ void engine::editor::PropertyMenu::AddIntEntry(string Name, int32& Value, std::f
 		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetMinWidth(ElementSize)
 		->SetMaxWidth(ElementSize));
+
+	UpdatePropertiesCallback.push_back([NameField, &Value] {
+		NameField->SetText(std::to_string(Value));
+	});
 }
 
 void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std::function<void()> OnChanged)
@@ -204,7 +211,12 @@ void engine::editor::PropertyMenu::AddFloatEntry(string Name, float& Value, std:
 		->SetCorner(EditorUI::Theme.CornerSize)
 		->SetMinWidth(ElementSize)
 		->SetMaxWidth(ElementSize));
+
+	UpdatePropertiesCallback.push_back([NameField, &Value] {
+		NameField->SetText(str::FloatToString(Value));
+	});
 }
+
 void engine::editor::PropertyMenu::SetMode(Mode NewMode)
 {
 	this->HorizontalBoxAlign = NewMode == Mode::DisplayText ? UIBox::Align::Centered : UIBox::Align::Default;
@@ -226,6 +238,11 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 	};
 
 	New->valueBox->AddChild(Selector);
+
+	UpdatePropertiesCallback.push_back([Selector, &Value] {
+		Selector->SelectedAsset = Value;
+		Selector->UpdateSelection();
+	});
 }
 
 void engine::editor::PropertyMenu::AddDropdownEntry(string Name,

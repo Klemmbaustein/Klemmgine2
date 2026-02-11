@@ -1,6 +1,7 @@
 #ifndef SERVER
 #include "SystemWM_SDL3.h"
 #include <SystemWM.h>
+#include <Core/Platform/Platform.h>
 #include <kui/App.h>
 #include <thread>
 #include <Engine/Engine.h>
@@ -9,13 +10,18 @@
 #include "PlatformGraphics.h"
 #include <Engine/MainThread.h>
 #include "WMOptions.h"
+#include <kui/StringReplace.h>
 
 using namespace kui;
 
 #if WINDOWS
+#include <Windows.h>
+#include <ShlObj.h>
 #pragma comment(linker, "\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#undef DELETE
+#undef MessageBox
 #endif
 
 static std::mutex WindowCreateMutex;
@@ -537,9 +543,83 @@ bool kui::systemWM::YesNoBox(std::string, std::string)
 	return false;
 }
 
-std::string kui::systemWM::SelectFileDialog(bool)
+std::string kui::systemWM::SelectFileDialog(bool PickFolders)
 {
-	return "";
+#if WINDOWS
+	std::string FilePath = "";
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	if (SUCCEEDED(hr))
+	{
+		IFileOpenDialog* pFileOpen;
+
+		// Create the FileOpenDialog object.
+		hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+			IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+		if (PickFolders)
+			pFileOpen->SetOptions(FOS_PICKFOLDERS);
+
+		if (SUCCEEDED(hr))
+		{
+			// Show the Open dialog box.
+			hr = pFileOpen->Show(NULL);
+			// Get the file name from the dialog box.
+			if (SUCCEEDED(hr))
+			{
+				IShellItem* pItem;
+				hr = pFileOpen->GetResult(&pItem);
+				if (SUCCEEDED(hr))
+				{
+					PWSTR pszFilePath;
+					hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+					// Display the file name to the user.
+					if (SUCCEEDED(hr))
+					{
+						FilePath = engine::platform::WstrToStr(pszFilePath);
+						return FilePath;
+					}
+					pItem->Release();
+				}
+			}
+			pFileOpen->Release();
+		}
+		CoUninitialize();
+	}
+	return FilePath;
+#else
+	auto CommandExists = [](std::string Command) -> bool
+	{
+		return system(("command -v " + Command + " > /dev/null").c_str()) == 0;
+	};
+
+
+	std::string Command;
+
+	if (CommandExists("kdialog"))
+	{
+		Command = PickFolders ? "kdialog --getexistingdirectory" : "kdialog --getopenfilename";
+	}
+	else
+	{
+		Command = "zenity --file-selection";
+
+		if (PickFolders)
+		{
+			Command.append(" --directory");
+		}
+	}
+
+	char FileName[4096];
+	FILE* f = popen(Command.c_str(), "r");
+	char* buf = fgets(FileName, 4096, f);
+	if (!buf)
+	{
+		return "";
+	}
+	pclose(f);
+	std::string Out = FileName;
+	kui::strReplace::ReplaceChar(Out, '\n', "");
+	return Out;
+#endif
 }
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)

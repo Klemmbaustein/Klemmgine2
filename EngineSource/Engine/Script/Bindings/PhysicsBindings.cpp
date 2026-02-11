@@ -2,6 +2,7 @@
 #include <ds/parser/types/stringType.hpp>
 #include <Engine/Physics/Physics.h>
 #include <ds/modules/system.hpp>
+#include <Engine/Script/ScriptSubsystem.h>
 #include <ds/parser/types/arrayType.hpp>
 #include <ds/language.hpp>
 
@@ -31,6 +32,25 @@ static void Physics_rayCast(InterpretContext* context)
 	context->pushValue(hit.Hit ? NativeModule::makeClass(hit) : nullptr);
 }
 
+static void HitResult_getHitObject(InterpretContext* context)
+{
+	ClassRef<physics::HitResult> Hit = context->popValue<RuntimeClass*>();
+
+	auto Obj = Hit->HitComponent->GetRootObject();
+
+	auto Found = script::ScriptSubsystem::Instance->ScriptObjectMappings.find(Obj);
+
+	if (Found != script::ScriptSubsystem::Instance->ScriptObjectMappings.end())
+	{
+		Found->second->addRef();
+		context->pushValue<RuntimeClass*>(Found->second);
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
+}
+
 script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
 	auto StrType = ToContext->registry->getEntry<StringType>();
@@ -40,7 +60,7 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 	PhysicsBindings Physics;
 
 	auto VecType = To.getType("Vector3");
-	auto ObjectType = To.getType("SceneObject");
+	ClassType* ObjectType = static_cast<ClassType*>(To.getType("SceneObject"));
 
 	auto PhysicsLayerType = To.createEnum("Layer");
 	To.addEnumValue(PhysicsLayerType, "layer0", physics::Layer::Layer0);
@@ -82,6 +102,8 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 		.offset = offsetof(physics::HitResult, Normal),
 		.type = VecType
 		});
+
+	To.addClassMethod(HitResultType, NativeFunction({}, ObjectType->nullable, "getHitObject", HitResult_getHitObject));
 
 	auto PhysicsManagerType = To.createClass<physics::PhysicsManager*>("PhysicsManager");
 

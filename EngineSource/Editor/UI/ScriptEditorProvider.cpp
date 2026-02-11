@@ -166,7 +166,7 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	void* NewHovered = NewHoveredError.Error ? (void*)NewHoveredError.Error : (void*)NewHoveredSymbol.Symbol;
 
-	if (GetIsAutoCompleteActive() || DropdownMenu::Current || !Win->UI.HoveredBox
+	if (GetIsAutoCompleteActive() || !DropdownMenu::Current.empty() || !Win->UI.HoveredBox
 		|| !Win->UI.HoveredBox->IsChildOf(ParentEditor))
 	{
 		NewHovered = nullptr;

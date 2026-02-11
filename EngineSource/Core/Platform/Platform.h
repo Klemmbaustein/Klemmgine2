@@ -24,6 +24,7 @@ namespace engine::platform
 	string GetLastErrorString();
 
 	string GetSystemUserName();
+	string GetSystemHomeDir();
 
 	void CreateHiddenDirectory(string Path);
 
