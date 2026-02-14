@@ -22,18 +22,20 @@ uniform mat4 u_view;
 uniform mat4 u_projection;
 
 #export //!
-vec3 WorldPosToScreenPos(vec3 inPosition)
+vec3 translatePosition(vec3 inPosition)
 {
 	return (u_model * vec4(inPosition, 1)).xyz;
 }
 
-#export //!
-void SetScreenPosition(vec3 inScreenPos)
+vec3 vertex();
+
+void main()
 {
-	v_position = inScreenPos;
+	vec3 pos = vertex();
+	v_position = pos;
 	v_normal = normalize(mat3(u_model) * a_normal);
 	v_screenNormal = normalize(mat3(u_view) * v_normal);
 	v_texCoord = a_uv;
-	v_screenPosition = (u_view * vec4(inScreenPos, 1)).xyz;
+	v_screenPosition = (u_view * vec4(pos, 1)).xyz;
 	gl_Position = u_projection * vec4(v_screenPosition, 1);
 }

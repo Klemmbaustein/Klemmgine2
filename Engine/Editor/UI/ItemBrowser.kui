@@ -87,18 +87,18 @@ element ItemBrowserButton
 
 		child UIBackground
 		{
-			corners = Theme_CornerSize;
-			color = Color;
-			size = 72px;
-			padding = 4px;
-			downPadding = 2px;
-			allAlign = centered;
+			corners = Theme_CornerSize
+			color = Color
+			size = 72px
+			padding = 4px
+			downPadding = 2px
+			allAlign = centered
 
 			child UIBackground
 			{
-				size = 66px;
-				image = Image;
-				color = 1;
+				size = 66px
+				image = Image
+				color = 1
 			}
 		}
 		child UIText
@@ -121,7 +121,6 @@ element ItemBrowserListEntry
 	var Color = (1, 0, 0)
 	var BackgroundColor = 0.1
 
-	padding = 1px
 	leftPadding = 2px
 	rightPadding = 2px
 	width = 100%

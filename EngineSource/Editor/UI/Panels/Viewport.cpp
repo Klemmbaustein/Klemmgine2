@@ -16,8 +16,9 @@
 using namespace engine::subsystem;
 using namespace kui;
 using namespace engine;
+using namespace engine::editor;
 
-engine::editor::Viewport* engine::editor::Viewport::Current = nullptr;
+Viewport* Viewport::Current = nullptr;
 
 engine::editor::Viewport::Viewport()
 	: EditorPanel("Viewport", "viewport")
@@ -48,13 +49,7 @@ engine::editor::Viewport::Viewport()
 		SaveCurrentScene();
 	});
 
-	ViewportToolbar->AddDropdown("View", EditorUI::Asset("Options.png"),
-		{
-			DropdownMenu::Option{.Name = "Default"},
-			DropdownMenu::Option{.Name = "Unlit"},
-			DropdownMenu::Option{.Name = "Wireframe"},
-			DropdownMenu::Option{.Name = "Collision"}
-		});
+	ViewportToolbar->AddDropdown("View", EditorUI::Asset("Options.png"), std::bind(&Viewport::GetViewDropdown, this));
 
 	ViewportToolbar->AddButton("Run", EditorUI::Asset("Run.png"),
 		std::bind(&Viewport::Run, this));
@@ -202,6 +197,31 @@ engine::editor::Viewport::Viewport()
 	Grid->UpdateTransform();
 }
 
+bool engine::editor::Viewport::GetShowUI()
+{
+	return this->Visible && (this->ShowUI || Engine::IsPlaying);
+}
+
+std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
+{
+	return {
+		DropdownMenu::Option{
+			.Name = "Show UI",
+			.Icon = this->ShowUI ? EditorUI::Asset("Dot.png") : "",
+			.OnClicked = [this] {
+				this->ShowUI = !this->ShowUI;
+			},
+		},
+		DropdownMenu::Option{
+			.Name = "Show Grid",
+			.Icon = this->ShowGrid ? EditorUI::Asset("Dot.png") : "",
+			.OnClicked = [this] {
+				this->ShowGrid = !this->ShowGrid;
+			},
+		}
+	};
+}
+
 engine::editor::Viewport::~Viewport()
 {
 	delete Translate;
@@ -301,7 +321,7 @@ void engine::editor::Viewport::Update()
 	bool HasFocus = EditorUI::FocusedPanel == this;
 	UpdateSelection();
 
-	Grid->IsVisible = !Engine::IsPlaying;
+	Grid->IsVisible = !Engine::IsPlaying && ShowGrid;
 
 	if (Engine::IsPlaying)
 	{

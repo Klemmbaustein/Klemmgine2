@@ -21,6 +21,7 @@ engine::UICanvas::UICanvas()
 	{
 		auto ViewBackground = editor::Viewport::Current->ViewportBackground;
 
+		CanvasBox->IsVisible = editor::Viewport::Current->GetShowUI();
 		CanvasBox
 			->SetPosition(ViewBackground->GetPosition())
 			->SetSize(ViewBackground->GetMinSize());
@@ -59,7 +60,7 @@ void engine::UICanvas::UpdateAll()
 		if (editor::Viewport::Current)
 		{
 			auto ViewBackground = editor::Viewport::Current->ViewportBackground;
-			i->CanvasBox->IsVisible = editor::Viewport::Current->Visible;
+			i->CanvasBox->IsVisible = editor::Viewport::Current->GetShowUI();
 			i->CanvasBox
 				->SetPosition(ViewBackground->GetPosition())
 				->SetSize(ViewBackground->GetMinSize());

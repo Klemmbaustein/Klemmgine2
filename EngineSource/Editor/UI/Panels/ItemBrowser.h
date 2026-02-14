@@ -177,13 +177,13 @@ namespace engine::editor
 		virtual void Back() = 0;
 		void SetStatusText(string NewText);
 		kui::UIScrollBox* ItemsScrollBox = nullptr;
+		std::set<string> ExpandedItems;
 	private:
 		ItemBrowserHeading* Heading = nullptr;
 		size_t LastItemsPerRow = 0;
 		kui::UIText* StatusText;
 		std::pair<Item, kui::UIBox*>* GetHoveredButton();
 		std::vector<Item> CurrentItems;
-		std::set<string> ExpandedItems;
 		void DisplayItems();
 		void DisplayTree(string Path, const std::vector<Item>& Items, size_t Depth, size_t& Index);
 

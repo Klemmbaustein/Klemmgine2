@@ -64,9 +64,15 @@ namespace engine::editor
 
 		float GridSize = 0.1f;
 
+		bool GetShowUI();
+		bool ShowGrid = true;
+
+		std::vector<DropdownMenu::Option> GetViewDropdown();
+
 	private:
 
 		void OnItemDropped(EditorUI::DraggedItem Item);
+		bool ShowUI = false;
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
 		void HighlightComponents(DrawableComponent* Target, bool Highlighted);

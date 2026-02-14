@@ -11,6 +11,7 @@
 #include <Core/File/FileUtil.h>
 #include <Core/ThreadPool.h>
 #include <ds/modules/system.async.hpp>
+#include <Engine/UI/UICanvas.h>
 
 using namespace ds;
 using namespace ds::modules::system::async;
@@ -125,11 +126,13 @@ bool engine::script::ScriptSubsystem::Reload()
 
 	if (CurrentScene)
 	{
+		UICanvas::ClearAll();
 		for (auto& i : CurrentScene->Objects)
 		{
 			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
 			if (ScriptObj)
 			{
+				ScriptObj->ClearComponents();
 				ScriptObj->OnDestroyed();
 			}
 		}

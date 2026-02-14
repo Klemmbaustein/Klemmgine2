@@ -29,6 +29,10 @@ static void Import(engine::string CurrentPath);
 engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "asset_browser")
 {
+	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
+		UpdateItems();
+	});
+
 	AddShortcut(kui::Key::F2, {}, [this] {
 		for (auto& i : this->Buttons)
 		{
@@ -74,17 +78,17 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 
 	AddShortcut(kui::Key::n, kui::Key::CTRL, [this] {
-		EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts"));
 		resource::ScanForAssets();
 	});
 
 	AddShortcut(kui::Key::m, kui::Key::CTRL, [this] {
-		EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt"));
 		resource::ScanForAssets();
 	});
 
 	AddShortcut(kui::Key::t, kui::Key::CTRL, [this] {
-		EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag");
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag"));
 		resource::ScanForAssets();
 	});
 }
@@ -94,10 +98,6 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 	std::vector<Item> Out;
 
 	auto Items = EditorUI::Instance->AssetsProvider->GetFiles("Assets/" + Path);
-
-	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
-		UpdateItems();
-	});
 
 	for (AssetFile& File : Items)
 	{
@@ -164,7 +164,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 
 		auto IconAndColor = EditorUI::GetExtIconAndColor(Extension);
 
-		auto OnRightClick = [this, OnClick, FilePath, Extension]() {
+		auto OnRightClick = [this, OnClick, FilePath, Extension, Path]() {
 
 			std::vector<DropdownMenu::Option> Options;
 			Options.push_back(DropdownMenu::Option{
@@ -187,11 +187,16 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 			}
 			else if (this->Mode == DisplayMode::Tree)
 			{
+				auto RelativePath = FilePath.substr(string("Assets/").size()) + "/";
+				bool Expand = !this->ExpandedItems.contains(RelativePath);
+
 				Options.push_back(DropdownMenu::Option{
 					.Name = "Add",
 					.Icon = EditorUI::Asset("Plus.png"),
-					.SubMenu = GetAddOptions(),
-				});
+					.SubMenu = GetAddOptions(FilePath, Expand ? std::function([this, RelativePath]() {
+						ExpandedItems.insert(RelativePath);
+					}) : nullptr),
+					});
 			}
 
 			Options.push_back(DropdownMenu::Option{
@@ -352,7 +357,7 @@ static void Import(engine::string CurrentPath)
 
 void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 {
-	std::vector<DropdownMenu::Option> Options = GetAddOptions();
+	std::vector<DropdownMenu::Option> Options = GetAddOptions(GetPathDisplayName(), nullptr);
 
 	Options.push_back(DropdownMenu::Option{
 		.Name = "Open in file explorer",
@@ -416,60 +421,82 @@ void engine::editor::AssetBrowser::RenameFile(string FilePath)
 	});
 }
 
-std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions()
+std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(string WorkDir, std::function<void()> OnAddCallback)
 {
-	return {
+	struct FileType
+	{
+		string Name;
+		string Shortcut;
+		string Extension;
+		string FileName;
+	};
+
+	std::vector<FileType> Types = {
+		FileType("New scene", "Ctrl+N", "kts", "Scene"),
+		FileType("New material", "Ctrl+M", "kmt", "Material"),
+		FileType("New script", "Ctrl+E", "ds", "Script"),
+	};
+
+	std::vector<DropdownMenu::Option> Options = {
 		DropdownMenu::Option{
 			.Name = "Import...",
 			.Shortcut = "Ctrl+I",
 			.Icon = EditorUI::Asset("Plus.png"),
-			.OnClicked = [this]() { Import(GetPathDisplayName()); },
-			.Separator = true
-		},
-		DropdownMenu::Option{
-			.Name = "New folder",
-			.Shortcut = "Ctrl+D",
-			.Icon = EditorUI::GetExtIconAndColor("dir/").first,
-			.OnClicked = [this]() {
-				EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
-			}
-		},
-		DropdownMenu::Option{
-			.Name = "New scene",
-			.Shortcut = "Ctrl+N",
-			.Icon = EditorUI::GetExtIconAndColor("kts").first,
-			.OnClicked = [this]() {
-				EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts");
-				resource::ScanForAssets();
-			}
-		},
-		DropdownMenu::Option{
-			.Name = "New material",
-			.Shortcut = "Ctrl+M",
-			.Icon = EditorUI::GetExtIconAndColor("kmt").first,
-			.OnClicked = [this]() {
-				EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt");
-				resource::ScanForAssets();
-			},
-		},
-		DropdownMenu::Option{
-			.Name = "New script",
-			.Shortcut = "Ctrl+E",
-			.Icon = EditorUI::GetExtIconAndColor("").first,
-			.OnClicked = [this]() {
-				EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds");
-				resource::ScanForAssets();
-			},
-		},
-		DropdownMenu::Option{
-			.Name = "New fragment shader",
-			.Shortcut = "Ctrl+T",
-			.Icon = EditorUI::GetExtIconAndColor("kmt").first,
-			.OnClicked = [this]() {
-				EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag");
-				resource::ScanForAssets();
-			},
+			.OnClicked = [this, WorkDir]() { Import(WorkDir); },
 			.Separator = true
 		},
 	};
+
+	for (auto& i : Types)
+	{
+		Options.push_back(DropdownMenu::Option{
+			.Name = i.Name,
+			.Shortcut = i.Shortcut,
+			.Icon = EditorUI::GetExtIconAndColor(i.Extension).first,
+			.OnClicked = [this, WorkDir, i = i, OnAddCallback]() {
+				if (OnAddCallback)
+					OnAddCallback();
+				AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, i.FileName, i.Extension));
+				resource::ScanForAssets();
+			} });
+	}
+
+	Options.push_back(DropdownMenu::Option{
+		.Name = "New Shader",
+		.SubMenu = {
+			DropdownMenu::Option{
+			.Name = "New Fragment Shader",
+			.Icon = EditorUI::GetExtIconAndColor("frag").first,
+			.OnClicked = [this, WorkDir, OnAddCallback]() {
+				if (OnAddCallback)
+					OnAddCallback();
+				AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, "Fragment", "frag"));
+				resource::ScanForAssets();
+			} },
+			DropdownMenu::Option{
+			.Name = "New Vertex Shader",
+			.Icon = EditorUI::GetExtIconAndColor("vert").first,
+			.OnClicked = [this, WorkDir, OnAddCallback]() {
+				if (OnAddCallback)
+					OnAddCallback();
+				AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, "Vertex", "vert"));
+				resource::ScanForAssets();
+			} }
+
+		},
+		});
+
+	Options.push_back(DropdownMenu::Option{
+		.Name = "New folder",
+		.Shortcut = "Ctrl+D",
+		.Icon = EditorUI::GetExtIconAndColor("dir/").first,
+		.OnClicked = [this, WorkDir, OnAddCallback]() {
+			if (OnAddCallback)
+				OnAddCallback();
+			AssetBrowser::RenameFile(EditorUI::CreateDirectory(WorkDir + "Folder"));
+		},
+		.Separator = true,
+		});
+
+	return Options;
 }

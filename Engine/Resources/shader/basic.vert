@@ -1,7 +1,7 @@
 //? #version 330
 #using "engine.common" //! #include "engine.common.frag"
 
-void main()
+vec3 vertex()
 {
-	SetScreenPosition(WorldPosToScreenPos(a_position));
+	return translatePosition(a_position);
 }

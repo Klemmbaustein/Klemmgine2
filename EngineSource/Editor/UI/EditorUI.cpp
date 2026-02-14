@@ -56,6 +56,9 @@ static std::map<string, string> FileNameIcons =
 	{ "kmt", "Material.png" },
 	{ "kts", "" },
 	{ "kmdl", "Model.png" },
+	{ "vert", "VertexShader.png" },
+	{ "frag", "FragmentShader.png" },
+	{ "ds", "Code.png" },
 	{ "dir/", "Folder.png" },
 };
 
@@ -249,7 +252,10 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("Run", "F5", Asset("Run.png"), []() {
 				Viewport::Current->Run();
 			}),
-			DropdownMenu::Option("View..."),
+			DropdownMenu::Option{
+				.Name = "View",
+				.SubMenu = Viewport::Current->GetViewDropdown()
+			},
 		});
 	AddMenuBarItem("Window",
 		{

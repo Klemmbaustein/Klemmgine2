@@ -5,6 +5,7 @@
 #include <Editor/UI/EditorUI.h>
 #include <kui/UI/UIBlurBackground.h>
 #include <Engine/File/Resource.h>
+#include <Core/Log.h>
 
 using namespace ds;
 using namespace kui;
@@ -106,7 +107,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoComplete()
 		CloseAutoComplete();
 		ParentEditor->Edit();
 	}
-	else if (Input.IsKeyDown(Key::SPACE) && Input.IsKeyDown(Key::CTRL))
+	if (!IsAutoCompleteActive && Input.IsKeyDown(Key::SPACE) && Input.IsKeyDown(Key::CTRL))
 	{
 		ShowAutoComplete(CompletionSource::Shortcut);
 	}
@@ -132,7 +133,6 @@ void engine::editor::EngineTextEditorProvider::InsertCompletion(const AutoComple
 		ParentEditor->Insert("using " + Result.completionModule + "\n", EditorPosition(0, 0), true, false);
 		Position.Line++;
 	}
-
 
 	ParentEditor->SetCursorPosition(Position);
 	Commit();
@@ -192,6 +192,11 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 				continue;
 			}
 		}
+		else if (!i.completionModule.empty())
+		{
+			continue;
+		}
+
 		HoverBox->IsVisible = true;
 
 		auto btn = new UIButton(true, 0, EditorUI::Theme.LightBackground, [this, i = i]() {
@@ -228,7 +233,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 				->SetTextWidthOverride(150_px)
 				->SetPadding(3_px)));
 
-		if (!i.completionModule.empty() && !Filter.empty())
+		if (!i.completionModule.empty())
 		{
 			btn->AddChild((new UIText(11_px,
 				{ TextSegment{ i.completionModule, EditorUI::Theme.DarkText} },
@@ -239,6 +244,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 	}
 
 	ApplyHoverBoxPosition(HoverBox, CompletePosition);
+	AutoCompleteBox->Update();
 }
 
 void engine::editor::EngineTextEditorProvider::CloseAutoComplete()

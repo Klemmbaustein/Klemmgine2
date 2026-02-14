@@ -21,12 +21,30 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 	StatusText
 		->SetPadding(5_px);
 
-	Background->AddChild((new DroppableBox(false, [this](EditorUI::DraggedItem Item)
-	{
+	Background->AddChild((new DroppableBox(false, [this](EditorUI::DraggedItem Item) {
 		auto* btn = GetHoveredButton();
 
-		if (!btn)
+		if (!btn && Mode == DisplayMode::Tree)
+		{
+			if (std::filesystem::exists(GetPathDisplayName()))
+			{
+				try
+				{
+					std::string FileName = Item.Path.substr(Item.Path.find_last_of("/\\") + 1);
+					std::filesystem::rename(Item.Path, GetPathDisplayName() + "/" + FileName);
+				}
+				catch (std::filesystem::filesystem_error e)
+				{
+					Log::Error(e.what());
+				}
+			}
+			UpdateItems();
 			return;
+		}
+		else if (!btn)
+		{
+			return;
+		}
 
 		if (!std::filesystem::exists(btn->first.Path))
 			return;
@@ -324,7 +342,15 @@ void engine::editor::ItemBrowser::DisplayItems()
 					.ObjectType = NewItem.Type,
 					});
 			};
-			btn->btn->OnRightClicked = [NewItem]() {
+			btn->btn->OnRightClicked = [this, NewItem]() {
+				auto Selected = GetSelected();
+
+				if (Selected.size() > 1)
+				{
+					this->OnItemsRightClick(Background->GetParentWindow()->Input.MousePosition);
+					return;
+				}
+
 				if (NewItem.OnRightClick)
 					NewItem.OnRightClick();
 			};
@@ -407,7 +433,16 @@ void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Ite
 				.ObjectType = NewItem.Type,
 				});
 		};
-		btn->btn->OnRightClicked = [this, Index, btn, NewItem]() {
+		btn->btn->OnRightClicked = [this, Index, btn]() {
+			auto Selected = GetSelected();
+
+			if (Selected.size() > 1)
+			{
+				this->OnItemsRightClick(Background->GetParentWindow()->Input.MousePosition);
+				return;
+			}
+
+			auto& NewItem = Buttons[Index].first;
 			if (!NewItem.Selected)
 				ItemBrowser::OnButtonClicked(Index, btn, true);
 			if (NewItem.OnRightClick)
