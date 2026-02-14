@@ -2,7 +2,7 @@
 #include "ConsoleSubsystem.h"
 #include <Engine/MainThread.h>
 #include <Engine/Engine.h>
-#include <thread>
+#include <Core/ThreadPool.h>
 
 engine::SceneSubsystem* engine::SceneSubsystem::Current = nullptr;
 
@@ -39,9 +39,9 @@ void engine::SceneSubsystem::LoadSceneAsync(string SceneName)
 {
 	Print(str::Format("Loading scene asynchronously: %s", SceneName.c_str()), LogType::Info);
 
-	std::thread([this, SceneName]() {
+	ThreadPool::Main()->AddJob([this, SceneName]() {
 		LoadSceneThread(SceneName);
-		}).detach();
+	});
 }
 
 void engine::SceneSubsystem::Update()

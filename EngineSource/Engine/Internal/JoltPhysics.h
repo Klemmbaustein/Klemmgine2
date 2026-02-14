@@ -42,11 +42,11 @@ namespace engine::internal
 		void RemoveBody(physics::PhysicsBody* Body);
 		void CreateShape(physics::PhysicsBody* Body);
 		void SetBodyPosition(physics::PhysicsBody* Body, Vector3 NewPosition);
-		Vector3 GetBodyPosition(physics::PhysicsBody* Body);
-		std::pair<Vector3, Rotation3> GetBodyPositionAndRotation(physics::PhysicsBody* Body);
+		Vector3 GetBodyPosition(physics::PhysicsBody* Body) const;
+		std::pair<Vector3, Rotation3> GetBodyPositionAndRotation(physics::PhysicsBody* Body) const;
 		void SetBodyRotation(physics::PhysicsBody* Body, Vector3 NewRotation);
 		void SetBodyPositionAndRotation(physics::PhysicsBody* Body, Vector3 NewPosition, Rotation3 NewRotation);
-		void ScaleBody(physics::PhysicsBody* Body, Vector3 ScaleFactor);
+		void ScaleBody(physics::PhysicsBody* Body, Vector3 ScaleFactor) const;
 		void SetBodyActive(physics::PhysicsBody* Body, bool IsActive);
 		void SetBodyCollisionEnabled(physics::PhysicsBody* Body, bool IsCollisionEnabled);
 

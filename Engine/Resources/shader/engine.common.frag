@@ -13,6 +13,7 @@ in vec3 v_screenPosition;
 in vec2 v_texCoord;
 #export //!
 in vec3 v_normal;
+#export //!
 in vec3 v_screenNormal;
 
 #export //!

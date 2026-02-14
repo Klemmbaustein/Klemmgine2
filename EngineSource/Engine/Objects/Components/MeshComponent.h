@@ -27,6 +27,9 @@ namespace engine
 
 		void ClearModel(bool RemoveDrawnComponent);
 	private:
+
+		void InitializeModel();
+
 		bool IsRegistered = false;
 	};
 }

@@ -49,8 +49,12 @@ void engine::editor::launcher::CreateProjectWindow::Begin()
 	Menu->AddStringEntry("Name", this->ProjectName, nullptr);
 	Menu->AddStringEntry("Path", this->Path, nullptr);
 	Menu->AddButtonEntry("", "Browse", [this]() {
-		this->Path = kui::app::SelectFileDialog(true);
-		Menu->UpdateProperties();
+		string NewPath = kui::app::SelectFileDialog(true);
+		if (!NewPath.empty())
+		{
+			this->Path = NewPath;
+			Menu->UpdateProperties();
+		}
 	});
 
 	auto ResultElement = Menu->CreateNewEntry("Result");
@@ -62,8 +66,13 @@ void engine::editor::launcher::CreateProjectWindow::Begin()
 
 void engine::editor::launcher::CreateProjectWindow::Update()
 {
+#if WINDOWS
+	ResultText->SetText(str::Format("Project Path: %s\nName: %s",
+		(Path + "\\" + ProjectName.c_str()).c_str(), ProjectName.c_str()));
+#else
 	ResultText->SetText(str::Format("Project Path: %s\nName: %s",
 		(Path + "/" + ProjectName.c_str()).c_str(), ProjectName.c_str()));
+#endif
 }
 
 void engine::editor::launcher::CreateProjectWindow::Destroy()

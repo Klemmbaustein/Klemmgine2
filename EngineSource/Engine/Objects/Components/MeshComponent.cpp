@@ -1,5 +1,9 @@
 #include "MeshComponent.h"
 #include <Engine/Scene.h>
+#ifdef EDITOR
+#include "CollisionComponent.h"
+#include <Engine/Engine.h>
+#endif
 
 void engine::MeshComponent::Update()
 {
@@ -72,7 +76,7 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 	if (DrawnModel && DrawnModel->Drawable)
 	{
 		if (!IsRegistered && (RootObject || ParentObject))
-			GetRootObject()->GetScene()->AddDrawnComponent(this);
+			InitializeModel();
 		IsRegistered = true;
 		this->CastShadow = DrawnModel->Data->CastShadow;
 	}
@@ -81,7 +85,7 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 void engine::MeshComponent::OnAttached()
 {
 	if (IsRegistered && (RootObject || ParentObject))
-		GetRootObject()->GetScene()->AddDrawnComponent(this);
+		InitializeModel();
 }
 
 engine::MeshComponent::~MeshComponent()
@@ -110,4 +114,20 @@ void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 		GetRootObject()->GetScene()->RemoveDrawnComponent(this);
 		IsRegistered = false;
 	}
+}
+
+void engine::MeshComponent::InitializeModel()
+{
+	auto RootScene = GetRootObject()->GetScene();
+	RootScene->AddDrawnComponent(this);
+#ifdef EDITOR
+	if (!Engine::IsPlaying && RootScene->Physics.Active)
+	{
+		auto ViewCollider = new CollisionComponent();
+		this->Attach(ViewCollider);
+
+		GraphicsModel::ReferenceModel(DrawnModel);
+		ViewCollider->Load(this->DrawnModel, true);
+	}
+#endif
 }

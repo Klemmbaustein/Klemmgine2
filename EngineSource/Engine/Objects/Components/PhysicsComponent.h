@@ -25,6 +25,8 @@ namespace engine
 		bool GetActive() const;
 		void Update() override;
 
+		std::function<void()> OnBeginOverlap;
+
 	private:
 		Transform LastTransform;
 		bool Added = false;

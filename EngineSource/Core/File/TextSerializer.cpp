@@ -54,6 +54,12 @@ void engine::TextSerializer::WriteObject(const std::vector<SerializedData>& Targ
 std::vector<engine::SerializedData> engine::TextSerializer::FromStream(std::istream& Stream)
 {
 	std::vector<SerializedData> Out;
+
+	if (Stream.eof())
+	{
+		return {};
+	}
+
 	ReadObject(Out, Stream);
 	return Out;
 }

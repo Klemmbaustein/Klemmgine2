@@ -24,7 +24,7 @@ static void Physics_rayCast(InterpretContext* context)
 
 	for (uint32_t i = 0; i < IgnoredObjects->length; i++)
 	{
-		IgnoredSet.insert(IgnoredObjects->at<SceneObject*>(i));
+		IgnoredSet.insert(*reinterpret_cast<SceneObject**>(IgnoredObjects->at<RuntimeClass*>(i)->getBody()));
 	}
 
 	auto hit = Manager.getValue()->RayCast(Start, End, Layer, IgnoredSet);
@@ -81,25 +81,25 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 
 	HitResultType->members.push_back(ClassMember{
 		.name = "depth",
-		.offset = offsetof(physics::HitResult, Depth),
+		.offset = DS_OFFSETOF(physics::HitResult, Depth),
 		.type = FloatInst
 		});
 
 	HitResultType->members.push_back(ClassMember{
 		.name = "distance",
-		.offset = offsetof(physics::HitResult, Distance),
+		.offset = DS_OFFSETOF(physics::HitResult, Distance),
 		.type = FloatInst
 		});
 
 	HitResultType->members.push_back(ClassMember{
 		.name = "impactPoint",
-		.offset = offsetof(physics::HitResult, ImpactPoint),
+		.offset = DS_OFFSETOF(physics::HitResult, ImpactPoint),
 		.type = VecType
 		});
 
 	HitResultType->members.push_back(ClassMember{
 		.name = "normal",
-		.offset = offsetof(physics::HitResult, Normal),
+		.offset = DS_OFFSETOF(physics::HitResult, Normal),
 		.type = VecType
 		});
 
@@ -116,7 +116,7 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 
 	PhysicsManagerType->members.push_back(ClassMember{
 		.name = "isActive",
-		.offset = offsetof(physics::PhysicsManager, Active),
+		.offset = DS_OFFSETOF(physics::PhysicsManager, Active),
 		.type = BoolInst,
 		});
 

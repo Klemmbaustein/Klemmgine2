@@ -136,6 +136,7 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 		Target->SetInt(Target->GetUniformLocation("u_drawShadows"), 0);
 		return;
 	}
+	Target->SetInt(Target->GetUniformLocation("u_drawShadows"), 1);
 
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{

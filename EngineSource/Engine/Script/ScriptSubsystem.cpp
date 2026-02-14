@@ -55,8 +55,7 @@ void engine::script::ScriptSubsystem::RegisterCommands(ConsoleSubsystem* System)
 	System->AddCommand(console::Command{
 		.Name = "script.reload",
 		.Args = {},
-		.OnCalled = [this](const console::Command::CallContext&)
-		{
+		.OnCalled = [this](const console::Command::CallContext&) {
 			this->Reload();
 		}
 		});
@@ -92,8 +91,7 @@ bool engine::script::ScriptSubsystem::Reload()
 
 	debug::TimeLogger CompileTime = { "Compiled scripts", this->GetLogPrefixes() };
 
-	Compiler->errors.writeError = [this](string Message)
-	{
+	Compiler->errors.writeError = [this](string Message) {
 		Print(Message, LogType::Error);
 	};
 
@@ -152,6 +150,7 @@ bool engine::script::ScriptSubsystem::Reload()
 			if (ScriptObj)
 			{
 				ScriptObj->Class = ScriptInstructions->reflect.types[ScriptObj->Class.hash];
+				ScriptObj->LoadScriptData();
 				ScriptObj->Begin();
 			}
 		}

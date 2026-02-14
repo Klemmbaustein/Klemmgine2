@@ -18,14 +18,14 @@
 #include <ds/parser/types/stringType.hpp>
 #include <ds/parser/types/taskType.hpp>
 #include <ds/parser/types/arrayType.hpp>
+#include <ds/callableWrapper.hpp>
 #include <Core/Log.h>
 
 #include "Bindings/MathBindings.h"
 #include "Bindings/SerializeBindings.h"
 #include "Bindings/PhysicsBindings.h"
 #include "UI/UIBindings.h"
-
-#define ENGINE_OFFSETOF(T, m)  (::ds::Size)(::std::size_t)&(reinterpret_cast<char const volatile&>(((T*)nullptr)->m))
+#include <ds/parser/types/functionType.hpp>
 
 using namespace ds;
 using namespace engine::input;
@@ -226,6 +226,15 @@ static void PhysicsComponent_collisionTest(InterpretContext* context)
 	}
 
 	context->pushValue(modules::system::createArray(Classes.data(), Classes.size(), true));
+}
+
+static void PhysicsComponent_onBeginOverlap(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	CallableWrapper<void> Callable = { context->popValue<RuntimeClass*>(), context };
+
+	Component.getValue()->OnBeginOverlap = Callable;
 }
 
 static void MoveComponent_new(InterpretContext* context)
@@ -452,19 +461,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "position",
-		.offset = ENGINE_OFFSETOF(ObjectComponent, Position),
+		.offset = DS_OFFSETOF(ObjectComponent, Position),
 		.type = Math.Vec3
 		});
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "rotation",
-		.offset = ENGINE_OFFSETOF(ObjectComponent, Rotation),
+		.offset = DS_OFFSETOF(ObjectComponent, Rotation),
 		.type = Math.Rot
 		});
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "scale",
-		.offset = ENGINE_OFFSETOF(ObjectComponent, Scale),
+		.offset = DS_OFFSETOF(ObjectComponent, Scale),
 		.type = Math.Vec3
 		});
 
@@ -481,19 +490,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "position",
-		.offset = ENGINE_OFFSETOF(SceneObject, Position),
+		.offset = DS_OFFSETOF(SceneObject, Position),
 		.type = Math.Vec3
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "rotation",
-		.offset = ENGINE_OFFSETOF(SceneObject, Rotation),
+		.offset = DS_OFFSETOF(SceneObject, Rotation),
 		.type = Math.Rot
 		});
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "scale",
-		.offset = ENGINE_OFFSETOF(SceneObject, Scale),
+		.offset = DS_OFFSETOF(SceneObject, Scale),
 		.type = Math.Vec3
 		});
 
@@ -564,6 +573,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			ToContext->registry->getArray(Physics.HitResultType), "collisionTest",
 			&PhysicsComponent_collisionTest));
 
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
+			{ FunctionArgument(ds::FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped")},
+			nullptr, "onBeginOverlap",
+			&PhysicsComponent_onBeginOverlap));
 
 	auto MoveComponentType = EngineModule.createClass<MoveComponent*>("MoveComponent", ComponentType);
 
@@ -593,33 +607,33 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "acceleration",
-		.offset = ENGINE_OFFSETOF(MoveComponent, Acceleration),
+		.offset = DS_OFFSETOF(MoveComponent, Acceleration),
 		.type = FloatInst
 		});
 
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "gravity",
-		.offset = ENGINE_OFFSETOF(MoveComponent, Gravity),
+		.offset = DS_OFFSETOF(MoveComponent, Gravity),
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "maxSpeed",
-		.offset = ENGINE_OFFSETOF(MoveComponent, MaxSpeed),
+		.offset = DS_OFFSETOF(MoveComponent, MaxSpeed),
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "deceleration",
-		.offset = ENGINE_OFFSETOF(MoveComponent, Deceleration),
+		.offset = DS_OFFSETOF(MoveComponent, Deceleration),
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "active",
-		.offset = ENGINE_OFFSETOF(MoveComponent, Active),
+		.offset = DS_OFFSETOF(MoveComponent, Active),
 		.type = BoolInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "canMoveUpSlopes",
-		.offset = ENGINE_OFFSETOF(MoveComponent, CanMoveUpSlopes),
+		.offset = DS_OFFSETOF(MoveComponent, CanMoveUpSlopes),
 		.type = BoolInst
 		});
 

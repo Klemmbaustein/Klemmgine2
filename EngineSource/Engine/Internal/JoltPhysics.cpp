@@ -426,7 +426,7 @@ engine::internal::JoltInstance::JoltInstance()
 
 engine::internal::JoltInstance::~JoltInstance()
 {
-	auto MeshCopy = LoadedMeshes;
+	std::unordered_map MeshCopy = LoadedMeshes;
 	for (auto& i : MeshCopy)
 	{
 		if (i.first->OnDereferenced.IsListener(this))
@@ -469,6 +469,7 @@ void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive
 	{
 		info.ID = JoltBodyInterface->CreateBody(*JoltShape)->GetID();
 	}
+
 	Body->PhysicsSystemBody = &Bodies.emplace(info.ID, info).first->second;
 	JoltBodyInterface->SetUserData(info.ID, reinterpret_cast<uint64>(Body->PhysicsSystemBody));
 	Body->IsActive = StartActive;
@@ -517,7 +518,7 @@ void engine::internal::JoltInstance::SetBodyPosition(engine::physics::PhysicsBod
 	JoltBodyInterface->SetPosition(Info->ID, ToJPHVec3(NewPosition), JPH::EActivation::Activate);
 }
 
-Vector3 engine::internal::JoltInstance::GetBodyPosition(physics::PhysicsBody* Body)
+Vector3 engine::internal::JoltInstance::GetBodyPosition(physics::PhysicsBody* Body) const
 {
 	if (!Body->PhysicsSystemBody)
 	{
@@ -529,7 +530,7 @@ Vector3 engine::internal::JoltInstance::GetBodyPosition(physics::PhysicsBody* Bo
 	return Vector3(Pos.GetX(), Pos.GetY(), Pos.GetZ());
 }
 
-std::pair<Vector3, Rotation3> engine::internal::JoltInstance::GetBodyPositionAndRotation(physics::PhysicsBody* Body)
+std::pair<Vector3, Rotation3> engine::internal::JoltInstance::GetBodyPositionAndRotation(physics::PhysicsBody* Body) const
 {
 	if (!Body->PhysicsSystemBody)
 	{
@@ -569,7 +570,7 @@ void engine::internal::JoltInstance::SetBodyPositionAndRotation(engine::physics:
 		ToJPHQuat(NewRotation), JPH::EActivation::Activate);
 }
 
-void engine::internal::JoltInstance::ScaleBody(engine::physics::PhysicsBody* Body, Vector3 ScaleFactor)
+void engine::internal::JoltInstance::ScaleBody(engine::physics::PhysicsBody* Body, Vector3 ScaleFactor) const
 {
 	if (!Body->PhysicsSystemBody)
 	{

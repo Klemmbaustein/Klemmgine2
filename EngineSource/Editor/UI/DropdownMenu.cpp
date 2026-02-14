@@ -7,18 +7,18 @@
 using namespace kui;
 using namespace engine::editor;
 
-void engine::editor::DropdownMenu::Clear()
+void engine::editor::DropdownMenu::Clear(size_t ToDepth)
 {
-	for (auto& i : Current)
+	while (Current.size() > ToDepth)
 	{
-		delete i;
+		delete *Current.rbegin();
+		Current.pop_back();
 	}
-	Current.clear();
 }
 
 thread_local std::vector<DropdownMenu*> DropdownMenu::Current;
 
-engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool RemoveOld)
+engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool RemoveOld, size_t Depth)
 {
 	if (RemoveOld)
 	{
@@ -50,7 +50,7 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 
 		auto Button = new UIButton(true, 0, Color, nullptr);
 
-		Button->OnClicked = [Button, Option = *i]() {
+		Button->OnClicked = [Button, Option = *i, Depth]() {
 			if (Option.OnClicked)
 			{
 				Clear();
@@ -59,7 +59,8 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 			else if (!Option.SubMenu.empty())
 			{
 				Vec2f Position = Button->GetPosition() + Button->GetUsedSize().GetScreen();
-				new DropdownMenu(Option.SubMenu, Position, false);
+				Clear(Depth + 1);
+				new DropdownMenu(Option.SubMenu, Position, false, Depth + 1);
 				return;
 			}
 			Clear();

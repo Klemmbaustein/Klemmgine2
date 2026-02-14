@@ -540,7 +540,15 @@ void engine::Scene::LoadInternal(string File, bool Async)
 		{
 			std::stringstream stream;
 			stream << resource::GetTextFile(File);
-			SceneData = TextSerializer::FromStream(stream);
+
+			if (!stream.str().empty())
+			{
+				SceneData = TextSerializer::FromStream(stream);
+			}
+			else
+			{
+				SceneData = {};
+			}
 		}
 		else if (resource::FileExists(File + ".kts"))
 		{

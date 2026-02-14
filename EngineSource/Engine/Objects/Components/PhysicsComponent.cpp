@@ -173,6 +173,7 @@ void engine::PhysicsComponent::Update()
 	{
 		return;
 	}
+
 	if (LastTransform != WorldTransform)
 	{
 		if (Body->ColliderMovability != physics::MotionType::Dynamic)

@@ -1,6 +1,7 @@
 #pragma once
 #include <Core/Types.h>
 #include <functional>
+#include <stack>
 #include <kui/UI/UIButton.h>
 
 namespace engine::editor
@@ -19,7 +20,7 @@ namespace engine::editor
 		};
 
 		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position)
-			: DropdownMenu(Options, Position, true)
+			: DropdownMenu(Options, Position, true, 0)
 		{
 
 		}
@@ -29,9 +30,9 @@ namespace engine::editor
 		static thread_local std::vector<DropdownMenu*> Current;
 
 		kui::UIBox* Box = nullptr;
-		static void Clear();
+		static void Clear(size_t ToDepth = 0);
 
 	private:
-		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool RemoveOld);
+		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool RemoveOld, size_t Depth);
 	};
 }

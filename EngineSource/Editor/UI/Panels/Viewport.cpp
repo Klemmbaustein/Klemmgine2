@@ -409,7 +409,7 @@ void engine::editor::Viewport::Update()
 		auto hit = RayAtCursor(1000, 0);
 		if (hit.Hit)
 		{
-			this->SelectedObjects.insert(hit.HitComponent->ParentObject);
+			this->SelectedObjects.insert(hit.HitComponent->GetRootObject());
 		}
 	}
 }
