@@ -244,6 +244,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 	}
 
 	ApplyHoverBoxPosition(HoverBox, CompletePosition);
+	HoverBox->UpdateElement();
 	AutoCompleteBox->Update();
 }
 
