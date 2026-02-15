@@ -118,7 +118,6 @@ void engine::Scene::Draw()
 	{
 		Shadows.Enabled = true;
 		Shadows.Update(UsedCamera);
-
 		{
 			std::unique_lock g{ DrawSortMutex };
 
@@ -128,6 +127,7 @@ void engine::Scene::Draw()
 	else
 	{
 		Shadows.Enabled = false;
+		Shadows.Update(UsedCamera);
 	}
 
 	Buffer->Bind();

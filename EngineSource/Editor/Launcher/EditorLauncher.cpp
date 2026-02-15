@@ -1,10 +1,13 @@
 #include "EditorLauncher.h"
+#include <Core/LaunchArgs.h>
 #include "CreateProjectWindow.h"
 #include <Editor/Editor.h>
 #include <Editor/Server/EditorServerSubsystem.h>
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Editor/Settings/EditorSettings.h>
+#include <Engine/Version.h>
+#include <Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Engine.h>
 #include <Engine/MainThread.h>
 #include <kui/Window.h>
@@ -29,7 +32,6 @@ void engine::editor::launcher::EditorLauncher::InitWindow()
 
 	LauncherWindow = new Window("Klemmgine 2 Project Manager", Window::WindowFlag::Resizable,
 		Window::POSITION_CENTERED, Vec2ui(700, 500));
-
 	LauncherWindow->OnResizedCallback = std::bind(&EditorLauncher::OnWindowResized, this);
 
 	WindowFont = new Font("res:DefaultFont.ttf");
@@ -37,6 +39,38 @@ void engine::editor::launcher::EditorLauncher::InitWindow()
 
 	auto& Theme = EditorUI::Theme;
 	EditorUI::UpdateTheme(LauncherWindow, false);
+
+
+	if (!launchArgs::GetArg("noWarning").has_value()
+		&& Settings::GetInstance()->Interface.GetSetting("showDevWarning", true).GetBool())
+	{
+		new MessageWindow(R"(This is in development. This is not ready for proper use in a large project.
+
+What is mostly ready:
+- Scene logic, collision, physics.
+- 3D rendering, shader and post processing system.
+- UI and game logic scripting with an in editor IDE.
+
+What isn't:
+- No audio output or features yet.
+- Scripting language is missing multiple inheritance and some features (like enums) are only available to native code.
+
+Existing features and APIs might change.)",
+		VersionInfo::Get().Build, {
+			IDialogWindow::Option{
+				.Name = "Don't show again",
+				.OnClicked = [] {
+					Settings::GetInstance()->Interface.SetSetting("showDevWarning", false);
+					Settings::GetInstance()->Save();
+				},
+			},
+			IDialogWindow::Option{
+				.Name = "Ok",
+				.IsAccept = true,
+				.IsClose = true,
+			},
+			});
+	}
 }
 
 void engine::editor::launcher::EditorLauncher::InitLayout()
@@ -48,7 +82,7 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	LauncherToolbar = new Toolbar(false, Theme.DarkBackground);
 
 	LauncherToolbar->AddButton("New project", EditorUI::Asset("Plus.png"), [this]() {
-		new CreateProjectWindow([this] (std::string ProjectPath) {
+		new CreateProjectWindow([this](std::string ProjectPath) {
 			this->ProjectPathToLaunch = ProjectPath;
 			LauncherWindow->Close();
 			this->Result = LauncherResult::LaunchProject;

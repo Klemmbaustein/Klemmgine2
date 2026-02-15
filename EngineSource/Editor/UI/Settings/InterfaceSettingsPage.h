@@ -12,8 +12,7 @@ namespace engine::editor
 		void Generate(PropertyMenu* Target, SettingsWindow* TargetWindow) override;
 
 	private:
-		bool AntiAliasing = false;
 		int32 UIScale = 100;
-		bool IsDark = false;
+		bool ShowDevWarning = true;
 	};
 }

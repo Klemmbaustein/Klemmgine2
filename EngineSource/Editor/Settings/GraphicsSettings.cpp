@@ -16,10 +16,22 @@ engine::editor::GraphicsSettings::GraphicsSettings()
 			VideoSubsystem::Current->DrawAmbientOcclusion = NewValue.GetBool();
 		}
 	});
+	ListenToSetting(this, "vSyncEnabled", [](SerializedValue NewValue) {
+		if (VideoSubsystem::Current)
+		{
+			VideoSubsystem::Current->VSyncEnabled = NewValue.GetBool();
+		}
+	});
 
+	Apply();
+}
+
+void engine::editor::GraphicsSettings::Apply()
+{
 	if (VideoSubsystem::Current)
 	{
 		VideoSubsystem::Current->DrawShadows = GetSetting("drawShadows", true).GetBool();
 		VideoSubsystem::Current->DrawAmbientOcclusion = GetSetting("drawAmbientOcclusion", true).GetBool();
+		VideoSubsystem::Current->VSyncEnabled = GetSetting("vSyncEnabled", true).GetBool();
 	}
 }

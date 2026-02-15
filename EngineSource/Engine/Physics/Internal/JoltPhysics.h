@@ -3,6 +3,8 @@
 #include <Core/Platform/CodeAnalysis.h>
 #include <unordered_map>
 #include <utility>
+#include "JoltContactListener.h"
+
 CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -66,6 +68,7 @@ namespace engine::internal
 		JPH::BodyInterface* JoltBodyInterface = nullptr;
 
 	private:
+		JPH::ContactListener ContactListener;
 
 		JPH::MeshShape* CreateNewMeshShape(GraphicsModel* From, bool ExtraReference = true);
 

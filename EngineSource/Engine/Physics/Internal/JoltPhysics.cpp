@@ -8,10 +8,12 @@
 #include <mutex>
 #include <algorithm>
 #include <Core/ThreadPool.h>
-#include <Engine/MainThread.h>
+
+CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
+CODE_ANALYSIS_END_EXTERNAL_HEADER
 
 using namespace engine;
 using namespace engine::physics;
@@ -222,7 +224,6 @@ void engine::internal::JoltInstance::InitJolt()
 	JPH::RegisterDefaultAllocator();
 
 	JPH::Trace = &JoltPhysicsTrace;
-	//JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;);
 
 	// Create a factory
 	JPH::Factory::sInstance = new JPH::Factory();
@@ -421,6 +422,8 @@ engine::internal::JoltInstance::JoltInstance()
 		ObjectVsBroadPhaseFilter,
 		ObjectVsObjectFilter);
 
+	System->SetContactListener(&ContactListener);
+
 	JoltBodyInterface = &System->GetBodyInterface();
 }
 
@@ -504,7 +507,8 @@ void engine::internal::JoltInstance::RemoveBody(engine::physics::PhysicsBody* Bo
 
 void engine::internal::JoltInstance::CreateShape(engine::physics::PhysicsBody* Body)
 {
-	Body->ShapeInfo = new JPH::BodyCreationSettings(CreateJoltShapeFromBody(Body));
+	auto s = CreateJoltShapeFromBody(Body);
+	Body->ShapeInfo = new JPH::BodyCreationSettings(s);
 }
 
 void engine::internal::JoltInstance::SetBodyPosition(engine::physics::PhysicsBody* Body, Vector3 NewPosition)

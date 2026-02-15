@@ -1,7 +1,7 @@
 #include "Physics.h"
 #include <Engine/Objects/Components/CollisionComponent.h>
 #include <Engine/Scene.h>
-#include <Engine/Internal/JoltPhysics.h>
+#include <Engine/Physics/Internal/JoltPhysics.h>
 using namespace engine::physics;
 
 PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform,

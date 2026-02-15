@@ -11,6 +11,7 @@ engine::editor::InterfaceSettingsPage::InterfaceSettingsPage()
 	this->Name = "Interface";
 
 	UIScale = Settings::GetInstance()->Interface.GetSetting("uiScale", 1.0f).GetFloat() * 100.0f;
+	ShowDevWarning = Settings::GetInstance()->Interface.GetSetting("showDevWarning", true).GetBool();
 }
 
 engine::editor::InterfaceSettingsPage::~InterfaceSettingsPage()
@@ -52,4 +53,7 @@ void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, Setti
 	Target->AddDropdownEntry("Theme", Options, [Target, TargetWindow](UIDropdown::Option o) {
 		Settings::GetInstance()->Interface.SetSetting("theme", o.Name);
 	}, std::distance(Options.begin(), Index));
+	Target->AddBooleanEntry("Show \"In development\" warning on startup", ShowDevWarning, [this]() {
+		Settings::GetInstance()->Interface.SetSetting("showDevWarning", ShowDevWarning);
+	});
 }

@@ -6,11 +6,15 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Editor/Editor.h>
 #include <Engine/Input.h>
+#include <Editor/Settings/EditorSettings.h>
 #include <filesystem>
 
-bool engine::subsystem::EditorSubsystem::Active = false;
+using namespace engine::editor;
+using namespace engine;
 
-static engine::SerializedValue LastScene;
+bool subsystem::EditorSubsystem::Active = false;
+
+static SerializedValue LastScene;
 
 engine::subsystem::EditorSubsystem::EditorSubsystem()
 	: Subsystem("Editor", Log::LogColor::Yellow)
@@ -38,7 +42,7 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 	.OnCalled = [this](const console::Command::CallContext& ctx) {
 			if (!editor::IsActive())
 			{
-				//Engine::Instance->LoadSubsystem(new EditorSubsystem());
+				Engine::Instance->LoadSubsystem(new EditorSubsystem());
 			}
 		}
 		});
@@ -47,6 +51,8 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 	{
 		platform::CreateHiddenDirectory(".editor/");
 	}
+
+	Settings::GetInstance()->Graphics.Apply();
 }
 
 engine::subsystem::EditorSubsystem::~EditorSubsystem()
@@ -65,7 +71,7 @@ void engine::subsystem::EditorSubsystem::StartProject()
 {
 	if (!Scene::GetMain())
 	{
-		editor::EditorUI::SetStatusMessage("Cannot start project, no scene loaded!", editor::EditorUI::StatusType::Error);
+		EditorUI::SetStatusMessage("Cannot start project, no scene loaded!", editor::EditorUI::StatusType::Error);
 		return;
 	}
 
@@ -75,7 +81,7 @@ void engine::subsystem::EditorSubsystem::StartProject()
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	Scene::GetMain()->ReloadObjects(nullptr);
-	editor::EditorUI::SetStatusMessage("Running game", editor::EditorUI::StatusType::Info);
+	EditorUI::SetStatusMessage("Running game", editor::EditorUI::StatusType::Info);
 }
 
 void engine::subsystem::EditorSubsystem::StopProject()
@@ -85,5 +91,5 @@ void engine::subsystem::EditorSubsystem::StopProject()
 	{
 		Scene::GetMain()->ReloadObjects(&LastScene);
 	}
-	editor::EditorUI::SetStatusMessage("Stopped game", editor::EditorUI::StatusType::Info);
+	EditorUI::SetStatusMessage("Stopped game", editor::EditorUI::StatusType::Info);
 }

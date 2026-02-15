@@ -34,8 +34,9 @@ void engine::editor::MessageWindow::Begin()
 {
 	IDialogWindow::Begin();
 	Background->AddChild((new UIText(11_px, EditorUI::Theme.Text, Message, DefaultFont))
-		->SetWrapEnabled(true, 370_px)
+		->SetWrapEnabled(true, 330_px)
 		->SetPadding(10_px));
+	Background->GetAbsoluteParent()->UpdateElement();
 }
 
 void engine::editor::MessageWindow::Update()

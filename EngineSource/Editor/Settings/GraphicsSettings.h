@@ -8,5 +8,7 @@ namespace engine::editor
 	public:
 
 		GraphicsSettings();
+
+		void Apply();
 	};
 }

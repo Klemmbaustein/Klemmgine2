@@ -11,6 +11,7 @@ engine::editor::Settings::Settings()
 	AddCategory(&Interface);
 	AddCategory(&Script);
 	AddCategory(&Console);
+	AddCategory(&Graphics);
 
 	try
 	{

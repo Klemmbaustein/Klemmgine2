@@ -272,8 +272,7 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 
 	string Extension = str::Lower(File.substr(File.find_last_of(".") + 1));
 
-	auto Contains = [](string Value, const std::vector<string>& Values) -> bool
-	{
+	auto Contains = [](string Value, const std::vector<string>& Values) -> bool {
 		bool Found = false;
 		for (auto& Current : Values)
 		{
@@ -289,8 +288,7 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 		auto* Progress = new ProgressBar("Importing " + Extension + " file");
 		Progress->Progress = -1;
 		string Out = modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
-			.OnLoadStatusChanged = [Progress](string NewMessage)
-			{
+			.OnLoadStatusChanged = [Progress](string NewMessage) {
 				Progress->SetMessage("Importing model: " + NewMessage);
 			}
 			});
@@ -316,7 +314,7 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 	}
 }
 
-static void ImportThread(engine::string CurrentPath)
+static bool ImportThread(engine::string CurrentPath)
 {
 	std::vector Files = platform::OpenFileDialog({
 		platform::FileDialogFilter{
@@ -347,6 +345,7 @@ static void ImportThread(engine::string CurrentPath)
 	{
 		ImportItem(i, CurrentPath);
 	}
+	return !Files.empty();
 }
 
 static void Import(engine::string CurrentPath)
@@ -442,7 +441,10 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 			.Name = "Import...",
 			.Shortcut = "Ctrl+I",
 			.Icon = EditorUI::Asset("Plus.png"),
-			.OnClicked = [this, WorkDir]() { Import(WorkDir); },
+			.OnClicked = [WorkDir, OnAddCallback]() {
+				OnAddCallback();
+				Import(WorkDir);
+			},
 			.Separator = true
 		},
 	};

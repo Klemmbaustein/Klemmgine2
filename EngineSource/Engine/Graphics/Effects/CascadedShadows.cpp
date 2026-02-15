@@ -94,10 +94,10 @@ void CascadedShadows::Init()
 void engine::graphics::CascadedShadows::Update(Camera* From)
 {
 	EnvironmentHasShadows = From->UsedEnvironment->RenderSettings.SunShadows;
+	this->LightDirection = Vector3::Forward(From->UsedEnvironment->SunRotation.EulerVector());
 	if (!ShouldRender())
 		return;
 	LightMatrices = GetLightSpaceMatrices(From);
-	this->LightDirection = Vector3::Forward(From->UsedEnvironment->SunRotation.EulerVector());
 	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
 	for (size_t i = 0; i < LightMatrices.size(); ++i)
 	{
@@ -130,6 +130,7 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 {
 	if (!Target)
 		return;
+	Target->SetVec3(Target->GetUniformLocation("u_lightDirection"), LightDirection);
 
 	if (!ShouldRender())
 	{
@@ -148,7 +149,6 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 	glBindTexture(GL_TEXTURE_2D_ARRAY, graphics::CascadedShadows::LightDepthMaps);
 	Target->SetInt(Target->GetUniformLocation("u_shadowMaps"), 0);
 	Target->SetFloat(Target->GetUniformLocation("u_shadowBiasModifier"), BiasModifier);
-	Target->SetVec3(Target->GetUniformLocation("u_lightDirection"), LightDirection);
 	Target->SetInt(Target->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 }
 

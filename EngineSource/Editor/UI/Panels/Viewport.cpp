@@ -206,7 +206,7 @@ std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 {
 	return {
 		DropdownMenu::Option{
-			.Name = "Show UI",
+			.Name = "Show Game UI",
 			.Icon = this->ShowUI ? EditorUI::Asset("Dot.png") : "",
 			.OnClicked = [this] {
 				this->ShowUI = !this->ShowUI;
