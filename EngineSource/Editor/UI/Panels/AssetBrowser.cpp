@@ -247,8 +247,6 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		return str::Lower(a.Name) < str::Lower(b.Name);
 	});
 
-	SetStatusText(str::Format("%i Items", int(Out.size())));
-
 	return Out;
 }
 

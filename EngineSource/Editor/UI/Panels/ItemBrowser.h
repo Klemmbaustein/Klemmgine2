@@ -175,10 +175,11 @@ namespace engine::editor
 		 * Navigates back one level, like moving back to the parent folder.
 		 */
 		virtual void Back() = 0;
-		void SetStatusText(string NewText);
 		kui::UIScrollBox* ItemsScrollBox = nullptr;
 		std::set<string> ExpandedItems;
 	private:
+		void SetStatusText(string NewText);
+		void UpdateStatusText(size_t NumItems);
 		ItemBrowserHeading* Heading = nullptr;
 		size_t LastItemsPerRow = 0;
 		kui::UIText* StatusText;

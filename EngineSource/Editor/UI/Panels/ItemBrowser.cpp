@@ -255,6 +255,11 @@ void engine::editor::ItemBrowser::SetStatusText(string NewText)
 	StatusText->SetText(NewText);
 }
 
+void engine::editor::ItemBrowser::UpdateStatusText(size_t NumItems)
+{
+	SetStatusText(str::Format("%i items", NumItems));
+}
+
 std::pair<engine::editor::ItemBrowser::Item, kui::UIBox*>* engine::editor::ItemBrowser::GetHoveredButton()
 {
 	for (auto& i : Buttons)
@@ -276,6 +281,7 @@ void engine::editor::ItemBrowser::DisplayItems()
 		Buttons.clear();
 		size_t i = 0;
 		DisplayTree("", CurrentItems, 0, i);
+		UpdateStatusText(Buttons.size());
 		return;
 	}
 
@@ -404,6 +410,7 @@ void engine::editor::ItemBrowser::DisplayItems()
 			Column = 0;
 		}
 	}
+	UpdateStatusText(Buttons.size());
 }
 
 void engine::editor::ItemBrowser::DisplayTree(string Path, const std::vector<Item>& Items, size_t Depth, size_t& Index)
