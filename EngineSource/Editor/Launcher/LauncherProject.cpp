@@ -8,17 +8,24 @@ using namespace engine;
 
 std::vector<LauncherProject> engine::editor::launcher::LauncherProject::GetProjects()
 {
-	std::vector<LauncherProject> OutProjects;
-
-	string FilePath = GetEditorPath() + "/projects.json";
-
-	auto File = JsonSerializer::FromFile(FilePath);
-
-	for (auto& i : File.GetArray())
+		std::vector<LauncherProject> OutProjects;
+	try
 	{
-		OutProjects.push_back(LauncherProject{ i.At("name").GetString(), i.At("path").GetString() });
-	}
 
+		string FilePath = GetEditorPath() + "/projects.json";
+
+		auto File = JsonSerializer::FromFile(FilePath);
+
+		for (auto& i : File.GetArray())
+		{
+			OutProjects.push_back(LauncherProject{ i.At("name").GetString(), i.At("path").GetString() });
+		}
+
+	}
+	catch (SerializeException& e)
+	{
+		Log::Note(e.what());
+	}
 	return OutProjects;
 }
 

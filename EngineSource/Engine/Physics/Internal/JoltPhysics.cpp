@@ -169,9 +169,9 @@ public:
 		default:
 			break;
 		}
-		return "Unkown";
+		return "Unknown";
 	}
-#endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
+#endif
 };
 
 class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
