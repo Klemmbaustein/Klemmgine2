@@ -23,6 +23,7 @@
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/MeshObject.h>
+#include <Core/File/JsonSerializer.h>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 #include <filesystem>
@@ -129,6 +130,42 @@ void engine::editor::EditorUI::InitTheme()
 	Theme.LoadFromFile(Settings::GetInstance()->Interface.GetSetting("theme", "Dark").GetString());
 }
 
+void engine::editor::EditorUI::LoadEditorStateConfig()
+{
+	try
+	{
+		auto LastState = JsonSerializer::FromFile(".editor/editorState.json");
+
+		string SceneName = LastState.At("scene").GetString();
+		SceneSubsystem::Current->LoadSceneAsync(SceneName);
+
+	}
+	catch (SerializeException& e)
+	{
+	}
+}
+
+void engine::editor::EditorUI::SaveEditorStateConfig()
+{
+	string LayoutPath = GetLayoutConfigPath();
+
+	std::filesystem::create_directories(GetLayoutConfigPath());
+	layout::LayoutToFile(RootPanel, LayoutPath + "/lastLayout.k2b");
+
+	try
+	{
+		SerializedValue FileData = std::vector<SerializedData>({
+			SerializedData("scene", Scene::GetMain() ? Scene::GetMain()->Name : "")
+			});
+		JsonSerializer::ToFile(FileData, ".editor/editorState.json");
+
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(str::Format("Failed to serialize editor state: %s", e.what()));
+	}
+}
+
 engine::editor::EditorUI::EditorUI()
 {
 	Instance = this;
@@ -178,6 +215,8 @@ engine::editor::EditorUI::EditorUI()
 	UpdateBackgrounds();
 
 	RootPanel = new EditorPanel("root");
+
+	LoadEditorStateConfig();
 
 	string LayoutFile = GetLayoutConfigPath() + "/lastLayout.k2b";
 
@@ -276,10 +315,7 @@ engine::editor::EditorUI::~EditorUI()
 {
 	using namespace subsystem;
 
-	string LayoutPath = GetLayoutConfigPath();
-
-	std::filesystem::create_directories(GetLayoutConfigPath());
-	layout::LayoutToFile(RootPanel, LayoutPath + "/lastLayout.k2b");
+	SaveEditorStateConfig();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 

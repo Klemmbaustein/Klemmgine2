@@ -168,7 +168,7 @@ elseif(ENGINE_EDITOR)
 	target_compile_definitions(ixwebsocket PRIVATE IXWEBSOCKET_USE_MBED_TLS_MIN_VERSION_3)
 	target_link_libraries(KlemmgineCore PUBLIC ixwebsocket)
 
-	klemmui_markup(KlemmgineLib "Engine/Editor/UI")
+	klemmui_markup(KlemmgineLib "EngineSource/Editor/UI/Scripts/")
 endif()
 
 # KlemmUI SystemWM declarations

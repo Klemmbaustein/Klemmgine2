@@ -194,7 +194,6 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 			GroundedTimer = 5;
 			GroundNormal = HitNormal;
 			StoodOn = Hits[0].HitComponent;
-//			Result.Offset = SnapToSurface;
 			return Result;
 		}
 	}

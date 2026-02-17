@@ -176,6 +176,10 @@ namespace engine::editor
 		static string GetLayoutConfigPath();
 
 	private:
+
+		void LoadEditorStateConfig();
+		void SaveEditorStateConfig();
+
 		kui::UIBackground* Root = nullptr;
 		kui::UIBackground* MenuBar = nullptr;
 		kui::UIBackground* StatusBar = nullptr;

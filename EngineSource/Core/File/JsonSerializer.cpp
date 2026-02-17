@@ -26,7 +26,6 @@ void engine::JsonSerializer::WriteObject(const std::vector<SerializedData>& Targ
 		Stream << "\n";
 	}
 
-
 	for (auto i = Target.begin(); i < Target.end(); i++)
 	{
 		if (Opt.Indent)
