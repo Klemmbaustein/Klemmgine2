@@ -20,6 +20,7 @@
 
 using namespace engine;
 using namespace engine::plugin;
+using namespace engine::platform;
 
 // Incredibly cursed, but it means I wont have to write everything twice!
 
@@ -74,11 +75,11 @@ static plugin::LogEntry* GetLog(size_t* OutSize)
 	return Entries.data();
 }
 
-static auto ctx = plugin::EnginePluginInterface{
+static auto ctx = EnginePluginInterface{
 #include "InterfaceDefines.hpp"
 };
 
-std::vector<engine::plugin::PluginInfo> LoadedPlugins;
+static std::vector<PluginInfo> LoadedPlugins;
 
 void engine::plugin::OnNewSceneLoaded(Scene* Target)
 {
@@ -114,8 +115,6 @@ void engine::plugin::Update()
 
 void engine::plugin::Unload(subsystem::PluginSubsystem* System)
 {
-	using namespace engine::platform;
-
 	for (auto& i : LoadedPlugins)
 	{
 		debug::TimeLogger PluginLoadTime{ str::Format("Unloaded plugin: %s", i.Name.c_str()), System->GetLogPrefixes() };

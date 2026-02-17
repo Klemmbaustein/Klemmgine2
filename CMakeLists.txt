@@ -200,7 +200,7 @@ if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC" AND ENGINE_EDITOR)
 	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
 endif()
 
-klemmui_resources(KlemmgineLib "Engine/Resources")
+klemmui_resources(KlemmgineLib "EngineSource/Resources")
 
 
 if (ENGINE_BUILD_TOOLS)
