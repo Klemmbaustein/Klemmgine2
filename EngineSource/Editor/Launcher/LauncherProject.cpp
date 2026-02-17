@@ -8,10 +8,9 @@ using namespace engine;
 
 std::vector<LauncherProject> engine::editor::launcher::LauncherProject::GetProjects()
 {
-		std::vector<LauncherProject> OutProjects;
+	std::vector<LauncherProject> OutProjects;
 	try
 	{
-
 		string FilePath = GetEditorPath() + "/projects.json";
 
 		auto File = JsonSerializer::FromFile(FilePath);
@@ -20,7 +19,6 @@ std::vector<LauncherProject> engine::editor::launcher::LauncherProject::GetProje
 		{
 			OutProjects.push_back(LauncherProject{ i.At("name").GetString(), i.At("path").GetString() });
 		}
-
 	}
 	catch (SerializeException& e)
 	{

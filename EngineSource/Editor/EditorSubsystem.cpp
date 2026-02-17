@@ -19,13 +19,21 @@ static SerializedValue LastScene;
 engine::subsystem::EditorSubsystem::EditorSubsystem()
 	: Subsystem("Editor", Log::LogColor::Yellow)
 {
-	THIS_SUBSYSTEM_DEPENDS_ON(ConsoleSubsystem);
-
 	debug::TimeLogger UITime{ "Created editor UI", GetLogPrefixes() };
 
 	UI = new editor::EditorUI();
 	Active = true;
 
+	if (!std::filesystem::exists(".editor/"))
+	{
+		platform::CreateHiddenDirectory(".editor/");
+	}
+
+	Settings::GetInstance()->Graphics.Apply();
+}
+
+void engine::subsystem::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
+{
 	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
 		.Name = "ed.run",
 		.Args = {},
@@ -34,25 +42,16 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 			{
 				Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 			}
-		}
-		});
+		} });
 	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
-	.Name = "ed.edit",
-	.Args = {},
-	.OnCalled = [this](const console::Command::CallContext& ctx) {
+		.Name = "ed.edit",
+		.Args = {},
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
 			if (!editor::IsActive())
 			{
 				Engine::Instance->LoadSubsystem(new EditorSubsystem());
 			}
-		}
-		});
-
-	if (!std::filesystem::exists(".editor/"))
-	{
-		platform::CreateHiddenDirectory(".editor/");
-	}
-
-	Settings::GetInstance()->Graphics.Apply();
+		} });
 }
 
 engine::subsystem::EditorSubsystem::~EditorSubsystem()

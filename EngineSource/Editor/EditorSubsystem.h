@@ -14,6 +14,7 @@ namespace engine::subsystem
 
 		void StartProject();
 		void StopProject();
+		void RegisterCommands(ConsoleSubsystem* System) override;
 
 		editor::EditorUI* UI = nullptr;
 

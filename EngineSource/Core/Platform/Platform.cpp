@@ -106,7 +106,7 @@ void engine::platform::CreateHiddenDirectory(string Path)
 	}
 	else if (!SetFileAttributesW(WidePath.c_str(), FILE_ATTRIBUTE_HIDDEN))
 	{
-		Log::Error(str::Format("Failed to create %s, %s", Path.c_str(), GetLastErrorString().c_str()));
+		Log::Error(str::Format("Failed to make %s hidden: %s", Path.c_str(), GetLastErrorString().c_str()));
 	}
 }
 
