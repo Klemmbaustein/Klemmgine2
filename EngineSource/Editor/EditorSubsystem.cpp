@@ -19,6 +19,9 @@ static SerializedValue LastScene;
 engine::subsystem::EditorSubsystem::EditorSubsystem()
 	: Subsystem("Editor", Log::LogColor::Yellow)
 {
+	Engine::IsPlaying = false;
+	Engine::GameHasFocus = false;
+
 	debug::TimeLogger UITime{ "Created editor UI", GetLogPrefixes() };
 
 	UI = new editor::EditorUI();

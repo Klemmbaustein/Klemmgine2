@@ -96,7 +96,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 	Vector3 Pos, bool GravityPass, uint32 Depth)
 {
 	MoveResult Result;
-	float Distance = Direction.Length() + 0.001f;
+	float Distance = Direction.Length() + DISTANCE_OFFSET;
 
 	auto Hits = Collider->ShapeCast(
 		Transform(Pos, 0, 1),
@@ -117,7 +117,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 		return Result;
 	}
 
-	if (!Hits.size())
+	if (Hits.empty())
 	{
 		if (GravityPass && GroundedTimer > 0)
 		{
@@ -135,18 +135,18 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 	Vector3 HitNormal = Vector3(0, 0, 0);
 	float MinDistance = INFINITY;
 
-	bool HitStep = false;
-
-	Vector3 AvgPos = 0;
+	Vector3 HighestPosition = Vector3(0, -INFINITY, 0);
 
 	for (auto& i : Hits)
 	{
 		HitNormal += i.Normal * i.Depth;
 		MinDistance = std::min(i.Distance, MinDistance);
-		AvgPos += i.ImpactPoint;
+		if (i.ImpactPoint.Y > HighestPosition.Y)
+		{
+			HighestPosition = i.ImpactPoint;
+		}
 	}
 	HitNormal = HitNormal.Normalize();
-	AvgPos = AvgPos / Vector3((float)Hits.size());
 
 	if (HitNormal.Length() == 0)
 	{
@@ -161,9 +161,9 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 	float Angle = Vector3::Dot(HitNormal, Vector3(0, 1, 0));
 
 	float StepSize = ColliderSize.Y * 0.85f;
-	if (!GravityPass && GetVelocity().Y > -5.0f)
+	if (!GravityPass && GetVelocity().Y > -5.0f && Angle < 0.75f)
 	{
-		Vector3 NewDir = (-HitNormal * Vector3(1, 0, 1)).Normalize() * 1;
+		Vector3 NewDir = (-HitNormal * Vector3(1, 0, 1)).Normalize() ;
 		Vector3 TestPos = Pos + Vector3(0, StepSize, 0);
 
 		Hits = Collider->ShapeCast(
@@ -173,16 +173,15 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 			{ RootObject }
 		);
 
-		HitStep = AvgPos.Y - Pos.Y < -StepSize && !Hits.size();
-		if (HitStep)
+		Result.Stairs = HighestPosition.Y - Pos.Y < -StepSize && !Hits.size();
+		if (Result.Stairs)
 		{
 			HitNormal = Vector3(0, 1, 0);
-			Result.Stairs = true;
 		}
 	}
 
 	float AbsoluteDistance = MinDistance * Direction.Length();
-	Vector3 SnapToSurface = Direction.Normalize() * (AbsoluteDistance - 0.001f);
+	Vector3 SnapToSurface = Direction.Normalize() * (AbsoluteDistance + DISTANCE_OFFSET);
 	Vector3 LeftOver = Direction - SnapToSurface;
 
 	float Length = LeftOver.Length();
@@ -195,7 +194,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 			GroundedTimer = 5;
 			GroundNormal = HitNormal;
 			StoodOn = Hits[0].HitComponent;
-			Result.Offset = SnapToSurface;
+//			Result.Offset = SnapToSurface;
 			return Result;
 		}
 	}
@@ -221,7 +220,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 
 	if (!GravityPass)
 	{
-		SnapToSurface += HitNormal * stats::DeltaTime * (HitStep ? 5.0f : 1.0f) * StepSize;
+		SnapToSurface += HitNormal * stats::DeltaTime * (Result.Stairs ? 5.0f : 1.0f) * StepSize;
 	}
 
 	Result.Offset = SnapToSurface + TryMove(LeftOver, InitialDirection, Pos + SnapToSurface, GravityPass, Depth + 1).Offset;

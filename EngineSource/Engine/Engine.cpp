@@ -23,8 +23,8 @@ using namespace engine;
 using namespace engine::subsystem;
 
 Engine* Engine::Instance = nullptr;
-bool Engine::IsPlaying = false;
-bool Engine::GameHasFocus = false;
+bool Engine::IsPlaying = true;
+bool Engine::GameHasFocus = true;
 
 Engine::Engine()
 {
@@ -54,9 +54,6 @@ Engine* Engine::Init()
 
 #ifdef EDITOR
 	Instance->LoadSubsystem(new EditorSubsystem());
-#else
-	IsPlaying = true;
-	GameHasFocus = true;
 #endif
 
 	return Instance;

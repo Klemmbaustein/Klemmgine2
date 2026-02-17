@@ -74,5 +74,7 @@ namespace engine
 		bool Jumping = false;
 		void* CollisionBodyPtr = nullptr;
 
+		static constexpr float DISTANCE_OFFSET = 0.001f;
+
 	};
 }
