@@ -440,7 +440,8 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 			.Shortcut = "Ctrl+I",
 			.Icon = EditorUI::Asset("Plus.png"),
 			.OnClicked = [WorkDir, OnAddCallback]() {
-				OnAddCallback();
+				if (OnAddCallback)
+					OnAddCallback();
 				Import(WorkDir);
 			},
 			.Separator = true
