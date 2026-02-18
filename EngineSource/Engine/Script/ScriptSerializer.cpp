@@ -105,7 +105,7 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 			NewType.members.push_back(TypeMember{
 				.type = TypeId(m.Value.At("type").GetInt()),
 				.name = m.Name,
-				.offset = bytecodeOffset(m.Value.At("offset").GetInt()),
+				.offset = BytecodeOffset(m.Value.At("offset").GetInt()),
 				});
 		}
 		ToStream->reflect.types.insert({ NewType.hash, NewType });

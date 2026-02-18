@@ -99,7 +99,7 @@ include("Dependencies/miniz.cmake")
 
 set(KLEMMUI_DYNAMIC_MARKUP ON)
 add_subdirectory("Dependencies/KlemmUI" EXCLUDE_FROM_ALL)
-add_subdirectory("Dependencies/ProgrammingLanguage" EXCLUDE_FROM_ALL)
+add_subdirectory("Dependencies/DSharp" EXCLUDE_FROM_ALL)
 set(ENABLE_ALL_WARNINGS OFF)
 set(GENERATE_DEBUG_SYMBOLS OFF)
 set(CPP_RTTI_ENABLED ON)

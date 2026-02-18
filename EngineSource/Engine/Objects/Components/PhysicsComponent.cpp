@@ -87,6 +87,7 @@ std::vector<physics::HitResult> engine::PhysicsComponent::ShapeCast(Transform St
 	{
 		return {};
 	}
+	ObjectsToIgnore.insert(RootObject);
 	return Body->ShapeCast(Start, End, Layers, ObjectsToIgnore);
 }
 
@@ -97,6 +98,8 @@ std::vector<physics::HitResult> engine::PhysicsComponent::CollisionTest(physics:
 	{
 		return {};
 	}
+
+	ObjectsToIgnore.insert(RootObject);
 	return Body->CollisionTest(GetWorldTransform(), Layers, ObjectsToIgnore);
 }
 
