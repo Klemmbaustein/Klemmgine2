@@ -417,7 +417,8 @@ void engine::editor::ScriptEditorPanel::AddTab(std::string File)
 		"async",
 		"await",
 		"as",
-		"is"
+		"is",
+		"interface"
 	};
 
 	if (file::Extension(File) == "kui")

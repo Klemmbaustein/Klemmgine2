@@ -120,8 +120,8 @@ namespace engine::editor
 			Tree,
 		};
 
-		/// The display mode to use for the next update.
-		DisplayMode Mode = DisplayMode::Icons;
+		/// The display mode to use for the next UI update.
+		DisplayMode Mode = DisplayMode::Tree;
 
 	protected:
 

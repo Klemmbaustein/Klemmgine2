@@ -53,7 +53,7 @@ What is mostly ready:
 
 What isn't:
 - No audio output or features yet.
-- Scripting language is missing multiple inheritance and some features (like enums) are only available to native code.
+- Some scripting language features (like enums, structs, generics) are only available to native code.
 
 Existing features and APIs might change.)",
 		VersionInfo::Get().Build, {
