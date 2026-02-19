@@ -32,6 +32,10 @@ string engine::file::FilePath(string PathWithName)
 #else
 	size_t LastSlash = PathWithName.find_last_of("/");
 #endif
+	if (LastSlash == std::string::npos)
+	{
+		return "";
+	}
 	return PathWithName.substr(0, LastSlash);
 }
 

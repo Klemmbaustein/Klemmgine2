@@ -91,7 +91,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 
 	auto& SceneMap = ObjectTree.insert(
 		{ Name, ListObject{.Name = Name} }
-	).first->second.Children;
+	).first->second;
 
 
 	size_t Number = 0;
@@ -107,7 +107,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 
 		const Reflection::ObjectInfo& TypeInfo = Reflection::ObjectTypes[i->TypeID];
 
-		auto& Entry = SceneMap[TypeInfo.Path];
+		auto& Entry = TypeInfo.Path.empty() ? SceneMap : SceneMap.Children[TypeInfo.Path];
 
 		Entry.Children.insert(
 			{ std::to_string(Number++), ListObject(i->Name, i, Viewport::Current->SelectedObjects.contains(i)) }

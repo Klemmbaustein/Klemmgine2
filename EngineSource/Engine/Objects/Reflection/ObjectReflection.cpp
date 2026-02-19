@@ -42,6 +42,11 @@ engine::ObjectTypeID engine::Reflection::RegisterObject(string Name, std::functi
 	return ID;
 }
 
+void engine::Reflection::UnRegisterObject(ObjectTypeID Id)
+{
+	ObjectTypes.erase(Id);
+}
+
 void engine::Reflection::Init()
 {
 	if (MacroTypes)

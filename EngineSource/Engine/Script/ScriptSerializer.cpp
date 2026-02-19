@@ -35,6 +35,16 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 				})));
 		}
 
+		SerializedValue Interfaces = std::vector<SerializedValue>{};
+
+		for (auto& i : i.second.interfaces)
+		{
+			Interfaces.Append(SerializedValue(std::vector{
+				SerializedValue(int32(i.first)),
+				SerializedValue(int32(i.second)),
+				}));
+		}
+
 		ReflectData.Append(SerializedValue({
 			SerializedData("id", int32(i.second.hash)),
 			SerializedData("name", i.second.name),
@@ -42,14 +52,16 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 			SerializedData("size", int32(i.second.bodySize)),
 			SerializedData("vTable", int32(i.second.vTableOffset)),
 			SerializedData("members", Members),
+			SerializedData("superClass", int32(i.second.superClass)),
+			SerializedData("interfaces", Interfaces),
 			}));
 	}
 
 	SerializedValue VTable = std::vector<SerializedValue>{};
 
-	for (const RuntimeFunction& i : Stream->virtualTable)
+	for (const VTableFunction& i : Stream->virtualTable)
 	{
-		VTable.Append(int32(i.codeOffset));
+		//VTable.Append(i.codeOffset);
 	}
 
 	SerializedValue BytecodeData = std::vector{
@@ -84,7 +96,7 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 	ToStream->virtualTable.clear();
 	for (auto& i : VirtualData)
 	{
-		ToStream->virtualTable.push_back(RuntimeFunction(i.GetInt()));
+		ToStream->virtualTable.push_back(VTableFunction(i.GetInt()));
 	}
 
 	auto& ReflectData = Obj.At("reflect").GetArray();

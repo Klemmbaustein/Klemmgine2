@@ -12,6 +12,7 @@
 #include <Core/ThreadPool.h>
 #include <ds/modules/system.async.hpp>
 #include <Engine/UI/UICanvas.h>
+#include <Engine/Script/ScriptSerializer.h>
 
 using namespace ds;
 using namespace ds::modules::system::async;
@@ -135,8 +136,8 @@ bool engine::script::ScriptSubsystem::Reload()
 			}
 		}
 	}
-	//auto Stream = FileStream("scripts.bin", true);
-	//script::serialize::SerializeBytecode(&NewInstructions, &Stream);
+	auto Stream = FileStream("scripts.bin", false);
+	script::serialize::SerializeBytecode(&NewInstructions, &Stream);
 
 	*ScriptInstructions = NewInstructions;
 	//script::serialize::DeSerializeBytecode(ScriptInstructions, &Stream);
@@ -154,6 +155,11 @@ bool engine::script::ScriptSubsystem::Reload()
 				ScriptObj->Begin();
 			}
 		}
+	}
+
+	for (auto& [ClassId, ObjectId] : ScriptObjectIds)
+	{
+		Reflection::UnRegisterObject(ObjectId);
 	}
 
 	for (auto& [Id, TypeInfo] : ScriptInstructions->reflect.types)

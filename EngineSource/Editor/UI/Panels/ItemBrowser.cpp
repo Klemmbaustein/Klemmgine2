@@ -264,7 +264,7 @@ std::pair<engine::editor::ItemBrowser::Item, kui::UIBox*>* engine::editor::ItemB
 {
 	for (auto& i : Buttons)
 	{
-		if (i.second && i.second->IsBeingHovered() && i.first.OnRightClick)
+		if (i.second && i.second->IsBeingHovered())
 		{
 			return &i;
 		}

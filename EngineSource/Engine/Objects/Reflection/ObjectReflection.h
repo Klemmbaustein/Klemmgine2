@@ -27,6 +27,7 @@ public: static inline const volatile ObjectTypeID ObjectType\
 
 		static ObjectTypeID RegisterObjectMacro(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
 		static ObjectTypeID RegisterObject(string Name, std::function<SceneObject* ()> NewFunc, string Category = "");
+		static void UnRegisterObject(ObjectTypeID Id);
 
 		struct ObjectInfo
 		{

@@ -73,7 +73,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			if (!member)
 			{
-				member = engine::script::CreateAssetRef();
+				member = script::CreateAssetRef();
 			}
 
 			ClassRef<AssetRef*> MemberValue = member;
@@ -81,12 +81,11 @@ void engine::script::ScriptObject::LoadScriptData()
 			auto p = new ObjProperty<AssetRef>(Name, *MemberValue.getValue(), this);
 			p->IsHidden = !Visible;
 
-			p->OnChanged = [this, i, p]
-			{
+			p->OnChanged = [this, i, p] {
 				auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
 				if (!member)
 				{
-					member = engine::script::CreateAssetRef();
+					member = script::CreateAssetRef();
 				}
 
 				ClassRef<AssetRef*> MemberValue = member;
@@ -100,8 +99,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			auto p = new ObjProperty<Vector3>(Name, member, this);
 			p->IsHidden = !Visible;
 
-			p->OnChanged = [this, i, p]
-			{
+			p->OnChanged = [this, i, p] {
 				auto& member = *reinterpret_cast<Vector3*>(this->ScriptData->getBody() + i.offset);
 				member = p->Value;
 			};
@@ -118,8 +116,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			auto p = new ObjProperty<string>(Name, string(str.ptr(), str.length()), this);
 			p->IsHidden = !Visible;
 
-			p->OnChanged = [this, i, p]
-			{
+			p->OnChanged = [this, i, p] {
 				auto& memberPtr = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
 
 				this->Interpreter->destruct(memberPtr);
@@ -135,8 +132,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			auto p = new ObjProperty<int32>(Name, Value, this);
 			p->IsHidden = !Visible;
 
-			p->OnChanged = [this, i, p]
-			{
+			p->OnChanged = [this, i, p] {
 				ds::Int& Value = *reinterpret_cast<ds::Int*>(this->ScriptData->getBody() + i.offset);
 
 				Value = p->Value;
@@ -149,8 +145,7 @@ void engine::script::ScriptObject::LoadScriptData()
 			auto p = new ObjProperty<float>(Name, Value, this);
 			p->IsHidden = !Visible;
 
-			p->OnChanged = [this, i, p]
-			{
+			p->OnChanged = [this, i, p] {
 				ds::Float& Value = *reinterpret_cast<ds::Float*>(this->ScriptData->getBody() + i.offset);
 
 				Value = p->Value;
@@ -158,7 +153,8 @@ void engine::script::ScriptObject::LoadScriptData()
 		}
 		else
 		{
-			Log::Warn(str::Format("The property %s has an unsupported type.", i.name.c_str()));
+			Log::Warn(str::Format("%s: The property '%s' has an unsupported type.",
+				Class.name.c_str(), i.name.c_str()));
 		}
 	}
 

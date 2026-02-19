@@ -7,14 +7,19 @@
 using namespace ds;
 using namespace engine;
 
-static void Vector3_Forward(InterpretContext* context)
+static void Rotation3_forward(InterpretContext* context)
 {
 	context->pushValue(Vector3::Forward(context->popValue<Rotation3>().EulerVector()));
 }
 
-static void Vector3_Right(InterpretContext* context)
+static void Rotation3_right(InterpretContext* context)
 {
 	context->pushValue(Vector3::Right(context->popValue<Rotation3>().EulerVector()));
+}
+
+static void Rotation3_up(InterpretContext* context)
+{
+	context->pushValue(Vector3::Up(context->popValue<Rotation3>().EulerVector()));
 }
 
 static void Vector3_add(InterpretContext* context)
@@ -41,7 +46,7 @@ static void Vector3_divide(InterpretContext* context)
 	context->pushValue(a / b);
 }
 
-static void Vector3_UnaryMinus(InterpretContext* context)
+static void Vector3_unaryMinus(InterpretContext* context)
 {
 	context->pushValue(-context->popValue<Vector3>());
 }
@@ -130,25 +135,25 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 	Math.Vec3->operators.push_back({
 		Operator::unaryMinus,
 		To.addFunction(NativeFunction({FunctionArgument(Math.Vec3, "a")},
-			Math.Vec3, "Vector3.unaryMinus", &Vector3_UnaryMinus))
+			Math.Vec3, "Vector3.unaryMinus", &Vector3_unaryMinus))
 		});
 
-	To.addStructMethod(Math.Vec3, NativeFunction({},
+	To.addClassMethod(Math.Vec3, NativeFunction({},
 		FloatInst, "length", &Vector3_length));
 
-	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "other") },
+	To.addClassMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "other") },
 		FloatInst, "dot", &Vector3_dot));
 
-	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "other") },
+	To.addClassMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "other") },
 		Math.Vec3, "cross", &Vector3_cross));
 
-	To.addStructMethod(Math.Vec3, NativeFunction({},
+	To.addClassMethod(Math.Vec3, NativeFunction({},
 		Math.Vec3, "normalized", &Vector3_normalized));
 
-	To.addStructMethod(Math.Vec3, NativeFunction({},
+	To.addClassMethod(Math.Vec3, NativeFunction({},
 		StrInst, "toString", &Vector3_toString));
 
-	To.addStructMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "planeOrigin"),
+	To.addClassMethod(Math.Vec3, NativeFunction({ FunctionArgument(Math.Vec3, "planeOrigin"),
 		FunctionArgument(Math.Vec3, "planeNormal") },
 		Math.Vec3, "projectToPlane", &Vector3_projectToPlane));
 
@@ -174,13 +179,17 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, Y, y, FloatInst);
 	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, R, r, FloatInst);
 
-	To.addFunction(
-		NativeFunction({ FunctionArgument(Math.Rot, "rotation") },
-			Math.Vec3, "forward", &Vector3_Forward));
+	To.addClassMethod(Math.Rot,
+		NativeFunction({ },
+			Math.Vec3, "forward", &Rotation3_forward));
 
-	To.addFunction(
-		NativeFunction({ FunctionArgument(Math.Rot, "rotation") },
-			Math.Vec3, "right", &Vector3_Right));
+	To.addClassMethod(Math.Rot,
+		NativeFunction({ },
+			Math.Vec3, "right", &Rotation3_right));
+
+	To.addClassMethod(Math.Rot,
+		NativeFunction({ },
+			Math.Vec3, "up", &Rotation3_up));
 
 	auto Rot3Function = To.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "p"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "r") },
