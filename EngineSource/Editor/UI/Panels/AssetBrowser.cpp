@@ -302,7 +302,7 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 	}
 	else
 	{
-		std::filesystem::copy(File, CurrentPath + file::FileName(CurrentPath));
+		std::filesystem::copy(File, CurrentPath + "/" + file::FileName(File));
 		thread::ExecuteOnMainThread([]() {
 			resource::ScanForAssets();
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
@@ -494,7 +494,7 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 		.OnClicked = [this, WorkDir, OnAddCallback]() {
 			if (OnAddCallback)
 				OnAddCallback();
-			AssetBrowser::RenameFile(EditorUI::CreateDirectory(WorkDir + "Folder"));
+			AssetBrowser::RenameFile(EditorUI::CreateDirectory(WorkDir + "/Folder"));
 		},
 		.Separator = true,
 		});
