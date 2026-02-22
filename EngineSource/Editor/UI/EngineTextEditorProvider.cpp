@@ -242,11 +242,14 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 		if (!i.completionModule.empty())
 		{
-			btn->AddChild((new UIText(11_px,
-				{ TextSegment{ i.completionModule, EditorUI::Theme.DarkText} },
-				EditorUI::EditorFont))
-				->SetTextWidthOverride(80_px)
-				->SetPadding(2_px));
+			btn->AddChild((new UIBox(true))
+				->SetMinWidth(80_px)
+				->SetPadding(2_px)
+				->SetHorizontalAlign(UIBox::Align::Reverse)
+				->AddChild((new UIText(11_px,
+					{ TextSegment{ i.completionModule, EditorUI::Theme.DarkText} },
+					EditorUI::EditorFont))
+					->SetWrapEnabled(true, 80_px)));
 		}
 	}
 
@@ -257,6 +260,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 void engine::editor::EngineTextEditorProvider::CloseAutoComplete()
 {
+	Completions.clear();
 	CompletionButtons.clear();
 	delete HoverBox;
 	HoverBox = nullptr;

@@ -75,7 +75,7 @@ static void Scene_getObjects(InterpretContext* context)
 
 	for (auto& i : TargetScene.getValue()->Objects)
 	{
-		FoundObjects.push_back(script::CreateSceneObject(i));
+		FoundObjects.push_back(script::ScriptSubsystem::Instance->GetClassFromObject(i));
 	}
 
 	auto outArray = modules::system::createArray<RuntimeClass*>(FoundObjects.data(), FoundObjects.size(), true);

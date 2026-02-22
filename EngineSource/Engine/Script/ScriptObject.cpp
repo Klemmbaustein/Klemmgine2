@@ -29,7 +29,7 @@ void engine::script::ScriptObject::Begin()
 		i->OnChanged();
 	}
 
-	ScriptSubsystem::Instance->ScriptObjectMappings[this] =  this->ScriptData;
+	ScriptSubsystem::Instance->RegisterClassForObject(this, ScriptData);
 
 	Interpreter->callVirtualMethodVoid(ScriptData, 1);
 }
@@ -184,7 +184,6 @@ void engine::script::ScriptObject::LoadScriptData()
 
 void engine::script::ScriptObject::UnloadScriptData()
 {
-	Interpreter->destruct(ScriptData);
 	this->ScriptData = nullptr;
 }
 
@@ -219,6 +218,5 @@ void engine::script::ScriptObject::OnDestroyed()
 		Interpreter->pushValue(this->ScriptData);
 		Interpreter->virtualCall(ScriptData->vtable[2]);
 	}
-	ScriptSubsystem::Instance->ScriptObjectMappings.erase(this);
 	UnloadScriptData();
 }

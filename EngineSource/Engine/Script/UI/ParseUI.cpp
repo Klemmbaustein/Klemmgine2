@@ -116,15 +116,17 @@ UIParseData engine::script::ui::UIFileParser::Parse(ds::ParseContext* Parser)
 			Parser->service->files.erase(Element.FilePath);
 		}
 
+		auto DerivedToken = ds::Token("engine::ui::" + Element.Derived.Text,
+			ds::TokenPos(Element.Derived.BeginChar, Element.Derived.EndChar, Element.Derived.Line));
+
 		if (this->CompileScript)
 		{
-			cls = CompileScript(ConvertToken(Element.FromToken), Element.Derived.Text, "game", DSharpTokens, File);
+			cls = CompileScript(ConvertToken(Element.FromToken), DerivedToken, "", DSharpTokens, File);
 		}
 		else
 		{
-			cls = Parser->addClass(ConvertToken(Element.FromToken), "game", DSharpTokens, File, {
-				{ { ds::Token("engine::ui::" + Element.Derived.Text) } }
-				});
+			cls = Parser->addClass(ConvertToken(Element.FromToken), "", DSharpTokens, File,
+				{ { { DerivedToken }} });
 		}
 
 		if (cls)
@@ -189,7 +191,6 @@ void engine::script::ui::UIFileParser::RegisterChildren(UIElement* Element,
 
 			if (!t)
 			{
-				Log::Warn(str::Format("Unknown type %s", i.TypeName.Text.c_str()));
 				continue;
 			}
 		}

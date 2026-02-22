@@ -45,15 +45,15 @@ engine::editor::ScriptEditorContext::~ScriptEditorContext()
 void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Content, std::string Name, bool Update)
 {
 	script::ui::UIFileParser UIFiles;
-	UIFiles.CompileScript = [this, Update](ds::Token className, string derivedName, string moduleName,
+	UIFiles.CompileScript = [this, Update](Token className, Token derivedName, string moduleName,
 		ds::TokenStream& stream, string fileName) {
 		if (Update)
 		{
 			return ScriptService->updateClass(className, moduleName, stream, fileName,
-				{ { ds::Token("engine::ui::" + derivedName) } });
+				{ { derivedName } });
 		}
 		return ScriptService->addClass(className, moduleName, stream, fileName,
-			{ { ds::Token("engine::ui::" + derivedName) } });
+			{ { derivedName } });
 	};
 	UIFiles.AddString(Name, Content);
 	ParsedUI = UIFiles.Parse(ScriptService->parser);
@@ -308,6 +308,8 @@ void engine::editor::ScriptEditorContext::PublishUIData(kui::markup::UIElement& 
 
 	for (auto& i : For.Children)
 	{
+		FileData.types.push_back(Token(i.TypeName.Text,
+			TokenPos(i.TypeName.BeginChar, i.TypeName.EndChar, i.TypeName.Line)));
 		PublishUIData(i, File);
 	}
 }

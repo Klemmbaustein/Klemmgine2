@@ -132,8 +132,9 @@ bool engine::script::ScriptSubsystem::Reload()
 			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
 			if (ScriptObj)
 			{
-				ScriptObj->ClearComponents();
 				ScriptObj->OnDestroyed();
+				ScriptObj->OnDestroyedEvent.Invoke();
+				ScriptObj->ClearComponents();
 			}
 		}
 	}
@@ -182,6 +183,32 @@ bool engine::script::ScriptSubsystem::Reload()
 		}, Path);
 	}
 	return true;
+}
+
+RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(SceneObject* Object)
+{
+	auto found = ScriptObjectMappings.find(Object);
+
+	if (found != ScriptObjectMappings.end())
+	{
+		found->second->addRef();
+		return found->second;
+	}
+
+	RuntimeClass* NewObj = NativeModule::makePointerClass<SceneObject>(Object);
+	NewObj->addRef();
+	RegisterClassForObject(Object, NewObj);
+	return NewObj;
+}
+
+void engine::script::ScriptSubsystem::RegisterClassForObject(SceneObject* Object, ds::RuntimeClass* Class)
+{
+	ScriptObjectMappings.insert({ Object, Class });
+	Object->OnDestroyedEvent.Add(this, [this, Object, Class]() {
+		*(void**)Class->getBody() = nullptr;
+		Runtime->baseContext.destruct(Class);
+		ScriptObjectMappings.erase(Object);
+	});
 }
 
 void engine::script::ScriptSubsystem::ReloadDynamicContext()

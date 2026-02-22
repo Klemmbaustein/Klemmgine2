@@ -56,6 +56,9 @@ namespace engine::script
 
 		bool Reload();
 
+		ds::RuntimeClass* GetClassFromObject(SceneObject* Object);
+		void RegisterClassForObject(SceneObject* Object, ds::RuntimeClass* Class);
+
 		std::map<SceneObject*, ds::RuntimeClass*> ScriptObjectMappings;
 		std::map<void*, ds::RuntimeClass*> UIObjectMappings;
 

@@ -38,12 +38,10 @@ static void HitResult_getHitObject(InterpretContext* context)
 
 	auto Obj = Hit->HitComponent->GetRootObject();
 
-	auto Found = script::ScriptSubsystem::Instance->ScriptObjectMappings.find(Obj);
-
-	if (Found != script::ScriptSubsystem::Instance->ScriptObjectMappings.end())
+	if (Obj)
 	{
-		Found->second->addRef();
-		context->pushValue<RuntimeClass*>(Found->second);
+		auto Found = script::ScriptSubsystem::Instance->GetClassFromObject(Obj);
+		context->pushValue<RuntimeClass*>(Found);
 	}
 	else
 	{

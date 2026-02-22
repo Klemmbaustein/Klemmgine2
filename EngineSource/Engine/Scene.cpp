@@ -85,6 +85,7 @@ engine::Scene::~Scene()
 	for (auto& i : Objects)
 	{
 		i->OnDestroyed();
+		i->OnDestroyedEvent.Invoke();
 		i->ClearComponents();
 		delete i;
 	}
@@ -192,6 +193,7 @@ void engine::Scene::Update()
 	for (SceneObject* Destroyed : DestroyedObjects)
 	{
 		Destroyed->OnDestroyed();
+		Destroyed->OnDestroyedEvent.Invoke();
 		Destroyed->ClearComponents();
 
 		for (auto i = Objects.begin(); i < Objects.end(); i++)
@@ -267,6 +269,7 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 		for (SceneObject* i : Objects)
 		{
 			i->OnDestroyed();
+			i->OnDestroyedEvent.Invoke();
 			i->ClearComponents();
 			delete i;
 		}
@@ -287,6 +290,7 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 		for (SceneObject* i : Objects)
 		{
 			i->OnDestroyed();
+			i->OnDestroyedEvent.Invoke();
 			i->BeginCalled = false;
 			i->ClearComponents();
 		}

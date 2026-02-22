@@ -1,9 +1,10 @@
 #pragma once
+#include "Components/ObjectComponent.h"
+#include "Reflection/ObjectPropery.h"
+#include "Reflection/ObjectReflection.h"
+#include <Core/Event.h>
 #include <Core/File/SerializedData.h>
 #include <Core/Transform.h>
-#include "Reflection/ObjectReflection.h"
-#include "Reflection/ObjectPropery.h"
-#include "Components/ObjectComponent.h"
 
 namespace engine
 {
@@ -23,6 +24,7 @@ namespace engine
 		ObjectTypeID TypeID = 0;
 		Transform ObjectTransform;
 		string Name;
+		Event<> OnDestroyedEvent;
 
 		friend struct ObjPropertyBase;
 		friend class Scene;
@@ -56,7 +58,9 @@ namespace engine
 #endif
 
 	protected:
-		virtual ~SceneObject() {};
+		virtual ~SceneObject()
+		{
+		}
 		SceneObject()
 		{
 		}

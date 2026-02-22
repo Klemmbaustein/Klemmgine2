@@ -27,7 +27,7 @@ namespace engine::script::ui
 
 		UIParseData Parse(ds::ParseContext* Parser);
 
-		std::function<ds::ParsedClass* (ds::Token className, string derivedClass, string moduleName,
+		std::function<ds::ParsedClass* (ds::Token className, ds::Token derivedClass, string moduleName,
 			ds::TokenStream& stream, string fileName)> CompileScript;
 		void OnCompileFinished(UIParseData& Data);
 
