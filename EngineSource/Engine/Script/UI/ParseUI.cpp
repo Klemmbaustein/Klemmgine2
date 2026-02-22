@@ -3,7 +3,7 @@
 #include <Markup/MarkupVerify.h>
 #include <Markup/ParseError.h>
 #include <Engine/Script/ScriptSubsystem.h>
-#include <kui/UI/UIText.h>
+#include <ds/service/languageService.hpp>
 
 using namespace engine;
 using namespace engine::script::ui;
@@ -83,13 +83,13 @@ UIParseData engine::script::ui::UIFileParser::Parse(ds::ParseContext* Parser)
 		Parser->errors.error(ds::ErrorCode(5000), ds::Token("", ds::TokenPos(Begin, End, Line)), Message);
 	};
 
-	ParseResult Parsed = ParseFiles(Files, &Options);
-	kui::markup::Verify(Parsed);
+	UIParseData Result;
+	Result.UIData = ParseFiles(Files, &Options);
+	kui::markup::Verify(Result.UIData);
 
-	ds::TokenStream DSharpTokens;
-
-	for (auto& Element : Parsed.Elements)
+	for (auto& Element : Result.UIData.Elements)
 	{
+		ds::TokenStream DSharpTokens;
 		for (auto& Segments : Element.CustomSegments)
 		{
 			for (auto& SegmentLine : Segments.second.Lines)
@@ -104,25 +104,58 @@ UIParseData engine::script::ui::UIFileParser::Parse(ds::ParseContext* Parser)
 
 		ds::ParsedClass* cls = nullptr;
 
+		if (Element.Derived.Text.empty())
+		{
+			Element.Derived.Text = "UIScriptElement";
+		}
+
+		auto File = Element.FilePath + "/" + Element.FromToken.Text;
+
+		if (Parser->service)
+		{
+			Parser->service->files.erase(Element.FilePath);
+		}
+
 		if (this->CompileScript)
 		{
-			cls = CompileScript(ConvertToken(Element.FromToken), "game", DSharpTokens, Element.FilePath);
+			cls = CompileScript(ConvertToken(Element.FromToken), Element.Derived.Text, "game", DSharpTokens, File);
 		}
 		else
 		{
-			cls = Parser->addClass(ConvertToken(Element.FromToken), "game", DSharpTokens, Element.FilePath, {
-				{ { ds::Token("engine::UIElement") } }
+			cls = Parser->addClass(ConvertToken(Element.FromToken), "game", DSharpTokens, File, {
+				{ { ds::Token("engine::ui::" + Element.Derived.Text) } }
 				});
 		}
+
 		if (cls)
 		{
-			RegisterChildren(&Element.Root, cls, Parser);
+			cls->registerType(Parser, cls->definitionFile);
+			cls->definitionFile->displayName = Element.FilePath;
+		}
+		ClassMappings.insert({
+			cls,
+			ClassMapping(Element)
+			});
+	}
+
+	for (auto& i : ClassMappings)
+	{
+		if (i.first)
+		{
+			RegisterChildren(&i.second.Element.Root, i.first, Parser);
 		}
 	}
 
-	return UIParseData{
-		.UIData = Parsed,
-	};
+	return Result;
+}
+
+void engine::script::ui::UIFileParser::OnCompileFinished(UIParseData& Data)
+{
+	Data.ClassIdMappings.clear();
+	for (auto& i : this->ClassMappings)
+	{
+		Data.ClassIdMappings[i.first->thisType->id] = i.second.Element.FromToken.Text;
+	}
 }
 
 void engine::script::ui::UIFileParser::RegisterChildren(UIElement* Element,
@@ -136,7 +169,30 @@ void engine::script::ui::UIFileParser::RegisterChildren(UIElement* Element,
 			continue;
 		}
 
-		auto t = Context->programModules["engine"].moduleTypes["UIText"];
+		auto t = Context->programModules["engine::ui"].moduleTypes[i.TypeName.Text];
+		string TypeName = "";
+
+		if (t)
+		{
+			TypeName = "engine::ui::" + i.TypeName.Text;
+		}
+		else
+		{
+			for (auto& [MappedClass, Name] : this->ClassMappings)
+			{
+				if (Name.Element.FromToken == i.TypeName.Text)
+				{
+					t = MappedClass->thisType;
+					TypeName = MappedClass->name.string;
+				}
+			}
+
+			if (!t)
+			{
+				Log::Warn(str::Format("Unknown type %s", i.TypeName.Text.c_str()));
+				continue;
+			}
+		}
 
 		Class->addMember(ConvertToken(i.ElementName), t,
 			std::vector<ds::Token>({
@@ -144,7 +200,7 @@ void engine::script::ui::UIFileParser::RegisterChildren(UIElement* Element,
 			".",
 			"getChild",
 			"<",
-			"engine::" + i.TypeName.Text,
+			TypeName,
 			">",
 			"(",
 			"\"" + i.ElementName.Text + "\"",

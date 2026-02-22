@@ -14,7 +14,8 @@ namespace engine::editor
 	public:
 		std::function<void()> OnChanged;
 
-		VectorField(Vector3 InitialValue, kui::UISize Size, std::function<void()> OnChanged, bool IsColor = false);
+		VectorField(Vector3 InitialValue, kui::UISize Size, std::function<void()> OnChanged,
+			bool IsColor = false, bool IsRotation = false);
 		virtual ~VectorField() override;
 
 		Vector3 GetValue() const;

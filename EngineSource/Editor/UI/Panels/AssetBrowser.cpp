@@ -238,8 +238,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 			});
 	}
 
-	std::sort(Out.begin(), Out.end(), [](const Item& a, const Item& b)
-	{
+	std::sort(Out.begin(), Out.end(), [](const Item& a, const Item& b) {
 		if (a.IsDirectory && !b.IsDirectory)
 			return true;
 		if (!a.IsDirectory && b.IsDirectory)

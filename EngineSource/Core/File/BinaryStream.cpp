@@ -9,7 +9,7 @@ using namespace engine;
 
 FileStream::FileStream(string FilePath, bool Read)
 {
-	FromFile = fopen(FilePath.c_str(), Read ? "rb" : "wb");
+	auto err = fopen_s(&FromFile, FilePath.c_str(), Read ? "rb" : "wb");
 	if (!FromFile)
 	{
 		Log::Warn(FilePath + ": " + strerror(errno));
@@ -51,7 +51,7 @@ bool FileStream::Read(uByte* To, size_t Size)
 	size_t read = fread(To, Size, 1, FromFile);
 	if (read != 1)
 	{
-		Log::Error(strerror(errno) + std::to_string(IsEmpty()));
+		Log::Error(str::Format("Read failed: %s, is empty: %i", strerror(errno), IsEmpty()));
 		return false;
 	}
 

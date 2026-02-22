@@ -81,7 +81,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	};
 
 	Properties->AddVecEntry("Position", Object->Position, OnObjectChanged);
-	Properties->AddVecEntry("Rotation", *(Vector3*)&Object->Rotation, OnObjectChanged);
+	Properties->AddVecEntry("Rotation", *(Vector3*)&Object->Rotation, OnObjectChanged, false, true);
 	Properties->AddVecEntry("Scale", Object->Scale, OnObjectChanged);
 
 	Properties->AddStringEntry("Name", Object->Name, OnObjectChanged);
@@ -144,8 +144,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::Bool:
 		{
 			auto* Ref = static_cast<ObjProperty<bool>*>(i);
-			Properties->AddBooleanEntry(Ref->Name, Ref->Value, [Object, Ref]()
-			{
+			Properties->AddBooleanEntry(Ref->Name, Ref->Value, [Object, Ref]() {
 				Viewport::Current->OnObjectChanged(Object);
 				if (Ref->OnChanged)
 					Ref->OnChanged();
@@ -156,13 +155,12 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::Vector3:
 		{
 			auto* Ref = static_cast<ObjProperty<Vector3>*>(i);
-			Properties->AddVecEntry(Ref->Name, Ref->Value, [Object, Ref]()
-			{
+			Properties->AddVecEntry(Ref->Name, Ref->Value, [Object, Ref]() {
 				Viewport::Current->OnObjectChanged(Object);
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 
-			});
+			}, Ref->HasHint(PropertyHint::Vec3Color));
 			break;
 		}
 

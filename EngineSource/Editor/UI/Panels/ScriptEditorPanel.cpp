@@ -340,25 +340,29 @@ void engine::editor::ScriptEditorPanel::OnResized()
 
 void engine::editor::ScriptEditorPanel::Update()
 {
+	auto Selected = GetSelectedTab();
 	for (auto& Tab : Tabs)
 	{
 		Tab.Editor->SetMinWidth(EditorBox->GetUsedSize().X);
 		Tab.Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
 		Tab.Editor->SetPosition(EditorBox->GetScreenPosition());
+		if (&Tab != Selected || !this->Visible)
+		{
+			Tab.Provider->ClearHovered();
+		}
 	}
 
-	auto Tab = GetSelectedTab();
-	if (Tab)
+	if (Selected)
 	{
-		Tab->Editor->IsVisible = this->Visible;
+		Selected->Editor->IsVisible = this->Visible;
 		if (this->Visible)
 		{
-			if (Tab->MiniMap)
+			if (Selected->MiniMap)
 			{
-				Tab->MiniMap->Update();
+				Selected->MiniMap->Update();
 			}
 			this->StatusText->SetText(str::Format("%s | Errors: %i",
-				Tab->Provider->EditedFile.c_str(), this->Errors[Tab->Provider->EditedFile].size()));
+				Selected->Provider->EditedFile.c_str(), this->Errors[Selected->Provider->EditedFile].size()));
 		}
 	}
 }

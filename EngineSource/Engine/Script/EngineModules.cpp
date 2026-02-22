@@ -37,7 +37,7 @@ public:
 	ExportAttribute()
 	{
 		this->name = "Export";
-		this->attributeParameters = { "name", "visible" };
+		this->attributeParameters = { "name", "visible", "hint" };
 	}
 };
 
@@ -436,9 +436,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	auto ObjectType = EngineModule.createClass<SceneObject*>("SceneObject");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
 
+	NativeModule EngineUIModule;
+	EngineUIModule.name = "engine::ui";
+
 	MathBindings Math = AddMathModule(EngineModule, ToContext);
 	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
-	ui::UIBindings UI = ui::AddUIModule(EngineModule, ToContext);
+	ui::UIBindings UI = ui::AddUIModule(EngineUIModule, EngineModule, ToContext);
 	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
 
 	EngineModule.addClassConstructor(SceneType,
@@ -575,7 +578,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
-			{ FunctionArgument(ds::FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped")},
+			{ FunctionArgument(ds::FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped") },
 			nullptr, "onBeginOverlap",
 			&PhysicsComponent_onBeginOverlap));
 
@@ -721,11 +724,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);
+	ToContext->addNativeModule(EngineUIModule);
 
 	OutData.Vector3Type = EngineModule.getType("Vector3")->id;
 	OutData.ScriptObjectType = EngineModule.getType("SceneObject")->id;
 	OutData.AssetRefType = EngineModule.getType("AssetRef")->id;
-	OutData.UITextType = EngineModule.getType("UIText")->id;
+	OutData.UITextType = EngineUIModule.getType("UIText")->id;
 
 	return OutData;
 }

@@ -7,7 +7,8 @@
 using namespace engine;
 
 const string engine::BinarySerializer::FORMAT_VERSION = "0";
-void BinarySerializer::ToBinaryData(const std::vector<SerializedData>& Target, IBinaryStream* Out, string FormatIdentifier)
+void BinarySerializer::ToBinaryData(const std::vector<SerializedData>& Target,
+	IBinaryStream* Out, string FormatIdentifier)
 {
 	if (!FormatIdentifier.empty())
 	{
@@ -22,7 +23,8 @@ void BinarySerializer::ToBinaryData(const std::vector<SerializedData>& Target, I
 	}
 }
 
-void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, IBinaryStream* Out, SerializedData::DataType Type)
+void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, IBinaryStream* Out,
+	SerializedData::DataType Type, bool AllowTypeChange)
 {
 	bool InitialTypeChanged = false;
 	if (Type == SerializedData::DataType::Null)
@@ -90,10 +92,13 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, IBinaryS
 				}
 			}
 		}
-		if (!SameType && !InitialTypeChanged)
+		if (!AllowTypeChange || (!SameType && !InitialTypeChanged))
 		{
 			uint32 Size = uint32(Target.GetArray().size());
-			Out->WriteByte(uByte(Type));
+			if (InitialTypeChanged)
+			{
+				Out->WriteByte(uByte(Type));
+			}
 			Out->WriteValue(Size);
 			for (const SerializedValue& i : Target.GetArray())
 			{
@@ -118,11 +123,11 @@ void BinarySerializer::ValueToBinaryData(const SerializedValue& Target, IBinaryS
 			break;
 		}
 
-		auto ArrayType = Array.at(0).GetType();
-		Out->WriteValue(ArrayType);
+		SerializedData::DataType ArrayType = Array.at(0).GetType();
+		Out->WriteByte(uByte(ArrayType));
 		for (const SerializedValue& i : Array)
 		{
-			ValueToBinaryData(i, Out, ArrayType);
+			ValueToBinaryData(i, Out, ArrayType, false);
 		}
 		break;
 	}
@@ -246,9 +251,8 @@ void engine::BinarySerializer::ReadValue(IBinaryStream* From, SerializedValue& T
 	case SerializedData::DataType::Array:
 	{
 		To = std::vector<SerializedValue>();
-		int32 Length = From->Get<int32>();
-		if (Length > UINT32_MAX)
-			throw new SerializeReadException("Array too long");
+		uint32 Length = From->Get<uint32>();
+
 		To.GetArray().reserve(Length);
 		for (int32 i = 0; i < Length; i++)
 		{
@@ -260,13 +264,11 @@ void engine::BinarySerializer::ReadValue(IBinaryStream* From, SerializedValue& T
 	case SerializedData::DataType::Internal_BinaryTypedArray:
 	{
 		To = std::vector<SerializedValue>();
-		int32 Length = From->Get<int32>();
+		uint32 Length = From->Get<uint32>();
 		To.GetArray().reserve(Length);
-		if (Length > UINT32_MAX)
-			throw new SerializeReadException("Array too long");
 
 		auto ArrayType = From->Get<SerializedData::DataType>();
-		for (int32 i = 0; i < Length; i++)
+		for (uint32 i = 0; i < Length; i++)
 		{
 			ReadValue(From, To.GetArray().emplace_back(), ArrayType);
 		}
@@ -277,13 +279,10 @@ void engine::BinarySerializer::ReadValue(IBinaryStream* From, SerializedValue& T
 	{
 		To = std::vector<SerializedData>();
 
-		int32 Length = From->Get<int32>();
-
-		if (Length > UINT32_MAX)
-			throw new SerializeReadException("Object too long");
+		uint32 Length = From->Get<uint32>();
 
 		To.GetObject().reserve(Length);
-		for (int32 i = 0; i < Length; i++)
+		for (uint32 i = 0; i < Length; i++)
 		{
 			ReadSerializedData(From, To.GetObject().emplace_back());
 		}

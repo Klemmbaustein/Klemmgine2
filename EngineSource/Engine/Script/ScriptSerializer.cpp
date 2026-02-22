@@ -1,15 +1,16 @@
 #include "ScriptSerializer.h"
+#include <Engine/Script/UI/UISerializer.h>
 #include <Core/File/BinarySerializer.h>
 using namespace ds;
 using namespace engine;
 
 static const string SCRIPT_FORMAT_ID = "k2script";
 
-void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream* ToStream)
+void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIParseData* UIData, IBinaryStream* To)
 {
 	SerializedValue BytecodeValue = std::vector<SerializedValue>{};
 
-	for (uint8 i : Stream->code.buffer)
+	for (uByte i : Stream->code.buffer)
 	{
 		BytecodeValue.Append(i);
 	}
@@ -37,11 +38,11 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 
 		SerializedValue Interfaces = std::vector<SerializedValue>{};
 
-		for (auto& i : i.second.interfaces)
+		for (auto& interface : i.second.interfaces)
 		{
 			Interfaces.Append(SerializedValue(std::vector{
-				SerializedValue(int32(i.first)),
-				SerializedValue(int32(i.second)),
+				SerializedValue(int32(interface.first)),
+				SerializedValue(int32(interface.second)),
 				}));
 		}
 
@@ -52,7 +53,7 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 			SerializedData("size", int32(i.second.bodySize)),
 			SerializedData("vTable", int32(i.second.vTableOffset)),
 			SerializedData("members", Members),
-			SerializedData("superClass", int32(i.second.superClass)),
+			SerializedData("super", int32(i.second.superClass)),
 			SerializedData("interfaces", Interfaces),
 			}));
 	}
@@ -61,20 +62,26 @@ void script::serialize::SerializeBytecode(BytecodeStream* Stream, IBinaryStream*
 
 	for (const VTableFunction& i : Stream->virtualTable)
 	{
-		//VTable.Append(i.codeOffset);
+		VTable.Append(int32(i.codeOffset));
+		VTable.Append(int32(i.nativeFunction));
 	}
+
+	std::vector<SerializedData> UIObject;
+
+	ui::SerializeUI(UIData, UIObject);
 
 	SerializedValue BytecodeData = std::vector{
 		SerializedData("code", BytecodeValue),
 		SerializedData("extern", ExternFunctions),
 		SerializedData("reflect", ReflectData),
 		SerializedData("virtual", VTable),
+		SerializedData("ui", UIObject),
 	};
 
-	BinarySerializer::ToBinaryData(BytecodeData.GetObject(), ToStream, SCRIPT_FORMAT_ID);
+	BinarySerializer::ToBinaryData(BytecodeData.GetObject(), To, SCRIPT_FORMAT_ID);
 }
 
-void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream, IBinaryStream* FromStream)
+void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream, ui::UIParseData* UIData, IBinaryStream* FromStream)
 {
 	SerializedValue Obj = BinarySerializer::FromStream(FromStream, SCRIPT_FORMAT_ID);
 
@@ -94,9 +101,12 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 
 	auto& VirtualData = Obj.At("virtual").GetArray();
 	ToStream->virtualTable.clear();
-	for (auto& i : VirtualData)
+	for (size_t i = 0; i < VirtualData.size(); i += 2)
 	{
-		ToStream->virtualTable.push_back(VTableFunction(i.GetInt()));
+		ToStream->virtualTable.push_back(VTableFunction{
+			.codeOffset = BytecodeOffset(VirtualData[i].GetInt()),
+			.nativeFunction = uint32_t(VirtualData[i + 1].GetInt()),
+			});
 	}
 
 	auto& ReflectData = Obj.At("reflect").GetArray();
@@ -109,6 +119,16 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 		NewType.constructor = i.At("construct").GetInt();
 		NewType.bodySize = i.At("size").GetInt();
 		NewType.vTableOffset = i.At("vTable").GetInt();
+		NewType.superClass = i.At("super").GetInt();
+		auto& Interfaces = i.At("interfaces").GetArray();
+
+		for (auto& interface : Interfaces)
+		{
+			auto& Entry = interface.GetArray();
+			NewType.interfaces.insert({
+				TypeId(interface.At(0).GetInt()),
+				BytecodeOffset(interface.At(1).GetInt()) });
+		}
 
 		auto& Members = i.At("members").GetObject();
 
@@ -122,4 +142,6 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 		}
 		ToStream->reflect.types.insert({ NewType.hash, NewType });
 	}
+
+	*UIData = ui::DeSerializeUI(Obj.At("ui"));
 }

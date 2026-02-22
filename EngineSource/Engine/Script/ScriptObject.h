@@ -23,6 +23,8 @@ namespace engine::script
 		void LoadScriptData();
 		void UnloadScriptData();
 	private:
+		void InitializePropertyFlags(ObjPropertyBase* p, const string& FlagsString);
+
 		void InitializeScriptPointer();
 	};
 }

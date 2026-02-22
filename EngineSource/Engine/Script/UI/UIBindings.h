@@ -7,7 +7,8 @@ namespace engine::script::ui
 	struct UIBindings
 	{
 		ds::ClassType* UITextType = nullptr;
+		ds::ClassType* UISizeType = nullptr;
 	};
 
-	UIBindings AddUIModule(ds::NativeModule& To, ds::LanguageContext* ToContext);
+	UIBindings AddUIModule(ds::NativeModule& To, ds::NativeModule& BaseModule, ds::LanguageContext* ToContext);
 }

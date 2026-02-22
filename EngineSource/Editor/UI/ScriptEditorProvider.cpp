@@ -217,7 +217,8 @@ std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorProvider::GetCom
 	kui::EditorPosition At, CompletionSource Source)
 {
 	return Context->CompleteAt(EditedFile, At.Column, At.Line,
-		Source == CompletionSource::TriggerChar ? CompletionType::classMembers : CompletionType::all);
+		Source == CompletionSource::TriggerChar ? CompletionType::classMembers : CompletionType::all,
+		CompletionUsingLine);
 }
 
 void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Position)

@@ -11,9 +11,11 @@ static std::array<Vec3f, 3> Colors = {
 	Vec3f(0.0f, 0.1f, 0.6f),
 };
 
-static std::array<const char, 3> ColorValues = { 'R', 'G', 'B' };
+static const std::array<const char, 3> ColorValues = { 'R', 'G', 'B' };
+static const std::array<const char, 3> RotationValues = { 'P', 'Y', 'R' };
 
-engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std::function<void()> OnChanged, bool IsColor)
+engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std::function<void()> OnChanged,
+	bool IsColor, bool IsRotation)
 	: kui::UIBox(!IsColor, 0)
 {
 	this->OnChanged = OnChanged;
@@ -38,31 +40,39 @@ engine::editor::VectorField::VectorField(Vector3 InitialValue, UISize Size, std:
 	for (int32 i = 0; i < TextFields.size(); i++)
 	{
 		auto* CoordBackground = new UIBackground(0, 1, Colors[i], SizeVec(LabelSize, 0));
+
+		auto* CharArray = &ColorValues;
+
+		if (IsRotation)
+		{
+			CharArray = &RotationValues;
+		}
+
 		CoordBackground
 			->SetMinHeight(UISize::Parent(1))
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetHorizontalAlign(UIBox::Align::Centered)
-			->AddChild((new UIText(UISize::Pixels(11), 1, { IsColor ? ColorValues[i] : char('X' + i) }, EditorUI::EditorFont)));
+			->AddChild((new UIText(UISize::Pixels(11), 1,
+				{ IsColor || IsRotation ? CharArray->at(i) : char('X' + i)}, EditorUI::EditorFont)));
 
 		Target->AddChild(CoordBackground);
 
-		auto* NewField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, [this, i]()
+		auto* NewField = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, [this, i]() {
+			try
 			{
-				try
-				{
-					Value[i] = std::stof(TextFields[i]->GetText());
-				}
-				catch (std::invalid_argument)
-				{
-					TextFields[i]->SetText(str::FloatToString(Value[i], 3));
-				}
-				catch (std::out_of_range)
-				{
-					TextFields[i]->SetText(str::FloatToString(Value[i], 3));
-				}
-				UpdateColor();
-				this->OnChanged();
-			});
+				Value[i] = std::stof(TextFields[i]->GetText());
+			}
+			catch (std::invalid_argument)
+			{
+				TextFields[i]->SetText(str::FloatToString(Value[i], 3));
+			}
+			catch (std::out_of_range)
+			{
+				TextFields[i]->SetText(str::FloatToString(Value[i], 3));
+			}
+			UpdateColor();
+			this->OnChanged();
+		});
 		Target->AddChild(NewField
 			->SetText(str::FloatToString(Value[i], 3))
 			->SetTextColor(EditorUI::Theme.Text)

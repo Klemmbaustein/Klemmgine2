@@ -77,8 +77,14 @@ namespace engine::editor
 		std::vector<ds::AutoCompleteResult> GetCompletionsAt(kui::EditorPosition At,
 			CompletionSource Source) override;
 
+		size_t GetCompletionUsingLine() override
+		{
+			return CompletionUsingLine;
+		}
+
 	private:
 		std::vector<size_t> Changed;
+		size_t CompletionUsingLine = 0;
 
 		kui::Timer HoverTime;
 

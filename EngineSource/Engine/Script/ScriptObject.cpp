@@ -65,6 +65,7 @@ void engine::script::ScriptObject::LoadScriptData()
 		}
 
 		string Name = i.getParameterValue("name").value_or(i.name);
+		string Hints = i.getParameterValue("hint").value_or("");
 		bool Visible = i.getParameterValue("visible").value_or("true") == "true";
 
 		if (i.type == Script->ScriptEngine.AssetRefType)
@@ -80,6 +81,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			auto p = new ObjProperty<AssetRef>(Name, *MemberValue.getValue(), this);
 			p->IsHidden = !Visible;
+			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
 				auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
@@ -98,6 +100,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			auto p = new ObjProperty<Vector3>(Name, member, this);
 			p->IsHidden = !Visible;
+			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
 				auto& member = *reinterpret_cast<Vector3*>(this->ScriptData->getBody() + i.offset);
@@ -115,6 +118,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			auto p = new ObjProperty<string>(Name, string(str.ptr(), str.length()), this);
 			p->IsHidden = !Visible;
+			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
 				auto& memberPtr = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
@@ -131,6 +135,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			auto p = new ObjProperty<int32>(Name, Value, this);
 			p->IsHidden = !Visible;
+			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
 				ds::Int& Value = *reinterpret_cast<ds::Int*>(this->ScriptData->getBody() + i.offset);
@@ -144,6 +149,7 @@ void engine::script::ScriptObject::LoadScriptData()
 
 			auto p = new ObjProperty<float>(Name, Value, this);
 			p->IsHidden = !Visible;
+			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
 				ds::Float& Value = *reinterpret_cast<ds::Float*>(this->ScriptData->getBody() + i.offset);
@@ -180,6 +186,23 @@ void engine::script::ScriptObject::UnloadScriptData()
 {
 	Interpreter->destruct(ScriptData);
 	this->ScriptData = nullptr;
+}
+
+void engine::script::ScriptObject::InitializePropertyFlags(ObjPropertyBase* p, const string& FlagsString)
+{
+	std::vector<string> SplitString = str::Split(FlagsString, ",");
+
+	for (const string& SubString : SplitString)
+	{
+		if (SubString == "color")
+		{
+			p->AddHint(PropertyHint::Vec3Color);
+		}
+		if (SubString == "rotation")
+		{
+			p->AddHint(PropertyHint::Vec3Rotation);
+		}
+	}
 }
 
 void engine::script::ScriptObject::InitializeScriptPointer()

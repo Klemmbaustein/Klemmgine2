@@ -57,5 +57,9 @@ namespace engine::script
 		bool Reload();
 
 		std::map<SceneObject*, ds::RuntimeClass*> ScriptObjectMappings;
+		std::map<void*, ds::RuntimeClass*> UIObjectMappings;
+
+	private:
+		void ReloadDynamicContext();
 	};
 }

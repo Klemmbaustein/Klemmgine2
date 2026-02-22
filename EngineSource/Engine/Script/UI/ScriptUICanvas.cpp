@@ -8,7 +8,10 @@ engine::script::ui::ScriptUICanvas::ScriptUICanvas(ds::RuntimeClass* ScriptObjec
 	this->ScriptObject->addRef();
 	CanvasBox->DeleteChildren();
 
-	MarkupBox = new kui::markup::UIDynMarkupBox(&ScriptSubsystem::Instance->UIContext, "PlayerUI");
+	auto Scripts = ScriptSubsystem::Instance;
+
+	MarkupBox = new kui::markup::UIDynMarkupBox(&Scripts->UIContext,
+		Scripts->UIData.ClassIdMappings.at(ScriptObject->type));
 	CanvasBox->AddChild(MarkupBox);
 	CanvasBox->UpdateElement();
 	CanvasBox->RedrawElement();
@@ -21,7 +24,7 @@ engine::script::ui::ScriptUICanvas::~ScriptUICanvas()
 
 void engine::script::ui::ScriptUICanvas::Update()
 {
-	if (Engine::IsPlaying && ScriptObject && ScriptObject->vtable[1])
+	if (Engine::IsPlaying && ScriptObject && ScriptObject->vtable && ScriptObject->vtable[1])
 	{
 		ScriptSubsystem::Instance->Runtime->baseContext.pushValue(this->ScriptObject);
 		ScriptSubsystem::Instance->Runtime->baseContext.virtualCall(ScriptObject->vtable[1]);

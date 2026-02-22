@@ -37,12 +37,30 @@ namespace engine
 		Unknown,
 	};
 
+	enum class PropertyHint
+	{
+		None = 0,
+		Vec3Color = 1 << 0,
+		Vec3Rotation = 1 << 1,
+	};
+
 	struct ObjPropertyBase : ISerializable
 	{
 		PropertyType Type = PropertyType::Unknown;
+		PropertyHint Hints = PropertyHint::None;
 		std::function<void()> OnChanged;
 		string Name;
 		bool IsHidden = false;
+
+		bool HasHint(PropertyHint ToTest) const
+		{
+			return int(ToTest) & int(Hints);
+		}
+
+		void AddHint(PropertyHint NewHint)
+		{
+			Hints = PropertyHint(int(Hints) | int(NewHint));
+		}
 
 	protected:
 		void RegisterSelf(SceneObject* Parent);

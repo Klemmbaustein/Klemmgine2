@@ -44,7 +44,7 @@ namespace engine::editor
 		virtual void NavigateTo(std::string File, std::optional<ds::TokenPos> At) = 0;
 
 		std::vector<ds::AutoCompleteResult> CompleteAt(const string& FileName, size_t character, size_t line,
-			ds::CompletionType type);
+			ds::CompletionType type, size_t& OutUsingPosition);
 
 	private:
 		bool SendUpdateEvent = false;
@@ -66,6 +66,7 @@ namespace engine::editor
 		void ScheduleContextTask(std::function<void()> Task);
 
 		void PublishUIData(kui::markup::UIElement& For, string File);
+		void PublishUIData(kui::markup::MarkupElement& For, string File);
 
 		void UpdateFilesList();
 

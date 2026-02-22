@@ -12,6 +12,7 @@
 #include <Core/ThreadPool.h>
 #include <ds/modules/system.async.hpp>
 #include <Engine/UI/UICanvas.h>
+#include <Engine/Script/UI/ScriptUIElement.h>
 #include <Engine/Script/ScriptSerializer.h>
 
 using namespace ds;
@@ -113,9 +114,9 @@ bool engine::script::ScriptSubsystem::Reload()
 	}
 
 	UIData = UIFiles.Parse(Compiler);
-	UIContext.Parsed = &UIData.UIData;
 
 	auto NewInstructions = Compiler->compile();
+	UIFiles.OnCompileFinished(UIData);
 	delete Compiler;
 
 	if (NewInstructions.code.empty())
@@ -136,12 +137,14 @@ bool engine::script::ScriptSubsystem::Reload()
 			}
 		}
 	}
-	auto Stream = FileStream("scripts.bin", false);
-	script::serialize::SerializeBytecode(&NewInstructions, &Stream);
+
+	//auto Stream = FileStream("scripts.bin", true);
+	//script::serialize::SerializeBytecode(&NewInstructions, &UIData, &Stream);
 
 	*ScriptInstructions = NewInstructions;
-	//script::serialize::DeSerializeBytecode(ScriptInstructions, &Stream);
+	//script::serialize::DeSerializeBytecode(ScriptInstructions, &UIData, &Stream);
 	this->Runtime->loadBytecode(ScriptInstructions);
+	ReloadDynamicContext();
 
 	if (CurrentScene)
 	{
@@ -179,4 +182,23 @@ bool engine::script::ScriptSubsystem::Reload()
 		}, Path);
 	}
 	return true;
+}
+
+void engine::script::ScriptSubsystem::ReloadDynamicContext()
+{
+	UIContext.Parsed = &UIData.UIData;
+
+	this->UIContext.CreateSpecialMarkupBox.clear();
+
+	for (auto& i : this->UIData.ClassIdMappings)
+	{
+		this->UIContext.CreateSpecialMarkupBox[i.second] =
+			[this, cls = i.first](kui::markup::DynamicMarkupContext* c) -> kui::markup::UIDynMarkupBox* {
+			auto Class = Runtime->reflect->types[cls].create(&Runtime->baseContext);
+
+			ClassRef<ui::ScriptUIElement*> Element = Class;
+
+			return Element.getValue();
+		};
+	}
 }

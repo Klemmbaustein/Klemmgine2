@@ -64,6 +64,11 @@ namespace engine::editor
 			return HoverBox;
 		}
 
+		virtual size_t GetCompletionUsingLine()
+		{
+			return 0;
+		}
+
 	private:
 		kui::UIBox* HoverBox = nullptr;
 		kui::EditorPosition CompletePosition;

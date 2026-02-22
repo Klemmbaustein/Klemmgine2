@@ -250,6 +250,7 @@ engine::VideoSubsystem::~VideoSubsystem()
 
 void engine::VideoSubsystem::Update()
 {
+	MainWindow->Input.KeyboardFocusInput = input::ShowMouseCursor;
 	if (!MainWindow->UpdateWindow())
 	{
 		Engine::Instance->ShouldQuit = true;

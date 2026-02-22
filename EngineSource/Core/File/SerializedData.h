@@ -399,10 +399,10 @@ namespace engine
 		*/
 		string ToString(size_t Depth) const;
 
-		/// The value of this data entry.
-		DataValue Value;
 		/// The name of this data entry.
 		string Name;
+		/// The value of this data entry.
+		DataValue Value;
 	};
 
 	/**

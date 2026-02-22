@@ -45,15 +45,15 @@ engine::editor::ScriptEditorContext::~ScriptEditorContext()
 void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Content, std::string Name, bool Update)
 {
 	script::ui::UIFileParser UIFiles;
-	UIFiles.CompileScript = [this, Update](ds::Token className, string moduleName,
+	UIFiles.CompileScript = [this, Update](ds::Token className, string derivedName, string moduleName,
 		ds::TokenStream& stream, string fileName) {
 		if (Update)
 		{
 			return ScriptService->updateClass(className, moduleName, stream, fileName,
-				{ { ds::Token("engine::UIElement") } });
+				{ { ds::Token("engine::ui::" + derivedName) } });
 		}
 		return ScriptService->addClass(className, moduleName, stream, fileName,
-			{ { ds::Token("engine::UIElement") } });
+			{ { ds::Token("engine::ui::" + derivedName) } });
 	};
 	UIFiles.AddString(Name, Content);
 	ParsedUI = UIFiles.Parse(ScriptService->parser);
@@ -148,8 +148,9 @@ void engine::editor::ScriptEditorContext::RemoveFile(const string& Name)
 }
 
 std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorContext::CompleteAt(const string& FileName,
-	size_t character, size_t line, ds::CompletionType type)
+	size_t character, size_t line, ds::CompletionType type, size_t& OutUsingPosition)
 {
+	OutUsingPosition = 0;
 	if (file::Extension(FileName) != "kui")
 	{
 		return ScriptService->completeAt(&ScriptService->files[FileName], character, line, type);
@@ -226,7 +227,11 @@ std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorContext::Complet
 			{
 				continue;
 			}
-			return ScriptService->completeAt(&ScriptService->files[FileName], character, line, type);
+			if (seg.second.Lines.size())
+			{
+				OutUsingPosition = seg.second.Lines[0].Strings[0].Line;
+			}
+			return ScriptService->completeAt(&ScriptService->files[FileName + "/" + f.FromToken.Text], character, line, type);
 		}
 
 		auto Completion = CheckElement(f.Root);
@@ -262,7 +267,7 @@ void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback)
 
 		for (auto& i : this->ParsedUI.UIData.Elements)
 		{
-			PublishUIData(i.Root, i.File);
+			PublishUIData(i, i.File);
 		}
 
 		if (Callback)
@@ -305,6 +310,36 @@ void engine::editor::ScriptEditorContext::PublishUIData(kui::markup::UIElement& 
 	{
 		PublishUIData(i, File);
 	}
+}
+
+void engine::editor::ScriptEditorContext::PublishUIData(kui::markup::MarkupElement& For, string File)
+{
+	string FromFileName = File + "/" + For.FromToken.Text;
+	auto& FileData = ScriptService->files[FromFileName];
+	auto& ToFile = ScriptService->files[File];
+
+	for (auto& i : FileData.types)
+	{
+		ToFile.types.push_back(i);
+	}
+
+	for (auto& i : FileData.functions)
+	{
+		ToFile.functions.push_back(i);
+	}
+
+	for (auto& i : FileData.variables)
+	{
+		ToFile.variables.push_back(i);
+	}
+
+	for (auto& i : NewErrors[FromFileName])
+	{
+		NewErrors[File].push_back(i);
+	}
+	NewErrors[FromFileName].clear();
+
+	PublishUIData(For.Root, File);
 }
 
 void engine::editor::ScriptEditorContext::ScheduleContextTask(std::function<void()> Task)

@@ -67,11 +67,11 @@ PropertyEntryElement* engine::editor::PropertyMenu::CreateNewEntry(string Name)
 }
 
 void engine::editor::PropertyMenu::AddVecEntry(string Name, Vector3& Value,
-	std::function<void()> OnChanged, bool IsColor)
+	std::function<void()> OnChanged, bool IsColor, bool IsRotation)
 {
 	auto* Position = CreateNewEntry(Name);
 
-	auto* PosField = new VectorField(Value, ElementSize, nullptr, IsColor);
+	auto* PosField = new VectorField(Value, ElementSize, nullptr, IsColor, IsRotation);
 	PosField->OnChanged = [&Value, OnChanged, PosField] {
 		Value = PosField->GetValue();
 		if (OnChanged)

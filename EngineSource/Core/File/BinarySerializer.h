@@ -41,7 +41,8 @@ namespace engine
 		* @brief
 		* Converts the given serialized value to bytes.
 		*/
-		static void ValueToBinaryData(const SerializedValue& Target, IBinaryStream* Out, SerializedData::DataType Type = SerializedData::DataType::Null);
+		static void ValueToBinaryData(const SerializedValue& Target, IBinaryStream* Out,
+			SerializedData::DataType Type = SerializedData::DataType::Null, bool AllowTypeChange = true);
 
 		/**
 		* @brief
