@@ -27,7 +27,7 @@
 #include "UI/UIBindings.h"
 #include <ds/parser/types/functionType.hpp>
 
-#define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr("Invalid object for " __FUNCTION__)); return;}
+#define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr(__FUNCTION__)); return;}
 
 using namespace ds;
 using namespace engine::input;
