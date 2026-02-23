@@ -81,11 +81,13 @@ namespace engine::editor
 		void UpdateSelection();
 
 		bool PolledForText = false;
-		bool SceneLoaded = false;
 
 		Toolbar* ViewportToolbar = nullptr;
 		MeshComponent* Grid = nullptr;
 		TranslateGizmo* Translate = nullptr;
+
+		string LastSceneName;
+		void UpdateName();
 
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;

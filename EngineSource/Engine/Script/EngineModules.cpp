@@ -27,11 +27,14 @@
 #include "UI/UIBindings.h"
 #include <ds/parser/types/functionType.hpp>
 
+#define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr("Invalid object for " __FUNCTION__)); return;}
+
 using namespace ds;
 using namespace engine::input;
 using namespace engine;
+using namespace ds::modules::system;
 
-class ExportAttribute : public modules::system::ReflectAttribute
+class ExportAttribute : public ReflectAttribute
 {
 public:
 	ExportAttribute()
@@ -78,7 +81,7 @@ static void Scene_getObjects(InterpretContext* context)
 		FoundObjects.push_back(script::ScriptSubsystem::Instance->GetClassFromObject(i));
 	}
 
-	auto outArray = modules::system::createArray<RuntimeClass*>(FoundObjects.data(), FoundObjects.size(), true);
+	auto outArray = createArray<RuntimeClass*>(FoundObjects.data(), FoundObjects.size(), true);
 	context->pushValue(outArray);
 }
 
@@ -127,9 +130,17 @@ static void SceneObject_empty(InterpretContext* context)
 	context->popValue<RuntimeClass*>();
 }
 
+static void SceneObject_destroy(InterpretContext* context)
+{
+	ClassRef<SceneObject*> obj = context->popValue<RuntimeClass*>();
+	CHECK_OBJ(obj);
+	obj.getValue()->Destroy();
+}
+
 static void SceneObject_attach(InterpretContext* context)
 {
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+	CHECK_OBJ(Data);
 	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
 	Data.getValue()->Attach(*Component);
 }
@@ -137,6 +148,7 @@ static void SceneObject_attach(InterpretContext* context)
 static void SceneObject_getScene(InterpretContext* context)
 {
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+	CHECK_OBJ(Data);
 
 	Scene* FoundScene = Data.getValue()->GetScene();
 
@@ -155,6 +167,7 @@ static void SceneObject_getScene(InterpretContext* context)
 static void SceneObject_getName(InterpretContext* context)
 {
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+	CHECK_OBJ(Data);
 
 	const std::string& Name = Data.getValue()->Name;
 
@@ -166,6 +179,14 @@ static void ObjectComponent_GetWorldPosition(InterpretContext* context)
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
 
 	context->pushValue(Component.getValue()->GetWorldTransform().ApplyTo(0));
+}
+
+static void ObjectComponent_attach(InterpretContext* context)
+{
+	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
+	ClassPtr<ObjectComponent*> SubComponent = context->popPtr<ObjectComponent*>();
+
+	Component.getValue()->Attach(*SubComponent);
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -225,7 +246,7 @@ static void PhysicsComponent_collisionTest(InterpretContext* context)
 		Classes.push_back(NativeModule::makeClass(h));
 	}
 
-	context->pushValue(modules::system::createArray(Classes.data(), Classes.size(), true));
+	context->pushValue(createArray(Classes.data(), Classes.size(), true));
 }
 
 static void PhysicsComponent_onBeginOverlap(InterpretContext* context)
@@ -480,13 +501,17 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		.type = Math.Vec3
 		});
 
+	EngineModule.addClassMethod(ComponentType,
+		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
+			"attach", &ObjectComponent_attach));
+
 	ComponentType->makePointerClass();
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "begin", &SceneObject_empty), 1);
+		NativeFunction({}, nullptr, "onBegin", &SceneObject_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "destroy", &SceneObject_empty), 2);
+		NativeFunction({}, nullptr, "onDestroy", &SceneObject_empty), 2);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "update", &SceneObject_empty), 3);
@@ -514,6 +539,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineModule.addClassMethod(ObjectType,
 		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
 			"attach", &SceneObject_attach));
+
+	EngineModule.addClassMethod(ObjectType,
+		NativeFunction({ }, nullptr,
+			"destroy", &SceneObject_destroy));
 
 	EngineModule.addClassMethod(ObjectType,
 		NativeFunction({ }, SceneType->nullable,

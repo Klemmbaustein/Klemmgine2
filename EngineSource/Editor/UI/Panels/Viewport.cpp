@@ -307,17 +307,6 @@ void engine::editor::Viewport::Update()
 
 	Scene* Current = Scene::GetMain();
 
-	if (bool(Current) != this->SceneLoaded)
-	{
-		this->SceneLoaded = bool(Current);
-		if (this->SceneLoaded)
-		{
-			Current->PostProcess.AddEffect(new EditorOutline());
-			Current->AddDrawnComponent(Grid);
-			Current->AddDrawnComponent(Translate->GizmoMesh);
-		}
-	}
-
 	bool HasFocus = EditorUI::FocusedPanel == this;
 	UpdateSelection();
 
@@ -336,6 +325,16 @@ void engine::editor::Viewport::Update()
 	if (Current)
 	{
 		Current->AlwaysRedraw = this->Visible;
+
+		if (Current->Name != this->LastSceneName)
+		{
+			LastSceneName = Current->Name;
+			UnsavedChanges = false;
+			UpdateName();
+			Current->PostProcess.AddEffect(new EditorOutline());
+			Current->AddDrawnComponent(Grid);
+			Current->AddDrawnComponent(Translate->GizmoMesh);
+		}
 
 		if (SelectedObjects.size())
 		{
@@ -442,9 +441,9 @@ void engine::editor::Viewport::SceneChanged()
 
 	if (!UnsavedChanges)
 	{
-		SetName("Viewport*");
+		UnsavedChanges = true;
+		UpdateName();
 	}
-	UnsavedChanges = true;
 }
 
 void engine::editor::Viewport::SaveCurrentScene()
@@ -466,7 +465,12 @@ void engine::editor::Viewport::SaveCurrentScene()
 	EditorUI::Instance->AssetsProvider->SaveToFile(Current->Name, &Buffer, Buffer.GetSize());
 
 	UnsavedChanges = false;
-	SetName("Viewport");
+	UpdateName();
+}
+
+void engine::editor::Viewport::UpdateName()
+{
+	SetName(UnsavedChanges ? "Viewport*" : "Viewport");
 }
 
 void engine::editor::Viewport::OnObjectChanged(SceneObject* Target)
@@ -543,7 +547,7 @@ void engine::editor::Viewport::Run()
 {
 	using namespace subsystem;
 
-	if (!SceneLoaded)
+	if (!Scene::GetMain())
 	{
 		new MessageWindow("Cannot run with no scene loaded.", nullptr);
 		return;

@@ -10,6 +10,8 @@ namespace engine
 	* @brief
 	* A serializer that converts engine::SerializedData into a JSON representation.
 	*
+	* The serializer cannot read or write values with types Vector3, Vector2 or byte.
+	*
 	* All functions of this class might throw a SerializeReadException.
 	*
 	* @ingroup serialize
@@ -84,7 +86,6 @@ namespace engine
 		static void ReadArray(std::vector<SerializedValue>& Array, std::istream& Stream);
 		static SerializedValue ReadValue(std::istream& Stream);
 		static string ReadString(std::istream& Stream);
-		static string ReadVector(std::istream& Stream);
 		static string ReadWord(std::istream& Stream);
 		static bool TryReadChar(std::istream& Stream, char c);
 		static void ReadWhitespace(std::istream& Stream);

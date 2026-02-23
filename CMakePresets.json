@@ -50,6 +50,16 @@
 			}
 		},
 		{
+			"name": "x64-release-noeditor",
+			"displayName": "x64 Release (No Editor)",
+			"inherits": "x64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"ENGINE_EDITOR": "OFF",
+				"ENGINE_RUN_MSVC_CODE_ANALYSIS": "ON"
+			}
+		},
+		{
 			"name": "linux-debug",
 			"displayName": "Linux Debug",
 			"generator": "Ninja",
