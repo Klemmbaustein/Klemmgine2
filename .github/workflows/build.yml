@@ -86,5 +86,5 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         path: ${{ steps.strings.outputs.build-output-dir }}/bin
-        name: Build binaries
+        name: Klemmgine Editor ${{ matrix.os }}
 
