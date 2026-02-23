@@ -15,7 +15,7 @@
 	url = https://github.com/jrouwe/JoltPhysics.git
 [submodule "Dependencies/ProgrammingLanguage"]
 	path = Dependencies/DSharp
-	url = https://github.com/Klemmbaustein/ProgrammingLanguage.git
+	url = https://github.com/Klemmbaustein/DSharp.git
 [submodule "Dependencies/IXWebSocket"]
 	path = Dependencies/IXWebSocket
 	url = https://github.com/Klemmbaustein/IXWebSocket.git
