@@ -46,7 +46,7 @@ jobs:
 
     steps:
     - name: Install linux dependencies
-      if: matrix.os != "windows-latest"
+      if: ${{ matrix.os != 'windows-latest' }}
       run: |
         sudo apt-get install libXmu-dev libXi-dev libgl-dev dos2unix git wget # GLEW
         sudo apt-get install build-essential git make \ # SDL
