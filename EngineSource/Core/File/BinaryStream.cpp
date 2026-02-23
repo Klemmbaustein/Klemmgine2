@@ -9,7 +9,7 @@ using namespace engine;
 
 FileStream::FileStream(string FilePath, bool Read)
 {
-	auto err = fopen_s(&FromFile, FilePath.c_str(), Read ? "rb" : "wb");
+	FromFile = fopen(FilePath.c_str(), Read ? "rb" : "wb");
 	if (!FromFile)
 	{
 		Log::Warn(FilePath + ": " + strerror(errno));
