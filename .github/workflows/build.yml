@@ -71,7 +71,7 @@ jobs:
     - name: Load cache
       uses: actions/cache@v5
       with:
-        path: ${{ steps.strings.outputs.build-output-dir }}
+        path: ${{ steps.strings.outputs.build-output-dir }}/**
         key: klemmgine-binaries-${{ matrix.os }}-${{ matrix.config }}
 
     - name: Configure CMake
@@ -114,13 +114,13 @@ jobs:
         echo "editor-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
 
     - name: Download game binaries
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v5
       with:
        name: klemmgine-binaries-${{ matrix.os }}-release
        path: ${{ github.workspace }}/out/release
 
     - name: Download editor binaries
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v5
       with:
        name: klemmgine-binaries-${{ matrix.os }}-release
        path: ${{ github.workspace }}/out/editor
