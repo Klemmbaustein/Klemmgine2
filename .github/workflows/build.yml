@@ -116,13 +116,13 @@ jobs:
     - name: Download game binaries
       uses: actions/download-artifact@v5
       with:
-       name: klemmgine-binaries-${{ matrix.os }}-release
+       name: klemmgine-binaries-${{ matrix.target-os }}-release
        path: ${{ github.workspace }}/out/release
 
     - name: Download editor binaries
       uses: actions/download-artifact@v5
       with:
-       name: klemmgine-binaries-${{ matrix.os }}-release
+       name: klemmgine-binaries-${{ matrix.target-os }}-release
        path: ${{ github.workspace }}/out/editor
 
     - name: Copy editor assets into build
