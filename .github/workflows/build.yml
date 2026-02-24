@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-editor:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -26,6 +26,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [gcc-14, cl]
+        config: ["editor", "release"]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -74,7 +75,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }} -DENGINE_EDITOR=ON
+        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ case(matrix.config == 'editor', 'ON', 'OFF') }}
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -86,5 +87,4 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         path: ${{ steps.strings.outputs.build-output-dir }}/bin
-        name: Klemmgine Editor ${{ matrix.os }}
-
+        name: klemmgine ${{ matrix.os }} ${{ matrix.config }}
