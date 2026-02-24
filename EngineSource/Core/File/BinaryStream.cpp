@@ -51,7 +51,10 @@ bool FileStream::Read(uByte* To, size_t Size)
 	size_t read = fread(To, Size, 1, FromFile);
 	if (read != 1)
 	{
-		Log::Error(str::Format("Read failed: %s, is empty: %i", strerror(errno), IsEmpty()));
+		if (errno != 0)
+		{
+			Log::Error(str::Format("Read failed: %s, is empty: %i", strerror(errno), IsEmpty()));
+		}
 		return false;
 	}
 

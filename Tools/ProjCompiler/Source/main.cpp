@@ -24,7 +24,7 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 	};
 	static std::vector<string> SharedLibraries = {
 		"SDL3",
-		"nethost",
+		"OpenAL32"
 	};
 
 	bool WithDebugInfo = launchArgs::GetArg("includePdb").has_value();
@@ -51,16 +51,14 @@ void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 #endif
 		std::fs::copy(BinaryPath / i, OutPath / i);
 	}
+#if WINDOWS
 	for (string i : SharedLibraries)
 	{
-#if WINDOWS
 		i.append(".dll");
-#elif LINUX
-		i = str::Format("lib%s.so", i.c_str());
-#endif
 		if (std::fs::exists(BinaryPath / i))
 			std::fs::copy(BinaryPath / i, OutPath / i);
 	}
+#endif
 }
 
 static BufferStream* CopyAndConvertFile(std::fs::path InPath, string& OutPath)
@@ -150,9 +148,6 @@ int main(int argc, char** argv)
 
 		build::CopyPluginFiles(BinPath, OutPath);
 		CopyBinaries(BinPath, OutPath);
-		Log::Info("Copying scripts...");
-
-		std::fs::copy("Scripts", OutPath + "/Scripts");
 
 		auto Archives = engine::build::GetBuildArchives("Assets/");
 		Log::Info(str::Format("Starting %i archive compression jobs...", int(Archives.size())));

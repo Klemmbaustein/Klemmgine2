@@ -31,7 +31,7 @@ void engine::editor::BuildWindow::Begin()
 		{"Windows", BuildPlatform::Windows},
 		{"Linux", BuildPlatform::Linux},
 	};
-
+#ifndef IS_SOURCELESS_BUILD
 #if WINDOWS
 	AddBuildHeader("Target Platforms", Background);
 
@@ -51,6 +51,7 @@ void engine::editor::BuildWindow::Begin()
 		UIDropdown::Option("Release (Size optimized)"),
 		UIDropdown::Option("Release (with Debug info)"),
 	};
+
 
 	auto ConfigDropdown = new UIDropdown(0, 200_px,
 		EditorUI::Theme.DarkBackground, EditorUI::Theme.Text,
@@ -81,6 +82,9 @@ void engine::editor::BuildWindow::Begin()
 	ConfigDropdown->SelectOption(0, false);
 
 	AddElement("Configuration", ConfigDropdown, Background);
+#else
+	AddBuildHeader("Build Settings", Background);
+#endif
 
 	AddCheckbox("Compress assets", CompressAssets, Background);
 	AddCheckbox("Include dev plugins", IncludeDevPlugins, Background);
@@ -216,7 +220,11 @@ void engine::editor::BuildWindow::StartBuildForPlatform(BuildPlatform Platform, 
 		.CompressAssets = CompressAssets,
 		.IncludeDevPlugins = IncludeDevPlugins,
 		.MultiThreaded = MultiThreaded,
+#ifdef IS_SOURCELESS_BUILD
+		.OutputPath = "build/",
+#else
 		.OutputPath = "build/" + SelectedConfig,
+#endif
 		.BuildConfiguration = SelectedConfig,
 	};
 	NewJob->Parent = this;

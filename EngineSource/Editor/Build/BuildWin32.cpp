@@ -41,18 +41,6 @@ static string CompileArgs(const BuildOptions& Options)
 
 	return OutArgs;
 }
-static string ProjectBuildArgs(const BuildOptions& Options)
-{
-	string OutArgs;
-
-	if (Options.IncludeDevPlugins)
-	{
-		OutArgs.append(" -devBuild");
-	}
-
-	return OutArgs;
-}
-
 
 void engine::editor::BuildProjectLinux(BuildOptions Options)
 {

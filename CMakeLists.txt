@@ -18,6 +18,8 @@ option(ENGINE_EDITOR "Compile the editor" OFF)
 option(ENGINE_CSHARP "Include the C# plugin" OFF)
 option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF)
+option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripting only)" OFF)
+option(ENGINE_BUILD_ID "Build identifier" "")
 
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
@@ -117,6 +119,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInf
 	set(GENERATE_DEBUG_SYMBOLS ON)
 endif()
 
+if(IS_SOURCELESS_BUILD)
+	target_compile_definitions(KlemmgineCore PUBLIC IS_SOURCELESS_BUILD=1)
+endif()
+if(NOT ENGINE_BUILD_ID STREQUAL "" AND ENGINE_BUILD_ID)
+	message("Build ID: ${ENGINE_BUILD_ID}")
+	target_compile_definitions(KlemmgineCore PUBLIC ENGINE_BUILD_ID="${ENGINE_BUILD_ID}")
+endif()
+
 target_include_directories(KlemmgineLib PRIVATE "Plugins/PluginInterface/Include/internal")
 target_compile_definitions(KlemmgineLib PRIVATE BUILD_LIBRARY=1)
 
@@ -211,10 +221,8 @@ if (ENGINE_BUILD_TOOLS)
 	add_subdirectory("Tools/ProjCompiler")
 endif()
 
-if(ENGINE_CSHARP)
 	add_subdirectory("Plugins/PluginInterface")
-	add_subdirectory("Plugins/CSharp")
 	add_subdirectory("Plugins/DebugUI")
+if(ENGINE_CSHARP)
+	add_subdirectory("Plugins/CSharp")
 endif()
-
-# TODO: Add tests and install targets if needed.

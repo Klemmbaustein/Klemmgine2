@@ -11,6 +11,7 @@ engine::resource::ArchiveResourceSource::ArchiveResourceSource()
 	if (LoadedArchives.empty())
 	{
 		LoadArchive("scenes");
+		LoadArchive("scripts");
 	}
 
 	SceneArchives.clear();
@@ -78,8 +79,8 @@ void engine::resource::ArchiveResourceSource::LoadSceneFiles(string ScenePath)
 	std::vector<string> ArchivesToRemove;
 	for (auto& [Name, _] : LoadedArchives)
 	{
-		// The scenes archive is always loaded.
-		if (Name == "scenes")
+		// The scenes and scripts archives are always loaded.
+		if (Name == "scenes" || Name == "scripts")
 			continue;
 
 		if (!ArchivesToLoad.contains(Name))

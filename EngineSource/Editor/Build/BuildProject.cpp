@@ -1,8 +1,14 @@
 ﻿#include "BuildProject.h"
-#include "BuildWin32.h"
 #include <Core/Platform/Pipe.h>
 #include <Core/Platform/Platform.h>
 #include <iostream>
+
+#ifdef IS_SOURCELESS_BUILD
+#include <filesystem>
+#include <Editor/Editor.h>
+#else
+#include "BuildWin32.h"
+#endif
 
 using namespace engine;
 using namespace engine::editor;
@@ -10,6 +16,7 @@ using namespace engine::platform;
 
 void engine::editor::BuildCurrentProject(BuildOptions Options)
 {
+#ifndef IS_SOURCELESS_BUILD
 #if WINDOWS
 	switch (Options.Platform)
 	{
@@ -23,6 +30,38 @@ void engine::editor::BuildCurrentProject(BuildOptions Options)
 		break;
 	default:
 		break;
+	}
+#endif
+#else
+	string ExportPath = GetEditorPath() + "/Export/";
+
+#if WINDOWS
+	ExportPath = str::ReplaceChar(ExportPath, '/', '\\');
+#endif
+
+	try
+	{
+
+		if (std::filesystem::exists(Options.OutputPath))
+		{
+			std::filesystem::remove_all(Options.OutputPath);
+		}
+		std::filesystem::create_directories(Options.OutputPath);
+
+		if (BuildProjectExecuteCommand(
+			ExportPath
+			+ "ProjectCompiler -out "
+			+ Options.OutputPath
+			+ ProjectBuildArgs(Options)
+			+ " -binaryPath '" + ExportPath + "'",
+			Options, BuildStage::CreateBuild))
+		{
+			Options.LogLineAdded("", BuildStage::Done);
+		}
+	}
+	catch (std::filesystem::filesystem_error& e)
+	{
+		Options.LogLineAdded(e.what(), BuildStage::Failed);
 	}
 #endif
 }

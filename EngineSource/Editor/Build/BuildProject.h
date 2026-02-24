@@ -34,6 +34,17 @@ namespace engine::editor
 
 		std::function<void(string, BuildStage)> LogLineAdded;
 	};
+	static string ProjectBuildArgs(const BuildOptions& Options)
+	{
+		string OutArgs;
+
+		if (Options.IncludeDevPlugins)
+		{
+			OutArgs.append(" -devBuild");
+		}
+
+		return OutArgs;
+	}
 
 	static BuildPlatform operator|(BuildPlatform a, BuildPlatform b)
 	{
@@ -47,6 +58,4 @@ namespace engine::editor
 
 	bool BuildProjectExecuteCommand(string Command, BuildOptions& Options, BuildStage Stage);
 	void BuildCurrentProject(BuildOptions Options);
-
-	void BuildProjectNative(BuildOptions& Options);
 }
