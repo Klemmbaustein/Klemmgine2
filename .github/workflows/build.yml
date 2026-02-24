@@ -66,6 +66,10 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+    - name: Set Use editor
+      id: use-editor
+      shell: bash
+      run: |
         echo "use-editor=${{ case(matrix.config == 'editor', 'ON', 'OFF') }}" >> "$GITHUB_OUTPUT"
 
     - name: Load cache
@@ -86,7 +90,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ steps.strings.use-editor }} -DENGINE_BUILD_TOOLS=${{ steps.strings.use-editor }}
+        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ steps.use-editor.use-editor }} -DENGINE_BUILD_TOOLS=${{ steps.use-editor.use-editor }}
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
