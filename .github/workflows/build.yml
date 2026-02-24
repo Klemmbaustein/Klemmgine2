@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-editor:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -53,19 +53,26 @@ jobs:
           libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
           libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
           libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev
-
         sudo apt-get remove snapd
+
     - uses: actions/checkout@v4
       with:
         submodules: recursive
-
         token: '${{ secrets.ENGINE_DSHARP_ACCESS_TOKEN }}'
+
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "use-editor=${{ case(matrix.config == 'editor', 'ON', 'OFF') }}" >> "$GITHUB_OUTPUT"
+
+    - name: Load cache
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.strings.outputs.build-output-dir }}
+        key: klemmgine-binaries-${{ matrix.os }}-${{ matrix.config }}
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -75,11 +82,16 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ case(matrix.config == 'editor', 'ON', 'OFF') }}
+        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ use-editor }} -DENGINE_BUILD_TOOLS=${{ use-editor }}
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target Klemmgine
+
+    - name: Remove uneccesary binaries
+      run: |
+        rm ${{ steps.strings.outputs.build-output-dir }}/Test.*
+        rm ${{ steps.strings.outputs.build-output-dir }}/KlemmUI*
 
     - name: Upload binaries artifact
       uses: actions/upload-artifact@v4
@@ -87,4 +99,44 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         path: ${{ steps.strings.outputs.build-output-dir }}/bin
-        name: klemmgine ${{ matrix.os }} ${{ matrix.config }}
+        name: klemmgine-binaries-${{ matrix.os }}-${{ matrix.config }}
+
+  combine-builds:
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target-os: [windows-latest, ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup variables
+      shell: bash
+      run: |
+        echo "release-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
+        echo "editor-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
+
+    - name: Download game binaries
+      uses: actions/download-artifact@v8
+      with:
+       name: klemmgine-binaries-${{ matrix.os }}-release
+       path: ${{ github.workspace }}/out/release
+
+    - name: Download editor binaries
+      uses: actions/download-artifact@v8
+      with:
+       name: klemmgine-binaries-${{ matrix.os }}-release
+       path: ${{ github.workspace }}/out/editor
+
+    - name: Copy editor assets into build
+      run: |
+        cp -rf ${{ github.workspace }}/Engine ${{ editor-dir }}
+        cp -rf ${{ release-dir }} ${{ editor-dir }}/Engine/Export
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v4
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        path: ${{ editor-dir }}
+        name: klemmgine editor ${{ matrix.os }}
