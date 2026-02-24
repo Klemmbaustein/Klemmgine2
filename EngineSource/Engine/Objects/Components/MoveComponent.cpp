@@ -181,7 +181,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 	}
 
 	float AbsoluteDistance = MinDistance * Direction.Length();
-	Vector3 SnapToSurface = Direction.Normalize() * (AbsoluteDistance + DISTANCE_OFFSET);
+	Vector3 SnapToSurface = Direction.Normalize() * (AbsoluteDistance);
 	Vector3 LeftOver = Direction - SnapToSurface;
 
 	float Length = LeftOver.Length();
