@@ -139,4 +139,4 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         path: ${{ github.workspace }}/out/editor
-        name: klemmgine editor ${{ matrix.os }}
+        name: klemmgine editor ${{ matrix.target-os }}
