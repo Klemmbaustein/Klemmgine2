@@ -82,7 +82,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ use-editor }} -DENGINE_BUILD_TOOLS=${{ use-editor }}
+        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ steps.strings.use-editor }} -DENGINE_BUILD_TOOLS=${{ steps.strings.use-editor }}
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -113,6 +113,7 @@ jobs:
 
     - name: Setup variables
       shell: bash
+      id: strings
       run: |
         echo "release-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
         echo "editor-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
@@ -131,12 +132,12 @@ jobs:
 
     - name: Copy editor assets into build
       run: |
-        cp -rf ${{ github.workspace }}/Engine ${{ editor-dir }}
-        cp -rf ${{ release-dir }} ${{ editor-dir }}/Engine/Export
+        cp -rf ${{ github.workspace }}/Engine ${{ steps.strings.editor-dir }}
+        cp -rf ${{ steps.strings.release-dir }} ${{ steps.strings.editor-dir }}/Engine/Export
     - name: Upload release artifact
       uses: actions/upload-artifact@v4
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        path: ${{ editor-dir }}
+        path: ${{ steps.strings.editor-dir }}
         name: klemmgine editor ${{ matrix.os }}
