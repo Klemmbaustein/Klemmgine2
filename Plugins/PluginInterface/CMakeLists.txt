@@ -6,7 +6,7 @@ option(PLUGIN_INTERFACE_CPP "C++ plugin interface" ON)
 
 set(SRC_DIR "../../EngineSource/Core")
 
-add_library(KlemmginePlugin 
+add_library(KlemmginePlugin
 	"Source/KlemmginePlugin.cpp"
 )
 
