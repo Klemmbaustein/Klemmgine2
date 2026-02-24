@@ -106,9 +106,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup variables
+    - name: Setup dirs
       shell: bash
-      id: strings
+      id: dirs
       run: |
         echo "release-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
         echo "editor-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
@@ -127,8 +127,8 @@ jobs:
 
     - name: Copy editor assets into build
       run: |
-        cp -rf ${{ github.workspace }}/Engine ${{ steps.strings.editor-dir }}
-        cp -rf ${{ steps.strings.release-dir }} ${{ steps.strings.editor-dir }}/Engine/Export
+        cp -rf ${{ github.workspace }}/Engine ${{ steps.dirs.editor-dir }}
+        cp -rf ${{ steps.strings.release-dir }} ${{ steps.dirs.editor-dir }}/Engine/Export
     - name: Upload release artifact
       uses: actions/upload-artifact@v4
       env:
