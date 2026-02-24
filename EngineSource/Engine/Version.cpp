@@ -14,7 +14,11 @@ VersionInfo VersionInfo::Get()
 		.Platform = "Linux",
 #endif
 		.Architecture = STR(ENGINE_COMPILER_ID),
-		.Build = "Dev build - " __DATE__
+#ifdef ENGINE_BUILD_ID
+		.Build = ENGINE_BUILD_ID + string(__DATE__),
+#else
+		.Build = "Dev build - " __DATE__,
+#endif
 	};
 }
 

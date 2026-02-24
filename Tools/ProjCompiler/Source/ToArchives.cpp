@@ -12,6 +12,7 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 	std::vector<fs::path> FoundScenes;
 	std::map<fs::path, AssetDependency> FoundFiles;
 	std::map<string, fs::path> FileNames;
+	std::set<fs::path> FoundScripts;
 
 	for (auto& file : fs::recursive_directory_iterator(AssetsPath))
 	{
@@ -20,6 +21,10 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 		if (Extension == ".kts")
 		{
 			FoundScenes.push_back(file);
+		}
+		else if (Extension == ".kui" || Extension == ".ds")
+		{
+			FoundScripts.insert(file);
 		}
 		else if (fs::is_regular_file(file))
 		{
@@ -89,6 +94,11 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 		.Files = std::set(FoundScenes.begin(), FoundScenes.end()),
 		});
 
+	Out.push_back(ArchiveInfo{
+		.Name = "scripts",
+		.Files = FoundScripts,
+		});
+
 	return Out;
 }
 
@@ -101,6 +111,10 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 		{
 			SerializedValue Scene = TextSerializer::FromFile(FilePath.string());
 
+			if (Scene.GetObject().empty())
+			{
+				return {};
+			}
 			auto& Objects = Scene.At("objects").GetArray();
 			for (SerializedValue& obj : Objects)
 			{

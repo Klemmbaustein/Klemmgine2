@@ -159,7 +159,11 @@ void engine::Archive::LoadInternal(IBinaryStream* Stream)
 
 		if (!CompressedSize)
 		{
-			break;
+			Streams.insert({ FileName, ArchiveData{
+				.Bytes = new Byte[0],
+				.Size = 0
+				} });
+			continue;
 		}
 
 		uByte* CompressedFile = new uByte[CompressedSize];
