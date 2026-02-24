@@ -37,7 +37,7 @@ add_custom_command(
 add_custom_target(CSharpBinaries
     DEPENDS ${CS_SOURCES}
     DEPENDS ${CSHARP_DLL})
-	
+
 file(
 	GLOB_RECURSE
 	SRCS
