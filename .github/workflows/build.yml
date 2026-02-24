@@ -74,15 +74,19 @@ jobs:
         path: ${{ steps.strings.outputs.build-output-dir }}/**
         key: klemmgine-binaries-${{ matrix.os }}-${{ matrix.config }}
 
+    - name: List directories
+      shell: bash
+      run: ls -R
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }} -DENGINE_EDITOR=${{ steps.strings.use-editor }} -DENGINE_BUILD_TOOLS=${{ steps.strings.use-editor }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -S ${{ github.workspace }} -DENGINE_EDITOR=${{ steps.strings.use-editor }} -DENGINE_BUILD_TOOLS=${{ steps.strings.use-editor }}
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
@@ -110,8 +114,8 @@ jobs:
       shell: bash
       id: dirs
       run: |
-        echo "release-dir=${{ github.workspace }}/out/release" >> "$GITHUB_OUTPUT"
-        echo "editor-dir=${{ github.workspace }}/out/editor" >> "$GITHUB_OUTPUT"
+        echo "release-dir=" >> "$GITHUB_OUTPUT"
+        echo "editor-dir=" >> "$GITHUB_OUTPUT"
 
     - name: Download game binaries
       uses: actions/download-artifact@v5
@@ -127,12 +131,12 @@ jobs:
 
     - name: Copy editor assets into build
       run: |
-        cp -rf "${{ github.workspace }}/Engine" "${{ steps.dirs.editor-dir }}"
-        cp -rf "${{ steps.strings.release-dir }}" "${{ steps.dirs.editor-dir }}/Engine/Export"
+        cp -rf "${{ github.workspace }}/Engine" "${{ github.workspace }}/out/editor"
+        cp -rf "${{ github.workspace }}/out/release" "${{ github.workspace }}/out/editor/Engine/Export"
     - name: Upload release artifact
       uses: actions/upload-artifact@v4
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        path: ${{ steps.strings.editor-dir }}
+        path: ${{ github.workspace }}/out/editor
         name: klemmgine editor ${{ matrix.os }}
