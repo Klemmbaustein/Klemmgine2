@@ -48,9 +48,9 @@ void engine::editor::BuildCurrentProject(BuildOptions Options)
 		}
 		std::filesystem::create_directories(Options.OutputPath);
 
-		if (BuildProjectExecuteCommand(
+		if (BuildProjectExecuteCommand("'" +
 			ExportPath
-			+ "ProjectCompiler -out "
+			+ "ProjectCompiler' -out "
 			+ Options.OutputPath
 			+ ProjectBuildArgs(Options)
 			+ " -binaryPath '" + ExportPath + "'",
