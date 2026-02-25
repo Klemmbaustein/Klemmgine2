@@ -142,12 +142,12 @@ jobs:
     - name: Copy editor assets into build
       shell: bash
       run: |
-        mkdir "${{ github.workspace }}/out/editor/Engine/Export"
+        mkdir -p "${{ github.workspace }}/out/editor/Engine/Export"
         mv "${{ github.workspace }}/out/editor/ProjectCompiler${{ case(matrix.target-os == 'windows-latest', '.exe', '') }}" "${{ github.workspace }}/out/editor/Engine/Export/"
         cp -rf "${{ github.workspace }}/Engine" "${{ github.workspace }}/out/editor"
         cp -rf "${{ github.workspace }}/out/release" "${{ github.workspace }}/out/editor/Engine/Export"
 
-        mkdir ${{ github.workspace }}/out/editor/Plugins/DebugUI
+        mkdir -p ${{ github.workspace }}/out/editor/Plugins/DebugUI
         cp ${{ github.workspace }}/Plugins/DebugUI/Plugin.k2p ${{ github.workspace }}/out/editor/Plugins/DebugUI/
     - name: Upload release artifact
       uses: actions/upload-artifact@v4
