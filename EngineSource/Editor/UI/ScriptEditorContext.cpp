@@ -93,7 +93,7 @@ void engine::editor::ScriptEditorContext::UpdateFilesList()
 
 			if (Extension != "kui")
 			{
-				this->ScriptService->addString(resource::GetTextFile(Added), Added);
+				this->ScriptService->addFile(resource::GetTextFile(Added), Added);
 			}
 			else
 			{
@@ -120,7 +120,7 @@ void engine::editor::ScriptEditorContext::AddFile(const string& Content, const s
 			}
 			else
 			{
-				this->ScriptService->addString(Content, Name);
+				this->ScriptService->addFile(Content, Name);
 				LoadedFiles.insert(Name);
 			}
 		}
