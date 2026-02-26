@@ -7,7 +7,7 @@
 using namespace kui;
 
 engine::editor::ObjectListPanel::ObjectListPanel()
-	: EditorPanel("Objects", "object_list")
+	: EditorPanel("Objects", "ObjectListPanel")
 {
 	Heading = new ObjectListHeader();
 	Heading->search->field->OnChanged = [this]()

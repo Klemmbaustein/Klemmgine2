@@ -39,6 +39,10 @@ void engine::build::CopyPluginFiles(fs::path BinaryPath, fs::path OutPath)
 {
 	std::vector<fs::path> FoundPlugins;
 
+	if (!fs::exists("Plugins"))
+	{
+		return;
+	}
 	for (auto& dir : fs::directory_iterator("Plugins"))
 	{
 		if (fs::is_regular_file(dir.path() / "Plugin.k2p"))

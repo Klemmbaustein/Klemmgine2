@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 	}
 
 	std::fs::create_directories(std::fs::path(OutPath) / "Assets");
-	Log::Info("Building into " + std::fs::canonical(OutPath).string());
+	Log::Info("Building into " + std::fs::canonical(OutPath).string() + " from " + std::fs::canonical(".").string());
 
 	try
 	{
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 	catch (std::fs::filesystem_error e)
 	{
 		Log::Error(e.what());
-		return 1;
+		return 2;
 	}
 
 	return 0;

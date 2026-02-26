@@ -113,9 +113,7 @@ void engine::editor::BuildWindow::Update()
 		SetButtons({ Option{
 			.Name = "Show result",
 			.OnClicked = []() {
-#if WINDOWS
-			platform::Execute("explorer.exe \".\\build\"");
-#endif
+			platform::Open("build");
 			},
 			.Close = false,
 			.OnMainThread = true,
@@ -308,8 +306,8 @@ void engine::editor::BuildWindow::StartBuild()
 	{
 		StartBuildForPlatform(BuildPlatform::WindowsArm, ScrollBox);
 	}
-#endif
 	if (BuildForLinux)
+#endif
 	{
 		StartBuildForPlatform(BuildPlatform::Linux, ScrollBox);
 	}

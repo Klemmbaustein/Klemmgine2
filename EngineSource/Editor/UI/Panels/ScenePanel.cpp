@@ -2,7 +2,7 @@
 #include <Editor/UI/Panels/Viewport.h>
 
 engine::editor::ScenePanel::ScenePanel()
-	: EditorPanel("Scene", "scene")
+	: EditorPanel("Scene", "ScenePanel")
 {
 	this->Properties = new PropertyMenu();
 

@@ -46,6 +46,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
 {
+	// Check for memory leaks. Ideally if the reference counting works as expected this should be 0.
 	Print("Script classes leaked: " + std::to_string(RuntimeClass::classRefCount), LogType::Note);
 
 	delete this->Runtime;
@@ -139,13 +140,14 @@ bool engine::script::ScriptSubsystem::Reload()
 		}
 	}
 
+	// TODO: Serialize scripts and deserialize them when a compilation fails so the engine has a compilation result to fall back on.
 	//auto Stream = FileStream("scripts.bin", true);
 	//script::serialize::SerializeBytecode(&NewInstructions, &UIData, &Stream);
 
 	*ScriptInstructions = NewInstructions;
 	//script::serialize::DeSerializeBytecode(ScriptInstructions, &UIData, &Stream);
 	this->Runtime->loadBytecode(ScriptInstructions);
-	ReloadDynamicContext();
+	ReloadDynamicUIContext();
 
 	if (CurrentScene)
 	{
@@ -211,7 +213,7 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(SceneObject* Object
 	});
 }
 
-void engine::script::ScriptSubsystem::ReloadDynamicContext()
+void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
 {
 	UIContext.Parsed = &UIData.UIData;
 

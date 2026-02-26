@@ -50,6 +50,12 @@ namespace engine::subsystem
 		virtual void Update();
 		virtual void RenderUpdate();
 
+		/**
+		 * @brief
+		 * Override this to make the subsystem register any console commands it has.
+		 * @param System
+		 * The console subsystem to add the commands to.
+		 */
 		virtual void RegisterCommands(ConsoleSubsystem* System);
 
 		enum class LogType

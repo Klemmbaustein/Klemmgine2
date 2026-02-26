@@ -4,7 +4,7 @@
 #include <Core/File/FileUtil.h>
 
 engine::editor::ClassBrowser::ClassBrowser()
-	: ItemBrowser("Classes", "class_browser")
+	: ItemBrowser("Classes", "ClassBrowser")
 {
 }
 

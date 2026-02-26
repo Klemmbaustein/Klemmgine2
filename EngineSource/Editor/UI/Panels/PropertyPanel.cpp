@@ -10,7 +10,7 @@
 using namespace kui;
 
 engine::editor::PropertyPanel::PropertyPanel()
-	: EditorPanel("Properties", "object_properties")
+	: EditorPanel("Properties", "PropertyPanel")
 {
 	LoadPropertiesFrom(nullptr);
 }

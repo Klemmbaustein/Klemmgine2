@@ -6,9 +6,9 @@
 namespace engine::editor
 {
 	/**
-	 * @brief A dialog window, containing a background and buttons to interact with the dialog.
+	 * @brief
+	 * A dialog window, containing a background and buttons to interact with the dialog.
 	 *
-	 * Vaguely similar to the message boxes created by win32's MessageBox() functions.
 	 * Like it's parent class IPopupWindow, it runs on a separate thread, and accessing main
 	 * thread variables is dangerous.
 	 */

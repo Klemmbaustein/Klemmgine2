@@ -35,7 +35,7 @@ static std::map<Log::LogColor, kui::Vec3f> LogColorValuesLight =
 };
 
 engine::editor::ConsolePanel::ConsolePanel()
-	: EditorPanel("Console", "console")
+	: EditorPanel("Console", "ConsolePanel")
 {
 	Element = new ConsolePanelElement();
 	Element->commandField->field->OnChanged = [this]() {
