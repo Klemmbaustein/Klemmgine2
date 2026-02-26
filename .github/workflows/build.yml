@@ -145,7 +145,7 @@ jobs:
         mkdir -p "${{ github.workspace }}/out/editor/Engine/Export"
         mv "${{ github.workspace }}/out/editor/ProjectCompiler${{ case(matrix.target-os == 'windows-latest', '.exe', '') }}" "${{ github.workspace }}/out/editor/Engine/Export/"
         cp -rf "${{ github.workspace }}/Engine" "${{ github.workspace }}/out/editor"
-        cp -rf "${{ github.workspace }}/out/release/*" "${{ github.workspace }}/out/editor/Engine/Export"
+        cp -rf ${{ github.workspace }}/out/release/* "${{ github.workspace }}/out/editor/Engine/Export"
 
         mkdir -p ${{ github.workspace }}/out/editor/Plugins/DebugUI
         cp ${{ github.workspace }}/Plugins/DebugUI/Plugin.k2p ${{ github.workspace }}/out/editor/Plugins/DebugUI/

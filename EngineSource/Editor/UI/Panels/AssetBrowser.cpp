@@ -91,6 +91,14 @@ engine::editor::AssetBrowser::AssetBrowser()
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag"));
 		resource::ScanForAssets();
 	});
+	AddShortcut(kui::Key::k, kui::Key::CTRL, [this] {
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "UIScript", "kui"));
+		resource::ScanForAssets();
+	});
+	AddShortcut(kui::Key::e, kui::Key::CTRL, [this] {
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds"));
+		resource::ScanForAssets();
+	});
 }
 
 std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Path)
@@ -430,7 +438,7 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 	std::vector<FileType> Types = {
 		FileType("New scene", "Ctrl+N", "kts", "Scene"),
 		FileType("New material", "Ctrl+M", "kmt", "Material"),
-		FileType("New script", "Ctrl+E", "ds", "Script"),
+		FileType("New script", "Ctrl+K", "ds", "Script"),
 		FileType("New ui script", "Ctrl+E", "kui", "UIScript"),
 	};
 
