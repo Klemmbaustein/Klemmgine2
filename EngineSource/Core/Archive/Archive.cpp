@@ -113,7 +113,7 @@ void engine::Archive::Save(IBinaryStream* Stream)
 			if (Error != MZ_OK)
 			{
 				Log::Warn("Deflate compress error: " + string(mz_error(Error)) + ". Storing uncompressed.");
-				Stream->WriteValue(Data.Size);
+				Stream->WriteValue(SIZE_MAX);
 				Stream->WriteValue(Data.Size);
 				Stream->Write(Data.Bytes, Data.Size);
 			}
@@ -166,6 +166,27 @@ void engine::Archive::LoadInternal(IBinaryStream* Stream)
 			continue;
 		}
 
+		// No compression
+		if (SIZE_MAX == CompressedSize)
+		{
+			uByte* CompressedFile = new uByte[FileSize];
+
+			if (!Stream->Read(CompressedFile, FileSize))
+			{
+				Log::Error(str::Format("Format error. Could not read %i bytes of file %s", FileSize, FileName.c_str()));
+				delete[] CompressedFile;
+				return;
+			}
+
+			Streams.insert({ FileName, ArchiveData{
+				.Bytes = CompressedFile,
+				.Size = FileSize
+				} });
+
+			FileNames.insert({ file::FileName(FileName), FileName });
+			continue;
+		}
+
 		uByte* CompressedFile = new uByte[CompressedSize];
 
 		if (!Stream->Read(CompressedFile, CompressedSize))
@@ -174,37 +195,23 @@ void engine::Archive::LoadInternal(IBinaryStream* Stream)
 			delete[] CompressedFile;
 			return;
 		}
+		uByte* DecompressedFile = new uByte[FileSize];
 
-		// No compression
-		if (FileSize == CompressedSize)
+		int Error = mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
+
+		if (Error != MZ_OK)
 		{
-			Streams.insert({ FileName, ArchiveData{
-				.Bytes = CompressedFile,
-				.Size = FileSize
-				} });
-
-			FileNames.insert({ file::FileName(FileName), FileName });
+			Log::Error("Deflate compress error: " + string(mz_error(Error)));
+			break;
 		}
-		else
-		{
-			uByte* DecompressedFile = new uByte[FileSize];
 
-			int Error = mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
+		delete[] CompressedFile;
 
-			if (Error != MZ_OK)
-			{
-				Log::Error("Deflate compress error: " + string(mz_error(Error)));
-				break;
-			}
+		Streams.insert({ FileName, ArchiveData{
+			.Bytes = DecompressedFile,
+			.Size = FileSize
+			} });
 
-			delete[] CompressedFile;
-
-			Streams.insert({ FileName, ArchiveData{
-				.Bytes = DecompressedFile,
-				.Size = FileSize
-				} });
-
-			FileNames.insert({ file::FileName(FileName), FileName });
-		}
+		FileNames.insert({ file::FileName(FileName), FileName });
 	}
 }

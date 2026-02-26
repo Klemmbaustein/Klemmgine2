@@ -313,7 +313,7 @@ void engine::VideoSubsystem::RenderUpdate()
 	PostProcess->SetInt("u_alpha", 2);
 
 #if EDITOR
-	if (EditorSubsystem::Active)
+	if (editor::EditorSubsystem::Active)
 	{
 		editor::Viewport* View = editor::Viewport::Current;
 

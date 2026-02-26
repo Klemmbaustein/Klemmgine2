@@ -17,6 +17,9 @@ int32 EngineMain(int argc, char** argv)
 	return 0;
 }
 #else
+#include <Engine/ProjectFile.h>
+#include <filesystem>
+#include <Core/File/FileUtil.h>
 
 using namespace engine;
 
@@ -24,7 +27,11 @@ int32 EngineMain(int argc, char** argv)
 {
 	Engine* Instance = Engine::Init();
 
-	Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync("Assets/Test");
+	if (std::filesystem::exists("Assets/project.json"))
+	{
+		auto proj = ProjectFile("Assets/project.json");
+		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
+	}
 
 	Instance->Run();
 	return 0;

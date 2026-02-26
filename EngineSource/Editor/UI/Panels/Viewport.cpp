@@ -341,8 +341,10 @@ void engine::editor::Viewport::Update()
 			Translate->SetVisible(true);
 			Translate->GizmoMesh->Position = (*SelectedObjects.begin())->Position;
 			Translate->Collider->Position = (*SelectedObjects.begin())->Position;
-			Translate->GizmoMesh->Scale = Vector3::Distance(Current->UsedCamera->Position, Translate->GizmoMesh->Position) * 0.075f;
-			Translate->Collider->Scale = Vector3::Distance(Current->UsedCamera->Position, Translate->GizmoMesh->Position) * 0.075f;
+			Translate->GizmoMesh->Scale = Vector3::Distance(Current->UsedCamera->Position,
+				Translate->GizmoMesh->Position) * 0.075f;
+			Translate->Collider->Scale = Vector3::Distance(Current->UsedCamera->Position,
+				Translate->GizmoMesh->Position) * 0.075f;
 		}
 		else
 		{
@@ -352,6 +354,10 @@ void engine::editor::Viewport::Update()
 		{
 			Translate->Update(this);
 		}
+	}
+	else
+	{
+		LastSceneName = "";
 	}
 
 	if (Current && ViewportBackground == Win->UI.HoveredBox && Win->Input.IsRMBClicked)
@@ -396,7 +402,8 @@ void engine::editor::Viewport::Update()
 		}
 
 		Win->Input.PollForText = false;
-		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation - Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
+		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation
+			- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
 		&& input::IsLMBClicked && !Translate->HasGrabbedClick)

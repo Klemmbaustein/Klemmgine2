@@ -39,6 +39,11 @@ element LauncherElement
 			{
 				Text = "Open"
 			}
+
+			child EditorButton removeButton
+			{
+				Text = "Remove"
+			}
 		}
 	}
 }

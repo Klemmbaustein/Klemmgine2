@@ -1,6 +1,7 @@
 #include "DropdownMenu.h"
 #include "EditorUI.h"
 #include "Elements/DroppableBox.h"
+#include "Layout/SaveLayout.h"
 #include "Panels/AssetBrowser.h"
 #include "Panels/ClassBrowser.h"
 #include "Panels/ConsolePanel.h"
@@ -10,10 +11,11 @@
 #include "Panels/ScenePanel.h"
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/Viewport.h"
-#include "Layout/SaveLayout.h"
 #include "Windows/AboutWindow.h"
 #include "Windows/BuildWindow.h"
+#include "Windows/ProjectSettingsWindow.h"
 #include "Windows/SettingsWindow.h"
+#include <Core/File/JsonSerializer.h>
 #include <Editor/Editor.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Engine/Engine.h>
@@ -23,10 +25,9 @@
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/MeshObject.h>
-#include <Core/File/JsonSerializer.h>
+#include <filesystem>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
-#include <filesystem>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -275,11 +276,13 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("Undo", "Ctrl+Z", Asset("Undo.png"), []() {
 				Viewport::Current->UndoLast();
 			}),
-			DropdownMenu::Option("Redo", "Ctrl+Y", Asset("Redo.png")),
+			//DropdownMenu::Option("Redo", "Ctrl+Y", Asset("Redo.png")),
 			DropdownMenu::Option("Settings", "", Asset("Settings.png"), []() {
 				new SettingsWindow();
 			}),
-			DropdownMenu::Option("Project settings"),
+			DropdownMenu::Option("Project settings", "", "", []() {
+				new ProjectSettingsWindow();
+			}),
 		});
 
 	AddMenuBarItem("Scene",
@@ -307,7 +310,7 @@ engine::editor::EditorUI::EditorUI()
 	AddMenuBarItem("Help",
 		{ DropdownMenu::Option("About", "", Asset("Info.png"), []() {
 				new AboutWindow();
-			}), DropdownMenu::Option("Source code") }
+			}), }
 	);
 
 	Update();

@@ -1,10 +1,11 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
 #include <Editor/UI/EditorUI.h>
+#include <Engine/ProjectFile.h>
 
-namespace engine::subsystem
+namespace engine::editor
 {
-	class EditorSubsystem : public Subsystem
+	class EditorSubsystem : public subsystem::Subsystem
 	{
 	public:
 		EditorSubsystem();
@@ -16,8 +17,10 @@ namespace engine::subsystem
 		void StopProject();
 		void RegisterCommands(ConsoleSubsystem* System) override;
 
-		editor::EditorUI* UI = nullptr;
+		EditorUI* UI = nullptr;
 
 		static bool Active;
+
+		ProjectFile Project = ProjectFile("./project.json");
 	};
 }

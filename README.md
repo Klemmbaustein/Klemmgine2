@@ -12,9 +12,9 @@ and Linux.
 
 ### High level
 
-- Pretty fast rendering (can easily maintain 1000+ frames per second on a 3060 TI)
+- Pretty fast rendering (can easily maintain 1000+ frames per second on a RTX 3060 TI GPU)
   and editor (Starting the editor and opening a project usually takes around 100ms)
-- A customizable graphical editor to edit 3d scenes, assets and manage and create projects.
+- A customizable graphical editor to edit 3d scenes, assets and projects.
 - A custom scripting language inspired mostly by C#, integrated with the UI definition
   language [from my UI library](https://github.com/Klemmbaustein/KlemmUI)
   and a script editor for this built into the editor.
@@ -42,7 +42,7 @@ and Linux.
 ### TODO/Missing features:
 - No audio yet!!!
 - Missing some graphical effects from Klemmgine 1,
-  such as baked lighting and more types of light sources.
+  such as baked lighting, particles and more types of light sources.
 - Fix "Editor Server" live collaboration feature.
 - No multi player features yet, unlike Klemmgine 1.
 - Better general and scripting documentation.
@@ -61,6 +61,8 @@ The project is built using CMake.
   | ENGINE_EDITOR         | OFF | Set to ON to build the editor. |
   | ENGINE_RUN_MSVC_CODE_ANALYSIS | OFF | Set to ON to run a MSVC code analysis on the project. |
   | ENGINE_CSHARP         | OFF | Include experimental C# scripting plugin (currently very unfinished) |
+  | IS_SOURCELESS_BUILD   | OFF | Is the build meant to work standalone without sources. If yes, it won't try to compile a release build but instead pull binaries from Engine/Export |
+  | ENGINE_BUILD_ID       | ""  | Build identifier given to the built binaries. If empty, it will show as "dev build" |
 
 ### Linux
 - All requirements for SDL3 and GLEW should be installed.
@@ -71,3 +73,5 @@ The project is built using CMake.
   | ENGINE_DYNAMIC_SYMBOLS | OFF | Compiles with dynamic symbols (-rdynamic), increasing executable size but showing function names in stack traces.
   | ENGINE_EDITOR         | OFF | Set to ON to build the editor. |
   | ENGINE_CSHARP         | OFF | Include experimental C# scripting plugin (currently very unfinished) |
+  | IS_SOURCELESS_BUILD   | OFF | Is the build meant to work standalone without sources. If yes, it won't try to compile a release build but instead pull binaries from Engine/Export |
+  | ENGINE_BUILD_ID       | ""  | Build identifier given to the built binaries. If empty, it will show as "dev build" |
