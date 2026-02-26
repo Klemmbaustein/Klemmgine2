@@ -27,7 +27,7 @@
 #include "UI/UIBindings.h"
 #include <ds/parser/types/functionType.hpp>
 
-#define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr(__FUNCTION__)); return;}
+#define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr(str::Format("Got null object: %s", __FUNCTION__).c_str())); return;}
 
 using namespace ds;
 using namespace engine::input;
