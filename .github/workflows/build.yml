@@ -170,13 +170,13 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: klemmgine editor windows-latest
-        path: ~/windows/
+        path: ${{ github.workspace }}/windows/
 
     - name: Download linux build
       uses: actions/download-artifact@v5
       with:
         name: klemmgine editor ubuntu-latest
-        path: ~/linux/
+        path: ${{ github.workspace }}/linux/
 
     - name: Compress Artifacts
       run: |
