@@ -21,7 +21,7 @@ using namespace engine::editor;
 Viewport* Viewport::Current = nullptr;
 
 engine::editor::Viewport::Viewport()
-	: EditorPanel("Viewport", "viewport")
+	: EditorPanel("Viewport", "Viewport")
 {
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 

@@ -1,7 +1,7 @@
 #include "MessagePanel.h"
 
 engine::editor::MessagePanel::MessagePanel()
-	: EditorPanel("Messages", "messages")
+	: EditorPanel("Messages", "MessagePanel")
 {
 }
 

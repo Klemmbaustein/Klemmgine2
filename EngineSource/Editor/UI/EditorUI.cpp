@@ -169,7 +169,7 @@ void engine::editor::EditorUI::SaveEditorStateConfig()
 engine::editor::EditorUI::EditorUI()
 {
 	Instance = this;
-
+	RegisterDefaultPanels();
 	InitTheme();
 
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
@@ -230,9 +230,7 @@ engine::editor::EditorUI::EditorUI()
 
 		EditorPanel* Center = new EditorPanel("panel");
 		EditorPanel* LowerPanel = new EditorPanel("panel");
-		Center->AddChild(LowerPanel->SetWidth(0.2f), EditorPanel::Align::Vertical);
-		LowerPanel->AddChild(new ConsolePanel(), EditorPanel::Align::Tabs);
-		LowerPanel->AddChild(new MessagePanel(), EditorPanel::Align::Tabs);
+		Center->AddChild((new ConsolePanel())->SetWidth(0.2f), EditorPanel::Align::Vertical);
 
 		auto vp = new Viewport();
 
@@ -252,7 +250,7 @@ engine::editor::EditorUI::EditorUI()
 	}
 	else
 	{
-		layout::LoadLayout(RootPanel, LayoutFile);
+		layout::LoadLayout(RootPanel, LayoutFile, &Panels);
 	}
 
 	FocusedPanel = Viewport::Current;
@@ -300,6 +298,10 @@ engine::editor::EditorUI::EditorUI()
 		{
 			DropdownMenu::Option("Save layout"),
 			DropdownMenu::Option("Load layout"),
+			DropdownMenu::Option{
+				.Name = "Panels",
+				.SubMenu = GetPanelMenuOptions()
+			},
 		});
 
 	AddMenuBarItem("Help",
@@ -309,6 +311,28 @@ engine::editor::EditorUI::EditorUI()
 	);
 
 	Update();
+}
+
+std::vector<DropdownMenu::Option> engine::editor::EditorUI::GetPanelMenuOptions()
+{
+	std::vector<DropdownMenu::Option> Result;
+
+	for (auto& [_, Entry] : this->Panels.Panels)
+	{
+		if (!Entry.IsVisible)
+		{
+			continue;
+		}
+
+		Result.push_back(DropdownMenu::Option{
+			.Name = Entry.Name,
+			.OnClicked = [Create = Entry.CreatePanel]() {
+				Viewport::Current->AddChild(Create(), EditorPanel::Align::Tabs);
+			}
+			});
+	}
+
+	return Result;
 }
 
 engine::editor::EditorUI::~EditorUI()
@@ -325,6 +349,21 @@ engine::editor::EditorUI::~EditorUI()
 
 	VideoSystem->OnResized();
 	input::ShowMouseCursor = false;
+}
+
+#define PANEL_ENTRY(name, type) Panels.RegisterPanel(name, # type, []() {return new type();}, true)
+#define PANEL_ENTRY_HIDDEN(name, type) Panels.RegisterPanel(name, # type, []() {return new type();}, false)
+
+void engine::editor::EditorUI::RegisterDefaultPanels()
+{
+	PANEL_ENTRY_HIDDEN("Viewport", Viewport);
+	PANEL_ENTRY("Asset browser", AssetBrowser);
+	PANEL_ENTRY("Class browser", ClassBrowser);
+	PANEL_ENTRY("Console", ConsolePanel);
+	PANEL_ENTRY("Scripts", ScriptEditorPanel);
+	PANEL_ENTRY("Properties", PropertyPanel);
+	PANEL_ENTRY("Object List", ObjectListPanel);
+	PANEL_ENTRY("Scene", ScenePanel);
 }
 
 string engine::editor::EditorUI::GetLayoutConfigPath()

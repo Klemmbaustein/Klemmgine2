@@ -10,6 +10,7 @@
 #include <Engine/Script/ScriptSubsystem.h>
 #include <filesystem>
 #include <fstream>
+#include "ClassBrowser.h"
 
 using namespace kui;
 using namespace engine::script;
@@ -17,7 +18,7 @@ using namespace engine::editor;
 using namespace engine;
 
 engine::editor::ScriptEditorPanel::ScriptEditorPanel()
-	: EditorPanel("Scripts", "scripts")
+	: EditorPanel("Scripts", "ScriptEditorPanel")
 {
 	Toolbar* EditorToolbar = new Toolbar();
 	EditorToolbar->AddButton("Save", EditorUI::Asset("Save.png"), [this]() {
@@ -251,6 +252,10 @@ void engine::editor::ScriptEditorPanel::Save()
 		{
 			EditorUI::SetStatusMessage("Failed to compile scripts", EditorUI::StatusType::Error);
 		}
+
+		EditorUI::Instance->ForEachPanel<ClassBrowser>([](ClassBrowser* Browser) {
+			Browser->UpdateItems();
+		});
 	}
 	else
 	{

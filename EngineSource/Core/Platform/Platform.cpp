@@ -30,7 +30,10 @@ void engine::platform::Execute(string Command)
 
 void engine::platform::Open(string File)
 {
-	ShellExecuteW(NULL, L"open", StrToWstr(File).c_str(), NULL, NULL, FALSE);
+	if (size_t(ShellExecuteW(NULL, L"open", StrToWstr(File).c_str(), NULL, NULL, SW_SHOW)) <= 32)
+	{
+		Log::Error(GetLastErrorString());
+	}
 }
 
 engine::string engine::platform::GetLastErrorString()

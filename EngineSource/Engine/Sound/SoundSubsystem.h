@@ -1,5 +1,6 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
+#include "Sound.h"
 
 namespace engine::sound
 {
@@ -7,5 +8,7 @@ namespace engine::sound
 	{
 	public:
 		SoundSubsystem();
+
+		SoundContext* MainContext = nullptr;
 	};
 }

@@ -27,7 +27,7 @@ using namespace engine;
 static void Import(engine::string CurrentPath);
 
 engine::editor::AssetBrowser::AssetBrowser()
-	: ItemBrowser("Assets", "asset_browser")
+	: ItemBrowser("Assets", "AssetBrowser")
 {
 	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
 		UpdateItems();

@@ -13,6 +13,7 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 	std::map<fs::path, AssetDependency> FoundFiles;
 	std::map<string, fs::path> FileNames;
 	std::set<fs::path> FoundScripts;
+	std::set<fs::path> FoundShaders;
 
 	for (auto& file : fs::recursive_directory_iterator(AssetsPath))
 	{
@@ -25,6 +26,10 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 		else if (Extension == ".kui" || Extension == ".ds")
 		{
 			FoundScripts.insert(file);
+		}
+		else if (Extension == ".vert" || Extension == ".frag")
+		{
+			FoundShaders.insert(file);
 		}
 		else if (fs::is_regular_file(file))
 		{
@@ -97,6 +102,11 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 	Out.push_back(ArchiveInfo{
 		.Name = "scripts",
 		.Files = FoundScripts,
+		});
+
+	Out.push_back(ArchiveInfo{
+		.Name = "shaders",
+		.Files = FoundShaders,
 		});
 
 	return Out;

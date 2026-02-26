@@ -41,20 +41,22 @@ void engine::editor::BuildCurrentProject(BuildOptions Options)
 
 	try
 	{
-
 		if (std::filesystem::exists(Options.OutputPath))
 		{
 			std::filesystem::remove_all(Options.OutputPath);
 		}
 		std::filesystem::create_directories(Options.OutputPath);
 
-		if (BuildProjectExecuteCommand("'" +
+		if (BuildProjectExecuteCommand("\"" +
 			ExportPath
-			+ "ProjectCompiler' -out "
+			+ "ProjectCompiler\" -out "
 			+ Options.OutputPath
 			+ ProjectBuildArgs(Options)
-			+ " -binaryPath '" + ExportPath + "'",
-			Options, BuildStage::CreateBuild))
+			+ " -binPath \"" + ExportPath
+#ifndef WINDOWS
+			+ "\""
+#endif
+			, Options, BuildStage::CreateBuild))
 		{
 			Options.LogLineAdded("", BuildStage::Done);
 		}
@@ -68,8 +70,8 @@ void engine::editor::BuildCurrentProject(BuildOptions Options)
 
 bool engine::editor::BuildProjectExecuteCommand(string Command, BuildOptions& Options, BuildStage Stage)
 {
-#if WINDOWS
 	Log::Info(Command);
+#if WINDOWS
 	Pipe CmdPipe = Pipe(Command);
 
 	while (!CmdPipe.Empty())
@@ -97,6 +99,14 @@ bool engine::editor::BuildProjectExecuteCommand(string Command, BuildOptions& Op
 		}
 		return false;
 	}
-#endif
 	return true;
+#else
+	Options.LogLineAdded(Command, BuildStage::CreateBuild);
+	auto Result = system(Command.c_str());
+	if (Result != 0)
+	{
+		Options.LogLineAdded(str::Format("Error: Process returned %i", Result), BuildStage::Failed);
+	}
+	return Result == 0;
+#endif
 }

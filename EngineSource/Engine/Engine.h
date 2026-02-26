@@ -89,6 +89,11 @@ namespace engine
 	private:
 
 		Engine();
+		~Engine()
+		{
+			Instance = nullptr;
+			IsPlaying = false;
+		}
 		void InitSystems();
 		static void ErrorCallback(string Error, string StackTrace);
 

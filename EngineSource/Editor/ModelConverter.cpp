@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #include "ModelConverter.h"
 #include <assimp/cimport.h>
 #include <assimp/Importer.hpp>
@@ -231,4 +230,3 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	delete ctx.Data;
 	return OutDir + OutFileName;
 }
-#endif

@@ -69,7 +69,8 @@
 			"installDir": "${sourceDir}/out/install/${presetName}",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-				"ENGINE_EDITOR": "ON"
+				"ENGINE_EDITOR": "ON",
+				"IS_SOURCELESS_BUILD": "ON"
 			},
 			"condition": {
 				"type": "equals",

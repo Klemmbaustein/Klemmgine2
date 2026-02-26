@@ -2,6 +2,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+// TODO: fully implement
+
 using namespace engine::subsystem;
 
 namespace engine::sound

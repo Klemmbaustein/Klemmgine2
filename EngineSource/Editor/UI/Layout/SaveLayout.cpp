@@ -23,7 +23,7 @@ void engine::editor::layout::LayoutToFile(EditorPanel* Root, string File)
 
 // TODO: Verify there is at least but only ever one viewport in the layout
 // since the editor expects this to always be true for the layout.
-void engine::editor::layout::LoadLayout(EditorPanel* Root, string File)
+void engine::editor::layout::LoadLayout(EditorPanel* Root, string File, PanelRegistry* Registry)
 {
 	SerializedValue FileContent = BinarySerializer::FromFile(File);
 
@@ -32,7 +32,7 @@ void engine::editor::layout::LoadLayout(EditorPanel* Root, string File)
 		return;
 	}
 
-	DeSerializePanel(Root, FileContent.At("root"));
+	DeSerializePanel(Root, FileContent.At("root"), Registry);
 }
 
 SerializedValue engine::editor::layout::SerializePanel(EditorPanel* Target)
@@ -56,7 +56,7 @@ SerializedValue engine::editor::layout::SerializePanel(EditorPanel* Target)
 	return Result;
 }
 
-void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedValue& Obj)
+void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedValue& Obj, PanelRegistry* Registry)
 {
 	if (Target->Parent)
 	{
@@ -77,41 +77,9 @@ void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedVal
 
 		string Type = i.At("name").GetString();
 
-		if (Type == "asset_browser")
+		if (Registry->Panels.contains(Type))
 		{
-			NewPanel = new AssetBrowser();
-		}
-		else if (Type == "class_browser")
-		{
-			NewPanel = new ClassBrowser();
-		}
-		else if (Type == "console")
-		{
-			NewPanel = new ConsolePanel();
-		}
-		else if (Type == "viewport")
-		{
-			NewPanel = new Viewport();
-		}
-		else if (Type == "scripts")
-		{
-			NewPanel = new ScriptEditorPanel();
-		}
-		else if (Type == "object_list")
-		{
-			NewPanel = new ObjectListPanel();
-		}
-		else if (Type == "object_properties")
-		{
-			NewPanel = new PropertyPanel();
-		}
-		else if (Type == "scene")
-		{
-			NewPanel = new ScenePanel();
-		}
-		else if (Type == "messages")
-		{
-			NewPanel = new MessagePanel();
+			NewPanel = Registry->Panels.at(Type).CreatePanel();
 		}
 		else if (Type == "panel")
 		{
@@ -124,7 +92,7 @@ void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedVal
 		}
 		Target->AddChild(NewPanel, Align);
 
-		DeSerializePanel(NewPanel, i);
+		DeSerializePanel(NewPanel, i, Registry);
 
 		if (IsDefaultPanel && NewPanel->Children.empty())
 		{

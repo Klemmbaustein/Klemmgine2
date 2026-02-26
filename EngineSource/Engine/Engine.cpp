@@ -48,7 +48,9 @@ Engine* Engine::Init()
 	Instance->LoadSubsystem(new PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
+#ifdef ENGINE_ENABLE_SOUND
 	Instance->LoadSubsystem(new sound::SoundSubsystem());
+#endif
 	Instance->LoadSubsystem(new script::ScriptSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());
 
@@ -83,8 +85,6 @@ void Engine::Run()
 	}
 	LoadedSystems.clear();
 
-	Instance = nullptr;
-	IsPlaying = false;
 	delete this;
 }
 

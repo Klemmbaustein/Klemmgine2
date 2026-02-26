@@ -12,6 +12,7 @@ engine::resource::ArchiveResourceSource::ArchiveResourceSource()
 	{
 		LoadArchive("scenes");
 		LoadArchive("scripts");
+		LoadArchive("shaders");
 	}
 
 	SceneArchives.clear();
@@ -80,7 +81,7 @@ void engine::resource::ArchiveResourceSource::LoadSceneFiles(string ScenePath)
 	for (auto& [Name, _] : LoadedArchives)
 	{
 		// The scenes and scripts archives are always loaded.
-		if (Name == "scenes" || Name == "scripts")
+		if (Name == "scenes" || Name == "scripts" || Name == "shaders")
 			continue;
 
 		if (!ArchivesToLoad.contains(Name))

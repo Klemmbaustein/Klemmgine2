@@ -15,7 +15,7 @@ VersionInfo VersionInfo::Get()
 #endif
 		.Architecture = STR(ENGINE_COMPILER_ID),
 #ifdef ENGINE_BUILD_ID
-		.Build = ENGINE_BUILD_ID + string(__DATE__),
+		.Build = ENGINE_BUILD_ID + string(" ") + __DATE__,
 #else
 		.Build = "Dev build - " __DATE__,
 #endif

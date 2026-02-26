@@ -2,6 +2,7 @@
 #include "DropdownMenu.h"
 #include "EditorIcons.h"
 #include "EditorTheme.h"
+#include "Panels/PanelRegistry.h"
 #include "Panels/EditorPanel.h"
 #include "StatusBar.kui.hpp"
 #include <Engine/Objects/Reflection/ObjectReflection.h>
@@ -175,10 +176,16 @@ namespace engine::editor
 
 		static string GetLayoutConfigPath();
 
+		PanelRegistry Panels;
+
 	private:
+
+		void RegisterDefaultPanels();
 
 		void LoadEditorStateConfig();
 		void SaveEditorStateConfig();
+
+		std::vector<DropdownMenu::Option> GetPanelMenuOptions();
 
 		kui::UIBackground* Root = nullptr;
 		kui::UIBackground* MenuBar = nullptr;
