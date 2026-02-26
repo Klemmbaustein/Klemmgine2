@@ -182,13 +182,13 @@ jobs:
       run: |
         cd ${{ github.workspace }}/windows
 
-        zip -r ${{ github.workspace }}/${{ env.WINDOWS_RELEASE_NAME }} ./*
+        zip -r "${{ github.workspace }}/${{ env.WINDOWS_RELEASE_NAME }}" ./*
 
         cd ${{ github.workspace }}
         ls -R
         chmod +x linux/Klemmgine
         chmod +x linux/Engine/Export/ProjectCompiler
-        tar -czf ${{ github.workspace }}/${{ env.LINUX_RELEASE_NAME }} linux
+        tar -czf "${{ github.workspace }}/${{ env.LINUX_RELEASE_NAME }}" linux
 
     - name: Update release
       uses: marvinpinto/action-automatic-releases@latest
