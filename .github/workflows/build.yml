@@ -145,7 +145,7 @@ jobs:
         mkdir -p "${{ github.workspace }}/out/editor/Engine/Export"
         mv "${{ github.workspace }}/out/editor/ProjectCompiler${{ case(matrix.target-os == 'windows-latest', '.exe', '') }}" "${{ github.workspace }}/out/editor/Engine/Export/"
         cp -rf "${{ github.workspace }}/Engine" "${{ github.workspace }}/out/editor"
-        cp -rf "${{ github.workspace }}/out/release" "${{ github.workspace }}/out/editor/Engine/Export"
+        cp -rf "${{ github.workspace }}/out/release/*" "${{ github.workspace }}/out/editor/Engine/Export"
 
         mkdir -p ${{ github.workspace }}/out/editor/Plugins/DebugUI
         cp ${{ github.workspace }}/Plugins/DebugUI/Plugin.k2p ${{ github.workspace }}/out/editor/Plugins/DebugUI/
@@ -156,3 +156,48 @@ jobs:
       with:
         path: ${{ github.workspace }}/out/editor
         name: klemmgine editor ${{ matrix.target-os }}
+
+  make-release:
+    runs-on: ubuntu-latest
+    needs: [combine-builds]
+    permissions: write-all
+    env:
+      WINDOWS_RELEASE_NAME: "Klemmgine 2 (x64 Windows)"
+      LINUX_RELEASE_NAME: "Klemmgine 2 (x64 Linux)"
+
+    steps:
+    - name: Download windows build
+      uses: actions/download-artifact@v5
+      with:
+        name: klemmgine editor windows-latest
+        path: ~/windows/
+
+    - name: Download linux build
+      uses: actions/download-artifact@v5
+      with:
+        name: klemmgine editor ubuntu-latest
+        path: ~/linux/
+
+    - name: Compress Artifacts
+      run: |
+        cd ${{ github.workspace }}/windows
+
+        zip -r ${{ github.workspace }}/${{ env.WINDOWS_RELEASE_NAME }} ./*
+
+        cd ${{ github.workspace }}
+        ls -R
+        chmod +x linux/Klemmgine
+        chmod +x linux/Engine/Export/ProjectCompiler
+        tar -czf ${{ github.workspace }}/${{ env.LINUX_RELEASE_NAME }} linux
+
+    - name: Update release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: dev
+        prerelease: true
+        title: Klemmgine 2 Build ${{ github.run_number }}
+        files: |
+          ${{ env.WINDOWS_RELEASE_NAME }}
+          ${{ env.LINUX_RELEASE_NAME }}
+

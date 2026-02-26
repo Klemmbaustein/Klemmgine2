@@ -12,19 +12,19 @@
 using namespace engine::editor;
 using namespace engine;
 
-bool subsystem::EditorSubsystem::Active = false;
+bool editor::EditorSubsystem::Active = false;
 
 static SerializedValue LastScene;
 
-engine::subsystem::EditorSubsystem::EditorSubsystem()
-	: Subsystem("Editor", Log::LogColor::Yellow)
+engine::editor::EditorSubsystem::EditorSubsystem()
+	: subsystem::Subsystem("Editor", Log::LogColor::Yellow)
 {
 	Engine::IsPlaying = false;
 	Engine::GameHasFocus = false;
 
 	debug::TimeLogger UITime{ "Created editor UI", GetLogPrefixes() };
 
-	UI = new editor::EditorUI();
+	UI = new EditorUI();
 	Active = true;
 
 	if (!std::filesystem::exists(".editor/"))
@@ -35,7 +35,7 @@ engine::subsystem::EditorSubsystem::EditorSubsystem()
 	Settings::GetInstance()->Graphics.Apply();
 }
 
-void engine::subsystem::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
+void engine::editor::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
 {
 	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
 		.Name = "ed.run",
@@ -57,19 +57,19 @@ void engine::subsystem::EditorSubsystem::RegisterCommands(ConsoleSubsystem* Syst
 		} });
 }
 
-engine::subsystem::EditorSubsystem::~EditorSubsystem()
+engine::editor::EditorSubsystem::~EditorSubsystem()
 {
 	Active = false;
 	delete UI;
 	Engine::GetSubsystem<ConsoleSubsystem>()->RemoveCommand("unload_editor");
 }
 
-void engine::subsystem::EditorSubsystem::Update()
+void engine::editor::EditorSubsystem::Update()
 {
 	UI->Update();
 }
 
-void engine::subsystem::EditorSubsystem::StartProject()
+void engine::editor::EditorSubsystem::StartProject()
 {
 	if (!Scene::GetMain())
 	{
@@ -86,7 +86,7 @@ void engine::subsystem::EditorSubsystem::StartProject()
 	EditorUI::SetStatusMessage("Running game", editor::EditorUI::StatusType::Info);
 }
 
-void engine::subsystem::EditorSubsystem::StopProject()
+void engine::editor::EditorSubsystem::StopProject()
 {
 	Engine::IsPlaying = false;
 	if (LastScene.GetType() != SerializedData::DataType::Null)

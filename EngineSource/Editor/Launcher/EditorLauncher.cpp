@@ -1,5 +1,6 @@
 #include "EditorLauncher.h"
 #include <Core/LaunchArgs.h>
+#include <Engine/Internal/PlatformGraphics.h>
 #include "CreateProjectWindow.h"
 #include <Editor/Editor.h>
 #include <Editor/Server/EditorServerSubsystem.h>
@@ -10,6 +11,7 @@
 #include <Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Engine.h>
 #include <Engine/MainThread.h>
+#include <Core/File/FileUtil.h>
 #include <kui/Window.h>
 #include <filesystem>
 #include <SDL3/SDL.h>
@@ -56,19 +58,19 @@ What isn't:
 - Some scripting language features (like enums, structs, generics) are only available to native code.
 
 Existing features and APIs might change.)",
-		VersionInfo::Get().Build, {
-			IDialogWindow::Option{
-				.Name = "Don't show again",
-				.OnClicked = [] {
-					Settings::GetInstance()->Interface.SetSetting("showDevWarning", false);
-					Settings::GetInstance()->Save();
-				},
-			},
-			IDialogWindow::Option{
-				.Name = "Ok",
-				.IsAccept = true,
-				.IsClose = true,
-			},
+VersionInfo::Get().Build, {
+	IDialogWindow::Option{
+		.Name = "Don't show again",
+		.OnClicked = [] {
+			Settings::GetInstance()->Interface.SetSetting("showDevWarning", false);
+			Settings::GetInstance()->Save();
+		},
+	},
+	IDialogWindow::Option{
+		.Name = "Ok",
+		.IsAccept = true,
+		.IsClose = true,
+	},
 			});
 	}
 }
@@ -89,6 +91,33 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 		});
 	});
 	LauncherToolbar->AddButton("Add existing project", EditorUI::Asset("ExitFolder.png"), [this]() {
+		auto Result = platform::OpenFileDialog({
+			platform::FileDialogFilter{
+				.Name = "Klemmgine projects",
+				.FileTypes = {"json"},
+			},
+			});
+
+		if (Result.empty())
+		{
+			return;
+		}
+		auto Projects = LauncherProject::GetProjects();
+
+		for (auto& i : Result)
+		{
+#if WINDOWS
+			i = str::ReplaceChar(i, '\\', '/');
+#endif
+
+			Projects.push_back(LauncherProject{
+				.Name = file::FileName(file::FilePath(i)),
+				.Path = file::FilePath(i),
+				});
+
+		}
+		LauncherProject::SaveProjects(Projects);
+		this->UpdateProjectList();
 	});
 
 	//LauncherToolbar->AddButton("Add server", "", [this]() {
@@ -116,11 +145,28 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	Element->content->AddChild(ProjectList);
 
 	Element->openButton->IsCollapsed = true;
+	Element->removeButton->IsCollapsed = true;
 
 	Element->openButton->btn->OnClicked = [this]() {
 		LauncherWindow->Close();
 		ProjectPathToLaunch = SelectedProject->Path;
 		this->Result = LauncherResult::LaunchProject;
+	};
+
+	Element->removeButton->btn->OnClicked = [this]() {
+		auto& Selected = SelectedProject->Path;
+		auto Projects = LauncherProject::GetProjects();
+
+		for (auto i = Projects.begin(); i < Projects.end(); i++)
+		{
+			if (i->Path == Selected)
+			{
+				Projects.erase(i);
+				break;
+			}
+		}
+		LauncherProject::SaveProjects(Projects);
+		this->UpdateProjectList();
 	};
 
 	Window::GetActiveWindow()->Markup.ListenToGlobal("Color_Background", AnyContainer(), this, [this]() {
@@ -185,6 +231,7 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 	SelectedProject = {};
 
 	Element->openButton->IsCollapsed = true;
+	Element->removeButton->IsCollapsed = true;
 
 	ProjectList->DeleteChildren();
 
@@ -212,8 +259,9 @@ void engine::editor::launcher::EditorLauncher::UpdateProjectList()
 			Elem->SetColor(EditorUI::Theme.HighlightDark);
 			SelectedProject = i;
 			Element->openButton->IsCollapsed = false;
+			Element->removeButton->IsCollapsed = false;
 			Element->UpdateElement();
-			Element->openButton->RedrawElement();
+			Element->footer->RedrawElement();
 		};
 		Projects.push_back(Elem);
 

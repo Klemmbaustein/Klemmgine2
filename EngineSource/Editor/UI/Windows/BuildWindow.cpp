@@ -17,7 +17,7 @@ engine::editor::BuildWindow::BuildWindow()
 			Option{.Name = "Build", .OnClicked = std::bind(&BuildWindow::StartBuild, this), .Close = false, .OnMainThread = false},
 			Option{.Name = "Cancel", .Close = true},
 		}
-		, kui::Vec2ui(400, 500))
+		, kui::Vec2ui(400, 350))
 {
 	this->Open();
 }
@@ -82,13 +82,13 @@ void engine::editor::BuildWindow::Begin()
 	ConfigDropdown->SelectOption(0, false);
 
 	AddElement("Configuration", ConfigDropdown, Background);
+	AddCheckbox("Multi threaded build", MultiThreaded, Background);
 #else
 	AddBuildHeader("Build Settings", Background);
 #endif
 
-	AddCheckbox("Compress assets", CompressAssets, Background);
+	//AddCheckbox("Compress assets", CompressAssets, Background);
 	AddCheckbox("Include dev plugins", IncludeDevPlugins, Background);
-	AddCheckbox("Multi threaded build", MultiThreaded, Background);
 
 	AddSeparator(Background);
 

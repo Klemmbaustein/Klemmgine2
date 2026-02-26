@@ -2,7 +2,7 @@
 #include <Core/Types.h>
 #include <Core/File/SerializedData.h>
 
-namespace engine::editor
+namespace engine
 {
 	class ProjectFile : public ISerializable
 	{
@@ -15,7 +15,8 @@ namespace engine::editor
 
 		void Save(string ToPath);
 
-		string Name;
+		string Name = "Untitled";
 		string EngineVersion;
+		string StartupScene;
 	};
 }

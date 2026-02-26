@@ -17,7 +17,7 @@ namespace std
 	namespace fs = std::filesystem;
 }
 
-void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
+static void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 {
 	static std::vector<string> Executables = {
 		"Klemmgine"
@@ -141,6 +141,11 @@ int main(int argc, char** argv)
 
 	std::fs::create_directories(std::fs::path(OutPath) / "Assets");
 	Log::Info("Building into " + std::fs::canonical(OutPath).string() + " from " + std::fs::canonical(".").string());
+
+	if (std::filesystem::exists("project.json"))
+	{
+		std::fs::copy("project.json", std::fs::path(OutPath) / "Assets" / "project.json");
+	}
 
 	try
 	{

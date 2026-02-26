@@ -231,7 +231,7 @@ void engine::Scene::OnResized(kui::Vec2ui NewSize)
 	else
 	{
 #if EDITOR
-		if (EditorSubsystem::Active)
+		if (editor::EditorSubsystem::Active)
 		{
 			auto Size = GetEditorSize(NewSize);
 			this->PostProcess.OnBufferResized(uint32(Size.X), uint32(Size.Y));
@@ -538,6 +538,9 @@ void engine::Scene::LoadInternal(string File, bool Async)
 
 	SerializedValue SceneData;
 	Name = File;
+
+	File = File.substr(0, File.find_last_of('.'));
+
 	try
 	{
 		if (resource::FileExists(File))
@@ -605,7 +608,7 @@ void engine::Scene::Init()
 	{
 		kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
 #if EDITOR
-		if (EditorSubsystem::Active)
+		if (editor::EditorSubsystem::Active)
 		{
 			BufferSize = GetEditorSize(BufferSize);
 		}

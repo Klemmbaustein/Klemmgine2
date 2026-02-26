@@ -55,7 +55,7 @@ Engine* Engine::Init()
 	Instance->LoadSubsystem(new SceneSubsystem());
 
 #ifdef EDITOR
-	Instance->LoadSubsystem(new EditorSubsystem());
+	Instance->LoadSubsystem(new editor::EditorSubsystem());
 #endif
 
 	return Instance;

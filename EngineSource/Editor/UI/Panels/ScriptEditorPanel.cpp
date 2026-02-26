@@ -231,8 +231,6 @@ void engine::editor::ScriptEditorPanel::Save()
 
 	if (Tab)
 	{
-		std::filesystem::create_directories("Scripts/");
-
 		std::ofstream out = std::ofstream(Tab->Provider->EditedFile);
 
 		if (Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool())
