@@ -22,7 +22,15 @@ PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform,
 		}
 		else
 		{
-			this->Manager = &Parent->GetRootObject()->GetScene()->Physics;
+			auto obj = Parent->GetRootObject();
+			if (obj)
+			{
+				this->Manager = &obj->GetScene()->Physics;
+			}
+			else
+			{
+				Log::Warn("Attempted to create a physics shape but it's component is not attached to any object!");
+			}
 		}
 	}
 }

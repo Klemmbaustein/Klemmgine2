@@ -3,6 +3,7 @@
 #include <Engine/Objects/Components/MoveComponent.h>
 #include <Engine/Objects/Components/CameraComponent.h>
 #include <Engine/Objects/Components/PhysicsComponent.h>
+#include <Engine/Objects/Components/CollisionComponent.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Engine/Script/ScriptObject.h>
@@ -231,6 +232,24 @@ static void PhysicsComponent_createSphere(InterpretContext* context)
 	Component.getValue()->CreateSphere(MotionType, Layer);
 }
 
+static void PhysicsComponent_setIsActive(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Bool Active = context->popValue<Bool>();
+
+	Component.getValue()->SetActive(Active);
+}
+
+static void PhysicsComponent_setIsCollisionEnabled(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Bool CollisionEnabled = context->popValue<Bool>();
+
+	Component.getValue()->SetCollisionEnabled(CollisionEnabled);
+}
+
 static void PhysicsComponent_collisionTest(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
@@ -249,6 +268,34 @@ static void PhysicsComponent_collisionTest(InterpretContext* context)
 	context->pushValue(createArray(Classes.data(), Classes.size(), true));
 }
 
+static void PhysicsComponent_shapeCast(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	ClassPtr<ArrayData> IgnoredObjects = context->popPtr<ArrayData>();
+	physics::Layer Layer = physics::Layer(context->popValue<Int>());
+	Vector3 End = context->popValue<Vector3>();
+
+	std::set<SceneObject*> IgnoredSet;
+
+	for (uint32_t i = 0; i < IgnoredObjects->length; i++)
+	{
+		IgnoredSet.insert(*reinterpret_cast<SceneObject**>(IgnoredObjects->at<RuntimeClass*>(i)->getBody()));
+	}
+
+	auto Hit = Component.getValue()->ShapeCast(Component.getValue()->GetWorldTransform(), End,
+		Layer, IgnoredSet);
+
+	std::vector<ds::RuntimeClass*> Classes;
+
+	for (auto& h : Hit)
+	{
+		Classes.push_back(NativeModule::makeClass(h));
+	}
+
+	context->pushValue(createArray(Classes.data(), Classes.size(), true));
+}
+
 static void PhysicsComponent_onBeginOverlap(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
@@ -256,6 +303,30 @@ static void PhysicsComponent_onBeginOverlap(InterpretContext* context)
 	CallableWrapper<void> Callable = { context->popValue<RuntimeClass*>(), context };
 
 	Component.getValue()->OnBeginOverlap = Callable;
+}
+
+static void CollisionComponent_new(InterpretContext* context)
+{
+	ClassRef<CollisionComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new CollisionComponent();
+	context->pushValue(Component);
+}
+
+static void CollisionComponent_load(InterpretContext* context)
+{
+	ClassRef<CollisionComponent*> Component = context->popValue<RuntimeClass*>();
+	ClassPtr<AssetRef*> File = context->popPtr<AssetRef*>();
+
+	Component.getValue()->Load(**File);
+}
+
+static void CollisionComponent_setIsCollisionEnabled(InterpretContext* context)
+{
+	ClassRef<CollisionComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Bool CollisionEnabled = context->popValue<Bool>();
+
+	Component.getValue()->SetCollisionEnabled(CollisionEnabled);
 }
 
 static void MoveComponent_new(InterpretContext* context)
@@ -568,7 +639,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({ },
 			FloatInst, "getDelta", &Stats_GetDelta));
 
-	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Vec3, "getWorldPosition", &ObjectComponent_GetWorldPosition));
+	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Vec3, "getWorldPosition",
+		&ObjectComponent_GetWorldPosition));
 
 	auto MeshComponentType = EngineModule.createClass<MeshComponent*>("MeshComponent", ComponentType);
 
@@ -601,6 +673,25 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
+			{ FunctionArgument(Math.Vec3, "targetPosition"), FunctionArgument(Physics.LayerType, "layer"),
+			FunctionArgument(ToContext->registry->getArray(ObjectType), "ignoredObjects") },
+			ToContext->registry->getArray(Physics.HitResultType), "shapeCast",
+			&PhysicsComponent_shapeCast));
+
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
+			{ FunctionArgument(BoolInst, "isActive") },
+			nullptr, "setIsActive",
+			&PhysicsComponent_setIsActive));
+
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
+			{ FunctionArgument(BoolInst, "isCollisionEnabled") },
+			nullptr, "setIsCollisionEnabled",
+			&PhysicsComponent_setIsCollisionEnabled));
+
+	EngineModule.addClassMethod(PhysicsComponentType,
+		NativeFunction(
 			{ FunctionArgument(Physics.LayerType, "layer") },
 			ToContext->registry->getArray(Physics.HitResultType), "collisionTest",
 			&PhysicsComponent_collisionTest));
@@ -610,6 +701,22 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 			{ FunctionArgument(ds::FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped") },
 			nullptr, "onBeginOverlap",
 			&PhysicsComponent_onBeginOverlap));
+
+	auto CollisionComponentType = EngineModule.createClass<PhysicsComponent*>("CollisionComponent", ComponentType);
+
+	EngineModule.addClassConstructor(CollisionComponentType, NativeFunction({}, nullptr,
+		"CollisionComponent.new", &CollisionComponent_new));
+
+	EngineModule.addClassMethod(CollisionComponentType,
+		NativeFunction({ FunctionArgument(AssetRefType, "mesh") }, nullptr,
+			"load", &CollisionComponent_load));
+
+	EngineModule.addClassMethod(CollisionComponentType,
+		NativeFunction(
+			{ FunctionArgument(BoolInst, "isCollisionEnabled") },
+			nullptr, "setIsCollisionEnabled",
+			&CollisionComponent_setIsCollisionEnabled));
+
 
 	auto MoveComponentType = EngineModule.createClass<MoveComponent*>("MoveComponent", ComponentType);
 

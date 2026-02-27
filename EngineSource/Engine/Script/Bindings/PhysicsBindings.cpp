@@ -49,6 +49,20 @@ static void HitResult_getHitObject(InterpretContext* context)
 	}
 }
 
+static void Physics_combineHits(InterpretContext* context)
+{
+	ClassPtr<ArrayData> Hits = context->popPtr<ArrayData>();
+	std::vector<physics::HitResult> Items;
+
+	for (uint32_t i = 0; i < Hits->length; i++)
+	{
+		Items.push_back(*reinterpret_cast<physics::HitResult*>(Hits->at<RuntimeClass*>(i)->getBody()));
+	}
+
+	context->pushValue(Items.empty() ? nullptr :
+		NativeModule::makeClass(physics::HitResult::GetAverageHit(Items)));
+}
+
 script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
 	auto StrType = ToContext->registry->getEntry<StringType>();
@@ -101,7 +115,8 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 		.type = VecType
 		});
 
-	To.addClassMethod(HitResultType, NativeFunction({}, ObjectType->nullable, "getHitObject", HitResult_getHitObject));
+	To.addClassMethod(HitResultType, NativeFunction({}, ObjectType->nullable, "getHitObject",
+		HitResult_getHitObject));
 
 	auto PhysicsManagerType = To.createClass<physics::PhysicsManager*>("PhysicsManager");
 
@@ -111,6 +126,9 @@ script::PhysicsBindings engine::script::AddPhysicsModule(ds::NativeModule& To, L
 		FunctionArgument(PhysicsLayerType, "layer"),
 		FunctionArgument(ToContext->registry->getArray(ObjectType), "ignoredObjects")
 		}, HitResultType->nullable, "rayCast", &Physics_rayCast));
+
+	To.addFunction(NativeFunction({ FunctionArgument(ToContext->registry->getArray(HitResultType), "hits") },
+		HitResultType, "combineHits", &Physics_combineHits));
 
 	PhysicsManagerType->members.push_back(ClassMember{
 		.name = "isActive",

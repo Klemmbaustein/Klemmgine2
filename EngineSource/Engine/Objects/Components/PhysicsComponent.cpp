@@ -26,9 +26,11 @@ void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, phys
 		Layers,
 		this);
 
-	if (StartEnabled)
+	auto Root = GetRootObject();
+
+	if (StartEnabled && Root)
 	{
-		GetRootObject()->GetScene()->Physics.AddBody(Body, true, true);
+		Root->GetScene()->Physics.AddBody(Body, true, true);
 		Added = true;
 	}
 	else
