@@ -40,7 +40,7 @@ void engine::CameraComponent::Update()
 
 void engine::CameraComponent::Use()
 {
-	if (!Engine::IsPlaying)
+	if (!Engine::IsPlaying  || !GetRootObject())
 	{
 		return;
 	}

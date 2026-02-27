@@ -28,9 +28,7 @@
 			},
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-				"USE_WINDOWS_SUBSYSTEM": "OFF",
-				"IS_SOURCELESS_BUILD": "ON",
-				"ENGINE_BUILD_ID": "Woah"
+				"USE_WINDOWS_SUBSYSTEM": "OFF"
 			}
 		},
 		{
