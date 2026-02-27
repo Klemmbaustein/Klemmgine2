@@ -162,8 +162,8 @@ jobs:
     needs: [combine-builds]
     permissions: write-all
     env:
-      WINDOWS_RELEASE_NAME: "Klemmgine 2 (x64 Windows)"
-      LINUX_RELEASE_NAME: "Klemmgine 2 (x64 Linux)"
+      WINDOWS_RELEASE_NAME: "Klemmgine-2-x64-Windows"
+      LINUX_RELEASE_NAME: "Klemmgine-2-x64-Linux"
 
     steps:
     - name: Download windows build
