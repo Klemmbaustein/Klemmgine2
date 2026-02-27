@@ -198,6 +198,6 @@ jobs:
         prerelease: true
         title: Klemmgine 2 Build ${{ github.run_number }}
         files: |
-          "${{ github.workspace }}/${{ env.WINDOWS_RELEASE_NAME }}"
-          "${{ github.workspace }}/${{ env.LINUX_RELEASE_NAME }}"
+          ${{ github.workspace }}/${{ env.WINDOWS_RELEASE_NAME }}.zip
+          ${{ github.workspace }}/${{ env.LINUX_RELEASE_NAME }}.tar.gz
 
