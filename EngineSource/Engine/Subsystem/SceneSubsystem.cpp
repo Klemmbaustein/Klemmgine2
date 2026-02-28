@@ -50,6 +50,27 @@ void engine::SceneSubsystem::Update()
 	{
 		scn->Update();
 	}
+
+	for (auto& i : ToDelete)
+	{
+		delete i;
+	}
+}
+
+void engine::SceneSubsystem::SetAsMain(Scene* Target)
+{
+	if (Main == Target)
+	{
+		return;
+	}
+
+	Print(str::Format("Setting new scene as main: %s", Target->Name.c_str()));
+
+	if (Main)
+	{
+		ToDelete.push_back(Main);
+	}
+	Main = Target;
 }
 
 void engine::SceneSubsystem::LoadSceneThread(string SceneName)

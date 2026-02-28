@@ -3,6 +3,9 @@
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Editor/UI/EditorUI.h>
 #include <Engine/MainThread.h>
+#include <Core/File/FileUtil.h>
+#include <filesystem>
+#include <Editor/Editor.h>
 
 using namespace kui;
 
@@ -25,26 +28,13 @@ void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, Setti
 		Settings::GetInstance()->Interface.SetSetting("uiScale", float(UIScale / 100.0f));
 	});
 
-	std::vector Options = {
-	UIDropdown::Option{
-		.Name = "Dark",
-	},
-	UIDropdown::Option{
-		.Name = "Light",
-	},
-	UIDropdown::Option{
-		.Name = "Solarized",
-	},
-	UIDropdown::Option{
-		.Name = "Windows 10",
-	},
-	UIDropdown::Option{
-		.Name = "Windows 10 Dark",
-	},
-	UIDropdown::Option{
-		.Name = "Catppuccin",
-	},
-	};
+	std::vector<UIDropdown::Option> Options;
+
+	for (auto& i : std::filesystem::directory_iterator(GetEditorPath() + "/Editor/Themes"))
+	{
+		if (i.is_regular_file() && i.path().extension() == ".k2t")
+			Options.push_back(UIDropdown::Option(file::FileNameWithoutExt(i.path().string())));
+	}
 
 	auto Index = std::ranges::find_if(Options, [](const UIDropdown::Option& o) {
 		return o.Name == EditorUI::Theme.Name;

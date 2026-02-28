@@ -78,6 +78,7 @@ void engine::editor::EditorSubsystem::StartProject()
 	}
 
 	Engine::IsPlaying = true;
+	Engine::GameHasFocus = true;
 	//Unload();
 
 	input::ShowMouseCursor = false;
