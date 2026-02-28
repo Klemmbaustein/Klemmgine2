@@ -562,7 +562,11 @@ void engine::Scene::LoadInternal(string File, bool Async)
 			Name = File + ".kts";
 			std::stringstream stream;
 			stream << resource::GetTextFile(Name);
-			SceneData = TextSerializer::FromStream(stream);
+
+			if (stream.str().size() != 0)
+			{
+				SceneData = TextSerializer::FromStream(stream);
+			}
 		}
 		else if (resource::FileExists(File + ".kbs"))
 		{

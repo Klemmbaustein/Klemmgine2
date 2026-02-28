@@ -73,6 +73,7 @@ namespace engine::editor
 
 		void OnItemDropped(EditorUI::DraggedItem Item);
 		bool ShowUI = false;
+		bool LastCursorVisible = false;
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
 		void HighlightComponents(DrawableComponent* Target, bool Highlighted);
