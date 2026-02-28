@@ -185,6 +185,7 @@ namespace engine::editor
 		static float DragStartPosition;
 
 		bool IsHovered();
+		void UpdateFocusState();
 
 		/**
 		 * @brief
@@ -223,7 +224,6 @@ namespace engine::editor
 		void ClearParent();
 		void HandleResizing();
 		void HandleResizeDrag();
-		void UpdateFocusState();
 		void MovePanel();
 		void UpdatePanelMove();
 		void AddTabFor(EditorPanel* Target, bool Selected);

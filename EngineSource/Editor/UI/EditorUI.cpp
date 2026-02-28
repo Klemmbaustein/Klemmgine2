@@ -50,17 +50,20 @@ static std::map<engine::string, Vec3f> FileNameColors =
 	{ "kts", Vec3f(0.6f, 0.1f, 0.3f) },
 	{ "kmdl", Vec3f(0.3f, 0.4f, 0.7f) },
 	{ "dir/", Vec3f(0.7f, 0.5f, 0) },
+	{ "ds", Vec3f(0.4f, 0.1f, 0.7f) },
+	{ "kui", Vec3f(0.4f, 0.1f, 0.7f)},
 };
 static std::map<string, string> FileNameIcons =
 {
 	{ "", "Document.png" },
 	{ "png", "Texture.png" },
 	{ "kmt", "Material.png" },
-	{ "kts", "" },
+	{ "kts", "Scene.png" },
 	{ "kmdl", "Model.png" },
 	{ "vert", "VertexShader.png" },
 	{ "frag", "FragmentShader.png" },
-	{ "ds", "Code.png" },
+	{ "ds", "Script.png" },
+	{ "kui", "UIScript.png" },
 	{ "dir/", "Folder.png" },
 };
 
@@ -351,6 +354,7 @@ engine::editor::EditorUI::~EditorUI()
 	delete MainBackground->GetAbsoluteParent();
 
 	VideoSystem->OnResized();
+	Engine::GameHasFocus = true;
 	input::ShowMouseCursor = false;
 }
 
