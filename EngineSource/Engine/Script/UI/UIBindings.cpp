@@ -214,7 +214,6 @@ static void UIText_new(InterpretContext* context)
 
 	context->pushValue(cls);
 }
-
 static void UIText_setText(InterpretContext* context)
 {
 	ClassRef<UIText*> cls = context->popValue<RuntimeClass*>();
@@ -236,6 +235,47 @@ static void UIText_setColor(InterpretContext* context)
 	cls.getValue()->SetColor(text);
 
 	cls.classPtr->addRef();
+	context->pushValue(cls);
+}
+
+static void UIScrollBox_new(InterpretContext* context)
+{
+	ClassRef<UIScrollBox*> cls = context->popValue<RuntimeClass*>();
+	Bool ShowScrollBar = context->popValue<Bool>();
+	Bool Horizontal = context->popValue<Bool>();
+
+	cls.getValue() = new UIScrollBox(Horizontal, 0, ShowScrollBar);
+
+	context->pushValue(cls);
+}
+
+static void UITextField_new(InterpretContext* context)
+{
+	ClassRef<UITextField*> cls = context->popValue<RuntimeClass*>();
+	Vec3f Color = context->popValue<Vec3f>();
+
+	cls.getValue() = new UITextField(0, Color, VideoSubsystem::Current->DefaultFont, nullptr);
+
+	context->pushValue(cls);
+}
+
+static void UITextField_setOnSubmit(InterpretContext* context)
+{
+	ClassRef<UITextField*> cls = context->popValue<RuntimeClass*>();
+	CallableWrapper<void> OnSubmit = { context->popValue<RuntimeClass*>(), context };
+
+	cls.getValue()->OnChanged = OnSubmit;
+
+	context->pushValue(cls);
+}
+
+static void UITextField_setOnChanged(InterpretContext* context)
+{
+	ClassRef<UITextField*> cls = context->popValue<RuntimeClass*>();
+	CallableWrapper<void> OnChanged = { context->popValue<RuntimeClass*>(), context };
+
+	cls.getValue()->OnValueChanged = OnChanged;
+
 	context->pushValue(cls);
 }
 
@@ -346,6 +386,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	auto AddUIMethod = [&To](ClassType* type, NativeFunction fn) {
 		fn.isDiscardable = true;
+		fn.returnType = type;
 
 		To.addClassMethod(type, fn);
 	};
@@ -386,13 +427,26 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	AddUIMethod(UIBackgroundType,
 		NativeFunction({ FunctionArgument(Vec3Type, "newColor") },
-			UITextType, "setColor", &UIBackground_setColor));
+			UIBackgroundType, "setColor", &UIBackground_setColor));
 
 	AddUIMethod(UIBackgroundType,
 		NativeFunction({ FunctionArgument(Vec3Type, "newColor") },
-			UITextType, "setBorder", & UIBackground_setBorder));
+			UIBackgroundType, "setBorder", &UIBackground_setBorder));
 
-	auto UIButtonType = To.createClass<UIBackground*>("UIButton", UIBoxType);
+	auto UITextFieldType = To.createClass<UIText*>("UITextField", UIBackgroundType);
+	To.addClassConstructor(UITextFieldType, NativeFunction(
+		{ FunctionArgument(Vec3Type, "color") },
+		nullptr, "UITextField.new", &UITextField_new));
+
+	AddUIMethod(UITextFieldType, NativeFunction(
+		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
+		UITextFieldType, "setOnSubmit", & UITextField_setOnSubmit));
+
+	AddUIMethod(UITextFieldType, NativeFunction(
+		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
+		UITextFieldType, "setOnChanged", & UITextField_setOnChanged));
+
+	auto UIButtonType = To.createClass<UIBackground*>("UIButton", UIBackgroundType);
 	To.addClassConstructor(UIButtonType,
 		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color"),
 			FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onClicked") },
@@ -400,7 +454,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	AddUIMethod(UIButtonType,
 		NativeFunction({ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onClicked") },
-		UITextType, "setOnClicked", &UIButton_setOnClicked));
+			UIButtonType, "setOnClicked", &UIButton_setOnClicked));
 
 	auto CanvasType = To.createClass<ScriptUICanvas*>("Canvas");
 
@@ -419,7 +473,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	To.addClassMethod(ElementType,
 		NativeGenericFunction({ FunctionArgument(StrType, "name") }, { GenericArgument("T", UIBoxType) },
-			GenericArgumentType::getInstance(0, true), "getChild", & UIScriptElement_getChild));
+			GenericArgumentType::getInstance(0, true), "getChild", &UIScriptElement_getChild));
 
 	To.addFunction(NativeFunction({ FunctionArgument(FloatInst, "pixelValue") }, SizeType, "pixels", UI_pixels));
 

@@ -25,6 +25,7 @@ void engine::editor::RenameWindow::Begin()
 	RenameElement->SetFromString(str::Format("From:  %s", file::FileNameWithoutExt(File).c_str()));
 	RenameElement->field->field->SetText(file::FileNameWithoutExt(File));
 	EditField = RenameElement->field->field;
+	EditField->SelectAll();
 
 	Background->AddChild(RenameElement);
 }

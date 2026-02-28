@@ -27,6 +27,7 @@
 #include "Bindings/PhysicsBindings.h"
 #include "UI/UIBindings.h"
 #include <ds/parser/types/functionType.hpp>
+#include <Engine/Subsystem/SceneSubsystem.h>
 
 #define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr(str::Format("Got null object: %s", __FUNCTION__).c_str())); return;}
 
@@ -53,6 +54,25 @@ static void Scene_new(InterpretContext* context)
 
 	NewScene.getValue() = new Scene();
 	context->pushValue(NewScene);
+}
+
+static void Scene_setAsMain(InterpretContext* context)
+{
+	ClassRef<Scene*> NewScene = context->popValue<RuntimeClass*>();
+
+	if (Engine::IsPlaying)
+	{
+		SceneSubsystem::Current->SetAsMain(NewScene.getValue());
+	}
+}
+
+static void openScene(InterpretContext* context)
+{
+	auto Scene = context->popRuntimeString();
+	if (Engine::IsPlaying)
+	{
+		SceneSubsystem::Current->LoadSceneAsync(string(Scene.ptr(), Scene.length()));
+	}
 }
 
 static void Scene_getMainScene(InterpretContext* context)
@@ -99,6 +119,14 @@ static void Scene_getName(InterpretContext* context)
 
 	auto& Name = TargetScene.getValue()->Name;
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
+}
+
+static void Scene_setName(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+	auto NewName = context->popRuntimeString();
+
+	TargetScene.getValue()->Name = string(NewName.ptr(), NewName.length());
 }
 
 static void Scene_createNewObject(InterpretContext* context)
@@ -447,6 +475,14 @@ static void Input_IsRMBClicked(InterpretContext* context)
 	context->pushValue<Bool>(IsRMBClicked);
 }
 
+static void Input_setShowMouseCursor(InterpretContext* context)
+{
+	if (Engine::GameHasFocus)
+	{
+		input::ShowMouseCursor = context->popValue<Bool>();
+	}
+}
+
 #pragma endregion
 
 static void Vector3_Length(InterpretContext* context)
@@ -543,6 +579,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({}, StrType, "getName", &Scene_getName));
 
 	EngineModule.addClassMethod(SceneType,
+		NativeFunction({ FunctionArgument(StrType, "newName") }, nullptr, "setName", &Scene_setName));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({ }, nullptr, "setAsMain", &Scene_setAsMain));
+
+	EngineModule.addClassMethod(SceneType,
 		NativeGenericFunction({}, { GenericArgument("T", ObjectType) },
 			GenericArgumentType::getInstance(0, true), "createNewObject", &Scene_createNewObject));
 
@@ -553,6 +595,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 		NativeFunction({}, Physics.PhysicsManagerType, "getPhysics", &Scene_getPhysics));
 
 	EngineModule.addFunction(NativeFunction({}, SceneType->nullable, "getMainScene", &Scene_getMainScene));
+	EngineModule.addFunction(NativeFunction({ FunctionArgument(StrType, "name") }, nullptr, "openScene", &openScene));
 
 	ComponentType->members.push_back(ClassMember{
 		.name = "position",
@@ -854,6 +897,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineInputModule.addFunction(NativeFunction({ },
 		Math.Vec2, "getMouseMovement", &Input_GetMouseMovement));
+
+	EngineInputModule.addFunction(NativeFunction({FunctionArgument(BoolInst, "newValue")}, nullptr,
+		"setShowMouseCursor", &Input_setShowMouseCursor));
 
 	EngineModuleData OutData;
 	OutData.ExportAttributeType = EngineModule.addAttribute(new ExportAttribute());

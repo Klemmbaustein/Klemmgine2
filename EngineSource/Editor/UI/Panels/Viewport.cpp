@@ -93,24 +93,24 @@ engine::editor::Viewport::Viewport()
 	AddShortcut(Key::LEFT, {}, [this, Win] {
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, -Speed));
-	});
+	}, ShortcutOptions::Global);
 
 	AddShortcut(Key::RIGHT, {}, [this, Win] {
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, Speed));
-	});
+	}, ShortcutOptions::Global);
 
 	AddShortcut(Key::DOWN, {}, [this, Win] {
 		bool ShiftDown = Win->Input.IsKeyDown(Key::SHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, -Speed, 0) : Vector3(-Speed, 0, 0));
-	});
+	}, ShortcutOptions::Global);
 
 	AddShortcut(Key::UP, {}, [this, Win] {
 		bool ShiftDown = Win->Input.IsKeyDown(Key::SHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
-	});
+	}, ShortcutOptions::Global);
 
 	AddShortcut(Key::c, Key::CTRL, [this, Win] {
 		std::stringstream Stream;
@@ -167,6 +167,10 @@ engine::editor::Viewport::Viewport()
 		if (input::IsKeyDown(input::Key::SHIFT))
 		{
 			EditorUI::FocusedPanel = nullptr;
+			UpdateFocusState();
+			Engine::GameHasFocus = false;
+			LastCursorVisible = input::ShowMouseCursor;
+			input::ShowMouseCursor = true;
 		}
 		else
 		{
@@ -314,8 +318,11 @@ void engine::editor::Viewport::Update()
 
 	if (Engine::IsPlaying)
 	{
+		if (!Engine::GameHasFocus && HasFocus)
+		{
+			input::ShowMouseCursor = LastCursorVisible;
+		}
 		Engine::GameHasFocus = HasFocus;
-		input::ShowMouseCursor = HasFocus ? false : true;
 		Translate->SetVisible(false);
 
 		return;

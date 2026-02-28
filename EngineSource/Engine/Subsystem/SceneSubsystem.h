@@ -23,7 +23,11 @@ namespace engine
 
 		void Update() override;
 
+		void SetAsMain(Scene* Target);
+
 		std::vector<Scene*> LoadedScenes;
+
+		std::vector<Scene*> ToDelete;
 
 		Scene* Main = nullptr;
 		bool IsLoading = false;
