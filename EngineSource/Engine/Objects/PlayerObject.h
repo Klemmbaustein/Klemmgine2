@@ -12,7 +12,7 @@ namespace engine
 		CameraComponent* Cam = nullptr;
 		MoveComponent* Movement = nullptr;
 
-		ENGINE_OBJECT(PlayerObject, "Game");
+		ENGINE_OBJECT(PlayerObject, "Engine");
 
 		ObjProperty<AssetRef> PlayerModel = ObjProperty<AssetRef>("Model", "Cube.kmdl"_asset, this);
 		ObjProperty<float> Fov = ObjProperty<float>("FOV", 70.0f, this);
