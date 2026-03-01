@@ -6,17 +6,17 @@
 
 static const std::map<engine::SerializedData::DataType, engine::string> TypeNames =
 {
-  { engine::SerializedData::DataType::Null, "null" },
-  { engine::SerializedData::DataType::Int32, "int" },
-  { engine::SerializedData::DataType::Byte, "byte" },
-  { engine::SerializedData::DataType::Boolean, "bool" },
-  { engine::SerializedData::DataType::Float, "float" },
-  { engine::SerializedData::DataType::Vector3, "vec3" },
-  { engine::SerializedData::DataType::Vector2, "vec2" },
-  { engine::SerializedData::DataType::String, "str" },
-  { engine::SerializedData::DataType::Array, "array" },
-  { engine::SerializedData::DataType::Internal_BinaryTypedArray, "typed_array" },
-  { engine::SerializedData::DataType::Object, "obj" },
+	{ engine::SerializedData::DataType::Null, "null" },
+	{ engine::SerializedData::DataType::Int32, "int" },
+	{ engine::SerializedData::DataType::Byte, "byte" },
+	{ engine::SerializedData::DataType::Boolean, "bool" },
+	{ engine::SerializedData::DataType::Float, "float" },
+	{ engine::SerializedData::DataType::Vector3, "vec3" },
+	{ engine::SerializedData::DataType::Vector2, "vec2" },
+	{ engine::SerializedData::DataType::String, "str" },
+	{ engine::SerializedData::DataType::Array, "array" },
+	{ engine::SerializedData::DataType::Internal_BinaryTypedArray, "typed_array" },
+	{ engine::SerializedData::DataType::Object, "obj" },
 };
 
 void engine::TextSerializer::ToStream(const std::vector<SerializedData>& Target, std::ostream& Stream)

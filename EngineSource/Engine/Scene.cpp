@@ -185,9 +185,9 @@ void engine::Scene::Update()
 	if (Physics.Active)
 		Physics.Update();
 
-	for (SceneObject* Obj : Objects)
+	for (size_t i = 0; i < Objects.size(); i++)
 	{
-		Obj->UpdateObject();
+		Objects[i]->UpdateObject();
 	}
 
 	for (SceneObject* Destroyed : DestroyedObjects)
