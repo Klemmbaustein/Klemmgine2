@@ -137,7 +137,8 @@ void engine::editor::EngineTextEditorProvider::InsertCompletion(const AutoComple
 		size_t LastWhitespace = Text.find_first_not_of(" \t");
 		Text = Text.substr(0, LastWhitespace);
 
-		ParentEditor->Insert(Text + "using " + Result.completionModule + "\n", EditorPosition(0, GetCompletionUsingLine()), true, false);
+		ParentEditor->Insert(Text + "using " + Result.completionModule + "\n",
+			EditorPosition(0, GetCompletionUsingLine()), true, false);
 		Position.Line++;
 	}
 

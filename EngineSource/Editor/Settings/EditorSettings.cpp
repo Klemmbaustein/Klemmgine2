@@ -2,6 +2,7 @@
 #include <Core/File/JsonSerializer.h>
 #include <Editor/Editor.h>
 #include <Core/Log.h>
+#include <filesystem>
 
 using namespace engine;
 using namespace engine::editor;
@@ -31,6 +32,7 @@ engine::editor::Settings::~Settings()
 
 void engine::editor::Settings::Save()
 {
+	std::filesystem::create_directory(GetEditorPath() + "/Config/);
 	JsonSerializer::ToFile(Serialize(), GetSettingsPath(), JsonSerializer::WriteOptions(true));
 }
 
