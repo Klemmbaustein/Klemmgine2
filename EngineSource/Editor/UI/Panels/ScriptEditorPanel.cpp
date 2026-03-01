@@ -205,6 +205,8 @@ void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 		Vec3f BgColor = Selected == &t ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background;
 		Vec3f OutlineColor = Selected == &t ? EditorUI::Theme.Highlight1 : EditorUI::Theme.Background;
 
+		string Name = file::FileName(t.Provider->EditedFile);
+
 		TabBox->AddChild((new UIButton(true, 0, BgColor, [this, i]() {
 			OpenTab(i);
 		}))
@@ -213,7 +215,7 @@ void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetMinWidth(UISize::Parent(1))
 			->SetPadding(5_px, 0, 5_px, 5_px)
-			->AddChild((new UIText(12_px, EditorUI::Theme.Text, file::FileName(t.Provider->EditedFile), EditorUI::EditorFont))
+			->AddChild((new UIText(12_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
 				->SetTextWidthOverride(152_px)
 				->SetPadding(4_px))
 			->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, [this, i]() {

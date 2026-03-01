@@ -29,7 +29,10 @@
 #include <ds/parser/types/functionType.hpp>
 #include <Engine/Subsystem/SceneSubsystem.h>
 
-#define CHECK_OBJ(obj) if (!obj.getValue()) {context->runtimePanic(RuntimeStr(str::Format("Got null object: %s", __FUNCTION__).c_str())); return;}
+#define CHECK_OBJ(obj) if (!obj.getValue()) { \
+	context->runtimePanic(RuntimeStr(str::Format("Got null object: %s", __FUNCTION__).c_str())); \
+	return; \
+}
 
 using namespace ds;
 using namespace engine::input;
@@ -898,7 +901,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 	EngineInputModule.addFunction(NativeFunction({ },
 		Math.Vec2, "getMouseMovement", &Input_GetMouseMovement));
 
-	EngineInputModule.addFunction(NativeFunction({FunctionArgument(BoolInst, "newValue")}, nullptr,
+	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(BoolInst, "newValue") }, nullptr,
 		"setShowMouseCursor", &Input_setShowMouseCursor));
 
 	EngineModuleData OutData;
