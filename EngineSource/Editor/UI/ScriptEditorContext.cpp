@@ -129,6 +129,7 @@ void engine::editor::ScriptEditorContext::AddFile(const string& Content, const s
 
 void engine::editor::ScriptEditorContext::UpdateFile(const string& Content, const string& Name)
 {
+	OnChange(Name);
 	ScheduleContextTask([this, Content = Content, Name = Name] {
 		NewErrors[Name].clear();
 		if (file::Extension(Name) == "kui")

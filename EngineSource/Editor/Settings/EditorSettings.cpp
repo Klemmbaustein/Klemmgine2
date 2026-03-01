@@ -32,7 +32,7 @@ engine::editor::Settings::~Settings()
 
 void engine::editor::Settings::Save()
 {
-	std::filesystem::create_directory(GetEditorPath() + "/Config/);
+	std::filesystem::create_directory(GetEditorPath() + "/Config/");
 	JsonSerializer::ToFile(Serialize(), GetSettingsPath(), JsonSerializer::WriteOptions(true));
 }
 
