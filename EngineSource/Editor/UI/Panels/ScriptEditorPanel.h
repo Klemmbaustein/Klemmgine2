@@ -12,7 +12,9 @@ namespace engine::editor
 		kui::UITextEditor* Editor = nullptr;
 		ScriptEditorProvider* Provider = nullptr;
 		ScriptMiniMap* MiniMap = nullptr;
+		kui::UIText* TabName = nullptr;
 		bool NeedsRefresh = false;
+		bool IsSaved = true;
 	};
 
 	class ScriptEditorPanel : public EditorPanel, public ScriptEditorContext
@@ -32,6 +34,7 @@ namespace engine::editor
 
 		// Inherited via ScriptEditorContext
 		void NavigateTo(std::string File, std::optional<ds::TokenPos> At) override;
+		void OnChange(const string& Name) override;
 
 	private:
 		void UpdateTabSize(ScriptEditorTab* Tab);

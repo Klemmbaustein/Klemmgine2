@@ -207,6 +207,8 @@ void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 
 		string Name = file::FileName(t.Provider->EditedFile);
 
+		t.TabName = new UIText(12_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont);
+
 		TabBox->AddChild((new UIButton(true, 0, BgColor, [this, i]() {
 			OpenTab(i);
 		}))
@@ -215,7 +217,7 @@ void engine::editor::ScriptEditorPanel::UpdateEditorTabs()
 			->SetVerticalAlign(UIBox::Align::Centered)
 			->SetMinWidth(UISize::Parent(1))
 			->SetPadding(5_px, 0, 5_px, 5_px)
-			->AddChild((new UIText(12_px, EditorUI::Theme.Text, Name, EditorUI::EditorFont))
+			->AddChild(t.TabName
 				->SetTextWidthOverride(152_px)
 				->SetPadding(4_px))
 			->AddChild((new UIButton(true, 0, EditorUI::Theme.Text, [this, i]() {
@@ -256,6 +258,8 @@ void engine::editor::ScriptEditorPanel::Save()
 		EditorUI::Instance->ForEachPanel<ClassBrowser>([](ClassBrowser* Browser) {
 			Browser->UpdateItems();
 		});
+		Tab->TabName->SetText(file::FileName(Tab->Provider->EditedFile));
+		Tab->IsSaved = true;
 	}
 	else
 	{
@@ -333,6 +337,24 @@ void engine::editor::ScriptEditorPanel::NavigateTo(std::string File, std::option
 
 	AddTab(File);
 	OpenTab(Tabs.size() - 1);
+}
+
+void engine::editor::ScriptEditorPanel::OnChange(const string& Name)
+{
+	for (size_t i = 0; i < Tabs.size(); i++)
+	{
+		if (Tabs[i].Provider->EditedFile != Name)
+		{
+			continue;
+		}
+
+		if (Tabs[i].IsSaved)
+		{
+			Tabs[i].TabName->SetText(file::FileName(Name) + "*");
+			Tabs[i].IsSaved = false;
+		}
+		break;
+	}
 }
 
 void engine::editor::ScriptEditorPanel::OnResized()
