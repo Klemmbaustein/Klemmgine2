@@ -4,7 +4,6 @@
 #include "LandscapeObject.h"
 #include <Engine/Scene.h>
 #include <Core/Error/EngineAssert.h>
-#include <Core/Log.h>
 using namespace engine;
 
 SerializedValue engine::SceneObject::Serialize()
