@@ -33,10 +33,10 @@ void main()
 			f_color.xyz = vec3(1, 0, 0) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		case 3u:
-			f_color.xyz = vec3(0, 1, 0) + (u_isHovered ? vec3(0.5) : vec3(0));
+			f_color.xyz = vec3(0, 0, 1) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		case 4u:
-			f_color.xyz = vec3(0, 0, 1) + (u_isHovered ? vec3(0.5) : vec3(0));
+			f_color.xyz = vec3(0, 1, 0) + (u_isHovered ? vec3(0.5) : vec3(0));
 			break;
 		}
 		hasGizmoColor = true;

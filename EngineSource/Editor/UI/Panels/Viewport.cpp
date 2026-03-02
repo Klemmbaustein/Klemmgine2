@@ -677,12 +677,14 @@ void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)
 			if (Target.ObjectData.IsNull())
 			{
 				Obj->Destroy();
-				EditorUI::SetStatusMessage(str::Format("Undo: Create %s", Obj->Name.c_str()), EditorUI::StatusType::Info);
+				EditorUI::SetStatusMessage(str::Format("Undo: Create %s",
+					Obj->Name.c_str()), EditorUI::StatusType::Info);
 			}
 			else
 			{
 				Obj->DeSerialize(&Target.ObjectData);
-				EditorUI::SetStatusMessage(str::Format("Undo: Modify %s", Obj->Name.c_str()), EditorUI::StatusType::Info);
+				EditorUI::SetStatusMessage(str::Format("Undo: Modify %s",
+					Obj->Name.c_str()), EditorUI::StatusType::Info);
 			}
 		}
 	}
