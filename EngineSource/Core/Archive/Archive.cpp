@@ -57,7 +57,7 @@ void engine::Archive::AddFile(string Name, IBinaryStream* Stream)
 
 bool engine::Archive::HasFile(string Name)
 {
-	return Streams.contains(ConvertFileName(Name));
+	return Streams.contains(Name);
 }
 
 string engine::Archive::ConvertFileName(string Name) const
