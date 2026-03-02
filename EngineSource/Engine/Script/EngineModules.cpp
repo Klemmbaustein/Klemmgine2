@@ -534,7 +534,7 @@ static void AssetRef_new(InterpretContext* context)
 	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
 	RuntimeStr FilePath = context->popValue<RuntimeClass*>();
 
-	NewAssetRef.getValue() = new AssetRef(AssetRef::FromPath(string(FilePath.ptr(), FilePath.length())));
+	NewAssetRef.getValue() = new AssetRef(AssetRef::Convert(string(FilePath.ptr(), FilePath.length())));
 	context->pushValue(NewAssetRef);
 }
 
