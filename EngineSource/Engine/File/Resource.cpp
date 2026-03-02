@@ -77,7 +77,7 @@ string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)
 
 bool engine::resource::FileExists(string EnginePath)
 {
-	string Converted = ConvertFilePath(EnginePath);
+	string Converted = EnginePath;
 
 	for (auto& i : Sources)
 	{
@@ -111,7 +111,7 @@ ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
 	}
 	if (FoundPrefix == "asset:" || FoundPrefix.empty())
 	{
-		std::string FilePath = ConvertFilePath(EnginePath);
+		std::string FilePath = EnginePath;
 
 		for (auto& i : Sources)
 		{
