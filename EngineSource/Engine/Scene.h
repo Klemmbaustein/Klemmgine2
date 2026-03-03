@@ -1,4 +1,4 @@
-#if !defined(ENGINE_PLUGIN) && !defined(ENGINE_UTILS_LIB)
+#if !defined(ENGINE_PLUGIN)
 #pragma once
 #include "Graphics/Camera.h"
 #include "Graphics/Effects/CascadedShadows.h"
