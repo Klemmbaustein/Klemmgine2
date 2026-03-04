@@ -543,41 +543,23 @@ void engine::Scene::LoadInternal(string File, bool Async)
 
 	try
 	{
-		if (resource::FileExists(File))
+		AssetRef SceneAsset = AssetRef::Convert(File + ".kts");
+		if (SceneAsset.Exists())
 		{
+			Name = SceneAsset.FilePath;
 			std::stringstream stream;
-			stream << resource::GetTextFile(File);
-
-			if (!stream.str().empty())
-			{
-				SceneData = TextSerializer::FromStream(stream);
-			}
-			else
-			{
-				SceneData = {};
-			}
-		}
-		else if (resource::FileExists(File + ".kts"))
-		{
-			Name = File + ".kts";
-			std::stringstream stream;
-			stream << resource::GetTextFile(Name);
+			stream << resource::GetTextFile(SceneAsset.FilePath);
 
 			if (stream.str().size() != 0)
 			{
 				SceneData = TextSerializer::FromStream(stream);
 			}
 		}
-		else if (resource::FileExists(File + ".kbs"))
+		SceneAsset = AssetRef::Convert(File + ".kbs");
+
+		if (SceneAsset.Exists())
 		{
-			if (resource::LoadedAssets.contains(File + ".kbs"))
-			{
-				Name = resource::LoadedAssets[File + ".kbs"];
-			}
-			else
-			{
-				Name = File + ".kbs";
-			}
+			Name = SceneAsset.FilePath;
 			IBinaryStream* SceneFile = resource::GetBinaryFile(Name);
 			SceneData = BinarySerializer::FromStream(SceneFile, "kbs");
 			delete SceneFile;
