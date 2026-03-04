@@ -338,9 +338,6 @@ void engine::editor::Viewport::Update()
 			LastSceneName = Current->Name;
 			UnsavedChanges = false;
 			UpdateName();
-			Current->PostProcess.AddEffect(new EditorOutline());
-			Current->AddDrawnComponent(Grid);
-			Current->AddDrawnComponent(Translate->GizmoMesh);
 		}
 
 		if (SelectedObjects.size())

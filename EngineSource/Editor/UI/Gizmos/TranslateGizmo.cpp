@@ -40,9 +40,19 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 		return;
 	}
 
-	auto Effect = Scene::GetMain()->PostProcess.GetEffect<EditorOutline>();
+	auto Current = Scene::GetMain();
 
-	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
+	auto Effect = Current->PostProcess.GetEffect<EditorOutline>();
+
+	if (!Effect)
+	{
+		Effect = new EditorOutline();
+		Current->AddDrawnComponent(With->Grid);
+		Current->AddDrawnComponent(GizmoMesh);
+		Current->PostProcess.AddEffect(Effect);
+	}
+
+	graphics::Camera* Cam = Current->UsedCamera;
 
 	Vector3 Direction = With->GetCursorDirection();
 	Vector3 EndPosition = Cam->Position + Direction * 3000000;
