@@ -68,6 +68,7 @@ namespace engine::editor
 		bool ShowGrid = true;
 
 		std::vector<DropdownMenu::Option> GetViewDropdown();
+		MeshComponent* Grid = nullptr;
 
 	private:
 
@@ -84,7 +85,6 @@ namespace engine::editor
 		bool PolledForText = false;
 
 		Toolbar* ViewportToolbar = nullptr;
-		MeshComponent* Grid = nullptr;
 		TranslateGizmo* Translate = nullptr;
 
 		string LastSceneName;

@@ -22,7 +22,7 @@ engine::editor::Settings::Settings()
 	}
 	catch (SerializeException& e)
 	{
-		Log::Warn(str::Format("%s\nUsing default editor settings", e.what()));
+		Log::Note(str::Format("%s\nUsing default editor settings", e.what()));
 	}
 }
 
