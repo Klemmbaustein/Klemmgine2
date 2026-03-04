@@ -252,7 +252,8 @@ void engine::editor::MaterialEditor::LoadUI()
 				{
 					i.Int = std::stoi(field->GetText());
 				}
-				catch (std::out_of_range e) {}
+				catch (std::out_of_range& e) {}
+				catch (std::invalid_argument& e) {}
 				OnChanged();
 			};
 			break;
@@ -264,7 +265,8 @@ void engine::editor::MaterialEditor::LoadUI()
 				{
 					i.Float = std::stof(field->GetText());
 				}
-				catch (std::out_of_range e) {}
+				catch (std::out_of_range& e) {}
+				catch (std::invalid_argument& e) {}
 				OnChanged();
 			};
 			break;

@@ -7,6 +7,7 @@
 #include <Editor/Editor.h>
 #include <Engine/Input.h>
 #include <Editor/Settings/EditorSettings.h>
+#include <Engine/Subsystem/SceneSubsystem.h>
 #include <filesystem>
 
 using namespace engine::editor;
@@ -15,6 +16,7 @@ using namespace engine;
 bool editor::EditorSubsystem::Active = false;
 
 static SerializedValue LastScene;
+static string LastSceneName;
 
 engine::editor::EditorSubsystem::EditorSubsystem()
 	: subsystem::Subsystem("Editor", Log::LogColor::Yellow)
@@ -83,6 +85,7 @@ void engine::editor::EditorSubsystem::StartProject()
 
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
+	LastSceneName = Scene::GetMain()->Name;
 	Scene::GetMain()->ReloadObjects(nullptr);
 	EditorUI::SetStatusMessage("Running game", editor::EditorUI::StatusType::Info);
 }
@@ -92,6 +95,10 @@ void engine::editor::EditorSubsystem::StopProject()
 	Engine::IsPlaying = false;
 	if (LastScene.GetType() != SerializedData::DataType::Null)
 	{
+		if (Scene::GetMain()->Name != LastSceneName)
+		{
+			SceneSubsystem::Current->LoadSceneAsync(LastSceneName);
+		}
 		Scene::GetMain()->ReloadObjects(&LastScene);
 	}
 	EditorUI::SetStatusMessage("Stopped game", editor::EditorUI::StatusType::Info);
