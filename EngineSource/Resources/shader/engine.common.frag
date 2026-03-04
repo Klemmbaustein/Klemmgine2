@@ -115,6 +115,11 @@ float getShadowStrength()
 		layer++;
 	}
 
+	if (layer >= u_shadowCascadeCount)
+	{
+		return 1.0;
+	}
+
 	vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(v_position, 1.0);
 
 	// perform perspective divide
