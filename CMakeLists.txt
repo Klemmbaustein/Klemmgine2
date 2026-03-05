@@ -86,6 +86,13 @@ else()
 	add_executable(Klemmgine "EngineSource/main.cpp" "EngineSource/Resources.rc")
 endif()
 
+if(MSVC)
+	target_link_options(KlemmgineCore PUBLIC
+		/natvis:${CMAKE_CURRENT_LIST_DIR}/EngineSource/Natvis/Core.natvis
+		/natvis:${CMAKE_CURRENT_LIST_DIR}/EngineSource/Natvis/Engine.natvis
+	)
+endif()
+
 target_compile_definitions(KlemmgineLib PRIVATE "ENGINE_COMPILER_ID=${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}")
 
 set(KLEMMUI_CUSTOM_SYSTEMWM ON)

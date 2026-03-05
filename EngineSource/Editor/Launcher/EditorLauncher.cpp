@@ -140,7 +140,6 @@ void engine::editor::launcher::EditorLauncher::InitLayout()
 	ProjectList = new UIScrollBox(false, 0, true);
 
 	ProjectList->SetMinWidth(UISize::Parent(1));
-	ProjectList->SetMinHeight(1);
 
 	Element->content->AddChild(ProjectList);
 
@@ -195,6 +194,8 @@ void engine::editor::launcher::EditorLauncher::Run()
 
 	while (LauncherWindow->UpdateWindow())
 	{
+		ProjectList->SetMinHeight(2 - (81_px).GetScreen().Y);
+		ProjectList->SetMaxHeight(2 - (81_px).GetScreen().Y);
 		thread::MainThreadUpdate();
 	}
 

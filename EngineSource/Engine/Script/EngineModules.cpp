@@ -842,7 +842,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "extension") },
-			AssetRefType, "emptyAsset", AssetRef_emptyAsset));
+			AssetRefType, "emptyAsset", &AssetRef_emptyAsset));
 
 
 	NativeModule EngineInputModule;

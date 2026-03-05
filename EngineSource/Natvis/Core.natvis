@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="engine::SerializedData">
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Null">
+			{Name}: null
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Int32">
+			{Name}: int = {Value.Int}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Byte">
+			{Name}: byte = {Value.Byte}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Boolean">
+			{Name}: bool = {Value.Byte != 0}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Vector3">
+			{Name}: vec3 = {Value.Vec}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Vector2">
+			{Name}: vec2 = {Value.Vec2}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Float">
+			{Name}: float = {Value.Float}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::String">
+			{Name}: string = {*Value.String}
+		</DisplayString>
+		<DisplayString Condition="Value.Type == engine::SerializedData::DataType::Object">
+			{Name}: obj = {*Value.Object}
+		</DisplayString>
+		<Expand>
+			<Item Name="Name">
+				Name
+			</Item>
+			<Item Name="Type">
+				Value.Type
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Int32">
+				Value.Int
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Byte">
+				Value.Byte
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Boolean">
+				Value.Byte != 0
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Vector3">
+				Value.Vec
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Vector2">
+				Value.Vec2
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Float">
+				Value.Float
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::String">
+				*Value.String
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Object">
+				*Value.Object
+			</Item>
+			<Item Name="Value" Condition="Value.Type == engine::SerializedData::DataType::Array">
+				*Value.Array
+			</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="engine::SerializedData::DataValue">
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Null">
+			null
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Int32">
+			int: {Int}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Byte">
+			byte: {Byte}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Boolean">
+			bool: {Byte != 0}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Vector3">
+			vec3: {Vec}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Vector2">
+			vec2: {Vec2}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Float">
+			float: {Float}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::String">
+			string: {*String}
+		</DisplayString>
+		<DisplayString Condition="Type == engine::SerializedData::DataType::Object">
+			obj: {*Object}
+		</DisplayString>
+		<Expand>
+			<Item Name="Type">
+				Type
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Int32">
+				Int
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Byte">
+				Byte
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Boolean">
+				Byte != 0
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Vector3">
+				Vec
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Vector2">
+				Vec2
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Float">
+				Float
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::String">
+				*String
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Object">
+				*Object
+			</Item>
+			<Item Name="Value" Condition="Type == engine::SerializedData::DataType::Array">
+				*Array
+			</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="engine::Vector3">
+		<DisplayString>
+			{X} {Y} {Z}
+		</DisplayString>
+	</Type>
+
+	<Type Name="engine::Rotation3">
+		<DisplayString>
+			{P} {Y} {R}
+		</DisplayString>
+	</Type>
+
+</AutoVisualizer>
