@@ -306,7 +306,9 @@ SerializedValue engine::JsonSerializer::FromFile(string File)
 	}
 
 	std::ifstream In = std::ifstream(File);
-	return ReadValue(In);
+	auto Result = ReadValue(In);
+	In.close();
+	return Result;
 }
 
 string engine::JsonSerializer::ReadString(std::istream& Stream)

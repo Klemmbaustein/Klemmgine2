@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="engine::AssetRef">
+		<DisplayString Condition="FilePath.size() == 0 &amp;&amp; Extension.size() == 0">
+			[Empty Asset]
+		</DisplayString>
+		<DisplayString Condition="FilePath.size() == 0 &amp;&amp; !Extension.size() == 0">
+			[Empty {Extension}]
+		</DisplayString>
+		<DisplayString Condition="!FilePath.size() == 0">
+			{FilePath}
+		</DisplayString>
+	</Type>
+
+	<Type Name="engine::SceneObject">
+		<DisplayString>
+			Object {Name}
+		</DisplayString>
+	</Type>
+</AutoVisualizer>
