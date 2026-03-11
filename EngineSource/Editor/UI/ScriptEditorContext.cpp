@@ -56,7 +56,7 @@ void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Conte
 			{ { derivedName } });
 	};
 	UIFiles.AddString(Name, Content);
-	ParsedUI = UIFiles.Parse(ScriptService->parser);
+	ParsedUI[Name] = UIFiles.Parse(ScriptService->parser);
 }
 
 void engine::editor::ScriptEditorContext::UpdateFilesList()
@@ -84,6 +84,8 @@ void engine::editor::ScriptEditorContext::UpdateFilesList()
 		for (auto& Removed : RemovedFiles)
 		{
 			this->ScriptService->removeFile(Removed);
+			this->Errors.erase(Removed);
+			this->ParsedUI.erase(Removed);
 			LoadedFiles.erase(Removed);
 		}
 
@@ -215,7 +217,7 @@ std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorContext::Complet
 		return Completions;
 	};
 
-	for (auto& f : this->ParsedUI.UIData.Elements)
+	for (auto& f : this->ParsedUI[FileName].UIData.Elements)
 	{
 		if (f.File != FileName)
 		{
@@ -266,9 +268,12 @@ void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback)
 		IsCompiling = true;
 		ScriptService->commitChanges();
 
-		for (auto& i : this->ParsedUI.UIData.Elements)
+		for (auto& file : this->ParsedUI)
 		{
-			PublishUIData(i, i.File);
+			for (auto& i : file.second.UIData.Elements)
+			{
+				PublishUIData(i, i.File);
+			}
 		}
 
 		if (Callback)

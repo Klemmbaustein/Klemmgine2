@@ -62,7 +62,7 @@ namespace engine::editor
 		std::map<string, std::vector<ScriptError>> NewErrors;
 		std::set<string> OpenedFiles;
 		std::set<string> LoadedFiles;
-		script::ui::UIParseData ParsedUI;
+		std::map<string, script::ui::UIParseData> ParsedUI;
 
 		void ScheduleContextTask(std::function<void()> Task);
 
