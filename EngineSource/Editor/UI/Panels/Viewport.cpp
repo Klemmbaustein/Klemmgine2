@@ -125,24 +125,30 @@ engine::editor::Viewport::Viewport()
 	});
 
 	AddShortcut(Key::v, Key::CTRL, [this, Win] {
+		try
+		{
+			std::stringstream Stream;
+			Stream << Win->Input.GetClipboard();
 
-		std::stringstream Stream;
-		Stream << Win->Input.GetClipboard();
+			SerializedValue ObjData = TextSerializer::FromStream(Stream);
 
-		SerializedValue ObjData = TextSerializer::FromStream(Stream);
+			auto Obj = Scene::GetMain()->CreateObjectFromID(ObjData.At("typeId").GetInt());
+			Obj->DeSerialize(&ObjData);
+			Obj->CheckTransform();
+			Obj->CheckComponentTransform();
 
-		auto Obj = Scene::GetMain()->CreateObjectFromID(ObjData.At("typeId").GetInt());
-		Obj->DeSerialize(&ObjData);
-		Obj->CheckTransform();
-		Obj->CheckComponentTransform();
+			EditorUI::SetStatusMessage("Pasted object", EditorUI::StatusType::Info);
 
-		EditorUI::SetStatusMessage("Pasted object", EditorUI::StatusType::Info);
+			ClearSelected();
 
-		ClearSelected();
+			SelectedObjects.insert(Obj);
 
-		SelectedObjects.insert(Obj);
+			Win->Input.SetClipboard(Stream.str());
+		}
+		catch (SerializeException& e)
+		{
 
-		Win->Input.SetClipboard(Stream.str());
+		}
 	});
 
 	AddShortcut(Key::s, Key::CTRL, [this] {
