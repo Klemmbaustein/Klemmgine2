@@ -88,7 +88,7 @@ void engine::SceneSubsystem::LoadSceneThread(string SceneName)
 		}
 		IsLoading = false;
 
-		Print(str::Format("Finished loading scene: %s", SceneName.c_str()));
+		Print(str::Format("Finished loading scene: %s", New->Name.c_str()));
 		New->LoadAsyncFinish();
 		Main = New;
 		});
