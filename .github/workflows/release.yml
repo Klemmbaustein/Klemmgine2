@@ -192,7 +192,7 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: false
-        title: Klemmgine ${{ GITHUB_REF_NAME }}
+        title: Klemmgine ${{ github.ref_name }}
         files: |
           ${{ env.WINDOWS_RELEASE_NAME }}.zip
           ${{ env.LINUX_RELEASE_NAME }}.tar.gz
