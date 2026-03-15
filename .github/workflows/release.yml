@@ -1,10 +1,11 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: Make development build
+name: Make release build
 
 on:
-  push:
-    branches: [ "main" ]
+  create:
+    tags:
+    - "v*"
 
 jobs:
   build:
@@ -190,9 +191,8 @@ jobs:
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: dev
-        prerelease: true
-        title: Klemmgine 2 Build ${{ github.run_number }}
+        prerelease: false
+        title: Klemmgine ${{ GITHUB_REF_NAME }}
         files: |
           ${{ env.WINDOWS_RELEASE_NAME }}.zip
           ${{ env.LINUX_RELEASE_NAME }}.tar.gz

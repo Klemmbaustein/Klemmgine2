@@ -317,7 +317,7 @@ static void PhysicsComponent_shapeCast(InterpretContext* context)
 	auto Hit = Component.getValue()->ShapeCast(Component.getValue()->GetWorldTransform(), End,
 		Layer, IgnoredSet);
 
-	std::vector<ds::RuntimeClass*> Classes;
+	std::vector<RuntimeClass*> Classes;
 
 	for (auto& h : Hit)
 	{
@@ -547,7 +547,7 @@ static void AssetRef_emptyAsset(InterpretContext* context)
 	context->pushValue(Asset);
 }
 
-engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::LanguageContext* ToContext)
+engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
 	EngineModule.name = "engine";
@@ -744,7 +744,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(ds::Langu
 
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
-			{ FunctionArgument(ds::FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped") },
+			{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped") },
 			nullptr, "onBeginOverlap",
 			&PhysicsComponent_onBeginOverlap));
 

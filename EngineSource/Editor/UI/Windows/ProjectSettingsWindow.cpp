@@ -14,7 +14,7 @@ engine::editor::ProjectSettingsWindow::ProjectSettingsWindow()
 	auto Editor = Engine::Instance->GetSubsystem<EditorSubsystem>();
 
 	Name = Editor->Project.Name;
-	StartupScene = Editor->Project.StartupScene.empty()
+	StartupScene = !Editor->Project.StartupScene.empty()
 		? AssetRef::FromPath(Editor->Project.StartupScene) : StartupScene;
 
 	if (!StartupScene.Exists())

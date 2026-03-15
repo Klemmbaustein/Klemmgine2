@@ -147,7 +147,7 @@ engine::editor::Viewport::Viewport()
 		}
 		catch (SerializeException& e)
 		{
-
+			Log::Info(str::Format("Failed to paste object from clipboard: %s", e.what()));
 		}
 	});
 
