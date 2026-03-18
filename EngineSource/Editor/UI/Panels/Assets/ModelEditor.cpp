@@ -17,9 +17,9 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 
 	EditorScene = new Scene();
 	EditorScene->Physics.Active = false;
-	EditorScene->Resizable = false;
-	EditorScene->AlwaysRedraw = false;
-	EditorScene->Redraw = true;
+	EditorScene->Graphics.Resizable = false;
+	EditorScene->Graphics.AlwaysRedraw = false;
+	EditorScene->Graphics.RedrawNextFrame = true;
 
 	CurrentObj = EditorScene->CreateObject<MeshObject>();
 
@@ -83,11 +83,11 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 			Vector3 Pos = Vector3(0.75f) * CurrentObj->Mesh->DrawnModel->Data->Bounds.Extents.Length()
 				+ CurrentObj->Mesh->DrawnModel->Data->Bounds.Position;
 
-			EditorScene->SceneCamera->Position = Pos;
-			EditorScene->SceneCamera->Rotation = Vector3(-35, 45, 0);
+			EditorScene->Graphics.SceneCamera->Position = Pos;
+			EditorScene->Graphics.SceneCamera->Rotation = Vector3(-35, 45, 0);
 			this->SceneBackground->RedrawElement();
 			this->ModelLoaded = true;
-			this->EditorScene->Redraw = true;
+			this->EditorScene->Graphics.RedrawNextFrame = true;
 		});
 	});
 }
@@ -183,7 +183,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 void engine::editor::ModelEditor::OnModelChanged()
 {
 	CurrentObj->LoadMesh(EditedAsset);
-	EditorScene->Redraw = true;
+	EditorScene->Graphics.RedrawNextFrame = true;
 	SceneBackground->RedrawElement();
 }
 
@@ -197,7 +197,7 @@ void engine::editor::ModelEditor::Update()
 		OnModelLoaded();
 	}
 	if (EditorUI::FocusedPanel == this)
-		SceneBackground->SetUseImage(true, EditorScene->GetDrawBuffer());
+		SceneBackground->SetUseImage(true, EditorScene->Graphics.GetDrawBuffer());
 }
 
 void engine::editor::ModelEditor::Save()
@@ -231,10 +231,10 @@ void engine::editor::ModelEditor::OnResized()
 
 	PixelSize = Vec2i::Max(PixelSize - Vec2i(300, 42), Vec2i(10));
 
-	EditorScene->BufferSize = PixelSize * Background->GetParentWindow()->GetDPI();
-	EditorScene->OnResized(EditorScene->BufferSize);
+	EditorScene->Graphics.BufferSize = PixelSize * Background->GetParentWindow()->GetDPI();
+	EditorScene->Graphics.OnResized(EditorScene->Graphics.BufferSize);
 	SceneBackground->SetMinSize(SizeVec(PixelSize, SizeMode::PixelRelative));
 	SceneBackground->SetMaxSize(SizeVec(PixelSize, SizeMode::PixelRelative));
-	this->EditorScene->Redraw = true;
+	this->EditorScene->Graphics.RedrawNextFrame = true;
 	OnModelLoaded();
 }

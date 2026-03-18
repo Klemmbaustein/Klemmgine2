@@ -30,6 +30,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 	// When #param is used, the next line exports a GLSL uniform.
 	bool NextLineIsParam = false;
 	bool IsModule = false;
+	bool IsUnlit = false;
 	size_t Line = 0;
 	ShaderModule ParsedModule;
 	ParsedModule.Type = Type;
@@ -140,6 +141,18 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			continue;
 		};
 
+		if (Statement[0] == "unlit")
+		{
+			if (IsModule)
+			{
+				ParseError("Cannot use #unlit in modules");
+			}
+
+			IsUnlit = true;
+			NextLine("");
+			continue;
+		};
+
 		if (Statement[0] == "using")
 		{
 			if (Statement.size() < 2)
@@ -154,8 +167,17 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 
 			for (auto& i : Found.Exported)
 			{
+				ParsedModule.Exported.push_back(i);
 				OutStream << i << ";";
 			}
+
+			for (auto& i : Found.Dependencies)
+			{
+				ParsedModule.Dependencies.push_back(i);
+			}
+
+			ParsedModule.Dependencies.push_back(Found.ModuleObject);
+
 			OutStream << "\n#line " << Line + 1 << std::endl;
 
 			NextLine("");
@@ -178,6 +200,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 		.DependencyModules = FoundModules,
 		.ShaderUniforms = FoundUniforms,
 		.IsModule = IsModule,
+		.IsUnlit = IsUnlit,
 		.ThisModule = ParsedModule,
 	};
 }
@@ -186,8 +209,10 @@ void engine::graphics::ShaderModuleLoader::ScanModules()
 {
 	FreeModules();
 
-	static std::array<string, 2> EngineDefaultModules =
+	static std::array<string, 4> EngineDefaultModules =
 	{
+		"res:shader/engine.base.vert",
+		"res:shader/engine.base.frag",
 		"res:shader/engine.common.vert",
 		"res:shader/engine.common.frag",
 	};

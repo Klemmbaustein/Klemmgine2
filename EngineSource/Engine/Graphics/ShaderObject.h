@@ -23,6 +23,7 @@ namespace engine::graphics
 		uint32 ModelUniform = 0;
 
 		bool Valid = false;
+		bool Unlit = false;
 
 		uint32 GetUniformLocation(string Name) const;
 

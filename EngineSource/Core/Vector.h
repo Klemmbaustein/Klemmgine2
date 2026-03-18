@@ -63,6 +63,11 @@ namespace engine
 
 		[[nodiscard]]
 		Vector3 ProjectToPlane(Vector3 PlaneOrigin, Vector3 PlaneNormal) const;
+		/// Returns a vector with the minimum values of both this and Other.
+		Vector3 Min(const Vector3& Other) const;
+		/// Returns a vector with the maximum values of both this and Other.
+		Vector3 Max(const Vector3& Other) const;
+		Vector3 Abs() const;
 	};
 
 	struct Vector2

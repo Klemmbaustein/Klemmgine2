@@ -2,6 +2,7 @@
 #include "MeshObject.h"
 #include "PlayerObject.h"
 #include "LandscapeObject.h"
+#include "LightObject.h"
 #include <Engine/Scene.h>
 #include <Core/Error/EngineAssert.h>
 using namespace engine;
@@ -28,6 +29,7 @@ SerializedValue engine::SceneObject::Serialize()
 	&MeshObject::Begin;
 	&PlayerObject::Begin;
 	&LandscapeObject::Begin;
+	&LightObject::Begin;
 }
 
 void engine::SceneObject::DeSerialize(SerializedValue* From)
@@ -130,6 +132,10 @@ void engine::SceneObject::CheckTransform()
 		OldScale = Scale;
 
 		ObjectTransform = Transform(Position, Rotation, Scale);
+		for (auto& i : ChildComponents)
+		{
+			i->UpdateTransform(true);
+		}
 	}
 }
 

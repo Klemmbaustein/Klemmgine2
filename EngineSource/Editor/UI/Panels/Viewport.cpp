@@ -86,7 +86,7 @@ engine::editor::Viewport::Viewport()
 	CanClose = false;
 	Current = this;
 	if (Scene::GetMain())
-		Scene::GetMain()->UsedCamera = Scene::GetMain()->SceneCamera;
+		Scene::GetMain()->Graphics.UsedCamera = Scene::GetMain()->Graphics.SceneCamera;
 
 	auto Win = Window::GetActiveWindow();
 
@@ -203,7 +203,7 @@ engine::editor::Viewport::Viewport()
 	Grid->Materials[0] = new graphics::Material(AssetRef::FromPath(EditorUI::Asset("Models/Grid.kmt")));
 	Grid->IsTransparent = true;
 	Grid->CastShadow = false;
-	Grid->Scale = 1000;
+	Grid->SetScale(1000);
 	Grid->UpdateTransform();
 }
 
@@ -248,7 +248,7 @@ void engine::editor::Viewport::OnResized()
 	SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
 
 	if (SceneSystem->Main)
-		SceneSystem->Main->OnResized(VideoSystem->MainWindow->GetSize());
+		SceneSystem->Main->Graphics.OnResized(VideoSystem->MainWindow->GetSize());
 }
 
 void engine::editor::Viewport::RemoveSelected()
@@ -337,7 +337,7 @@ void engine::editor::Viewport::Update()
 
 	if (Current)
 	{
-		Current->AlwaysRedraw = this->Visible;
+		Current->Graphics.AlwaysRedraw = this->Visible;
 
 		if (Current->Name != this->LastSceneName)
 		{
@@ -349,12 +349,6 @@ void engine::editor::Viewport::Update()
 		if (SelectedObjects.size())
 		{
 			Translate->SetVisible(true);
-			Translate->GizmoMesh->Position = (*SelectedObjects.begin())->Position;
-			Translate->Collider->Position = (*SelectedObjects.begin())->Position;
-			Translate->GizmoMesh->Scale = Vector3::Distance(Current->UsedCamera->Position,
-				Translate->GizmoMesh->Position) * 0.075f;
-			Translate->Collider->Scale = Vector3::Distance(Current->UsedCamera->Position,
-				Translate->GizmoMesh->Position) * 0.075f;
 		}
 		else
 		{
@@ -396,23 +390,23 @@ void engine::editor::Viewport::Update()
 
 		if (input::IsKeyDown(input::Key::w))
 		{
-			Current->SceneCamera->Position += Vector3::Forward(Current->SceneCamera->Rotation) * Speed;
+			Current->Graphics.SceneCamera->Position += Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
 		}
 		if (input::IsKeyDown(input::Key::s))
 		{
-			Current->SceneCamera->Position -= Vector3::Forward(Current->SceneCamera->Rotation) * Speed;
+			Current->Graphics.SceneCamera->Position -= Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
 		}
 		if (input::IsKeyDown(input::Key::d))
 		{
-			Current->SceneCamera->Position += Vector3::Right(Current->SceneCamera->Rotation) * Speed;
+			Current->Graphics.SceneCamera->Position += Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
 		}
 		if (input::IsKeyDown(input::Key::a))
 		{
-			Current->SceneCamera->Position -= Vector3::Right(Current->SceneCamera->Rotation) * Speed;
+			Current->Graphics.SceneCamera->Position -= Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
 		}
 
 		Win->Input.PollForText = false;
-		Current->SceneCamera->Rotation = Current->SceneCamera->Rotation
+		Current->Graphics.SceneCamera->Rotation = Current->Graphics.SceneCamera->Rotation
 			- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
@@ -605,7 +599,7 @@ void engine::editor::Viewport::HighlightComponents(DrawableComponent* Target, bo
 
 physics::HitResult engine::editor::Viewport::RayAtCursor(float Distance, float FallbackDistance)
 {
-	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
+	graphics::Camera* Cam = Scene::GetMain()->Graphics.UsedCamera;
 
 	Vector3 Direction = GetCursorDirection();
 	Vector3 EndPosition = Cam->Position + Direction * Distance;
@@ -622,7 +616,7 @@ physics::HitResult engine::editor::Viewport::RayAtCursor(float Distance, float F
 Vector3 engine::editor::Viewport::GetCursorDirection()
 {
 	Window* Win = Window::GetActiveWindow();
-	graphics::Camera* Cam = Scene::GetMain()->UsedCamera;
+	graphics::Camera* Cam = Scene::GetMain()->Graphics.UsedCamera;
 
 	Vec2f Pos = ViewportBackground->GetScreenPosition();
 	Vec2f Size = ViewportBackground->GetUsedSize().GetScreen();

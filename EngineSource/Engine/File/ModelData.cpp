@@ -206,10 +206,7 @@ void engine::ModelData::Mesh::DeSerialize(SerializedValue* From)
 		}
 	}
 
-	this->Bounds = BoundingBox{
-		.Position = (BoundsMin + BoundsMax) / 2,
-		.Extents = BoundsMax - BoundsMin
-	};
+	this->Bounds = BoundingBox::FromMinMax(BoundsMin, BoundsMax);
 
 	Indices.reserve(InIndices.GetArray().size());
 	for (auto& i : InIndices.GetArray())

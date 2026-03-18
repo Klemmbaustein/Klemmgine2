@@ -23,6 +23,7 @@ namespace engine::editor
 
 		virtual void Update();
 
+		[[nodiscard]]
 		virtual std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At);
 
 		enum class CompletionSource
@@ -33,6 +34,7 @@ namespace engine::editor
 		};
 
 		virtual void OnRightClick();
+		[[nodiscard]]
 		virtual std::vector<ds::AutoCompleteResult> GetCompletionsAt(kui::EditorPosition At,
 			CompletionSource Source);
 

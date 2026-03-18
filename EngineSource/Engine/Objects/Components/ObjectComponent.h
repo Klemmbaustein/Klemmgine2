@@ -1,5 +1,4 @@
 #pragma once
-#include <Engine/Graphics/Camera.h>
 #include <Core/Transform.h>
 
 namespace engine
@@ -11,6 +10,7 @@ namespace engine
 	public:
 
 		ObjectComponent();
+		ObjectComponent(const ObjectComponent&) = delete;
 		virtual ~ObjectComponent();
 		virtual void OnAttached();
 		virtual void Update();
@@ -21,9 +21,6 @@ namespace engine
 
 		void Detach(ObjectComponent* c);
 
-		Vector3 Position;
-		Rotation3 Rotation;
-		Vector3 Scale = 1;
 		std::vector<ObjectComponent*> Children;
 
 		SceneObject* GetRootObject();
@@ -35,12 +32,54 @@ namespace engine
 		void Attach(ObjectComponent* Child);
 
 		Transform GetWorldTransform();
-		void UpdateTransform();
+		virtual void UpdateTransform(bool Dirty = false);
 
 		SceneObject* RootObject = nullptr;
 
+		void SetPosition(const Vector3& NewPosition)
+		{
+			TransformDirty = true;
+			Position = NewPosition;
+		}
+
+		void SetRotation(const Rotation3& NewRotation)
+		{
+			TransformDirty = true;
+			Rotation = NewRotation;
+		}
+
+		void SetScale(const Vector3& NewScale)
+		{
+			TransformDirty = true;
+			Scale = NewScale;
+		}
+
+		const Vector3& GetPosition()
+		{
+			return Position;
+		}
+
+		const Rotation3& GetRotation()
+		{
+			return Rotation;
+		}
+
+		const Vector3& GetScale()
+		{
+			return Scale;
+		}
+
+		Vector3 Position;
+		Rotation3 Rotation;
+		Vector3 Scale = 1;
+
 	protected:
 		Transform GetParentTransform() const;
+		bool TransformDirty = true;
+
+		Vector3 OldPosition;
+		Rotation3 OldRotation;
+		Vector3 OldScale = 1;
 
 		Transform WorldTransform;
 	private:

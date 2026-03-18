@@ -105,11 +105,23 @@ void engine::ObjectComponent::UpdateLogic()
 	}
 }
 
-void engine::ObjectComponent::UpdateTransform()
+void engine::ObjectComponent::UpdateTransform(bool Dirty)
 {
-	WorldTransform = GetWorldTransform();
+	if (OldPosition != Position || OldScale != Scale || OldRotation != Rotation)
+	{
+		this->TransformDirty = true;
+	}
+
+	if (this->TransformDirty || Dirty)
+	{
+		WorldTransform = GetWorldTransform();
+	}
 	for (ObjectComponent* i : Children)
 	{
-		i->UpdateTransform();
+		i->UpdateTransform(this->TransformDirty || Dirty);
 	}
+	OldPosition = Position;
+	OldScale = Scale;
+	OldRotation = Rotation;
+	this->TransformDirty = false;
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "Environment.h"
+#include "Scene/Environment.h"
+#include "FrustumCollider.h"
 #include <Core/Transform.h>
 #include <Core/Vector.h>
 
@@ -24,6 +25,8 @@ namespace engine::graphics
 		Vector3 Position;
 		Vector3 Rotation;
 		Transform CameraTransform;
+
+		FrustumCollider Collider;
 
 		bool UseSceneEnvironment = true;
 		Environment* UsedEnvironment = nullptr;

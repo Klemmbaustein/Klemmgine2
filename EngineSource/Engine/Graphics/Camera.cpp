@@ -23,14 +23,23 @@ void engine::graphics::Camera::Update()
 	if (UseTransform)
 	{
 		View = glm::inverse(CameraTransform.Matrix);
+
+
+		Collider = FrustumCollider::FromCamera(GetPosition(), CameraTransform.ApplyRotationTo(Vector3(0, 0, -1)),
+			CameraTransform.ApplyRotationTo(Vector3(1, 0, 0)), CameraTransform.ApplyRotationTo(Vector3(0, 1, 0)),
+			Aspect, FOV, 0.1f, 5000.0f);
 	}
 	else
 	{
 		Vector3 Forward = Vector3::Forward(Rotation * Vector3(1, 1, 0));
 		Vector3 Up = Vector3::Up(Rotation);
+		Vector3 Right = Vector3::Cross(Forward, Up);
 		View = glm::lookAt(glm::vec3(0), glm::vec3(Forward.X, Forward.Y, Forward.Z), glm::vec3(Up.X, Up.Y, Up.Z));
 		View = glm::translate(View, -glm::vec3(Position.X, Position.Y, Position.Z));
+		Collider = FrustumCollider::FromCamera(Position, Forward, Right, Up, Aspect, FOV, 0.1f, 5000.0f);
 	}
+
+	//Collider = FrustumCollider(Projection);
 }
 
 engine::Vector3 engine::graphics::Camera::GetPosition() const

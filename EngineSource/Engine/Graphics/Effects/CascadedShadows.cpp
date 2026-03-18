@@ -7,7 +7,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/vec4.hpp>
-#include <iostream>
+#include <Engine/Graphics/Scene/GraphicsScene.h>
 using namespace engine;
 using namespace engine::graphics;
 
@@ -93,22 +93,32 @@ void CascadedShadows::Init()
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
 {
+	LastShaders.clear();
 	EnvironmentHasShadows = From->UsedEnvironment->RenderSettings.SunShadows;
 	this->LightDirection = Vector3::Forward(From->UsedEnvironment->SunRotation.EulerVector());
 	if (!ShouldRender())
 		return;
-	LightMatrices = GetLightSpaceMatrices(From);
-	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
-	for (size_t i = 0; i < LightMatrices.size(); ++i)
+	auto NewMatrices = GetLightSpaceMatrices(From);
+
+	Matrices.resize(NewMatrices.size());
+	CascadeBounds.resize(NewMatrices.size());
+	for (size_t i = 0; i < NewMatrices.size(); i++)
 	{
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4), sizeof(glm::mat4), &LightMatrices[i]);
+		Matrices[i] = NewMatrices[i].Matrix;
+		CascadeBounds[i] = NewMatrices[i].Bounds;
+	}
+
+	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
+	for (size_t i = 0; i < Matrices.size(); ++i)
+	{
+		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4), sizeof(glm::mat4), &Matrices[i]);
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	BiasModifier = Vector3::Dot(Vector3::Forward(From->Rotation), LightDirection);
 }
 
-uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
+uint32 CascadedShadows::Draw(GraphicsScene* With)
 {
 	if (!ShouldRender())
 		return 0;
@@ -117,8 +127,20 @@ uint32 CascadedShadows::Draw(std::vector<DrawableComponent*> Components)
 	ShadowShader->Bind();
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
 	glClear(GL_DEPTH_BUFFER_BIT);
+
+	std::vector<DrawableComponent*> Components = With->NewDrawables;
+	{
+		std::lock_guard g{With->HierarchyMutex};
+		With->DrawableHierarchy->QueryBoxes(this->CascadeBounds, Components);
+	}
+
 	for (DrawableComponent* i : Components)
 	{
+		if (With->RemovedDrawables.contains(i))
+		{
+			continue;
+		}
+
 		if (i->CastShadow)
 			i->SimpleDraw(ShadowShader);
 	}
@@ -130,6 +152,12 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 {
 	if (!Target)
 		return;
+
+	if (LastShaders.contains(Target))
+	{
+		LastShaders.insert(Target);
+	}
+
 	Target->SetVec3(Target->GetUniformLocation("u_lightDirection"), LightDirection);
 
 	if (!ShouldRender())
@@ -152,7 +180,7 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 	Target->SetInt(Target->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 }
 
-glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float NearPlane, float FarPlane)
+CascadedShadows::MatrixEntry CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float NearPlane, float FarPlane)
 {
 	glm::mat4 CameraProjection = glm::perspective(From->FOV, From->Aspect, NearPlane, FarPlane);
 	auto Corners = GetFrustumCornersWorldSpace(CameraProjection * From->View);
@@ -223,15 +251,27 @@ glm::mat4 CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float Nea
 
 	const glm::mat4 LightProjection = glm::ortho(MinX, MaxX, MinY, MaxY, MinZ, MaxZ);
 
-	return LightProjection * LightView;
+	auto Result = LightProjection * LightView;
+
+	auto NewCorners = GetFrustumCornersWorldSpace(Result);
+	Vector3 BoundsMin = INFINITY;
+	Vector3 BoundsMax = -INFINITY;
+	for (const auto& v : NewCorners)
+	{
+		BoundsMin = BoundsMin.Min(Vector3(v.x, v.y, v.z));
+		BoundsMax = BoundsMax.Max(Vector3(v.x, v.y, v.z));
+		FrustumCenter += glm::vec3(v);
+	}
+
+	return { Result, BoundingBox::FromMinMax(BoundsMin, BoundsMax) };
 }
 
-std::vector<glm::mat4> CascadedShadows::GetLightSpaceMatrices(graphics::Camera* From)
+std::vector<CascadedShadows::MatrixEntry> CascadedShadows::GetLightSpaceMatrices(graphics::Camera* From)
 {
 	const float CameraNearPlane = 0.01f;
 
-	std::vector<glm::mat4> ret;
-	for (size_t i = 0; i < ShadowCascadeLevels.size() + 1; ++i)
+	std::vector<MatrixEntry> ret;
+	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{
 		if (i == 0)
 		{
@@ -240,10 +280,6 @@ std::vector<glm::mat4> CascadedShadows::GetLightSpaceMatrices(graphics::Camera* 
 		else if (i < ShadowCascadeLevels.size())
 		{
 			ret.push_back(GetLightSpaceMatrix(From, ShadowCascadeLevels[i - 1], ShadowCascadeLevels[i]));
-		}
-		else
-		{
-			ret.push_back(GetLightSpaceMatrix(From, ShadowCascadeLevels[i - 1], CAMERA_FAR_PLANE));
 		}
 	}
 	return ret;

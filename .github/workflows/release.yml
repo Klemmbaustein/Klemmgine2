@@ -84,7 +84,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release
         -S ${{ github.workspace }} -DENGINE_EDITOR=${{ case(matrix.config == 'editor', 'ON', 'OFF') }}
         -DENGINE_BUILD_TOOLS=${{ case(matrix.config == 'editor', 'ON', 'OFF') }}
-        -DENGINE_BUILD_ID="Github Build ${{ github.run_number }}"
+        -DENGINE_BUILD_ID="Github Release ${{ github.ref_name }}"
         -DIS_SOURCELESS_BUILD=ON
 
     - name: Build
@@ -159,8 +159,8 @@ jobs:
     needs: [combine-builds]
     permissions: write-all
     env:
-      WINDOWS_RELEASE_NAME: "Klemmgine-2-x64-Windows"
-      LINUX_RELEASE_NAME: "Klemmgine-2-x64-Linux"
+      WINDOWS_RELEASE_NAME: "Klemmgine-${{ github.ref_name }}-x64-Windows"
+      LINUX_RELEASE_NAME: "Klemmgine-${{ github.ref_name }}-x64-Linux"
 
     steps:
     - name: Download windows build

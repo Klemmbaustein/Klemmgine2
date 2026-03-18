@@ -76,6 +76,24 @@ engine::graphics::Material::~Material()
 	Clear();
 }
 
+void engine::graphics::Material::SetVec3(string Name, Vector3 Value)
+{
+	auto Found = FindField(Name, Field::Type::Vec3);
+
+	if (Found)
+	{
+		Found->Vec3 = Value;
+		return;
+	}
+
+	Field NewField;
+
+	NewField.Name = Name;
+	NewField.FieldType = Field::Type::Vec3;
+	NewField.Vec3 = Value;
+	this->Fields.push_back(NewField);
+}
+
 void engine::graphics::Material::ToFile(string Path)
 {
 	TextSerializer::ToFile(Serialize().GetObject(), Path);
@@ -448,7 +466,6 @@ void engine::graphics::Material::UpdateShader()
 	// Don't try to use an invalid shader.
 	if (!Shader->Valid)
 	{
-		Log::Error("Shader is not valid!");
 		// Default shader isn't valid, oh no!
 		if (IsDefault)
 		{
@@ -457,11 +474,10 @@ void engine::graphics::Material::UpdateShader()
 		}
 		else
 		{
+			Log::Error("Shader is not valid!");
 			SetToDefault();
 		}
 	}
 
-#if EDITOR || DEBUG
 	VerifyUniforms();
-#endif
 }

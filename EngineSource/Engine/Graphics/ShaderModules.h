@@ -11,6 +11,9 @@ namespace engine::graphics
 	public:
 		string Name;
 		uint32 ModuleObject = 0;
+
+		std::vector<uint32> Dependencies;
+
 		std::vector<string> Exported;
 		enum class ShaderType
 		{
@@ -41,7 +44,8 @@ namespace engine::graphics
 			string ResultSource;
 			std::vector<ShaderModule> DependencyModules;
 			std::vector<ShaderUniform> ShaderUniforms;
-			bool IsModule;
+			bool IsModule = false;
+			bool IsUnlit = false;
 			ShaderModule ThisModule;
 		};
 

@@ -3,7 +3,6 @@
 
 namespace engine::debug
 {
-
 	struct TimeLogger
 	{
 		TimeLogger(string Measured, std::vector<Log::LogPrefix> Prefixes = {});

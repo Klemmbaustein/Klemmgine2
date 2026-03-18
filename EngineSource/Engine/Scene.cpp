@@ -1,10 +1,8 @@
 #include "Scene.h"
 #include "Core/ThreadPool.h"
 #include "Engine.h"
-#include "Internal/OpenGL.h"
 #include "Subsystem/SceneSubsystem.h"
 #include "Graphics/VideoSubsystem.h"
-#include <algorithm>
 #include <Core/File/BinarySerializer.h>
 #include <Core/File/TextSerializer.h>
 #include <Engine/File/ModelData.h>
@@ -19,14 +17,15 @@
 #include <Editor/UI/Panels/Viewport.h>
 #endif
 
+using namespace engine::graphics;
+using namespace engine;
+
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
 #if EDITOR
 
 static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
 {
-	using namespace engine;
-
 	if (!editor::Viewport::Current)
 		return FromSize;
 
@@ -56,11 +55,6 @@ engine::Scene::Scene(string FilePath)
 
 engine::Scene::~Scene()
 {
-	using namespace engine::subsystem;
-
-	delete Buffer;
-	delete SceneCamera;
-
 	SceneSubsystem* Sys = SceneSubsystem::Current;
 
 	if (Sys->Main == this)
@@ -101,85 +95,6 @@ engine::Scene::Scene(const char* FilePath)
 {
 }
 
-void engine::Scene::Draw()
-{
-	if (!AlwaysRedraw && !Redraw)
-		return;
-
-	Redraw = false;
-
-	UsedCamera->Update();
-
-	if (UsedCamera->UseSceneEnvironment)
-	{
-		UsedCamera->UsedEnvironment = &this->SceneEnvironment;
-	}
-
-	if (VideoSubsystem::Current->DrawShadows)
-	{
-		Shadows.Enabled = true;
-		Shadows.Update(UsedCamera);
-		{
-			std::unique_lock g{ DrawSortMutex };
-
-			Shadows.Draw(DrawnComponents);
-		}
-	}
-	else
-	{
-		Shadows.Enabled = false;
-		Shadows.Update(UsedCamera);
-	}
-
-	Buffer->Bind();
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_STENCIL_TEST);
-	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
-	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-	glClearColor(0, 0, 0, 1);
-	glStencilMask(0xFF);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glStencilMask(0);
-	glStencilFunc(GL_GEQUAL, 1, 0xFF);
-
-
-	{
-		bool LasIsTransparent = false;
-		bool LastDrawStencil = false;
-		std::unique_lock g{ DrawSortMutex };
-
-		for (DrawableComponent* i : DrawnComponents)
-		{
-			if (i->DrawStencil && !LastDrawStencil)
-			{
-				glStencilMask(1);
-				LastDrawStencil = true;
-			}
-			else if (!i->DrawStencil && LastDrawStencil)
-			{
-				glStencilMask(0);
-				LastDrawStencil = false;
-			}
-			if (i->IsTransparent && !LasIsTransparent)
-			{
-				glEnable(GL_BLEND);
-				LasIsTransparent = true;
-			}
-			else if (!i->IsTransparent && LastDrawStencil)
-			{
-				glDisable(GL_BLEND);
-				LasIsTransparent = false;
-			}
-			i->Draw(UsedCamera);
-		}
-	}
-
-	this->SceneTexture = PostProcess.Draw(Buffer, this->UsedCamera);
-	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_CULL_FACE);
-	StartSorting();
-}
-
 void engine::Scene::Update()
 {
 	if (Physics.Active)
@@ -211,40 +126,10 @@ void engine::Scene::Update()
 
 engine::Scene* engine::Scene::GetMain()
 {
-	using namespace engine::subsystem;
-
 	if (!SceneSubsystem::Current)
 		return nullptr;
 
 	return SceneSubsystem::Current->Main;
-}
-
-void engine::Scene::OnResized(kui::Vec2ui NewSize)
-{
-	using namespace engine::subsystem;
-
-	if (BufferSize != 0)
-	{
-		this->PostProcess.OnBufferResized(uint32(BufferSize.X), uint32(BufferSize.Y));
-		Buffer->Resize(int64(BufferSize.X), int64(BufferSize.Y));
-	}
-	else
-	{
-#if EDITOR
-		if (editor::EditorSubsystem::Active)
-		{
-			auto Size = GetEditorSize(NewSize);
-			this->PostProcess.OnBufferResized(uint32(Size.X), uint32(Size.Y));
-			Buffer->Resize(Size.X, Size.Y);
-			SceneCamera->Aspect = float(Size.X) / float(Size.Y);
-			return;
-		}
-#endif
-		this->PostProcess.OnBufferResized(uint32(NewSize.X), uint32(NewSize.Y));
-		Buffer->Resize(int64(NewSize.X), int64(NewSize.Y));
-	}
-
-	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
 }
 
 engine::SceneObject* engine::Scene::CreateObjectFromID(int32 ID, Vector3 Position, Rotation3 Rotation, Vector3 Scale)
@@ -376,36 +261,6 @@ bool engine::Scene::ObjectDestroyed(SceneObject* Target) const
 	return DestroyedObjects.contains(Target);
 }
 
-void engine::Scene::AddDrawnComponent(DrawableComponent* New)
-{
-	std::unique_lock g{ DrawSortMutex };
-	DrawnComponents.push_back(New);
-	SortedComponents.push_back({ { New->GetWorldTransform().ApplyTo(0), New->DrawBoundingBox }, New });
-}
-
-void engine::Scene::RemoveDrawnComponent(DrawableComponent* Removed)
-{
-	std::unique_lock g{ DrawSortMutex };
-
-	for (auto i = DrawnComponents.begin(); i < DrawnComponents.end(); i++)
-	{
-		if (*i == Removed)
-		{
-			DrawnComponents.erase(i);
-			break;
-		}
-	}
-
-	for (auto i = SortedComponents.begin(); i < SortedComponents.end(); i++)
-	{
-		if (i->second == Removed)
-		{
-			SortedComponents.erase(i);
-			break;
-		}
-	}
-}
-
 void engine::Scene::PreLoadAsset(AssetRef Target)
 {
 	const void* TargetPtr = nullptr;
@@ -455,42 +310,42 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 
 		if (SceneInfo.Contains("sunColor"))
 		{
-			this->SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
+			this->Graphics.SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
 		}
 		if (SceneInfo.Contains("sunRotation"))
 		{
-			this->SceneEnvironment.SunRotation = SceneInfo.At("sunRotation").GetVector3();
+			this->Graphics.SceneEnvironment.SunRotation = SceneInfo.At("sunRotation").GetVector3();
 		}
 
 		if (SceneInfo.Contains("skyColor"))
 		{
-			this->SceneEnvironment.SkyColor = SceneInfo.At("skyColor").GetVector3();
+			this->Graphics.SceneEnvironment.SkyColor = SceneInfo.At("skyColor").GetVector3();
 		}
 
 		if (SceneInfo.Contains("groundColor"))
 		{
-			this->SceneEnvironment.GroundColor = SceneInfo.At("groundColor").GetVector3();
+			this->Graphics.SceneEnvironment.GroundColor = SceneInfo.At("groundColor").GetVector3();
 		}
 
 		if (SceneInfo.Contains("sunIntensity"))
 		{
-			this->SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
+			this->Graphics.SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
 		}
 		if (SceneInfo.Contains("ambientIntensity"))
 		{
-			this->SceneEnvironment.AmbientIntensity = SceneInfo.At("ambientIntensity").GetFloat();
+			this->Graphics.SceneEnvironment.AmbientIntensity = SceneInfo.At("ambientIntensity").GetFloat();
 		}
 		if (SceneInfo.Contains("fogColor"))
 		{
-			this->SceneEnvironment.FogColor = SceneInfo.At("fogColor").GetVector3();
+			this->Graphics.SceneEnvironment.FogColor = SceneInfo.At("fogColor").GetVector3();
 		}
 		if (SceneInfo.Contains("fogRange"))
 		{
-			this->SceneEnvironment.FogRange = SceneInfo.At("fogRange").GetFloat();
+			this->Graphics.SceneEnvironment.FogRange = SceneInfo.At("fogRange").GetFloat();
 		}
 		if (SceneInfo.Contains("fogStart"))
 		{
-			this->SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
+			this->Graphics.SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
 		}
 	}
 	catch (SerializeException& SerializeError)
@@ -586,44 +441,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 
 void engine::Scene::Init()
 {
-	using namespace engine::graphics;
-	using namespace engine::subsystem;
-
-	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-
-	if (VideoSystem)
-	{
-		kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
-#if EDITOR
-		if (editor::EditorSubsystem::Active)
-		{
-			BufferSize = GetEditorSize(BufferSize);
-		}
-#endif
-		Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
-
-		SceneCamera = new Camera(1);
-		SceneCamera->Position.Z = 2;
-		SceneCamera->Rotation.Y = -90;
-		SceneCamera->UsedEnvironment = &this->SceneEnvironment;
-
-		SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
-		UsedCamera = SceneCamera;
-
-		// Editor controls resizing of scenes otherwise
-#if !EDITOR
-		VideoSystem->OnResizedCallbacks.insert({ this,
-			[this](kui::Vec2ui NewSize)
-			{
-				if (Resizable)
-					OnResized(NewSize);
-			} });
-#endif
-
-		PostProcess.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
-		Shadows.Init();
-	}
-
+	Graphics.Init();
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
 	plugin::OnNewSceneLoaded(this);
 }
@@ -631,71 +449,14 @@ void engine::Scene::Init()
 engine::SerializedValue engine::Scene::GetSceneInfo()
 {
 	return std::vector{
-		SerializedData("sunColor", this->SceneEnvironment.SunColor),
-		SerializedData("sunRotation", this->SceneEnvironment.SunRotation.EulerVector()),
-		SerializedData("skyColor", this->SceneEnvironment.SkyColor),
-		SerializedData("groundColor", this->SceneEnvironment.GroundColor),
-		SerializedData("sunIntensity", this->SceneEnvironment.SunIntensity),
-		SerializedData("ambientIntensity", this->SceneEnvironment.AmbientIntensity),
-		SerializedData("fogColor", this->SceneEnvironment.FogColor),
-		SerializedData("fogRange", this->SceneEnvironment.FogRange),
-		SerializedData("fogStart", this->SceneEnvironment.FogStart),
+		SerializedData("sunColor", this->Graphics.SceneEnvironment.SunColor),
+		SerializedData("sunRotation", this->Graphics.SceneEnvironment.SunRotation.EulerVector()),
+		SerializedData("skyColor", this->Graphics.SceneEnvironment.SkyColor),
+		SerializedData("groundColor", this->Graphics.SceneEnvironment.GroundColor),
+		SerializedData("sunIntensity", this->Graphics.SceneEnvironment.SunIntensity),
+		SerializedData("ambientIntensity", this->Graphics.SceneEnvironment.AmbientIntensity),
+		SerializedData("fogColor", this->Graphics.SceneEnvironment.FogColor),
+		SerializedData("fogRange", this->Graphics.SceneEnvironment.FogRange),
+		SerializedData("fogStart", this->Graphics.SceneEnvironment.FogStart),
 	};
-}
-
-void engine::Scene::StartSorting()
-{
-	if (DrawnComponents.size() < 2)
-		return;
-
-	if (IsSorting)
-		return;
-
-	SortedComponents.resize(DrawnComponents.size());
-	for (size_t i = 0; i < DrawnComponents.size(); i++)
-	{
-		SortedComponents[i] = {
-			{ DrawnComponents[i]->GetWorldTransform().ApplyTo(0), DrawnComponents[i]->DrawBoundingBox },
-			DrawnComponents[i]
-		};
-	}
-
-	Vector3 CameraPosition = SceneCamera->Position;
-	IsSorting = true;
-
-	ThreadPool::Main()->AddJob([this, CameraPosition]() {
-		using Entry = std::pair<SortingInfo, DrawableComponent*>;
-
-		std::unique_lock g{ DrawSortMutex };
-		for (auto& i : SortedComponents)
-		{
-			Vector3 BoundsPosition = i.first.Position + i.first.Bounds.Position;
-			i.first.Position.X = Vector3::Distance(BoundsPosition, CameraPosition) - i.first.Bounds.Extents.Length();
-		}
-
-		std::sort(SortedComponents.begin(), SortedComponents.end(), [](const Entry& a, const Entry& b) -> bool
-		{
-			if (a.second->IsTransparent && !b.second->IsTransparent)
-			{
-				return false;
-			}
-			if (!a.second->IsTransparent && b.second->IsTransparent)
-			{
-				return true;
-			}
-			if (a.second->IsTransparent && b.second->IsTransparent)
-			{
-				// Draw transparent objects in reverse order
-				return a.first.Position.X > b.first.Position.X;
-			}
-
-			return a.first.Position.X < b.first.Position.X;
-		});
-		IsSorting = false;
-
-		for (size_t i = 0; i < DrawnComponents.size(); i++)
-		{
-			DrawnComponents[i] = SortedComponents[i].second;
-		}
-	});
 }

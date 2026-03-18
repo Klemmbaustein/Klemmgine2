@@ -1,5 +1,6 @@
 //? #version 330 core
-#using "engine.common" //! #include "../engine.common.frag"
+#using "engine.base" //! #include "../engine.common.frag"
+#unlit //!
 
 const float LINE_SIZE = 0.01;
 
