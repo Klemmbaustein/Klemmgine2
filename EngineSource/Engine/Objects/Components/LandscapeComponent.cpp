@@ -156,16 +156,16 @@ void engine::LandscapeComponent::OnAttached()
 		physics::MotionType::Static, physics::Layer::Static, this);
 
 	GetRootObject()->GetScene()->Physics.AddBody(Collider, true, true);
-	GetRootObject()->GetScene()->AddDrawnComponent(this);
+	GetRootObject()->GetScene()->Graphics.AddDrawnComponent(this);
 }
 
 void engine::LandscapeComponent::OnDetached()
 {
 	GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
-	GetRootObject()->GetScene()->RemoveDrawnComponent(this);
+	GetRootObject()->GetScene()->Graphics.RemoveDrawnComponent(this);
 }
 
-void engine::LandscapeComponent::Draw(graphics::Camera* From)
+void engine::LandscapeComponent::Draw(graphics::Camera* From, graphics::GraphicsScene* In)
 {
 	auto Root = GetRootObject();
 	auto Scene = Root ? Root->GetScene() : nullptr;
@@ -177,7 +177,7 @@ void engine::LandscapeComponent::Draw(graphics::Camera* From)
 		From->UsedEnvironment->ApplyTo(Used);
 
 		if (Scene)
-			Scene->Shadows.BindUniforms(Used);
+			Scene->Graphics.Shadows.BindUniforms(Used);
 
 		glUniformMatrix4fv(Used->ModelUniform, 1, false, &WorldTransform.Matrix[0][0]);
 		glUniformMatrix4fv(Used->GetUniformLocation("u_view"), 1, false, &From->View[0][0]);

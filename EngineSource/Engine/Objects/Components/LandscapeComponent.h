@@ -15,7 +15,7 @@ namespace engine
 		void OnAttached() override;
 		void OnDetached() override;
 
-		void Draw(graphics::Camera* From) override;
+		void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
 		void SimpleDraw(graphics::ShaderObject* With) override;
 
 		graphics::Material* LandscapeMaterial = nullptr;

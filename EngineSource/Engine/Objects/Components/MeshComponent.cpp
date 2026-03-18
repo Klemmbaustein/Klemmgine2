@@ -11,15 +11,14 @@ void engine::MeshComponent::Update()
 		DrawnModel->Data->CastShadow = CastShadow;
 }
 
-void engine::MeshComponent::Draw(graphics::Camera* From)
+void engine::MeshComponent::Draw(graphics::Camera* From, graphics::GraphicsScene* In)
 {
 	auto Root = GetRootObject();
 
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
-		DrawBoundingBox = DrawnModel->Data->Bounds;
-		DrawnModel->Drawable->Draw(Root ? Root->GetScene() : nullptr, WorldTransform, From,
-			Materials, this->DrawStencil);
+		DrawBoundingBox = DrawnModel->Data->Bounds.Translate(WorldTransform);
+		DrawnModel->Drawable->Draw(DrawStencil ? nullptr : In, WorldTransform, From, Materials, DrawBoundingBox, DrawStencil);
 	}
 }
 
@@ -91,6 +90,11 @@ void engine::MeshComponent::OnAttached()
 engine::MeshComponent::~MeshComponent()
 {
 	ClearModel(true);
+
+	if (Debug)
+	{
+		delete Debug;
+	}
 }
 
 void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
@@ -111,7 +115,7 @@ void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 
 	if (RemoveDrawnComponent && (RootObject || ParentObject))
 	{
-		GetRootObject()->GetScene()->RemoveDrawnComponent(this);
+		GetRootObject()->GetScene()->Graphics.RemoveDrawnComponent(this);
 		IsRegistered = false;
 	}
 }
@@ -119,7 +123,7 @@ void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)
 void engine::MeshComponent::InitializeModel()
 {
 	auto RootScene = GetRootObject()->GetScene();
-	RootScene->AddDrawnComponent(this);
+	RootScene->Graphics.AddDrawnComponent(this);
 #ifdef EDITOR
 	if (!Engine::IsPlaying && RootScene->Physics.Active)
 	{

@@ -1,17 +1,15 @@
 #if !defined(ENGINE_PLUGIN)
 #pragma once
-#include "Graphics/Camera.h"
 #include "Graphics/Effects/CascadedShadows.h"
 #include "Graphics/Effects/PostProcess.h"
-#include "Graphics/Environment.h"
-#include "Graphics/Framebuffer.h"
 #include "Objects/Components/DrawableComponent.h"
 #include "Objects/SceneObject.h"
 #include <atomic>
 #include <Engine/Physics/Physics.h>
 #include <kui/Vec2.h>
-#include <mutex>
 #include <set>
+#include <Engine/Debug/DebugDraw.h>
+#include "Graphics/Scene/GraphicsScene.h"
 
 namespace engine
 {
@@ -32,32 +30,7 @@ namespace engine
 		~Scene();
 
 		Scene(const Scene&) = delete;
-
-		void Draw();
 		void Update();
-
-		graphics::Framebuffer* Buffer = nullptr;
-
-		/**
-		* @brief
-		* A camera owned by this scene that is used if no other camera is available.
-		*
-		* This camera is also used by the editor as the editor camera.
-		*
-		* @see UsedCamera
-		*/
-		graphics::Camera* SceneCamera = nullptr;
-
-		/**
-		* @brief
-		* The camera that is used to draw this scene.
-		*
-		* When the scene is first loaded, this has the same value as SceneCamera.
-		*
-		* @see CameraComponent
-		*/
-		graphics::Camera* UsedCamera = nullptr;
-		graphics::Environment SceneEnvironment;
 
 		/**
 		* @brief
@@ -67,24 +40,7 @@ namespace engine
 		*/
 		std::vector<SceneObject*> Objects;
 
-		kui::Vec2ui BufferSize;
-		bool Resizable = true;
-
-		/**
-		* @brief
-		* If this is true, this scene will be drawn each frame.
-		*
-		* @see engine::Scene::Redraw
-		*/
-		bool AlwaysRedraw = true;
-		/**
-		* @brief
-		* Should this scene be redrawn the next frame.
-		*
-		* This value is ignored if AlwaysRedraw is true.
-		* Otherwise this scene will only be drawn if it is true.
-		*/
-		bool Redraw = false;
+		graphics::GraphicsScene Graphics;
 
 		/**
 		* @brief
@@ -97,11 +53,7 @@ namespace engine
 		[[nodiscard]]
 		static Scene* GetMain();
 
-		void OnResized(kui::Vec2ui NewSize);
-
 		physics::PhysicsManager Physics = physics::PhysicsManager(this);
-		graphics::CascadedShadows Shadows;
-		graphics::PostProcess PostProcess;
 
 		/**
 		* @brief
@@ -169,25 +121,6 @@ namespace engine
 
 		/**
 		* @brief
-		* Adds a component to the list of drawn components.
-		*
-		* Drawn components will be sorted and rendered each time this scene is drawn.
-		*
-		* @see RemoveDrawnComponent
-		* @see DrawableComponent
-		*/
-		void AddDrawnComponent(DrawableComponent* New);
-		/**
-		* @brief
-		* Removes a component to the list of drawn components.
-		*
-		* @see AddDrawnComponent
-		* @see DrawableComponent
-		*/
-		void RemoveDrawnComponent(DrawableComponent* Removed);
-
-		/**
-		* @brief
 		* Pre-loads an asset from the given asset reference.
 		*
 		* All assets that are pre-loaded by this scene will be unloaded again when it is unloaded.
@@ -199,11 +132,6 @@ namespace engine
 		* @see subsystem::SceneSubsystem
 		*/
 		void PreLoadAsset(AssetRef Target);
-
-		uint32 GetDrawBuffer()
-		{
-			return SceneTexture;
-		}
 
 	private:
 
@@ -222,21 +150,7 @@ namespace engine
 
 		void UnloadAsset(const SceneAsset& Target);
 
-		uint32 SceneTexture = 0;
-
 		SerializedValue GetSceneInfo();
-
-		struct SortingInfo
-		{
-			Vector3 Position;
-			graphics::BoundingBox Bounds;
-		};
-		std::vector<std::pair<SortingInfo, DrawableComponent*>> SortedComponents;
-		std::vector<DrawableComponent*> DrawnComponents;
-		std::mutex DrawSortMutex;
-		bool IsSorting = false;
-
-		void StartSorting();
 	};
 }
 #endif

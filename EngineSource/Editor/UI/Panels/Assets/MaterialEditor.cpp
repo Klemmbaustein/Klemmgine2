@@ -43,13 +43,13 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 
 	PreviewScene = new Scene();
 	PreviewScene->Physics.Active = false;
-	PreviewScene->SceneCamera->Rotation = Vector3(-37.5f, 45, 0);
-	PreviewScene->SceneCamera->Position = Vector3(2.25f);
-	PreviewScene->Resizable = false;
-	PreviewScene->AlwaysRedraw = false;
-	PreviewScene->Redraw = true;
-	PreviewScene->BufferSize = Vec2ui(300, 200) * Window::GetActiveWindow()->GetDPI();
-	PreviewScene->OnResized(PreviewScene->BufferSize);
+	PreviewScene->Graphics.SceneCamera->Rotation = Vector3(-37.5f, 45, 0);
+	PreviewScene->Graphics.SceneCamera->Position = Vector3(2.25f);
+	PreviewScene->Graphics.Resizable = false;
+	PreviewScene->Graphics.AlwaysRedraw = false;
+	PreviewScene->Graphics.RedrawNextFrame = true;
+	PreviewScene->Graphics.BufferSize = Vec2ui(300, 200) * Window::GetActiveWindow()->GetDPI();
+	PreviewScene->Graphics.OnResized(PreviewScene->Graphics.BufferSize);
 
 	auto CurrentObj = PreviewScene->CreateObject<MeshObject>();
 	CurrentObj->LoadData(GraphicsModel::UnitCube());
@@ -108,7 +108,7 @@ engine::editor::MaterialEditor::~MaterialEditor()
 void engine::editor::MaterialEditor::Update()
 {
 	AssetEditor::Update();
-	PreviewImage->SetUseImage(true, PreviewScene->GetDrawBuffer());
+	PreviewImage->SetUseImage(true, PreviewScene->Graphics.GetDrawBuffer());
 
 	if (RedrawNextFrame)
 	{
@@ -300,7 +300,7 @@ void engine::editor::MaterialEditor::OnResized()
 void engine::editor::MaterialEditor::OnChanged()
 {
 	AssetEditor::OnChanged();
-	PreviewScene->Redraw = true;
+	PreviewScene->Graphics.RedrawNextFrame = true;
 	RedrawNextFrame = true;
 }
 

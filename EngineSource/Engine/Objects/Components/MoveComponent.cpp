@@ -14,7 +14,7 @@ void engine::MoveComponent::OnAttached()
 {
 	Collider = new PhysicsComponent();
 	Attach(Collider);
-	Collider->Scale = Vector3(this->ColliderSize.X, this->ColliderSize.Y, 1);
+	Collider->SetScale(Vector3(this->ColliderSize.X, this->ColliderSize.Y, 1));
 	Collider->CreateCapsule(physics::MotionType::Static, physics::Layer::Static, false);
 }
 

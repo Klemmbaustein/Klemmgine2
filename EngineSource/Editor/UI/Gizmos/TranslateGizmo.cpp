@@ -11,15 +11,16 @@ engine::editor::TranslateGizmo::TranslateGizmo()
 {
 	GizmoMesh = new MeshComponent();
 	GizmoMesh->Load(AssetRef::FromPath(EditorUI::Asset("Models/Arrows.kmdl")), false);
-	GizmoMesh->Rotation.Y = -90;
+	GizmoMesh->SetRotation(Rotation3(0, -90, 0));
 	GizmoMesh->DrawStencil = true;
 	GizmoMesh->CastShadow = false;
+	GizmoMesh->DrawAsOpaqueStencil = true;
 
 	this->Physics.Init();
 
 	Collider = new CollisionComponent();
 	Collider->Manager = &this->Physics;
-	Collider->Rotation.Y = -90;
+	Collider->SetRotation(Rotation3(0, -90, 0));
 	Collider->Load(AssetRef::FromPath(EditorUI::Asset("Models/Arrows.kmdl")));
 }
 
@@ -31,34 +32,38 @@ engine::editor::TranslateGizmo::~TranslateGizmo()
 
 void engine::editor::TranslateGizmo::Update(Viewport* With)
 {
-	GizmoMesh->UpdateTransform();
-	Collider->UpdateTransform();
-	Collider->Update();
+	auto Current = Scene::GetMain();
+	auto Effect = Current->Graphics.PostProcess.GetEffect<EditorOutline>();
+
+	if (!Effect)
+	{
+		Effect = new EditorOutline();
+		Current->Graphics.AddDrawnComponent(With->Grid);
+		Current->Graphics.AddDrawnComponent(GizmoMesh);
+		Current->Graphics.PostProcess.AddEffect(Effect);
+	}
 
 	if (With->SelectedObjects.empty())
 	{
 		return;
 	}
 
-	auto Current = Scene::GetMain();
+	GizmoMesh->SetPosition((*With->SelectedObjects.begin())->Position);
+	Collider->SetPosition(GizmoMesh->GetPosition());
+	GizmoMesh->SetScale(Vector3::Distance(Current->Graphics.UsedCamera->Position,
+		GizmoMesh->GetPosition()) * 0.075f);
+	Collider->SetScale(GizmoMesh->GetScale());
+	GizmoMesh->UpdateTransform(true);
+	Collider->UpdateTransform(true);
+	Collider->Update();
 
-	auto Effect = Current->PostProcess.GetEffect<EditorOutline>();
-
-	if (!Effect)
-	{
-		Effect = new EditorOutline();
-		Current->AddDrawnComponent(With->Grid);
-		Current->AddDrawnComponent(GizmoMesh);
-		Current->PostProcess.AddEffect(Effect);
-	}
-
-	graphics::Camera* Cam = Current->UsedCamera;
+	graphics::Camera* Cam = Current->Graphics.UsedCamera;
 
 	Vector3 Direction = With->GetCursorDirection();
 	Vector3 EndPosition = Cam->Position + Direction * 3000000;
 	auto h = Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Static);
 
-	Vector3 Dir = (h.ImpactPoint - GizmoMesh->Position).Normalize();
+	Vector3 Dir = (h.ImpactPoint - GizmoMesh->GetPosition()).Normalize();
 
 	bool Clicked = Window::GetActiveWindow()->Input.IsLMBDown;
 	Effect->OutlineShader->Bind();

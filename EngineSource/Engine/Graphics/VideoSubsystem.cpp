@@ -278,7 +278,7 @@ void engine::VideoSubsystem::RenderUpdate()
 		glClearColor(0, 0, 0, 1);
 		for (Scene* scn : SceneSystem->LoadedScenes)
 		{
-			scn->Draw();
+			scn->Graphics.Draw();
 		}
 		glViewport(0, 0, GLsizei(MainWindow->GetSize().X), GLsizei(MainWindow->GetSize().Y));
 		glEnable(GL_BLEND);
@@ -292,7 +292,7 @@ void engine::VideoSubsystem::RenderUpdate()
 
 	if (SceneSystem && SceneSystem->Main)
 	{
-		Texture = SceneSystem->Main->GetDrawBuffer();
+		Texture = SceneSystem->Main->Graphics.GetDrawBuffer();
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -20,8 +20,8 @@ engine::graphics::Model::~Model()
 	}
 }
 
-void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Camera* With,
-	std::vector<Material*>& UsedMaterials, bool Stencil)
+void engine::graphics::Model::Draw(GraphicsScene* In, const Transform& At, graphics::Camera* With,
+	std::vector<Material*>& UsedMaterials, const BoundingBox& Bounds, bool Stencil)
 {
 	if (!In && Stencil)
 	{
@@ -36,11 +36,39 @@ void engine::graphics::Model::Draw(Scene* In, const Transform& At, graphics::Cam
 		if (Used == nullptr)
 			continue;
 
-		With->UsedEnvironment->ApplyTo(Used);
+		if (!Used->Unlit && In)
+		{
+			auto Lights = In->Lights.GetLights(Bounds);
 
-		if (In)
+			for (size_t light = 0; light < 8; light++)
+			{
+				bool Active = light < Lights.size();
+				// Actually creating a new string for each light slot for each drawable object ends up being a pretty big performance hit
+				// Do this instead to speed things up a bit
+				static const char* lights[8] = {
+					"u_lights[0].isActive",
+					"u_lights[1].isActive",
+					"u_lights[2].isActive",
+					"u_lights[3].isActive",
+					"u_lights[4].isActive",
+					"u_lights[5].isActive",
+					"u_lights[6].isActive",
+					"u_lights[7].isActive",
+				};
+
+				Used->SetInt(Used->GetUniformLocation(lights[light]), Active);
+
+				if (Active)
+				{
+					Used->SetVec3(Used->GetUniformLocation(str::Format("u_lights[%i].position", light)), Lights[light]->Position);
+				}
+			}
+
+			With->UsedEnvironment->ApplyTo(Used);
 			In->Shadows.BindUniforms(Used);
-		else
+		}
+
+		if (!In)
 			glStencilFunc(GL_ALWAYS, GLint(i) + 2, 0xFF);
 
 		glUniformMatrix4fv(Used->ModelUniform, 1, false, &At.Matrix[0][0]);

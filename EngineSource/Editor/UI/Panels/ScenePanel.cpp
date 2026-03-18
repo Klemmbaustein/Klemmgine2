@@ -41,18 +41,18 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	Properties->CreateNewHeading("Scene - " + Target->Name);
 
 	Properties->CreateNewHeading("Lighting");
-	Properties->AddVecEntry("Sun color", Target->SceneEnvironment.SunColor, OnChanged, true);
-	Properties->AddVecEntry("Sun rotation", *(Vector3*)&Target->SceneEnvironment.SunRotation, OnChanged, false, true);
-	Properties->AddFloatEntry("Sun intensity", Target->SceneEnvironment.SunIntensity, OnChanged);
-	Properties->AddVecEntry("Sky color", Target->SceneEnvironment.SkyColor, OnChanged, true);
-	Properties->AddVecEntry("Ground color", Target->SceneEnvironment.GroundColor, OnChanged, true);
-	Properties->AddFloatEntry("Ambient intensity", Target->SceneEnvironment.AmbientIntensity, OnChanged);
+	Properties->AddVecEntry("Sun color", Target->Graphics.SceneEnvironment.SunColor, OnChanged, true);
+	Properties->AddVecEntry("Sun rotation", *(Vector3*)&Target->Graphics.SceneEnvironment.SunRotation, OnChanged, false, true);
+	Properties->AddFloatEntry("Sun intensity", Target->Graphics.SceneEnvironment.SunIntensity, OnChanged);
+	Properties->AddVecEntry("Sky color", Target->Graphics.SceneEnvironment.SkyColor, OnChanged, true);
+	Properties->AddVecEntry("Ground color", Target->Graphics.SceneEnvironment.GroundColor, OnChanged, true);
+	Properties->AddFloatEntry("Ambient intensity", Target->Graphics.SceneEnvironment.AmbientIntensity, OnChanged);
 
 	Properties->CreateNewHeading("Atmosphere");
 
-	Properties->AddVecEntry("Fog Color", Target->SceneEnvironment.FogColor, OnChanged, true);
-	Properties->AddFloatEntry("Fog range", Target->SceneEnvironment.FogRange, OnChanged);
-	Properties->AddFloatEntry("Fog start", Target->SceneEnvironment.FogStart, OnChanged);
+	Properties->AddVecEntry("Fog Color", Target->Graphics.SceneEnvironment.FogColor, OnChanged, true);
+	Properties->AddFloatEntry("Fog range", Target->Graphics.SceneEnvironment.FogRange, OnChanged);
+	Properties->AddFloatEntry("Fog start", Target->Graphics.SceneEnvironment.FogStart, OnChanged);
 }
 
 void engine::editor::ScenePanel::OnThemeChanged()

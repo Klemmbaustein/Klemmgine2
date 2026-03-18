@@ -90,10 +90,14 @@ void engine::plugin::OnNewSceneLoaded(Scene* Target)
 	}
 }
 
-static const string PLUGIN_DIR = "Plugins/";
 
 void engine::plugin::Load(subsystem::PluginSubsystem* System)
 {
+#ifdef EDITOR
+	static const string PLUGIN_DIR = editor::GetEditorPath() + "/../Plugins/";
+#else
+	static const string PLUGIN_DIR = "Plugins/";
+#endif
 	if (!std::filesystem::exists(PLUGIN_DIR))
 		return;
 

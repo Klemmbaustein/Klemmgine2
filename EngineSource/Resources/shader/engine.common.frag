@@ -1,5 +1,8 @@
+// Common shading functions
+
 //? #version 430
 #module "engine.common" //!
+#using "engine.base" //! #include "engine.base.frag"
 
 #if !ENGINE_GL_430
 #extension GL_ARB_uniform_buffer_object : enable
@@ -7,22 +10,15 @@
 #endif
 
 #export //!
-in vec3 v_position;
-in vec3 v_screenPosition;
-#export //!
-in vec2 v_texCoord;
-#export //!
-in vec3 v_normal;
-#export //!
-in vec3 v_screenNormal;
-
-#export //!
-layout(location = 0) out vec4 f_color;
-layout(location = 1) out vec3 f_position;
-layout(location = 2) out vec3 f_normal;
-
-#export //!
 uniform vec3 u_lightDirection = vec3(0, 1, 0);
+
+struct Light
+{
+	bool isActive;
+	vec3 position;
+};
+
+uniform Light u_lights[8];
 
 #export //!
 uniform vec3 u_sunColor = vec3(1);
@@ -36,9 +32,6 @@ uniform vec3 u_groundColor = vec3(1);
 uniform float u_ambientStrength = 0.2;
 
 uniform bool u_drawShadows = true;
-
-#export //!
-uniform vec3 u_cameraPos = vec3(0);
 
 layout (std140) uniform LightSpaceMatrices
 {
@@ -56,9 +49,6 @@ uniform float u_sceneFogStart = 0.0;
 
 #define PCF_SIZE 4
 #define PCF_HALF_SIZE 2
-
-#export //!
-float opacity = 1.0;
 
 float shadowValues[PCF_SIZE][PCF_SIZE];
 
@@ -84,6 +74,21 @@ float SampleFromShadowMap(vec2 distances)
 		}
 	}
 	return 1 - clamp(ShadowVal / ((PCF_SIZE - 1) * (PCF_SIZE - 1)), 0.0, 1.0);
+}
+
+float lightStrength(vec3 at)
+{
+#define Kc 1.0
+#define Kl 0.1
+#define Kq 0.3
+
+	vec3 diff = v_position - at;
+
+	float d = length(diff);
+
+	vec3 dir = diff / vec3(d);
+
+	return 1.0 / (Kc + Kl * d + Kq * d * d) * max(dot(dir, -v_normal), 0.0);
 }
 
 float getShadowStrength()
@@ -203,21 +208,23 @@ vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularSize);
 	vec3 spec_color = spec * specularStength * u_sunColor * u_sunIntensity;
 
-	return applyFog((color * u_sunColor * u_sunIntensity + spec_color) * shadows + ambient);
+	float lightValue = 0;
+
+	for (int i = 0; i < 8; i++)
+	{
+		if (!u_lights[i].isActive)
+		{
+			continue;
+		}
+
+		lightValue += lightStrength(u_lights[i].position);
+	}
+
+	return applyFog((color * u_sunColor * u_sunIntensity + spec_color) * shadows + ambient + lightValue * color);
 }
 
 #export //!
 vec3 applyLighting(vec3 color)
 {
 	return applyLightingSpecular(color, 0.0, 1.0);
-}
-
-vec3 fragment();
-
-void main()
-{
-	f_color.rgb = fragment();
-	f_color.a = opacity;
-	f_position = v_screenPosition;
-	f_normal = v_screenNormal != vec3(0) ? normalize(v_screenNormal) : vec3(0, 0, 0);
 }

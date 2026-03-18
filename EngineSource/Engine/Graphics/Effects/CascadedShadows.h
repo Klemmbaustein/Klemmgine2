@@ -2,9 +2,12 @@
 #include <Engine/Graphics/Camera.h>
 #include <Engine/Objects/Components/DrawableComponent.h>
 #include <Engine/Graphics/Framebuffer.h>
+#include <set>
 
 namespace engine::graphics
 {
+	class GraphicsScene;
+
 	class CascadedShadows
 	{
 	public:
@@ -13,8 +16,8 @@ namespace engine::graphics
 
 		void Init();
 		void Update(Camera* From);
-		uint32 Draw(std::vector<DrawableComponent*> Components);
-		void BindUniforms(graphics::ShaderObject* Target) const;
+		uint32 Draw(GraphicsScene* With);
+		void BindUniforms(ShaderObject* Target) const;
 
 		Vector3 LightDirection = Vector3(1, 2, 1).Normalize();
 
@@ -25,6 +28,8 @@ namespace engine::graphics
 	private:
 		bool EnvironmentHasShadows = true;
 
+		mutable std::set<const ShaderObject*> LastShaders;
+
 		bool ShouldRender() const
 		{
 			return Enabled && EnvironmentHasShadows;
@@ -34,9 +39,18 @@ namespace engine::graphics
 		static graphics::ShaderObject* ShadowShader;
 		static uint32 MatricesBuffer;
 		static uint32 LightFBO;
-		std::vector<glm::mat4> LightMatrices;
-		glm::mat4 GetLightSpaceMatrix(graphics::Camera* From, float NearPlane, float FarPlane);
-		std::vector<glm::mat4> GetLightSpaceMatrices(graphics::Camera* From);
+
+		struct MatrixEntry
+		{
+			glm::mat4 Matrix;
+			BoundingBox Bounds;
+		};
+
+		std::vector<glm::mat4> Matrices;
+		std::vector<BoundingBox> CascadeBounds;
+
+		MatrixEntry GetLightSpaceMatrix(graphics::Camera* From, float NearPlane, float FarPlane);
+		std::vector<MatrixEntry> GetLightSpaceMatrices(graphics::Camera* From);
 		std::vector<glm::vec4> GetFrustumCornersWorldSpace(glm::mat4 ViewProjection);
 	};
 }

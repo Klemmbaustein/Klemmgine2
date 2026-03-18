@@ -18,11 +18,11 @@ void engine::PlayerObject::Begin()
 		Cam->SetFov(Fov.Value);
 	};
 
-	Cam->Position.Y = 0.75f;
+	Cam->SetPosition(Vector3(0, 0.75f, 0));
 
 	auto Mesh = new MeshComponent();
 	Attach(Mesh);
-	Mesh->Scale = Vector3(0.5f, 1.0f, 0.5f);
+	Mesh->SetScale(Vector3(0.5f, 1.0f, 0.5f));
 	Mesh->Load(PlayerModel.Value);
 }
 
@@ -31,7 +31,7 @@ void engine::PlayerObject::Update()
 	if (!Engine::IsPlaying)
 		return;
 
-	Cam->Rotation = Cam->Rotation.EulerVector() - Vector3(input::MouseMovement.Y, 0, 0);
+	Cam->SetRotation(Cam->GetRotation().EulerVector() - Vector3(input::MouseMovement.Y, 0, 0));
 
 	this->Rotation.Y -= input::MouseMovement.X;
 

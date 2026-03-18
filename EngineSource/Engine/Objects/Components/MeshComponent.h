@@ -3,6 +3,7 @@
 #include <Engine/File/AssetRef.h>
 #include <Engine/File/ModelData.h>
 #include <Engine/Graphics/Material.h>
+#include <Engine/Debug/DebugDraw.h>
 
 namespace engine
 {
@@ -12,10 +13,11 @@ namespace engine
 
 		std::vector<graphics::Material*> Materials;
 		GraphicsModel* DrawnModel = nullptr;
+		bool DrawAsOpaqueStencil = false;
 
 		virtual void Update() override;
 
-		virtual void Draw(graphics::Camera* From) override;
+		virtual void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
 		virtual void SimpleDraw(graphics::ShaderObject* With) override;
 
 		void Load(AssetRef From, bool LoadMaterials = true);
@@ -27,6 +29,8 @@ namespace engine
 
 		void ClearModel(bool RemoveDrawnComponent);
 	private:
+
+		debug::DebugBox* Debug = nullptr;
 
 		void InitializeModel();
 

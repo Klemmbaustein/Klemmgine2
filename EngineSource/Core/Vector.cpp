@@ -85,6 +85,21 @@ float engine::Vector3::Dot(Vector3 a, Vector3 b)
 	return Result;
 }
 
+Vector3 engine::Vector3::Min(const Vector3& Other) const
+{
+	return Vector3(std::min(X, Other.X), std::min(Y, Other.Y), std::min(Z, Other.Z));
+}
+
+Vector3 engine::Vector3::Max(const Vector3& Other) const
+{
+	return Vector3(std::max(X, Other.X), std::max(Y, Other.Y), std::max(Z, Other.Z));
+}
+
+Vector3 engine::Vector3::Abs() const
+{
+	return Vector3(std::abs(X), std::abs(Y), std::abs(Z));
+}
+
 typedef Vector3 Axes[3];
 static void copy(const Axes& from, Axes& to)
 {

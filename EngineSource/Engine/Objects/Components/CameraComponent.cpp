@@ -20,9 +20,9 @@ engine::CameraComponent::~CameraComponent()
 {
 	Scene* ObjScene = GetRootObject()->GetScene();
 
-	if (ObjScene->UsedCamera == &ComponentCamera)
+	if (ObjScene->Graphics.UsedCamera == &ComponentCamera)
 	{
-		ObjScene->UsedCamera = ObjScene->SceneCamera;
+		ObjScene->Graphics.UsedCamera = ObjScene->Graphics.SceneCamera;
 	}
 }
 
@@ -34,7 +34,7 @@ void engine::CameraComponent::Update()
 	}
 
 	ComponentCamera.CameraTransform = WorldTransform;
-	ComponentCamera.Aspect = GetRootObject()->GetScene()->SceneCamera->Aspect;
+	ComponentCamera.Aspect = GetRootObject()->GetScene()->Graphics.SceneCamera->Aspect;
 	ComponentCamera.Update();
 }
 
@@ -45,7 +45,7 @@ void engine::CameraComponent::Use()
 		return;
 	}
 
-	GetRootObject()->GetScene()->UsedCamera = &ComponentCamera;
+	GetRootObject()->GetScene()->Graphics.UsedCamera = &ComponentCamera;
 }
 
 void engine::CameraComponent::SetFov(float NewFov)

@@ -1,5 +1,6 @@
 //! #version 330
 #using "engine.common" //! #include "engine.common.frag"
+#unlit //!
 
 #param //!
 uniform vec3 u_skycolor = vec3(0.3, 0.6, 1);

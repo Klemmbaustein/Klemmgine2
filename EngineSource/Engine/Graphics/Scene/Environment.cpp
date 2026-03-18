@@ -1,5 +1,5 @@
 #include "Environment.h"
-#include "ShaderObject.h"
+#include <Engine/Graphics/ShaderObject.h>
 
 void engine::graphics::Environment::ApplyTo(ShaderObject* TargetShader) const
 {

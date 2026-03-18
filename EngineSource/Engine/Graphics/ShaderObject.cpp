@@ -68,13 +68,22 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	for (auto& mod : VertexResult.DependencyModules)
 	{
 		VertexModules.push_back(mod.ModuleObject);
+		for (auto& dep : mod.Dependencies)
+		{
+			VertexModules.push_back(dep);
+		}
 	}
 
 	auto FragmentResult = ShaderLoader::Current->Modules.ParseShader(FragmentFile, ShaderModule::ShaderType::Fragment);
+	this->Unlit = FragmentResult.IsUnlit;
 	FragmentFile = FragmentResult.ResultSource;
 	for (auto& mod : FragmentResult.DependencyModules)
 	{
 		FragmentModules.push_back(mod.ModuleObject);
+		for (auto& dep : mod.Dependencies)
+		{
+			VertexModules.push_back(dep);
+		}
 	}
 
 	Valid = true;
@@ -99,6 +108,10 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 		for (auto& mod : GeometryResult.DependencyModules)
 		{
 			GeometryModules.push_back(mod.ModuleObject);
+			for (auto& dep : mod.Dependencies)
+			{
+				VertexModules.push_back(dep);
+			}
 		}
 
 		geometry = glCreateShader(GL_GEOMETRY_SHADER);

@@ -17,6 +17,7 @@ namespace engine::graphics
 		Material(const Material&) = delete;
 		~Material();
 
+		[[nodiscard]]
 		Material& operator=(const Material&) = delete;
 
 		struct MatTexture
@@ -62,6 +63,8 @@ namespace engine::graphics
 		std::vector<Field> Fields;
 		ShaderObject* Shader = nullptr;
 
+		void SetVec3(string Name, Vector3 Value);
+
 		void ToFile(string Path);
 		void ToStream(std::ostream& Stream);
 
@@ -75,6 +78,7 @@ namespace engine::graphics
 		void ApplySimple(graphics::ShaderObject* With);
 		void VerifyUniforms();
 		void UpdateShader();
+		[[nodiscard]]
 		Material::Field* FindField(string Name, Field::Type Type);
 		bool UseTexture = false;
 	private:
