@@ -211,7 +211,7 @@ void engine::graphics::ShaderModuleLoader::ScanModules()
 
 	static std::array<string, 4> EngineDefaultModules =
 	{
-		"res:shader/engine.base.vert",
+		//"res:shader/engine.base.vert",
 		"res:shader/engine.base.frag",
 		"res:shader/engine.common.vert",
 		"res:shader/engine.common.frag",
