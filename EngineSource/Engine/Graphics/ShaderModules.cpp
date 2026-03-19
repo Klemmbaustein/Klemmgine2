@@ -209,7 +209,7 @@ void engine::graphics::ShaderModuleLoader::ScanModules()
 {
 	FreeModules();
 
-	static std::array<string, 4> EngineDefaultModules =
+	static std::array<string, 3> EngineDefaultModules =
 	{
 		//"res:shader/engine.base.vert",
 		"res:shader/engine.base.frag",
