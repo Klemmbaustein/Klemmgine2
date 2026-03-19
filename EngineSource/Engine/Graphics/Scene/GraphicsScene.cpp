@@ -42,7 +42,7 @@ void engine::graphics::GraphicsScene::OnResized(kui::Vec2ui NewSize)
 {
 	if (BufferSize != 0)
 	{
-		this->PostProcess.OnBufferResized(uint32(BufferSize.X), uint32(BufferSize.Y));
+		Post.OnBufferResized(uint32(BufferSize.X), uint32(BufferSize.Y));
 		Buffer->Resize(int64(BufferSize.X), int64(BufferSize.Y));
 	}
 	else
@@ -51,13 +51,13 @@ void engine::graphics::GraphicsScene::OnResized(kui::Vec2ui NewSize)
 		if (editor::EditorSubsystem::Active)
 		{
 			auto Size = GetEditorSize(NewSize);
-			this->PostProcess.OnBufferResized(uint32(Size.X), uint32(Size.Y));
+			Post.OnBufferResized(uint32(Size.X), uint32(Size.Y));
 			Buffer->Resize(Size.X, Size.Y);
 			SceneCamera->Aspect = float(Size.X) / float(Size.Y);
 			return;
 		}
 #endif
-		this->PostProcess.OnBufferResized(uint32(NewSize.X), uint32(NewSize.Y));
+		Post.OnBufferResized(uint32(NewSize.X), uint32(NewSize.Y));
 		Buffer->Resize(int64(NewSize.X), int64(NewSize.Y));
 	}
 
@@ -103,7 +103,7 @@ void engine::graphics::GraphicsScene::Init()
 			} });
 #endif
 
-		PostProcess.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
+		Post.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
 		Shadows.Init();
 		Lights.UpdateBounds(this);
 		BuildBoundingVolume();
@@ -130,14 +130,14 @@ void engine::graphics::GraphicsScene::Draw()
 		return;
 
 	RedrawNextFrame = false;
-	
+
 	UpdateEnvironment();
 
 	ShadowDrawPass();
 
 	MainDrawPass();
 
-	this->SceneTexture = PostProcess.Draw(Buffer, this->UsedCamera);
+	this->SceneTexture = Post.Draw(Buffer, this->UsedCamera);
 
 	// Start doing work for the next frame asynchronously
 	BuildBoundingVolume();
