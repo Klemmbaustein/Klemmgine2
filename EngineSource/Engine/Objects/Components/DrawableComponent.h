@@ -21,5 +21,11 @@ namespace engine
 		bool IsTransparent = false;
 		virtual void Draw(graphics::Camera* From, graphics::GraphicsScene* In) = 0;
 		virtual void SimpleDraw(graphics::ShaderObject* With) {};
+
+	private:
+		static inline uint64 IdCounter = 0;
+	public:
+
+		const uint64 UniqueId = IdCounter++;
 	};
 }

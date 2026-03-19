@@ -34,6 +34,7 @@ engine::graphics::GraphicsScene::GraphicsScene()
 
 engine::graphics::GraphicsScene::~GraphicsScene()
 {
+	*this->StopAsyncProcesses = true;
 	delete Buffer;
 	delete SceneCamera;
 }
@@ -66,8 +67,11 @@ void engine::graphics::GraphicsScene::OnResized(kui::Vec2ui NewSize)
 
 void engine::graphics::GraphicsScene::AddDrawnComponent(DrawableComponent* New)
 {
-	DrawnComponents.push_back(New);
-	NewDrawables.push_back(New);
+	auto Drawable = DrawableData(New->UniqueId, New);
+
+	DrawnComponents.push_back(Drawable);
+	std::lock_guard g{ *this->HierarchyMutex };
+	NewDrawables.push_back(Drawable);
 }
 
 void engine::graphics::GraphicsScene::Init()
@@ -114,14 +118,15 @@ void engine::graphics::GraphicsScene::RemoveDrawnComponent(DrawableComponent* Re
 {
 	for (auto i = DrawnComponents.begin(); i < DrawnComponents.end(); i++)
 	{
-		if (*i == Removed)
+		if (i->Component == Removed)
 		{
 			DrawnComponents.erase(i);
 			break;
 		}
 	}
+	std::lock_guard g{ *this->HierarchyMutex };
 
-	RemovedDrawables.insert(Removed);
+	RemovedDrawableIds.insert(Removed->UniqueId);
 }
 
 void engine::graphics::GraphicsScene::Draw()
@@ -130,7 +135,7 @@ void engine::graphics::GraphicsScene::Draw()
 		return;
 
 	RedrawNextFrame = false;
-	
+
 	UpdateEnvironment();
 
 	ShadowDrawPass();
@@ -212,27 +217,34 @@ void engine::graphics::GraphicsScene::MainDrawPass()
 	bool LastIsTransparent = false;
 	bool LastDrawStencil = false;
 
-	std::vector<DrawableComponent*> ToDraw = NewDrawables;
+	std::vector<DrawableData> ToDraw;
 	{
-		std::lock_guard hg{ this->HierarchyMutex };
-		this->DrawableHierarchy->QueryFrustum(UsedCamera->Collider, ToDraw);
+		std::lock_guard hg{ *this->HierarchyMutex };
+		ToDraw = NewDrawables;
+		if (this->DrawableHierarchy)
+		{
+			this->DrawableHierarchy->QueryFrustum(UsedCamera->Collider, ToDraw);
+		}
 	}
 
 	using Entry = std::pair<SortingInfo, DrawableComponent*>;
 	std::vector<Entry> SortedComponents;
 
 	SortedComponents.reserve(ToDraw.size());
-	for (size_t i = 0; i < ToDraw.size(); i++)
 	{
-		if (RemovedDrawables.contains(ToDraw[i]))
+		std::lock_guard g{ *this->HierarchyMutex };
+		for (size_t i = 0; i < ToDraw.size(); i++)
 		{
-			continue;
-		}
+			if (RemovedDrawableIds.contains(ToDraw[i].Id))
+			{
+				continue;
+			}
 
-		SortedComponents.push_back({
-			{ ToDraw[i]->GetWorldTransform().ApplyTo(0), ToDraw[i]->DrawBoundingBox },
-			ToDraw[i]
-			});
+			SortedComponents.push_back({
+				{ ToDraw[i].Component->GetWorldTransform().ApplyTo(0), ToDraw[i].Component->DrawBoundingBox },
+				ToDraw[i].Component
+				});
+		}
 	}
 
 	std::sort(SortedComponents.begin(), SortedComponents.end(), [](const Entry& a, const Entry& b) -> bool {
@@ -293,21 +305,48 @@ void engine::graphics::GraphicsScene::BuildBoundingVolume()
 		return;
 	}
 
-	std::lock_guard g{ this->HierarchyMutex };
+	std::lock_guard g{ *this->HierarchyMutex };
 	RebuildingHierarchy = true;
-	std::list<std::pair<DrawableComponent*, BoundingBox>> Components;
+	std::list<std::pair<DrawableData, BoundingBox>> Components;
 
 	for (auto& i : this->DrawnComponents)
 	{
-		Components.push_back({ i, i->DrawBoundingBox });
+		Components.push_back({ i, i.Component->DrawBoundingBox });
 	}
-	RemovedDrawables.clear();
-	NewDrawables.clear();
 
-	ThreadPool::Main()->AddJob([this, Components = std::move(Components)] {
-		auto NewHierarchy = std::make_shared<BvhNode<DrawableComponent*>>(Components);
+	// All new drawables that were new when the BVH building started
+	std::vector<DrawableData> OldNewDrawables = NewDrawables;
+	std::set<uint64> OldRemovedDrawables = RemovedDrawableIds;
 
-		std::lock_guard g{ this->HierarchyMutex };
+	ThreadPool::Main()->AddJob(
+		[this, Components = std::move(Components), OldNewDrawables = std::move(OldNewDrawables),
+		OldRemovedDrawables = std::move(OldRemovedDrawables), Stop = StopAsyncProcesses, HierarchyMutex = HierarchyMutex] {
+
+		auto NewHierarchy = std::make_shared<BvhNode<DrawableData>>(Components);
+
+		std::lock_guard g{ *HierarchyMutex };
+
+		if (*Stop)
+		{
+			return;
+		}
+
+		for (auto it = OldNewDrawables.begin(); it != OldNewDrawables.end(); it++)
+		{
+			for (auto it2 = NewDrawables.begin(); it2 != NewDrawables.end(); it2++)
+			{
+				if (*it2 == *it)
+				{
+					NewDrawables.erase(it2);
+					break;
+				}
+			}
+		}
+		
+		for (auto& i : OldRemovedDrawables)
+		{
+			RemovedDrawableIds.erase(i);
+		}
 		DrawableHierarchy = NewHierarchy;
 		RebuildingHierarchy = false;
 	});

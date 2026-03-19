@@ -88,6 +88,7 @@ namespace engine::graphics
 		* @see engine::Scene::RedrawNextFrame
 		*/
 		bool AlwaysRedraw = true;
+
 		/**
 		* @brief
 		* Should this scene be redrawn the next frame.
@@ -96,10 +97,25 @@ namespace engine::graphics
 		* Otherwise this scene will only be drawn if it is true.
 		*/
 		bool RedrawNextFrame = false;
-		std::shared_ptr<graphics::BvhNode<DrawableComponent*>> DrawableHierarchy = nullptr;
-		std::mutex HierarchyMutex;
-		std::set<DrawableComponent*> RemovedDrawables;
-		std::vector<DrawableComponent*> NewDrawables;
+
+		struct DrawableData
+		{
+			bool operator==(const DrawableData& other) const noexcept
+			{
+				return other.Id == Id;
+			}
+			bool operator<(const DrawableData& other) const noexcept
+			{
+				return other.Id < Id;
+			}
+
+			uint64 Id = 0;
+			DrawableComponent* Component = nullptr;
+		};
+		std::shared_ptr<graphics::BvhNode<DrawableData>> DrawableHierarchy = nullptr;
+		std::shared_ptr<std::mutex> HierarchyMutex = std::make_shared<std::mutex>();
+		std::set<uint64> RemovedDrawableIds;
+		std::vector<DrawableData> NewDrawables;
 
 	private:
 
@@ -111,8 +127,10 @@ namespace engine::graphics
 			BoundingBox Bounds;
 		};
 
-		std::vector<DrawableComponent*> DrawnComponents;
+		std::vector<DrawableData> DrawnComponents;
 		bool RebuildingHierarchy = false;
+
+		std::shared_ptr<bool> StopAsyncProcesses = std::make_shared<bool>(false);
 
 		void UpdateEnvironment();
 
