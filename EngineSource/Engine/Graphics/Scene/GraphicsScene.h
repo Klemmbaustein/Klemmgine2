@@ -75,7 +75,7 @@ namespace engine::graphics
 		Camera* UsedCamera = nullptr;
 		Environment SceneEnvironment;
 		CascadedShadows Shadows;
-		PostProcess PostProcess;
+		PostProcess Post;
 		LightBvh Lights;
 
 		kui::Vec2ui BufferSize;

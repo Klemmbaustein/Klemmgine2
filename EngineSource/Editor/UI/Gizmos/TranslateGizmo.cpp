@@ -33,14 +33,14 @@ engine::editor::TranslateGizmo::~TranslateGizmo()
 void engine::editor::TranslateGizmo::Update(Viewport* With)
 {
 	auto Current = Scene::GetMain();
-	auto Effect = Current->Graphics.PostProcess.GetEffect<EditorOutline>();
+	auto Effect = Current->Graphics.Post.GetEffect<EditorOutline>();
 
 	if (!Effect)
 	{
 		Effect = new EditorOutline();
 		Current->Graphics.AddDrawnComponent(With->Grid);
 		Current->Graphics.AddDrawnComponent(GizmoMesh);
-		Current->Graphics.PostProcess.AddEffect(Effect);
+		Current->Graphics.Post.AddEffect(Effect);
 	}
 
 	if (With->SelectedObjects.empty())
