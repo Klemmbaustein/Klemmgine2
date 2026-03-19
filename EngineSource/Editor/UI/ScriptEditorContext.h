@@ -35,11 +35,9 @@ namespace engine::editor
 
 		void Initialize();
 
-		bool Loaded = false;
-
 		std::mutex ScriptServiceMutex;
-
 		Event<> OnReady;
+		bool Loaded = false;
 
 		virtual void NavigateTo(std::string File, std::optional<ds::TokenPos> At) = 0;
 		virtual void OnChange(const string& Name) = 0;

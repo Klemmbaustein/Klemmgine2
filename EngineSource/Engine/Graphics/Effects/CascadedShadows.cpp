@@ -127,22 +127,23 @@ uint32 CascadedShadows::Draw(GraphicsScene* With)
 	ShadowShader->Bind();
 	glViewport(0, 0, ShadowResolution, ShadowResolution);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	std::lock_guard g{ *With->HierarchyMutex };
 
-	std::vector<DrawableComponent*> Components = With->NewDrawables;
+	std::vector<GraphicsScene::DrawableData> Components = With->NewDrawables;
+	if (With->DrawableHierarchy)
 	{
-		std::lock_guard g{With->HierarchyMutex};
 		With->DrawableHierarchy->QueryBoxes(this->CascadeBounds, Components);
 	}
 
-	for (DrawableComponent* i : Components)
+	for (GraphicsScene::DrawableData& i : Components)
 	{
-		if (With->RemovedDrawables.contains(i))
+		if (With->RemovedDrawableIds.contains(i.Id))
 		{
 			continue;
 		}
 
-		if (i->CastShadow)
-			i->SimpleDraw(ShadowShader);
+		if (i.Component->CastShadow)
+			i.Component->SimpleDraw(ShadowShader);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return LightDepthMaps;
