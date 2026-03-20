@@ -183,6 +183,11 @@ void engine::graphics::GraphicsScene::UpdateEnvironment()
 	{
 		UsedCamera->UsedEnvironment = &this->SceneEnvironment;
 	}
+	else
+	{
+		UsedCamera->UsedEnvironment->NextFrame();
+	}
+	this->SceneEnvironment.NextFrame();
 }
 
 void engine::graphics::GraphicsScene::ShadowDrawPass()

@@ -45,7 +45,7 @@ namespace engine::graphics
 			glm::mat4 Matrix;
 			BoundingBox Bounds;
 		};
-
+		
 		std::vector<glm::mat4> Matrices;
 		std::vector<BoundingBox> CascadeBounds;
 

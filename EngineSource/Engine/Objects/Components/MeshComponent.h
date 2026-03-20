@@ -27,6 +27,8 @@ namespace engine
 
 		~MeshComponent() override;
 
+		void UpdateTransform(bool IsDirty) override;
+
 		void ClearModel(bool RemoveDrawnComponent);
 	private:
 

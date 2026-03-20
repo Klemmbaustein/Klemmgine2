@@ -480,9 +480,11 @@ static void Input_IsRMBClicked(InterpretContext* context)
 
 static void Input_setShowMouseCursor(InterpretContext* context)
 {
+	bool Value = context->popValue<Bool>();
+
 	if (Engine::GameHasFocus)
 	{
-		input::ShowMouseCursor = context->popValue<Bool>();
+		input::ShowMouseCursor = Value;
 	}
 }
 

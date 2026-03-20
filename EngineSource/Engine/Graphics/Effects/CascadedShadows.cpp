@@ -168,9 +168,15 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 	}
 	Target->SetInt(Target->GetUniformLocation("u_drawShadows"), 1);
 
+	static const char* Distances[] = {
+		"cascadePlaneDistances[0]",
+		"cascadePlaneDistances[1]",
+		"cascadePlaneDistances[2]",
+	};
+
 	for (size_t i = 0; i < ShadowCascadeLevels.size(); ++i)
 	{
-		Target->SetFloat(Target->GetUniformLocation("cascadePlaneDistances[" + std::to_string(i) + "]"),
+		Target->SetFloat(Target->GetUniformLocation(Distances[i]),
 			ShadowCascadeLevels[i]);
 	}
 

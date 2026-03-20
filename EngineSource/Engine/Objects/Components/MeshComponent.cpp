@@ -17,8 +17,8 @@ void engine::MeshComponent::Draw(graphics::Camera* From, graphics::GraphicsScene
 
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
-		DrawBoundingBox = DrawnModel->Data->Bounds.Translate(WorldTransform);
-		DrawnModel->Drawable->Draw(DrawAsOpaqueStencil ? nullptr : In, WorldTransform, From, Materials, DrawBoundingBox, DrawStencil);
+		DrawnModel->Drawable->Draw(DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
+			From, Materials, DrawBoundingBox, DrawStencil);
 	}
 }
 
@@ -94,6 +94,15 @@ engine::MeshComponent::~MeshComponent()
 	if (Debug)
 	{
 		delete Debug;
+	}
+}
+
+void engine::MeshComponent::UpdateTransform(bool IsDirty)
+{
+	ObjectComponent::UpdateTransform(IsDirty);
+	if (DrawnModel)
+	{
+		DrawBoundingBox = DrawnModel->Data->Bounds.Translate(WorldTransform);
 	}
 }
 

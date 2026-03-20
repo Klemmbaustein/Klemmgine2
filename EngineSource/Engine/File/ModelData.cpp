@@ -448,6 +448,7 @@ engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 		AddFace(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(1, 0, 0));
 		AddFace(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(1, 0, 0));
 
+		Cube->Data->Bounds = BoundingBox(0, 1);
 		Cube->Drawable = new graphics::Model(Cube->Data);
 	}
 
@@ -467,6 +468,8 @@ GraphicsModel* engine::GraphicsModel::UnitPlane()
 
 		AddPlane(Vector3(0, 1, 0), 0, Vector3(1, 0, 0), Vector3(0, 0, 1), m);
 		AddPlane(Vector3(0, -1, 0), 0, Vector3(-1, 0, 0), Vector3(0, 0, 1), m);
+
+		Plane->Data->Bounds = BoundingBox(0, 1);
 
 		Plane->Drawable = new graphics::Model(Plane->Data);
 	}
