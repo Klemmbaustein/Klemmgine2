@@ -194,3 +194,9 @@ void engine::LandscapeComponent::SimpleDraw(graphics::ShaderObject* With)
 	glUniformMatrix4fv(With->ModelUniform, 1, false, &WorldTransform.Matrix[0][0]);
 	LandscapeMesh->Draw();
 }
+
+void engine::LandscapeComponent::UpdateTransform(bool Dirty)
+{
+	ObjectComponent::UpdateTransform(Dirty);
+	this->DrawBoundingBox = BoundingBox(SIZE / 2, SIZE / 2).Translate(WorldTransform);
+}

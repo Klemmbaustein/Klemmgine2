@@ -1,6 +1,7 @@
 #pragma once
 #include <Core/Vector.h>
 #include <Core/Transform.h>
+#include <set>
 
 namespace engine::graphics
 {
@@ -35,5 +36,13 @@ namespace engine::graphics
 		Render RenderSettings;
 
 		void ApplyTo(ShaderObject* TargetShader) const;
+
+		void NextFrame()
+		{
+			LastShaders.clear();
+		}
+
+	private:
+		mutable std::set<const ShaderObject*> LastShaders;
 	};
 }

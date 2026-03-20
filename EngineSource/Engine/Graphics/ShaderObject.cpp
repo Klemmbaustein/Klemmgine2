@@ -176,15 +176,15 @@ void engine::graphics::ShaderObject::Bind()
 		glUseProgram(ShaderID);
 }
 
-uint32 engine::graphics::ShaderObject::GetUniformLocation(string Name) const
+uint32 engine::graphics::ShaderObject::GetUniformLocation(size_t NameHash, const char* Name) const
 {
-	auto Found = Uniforms.find(Name);
+	auto Found = Uniforms.find(NameHash);
 	if (Found != Uniforms.end())
 		return Found->second;
 
-	uint32 Location = glGetUniformLocation(ShaderID, Name.c_str());
+	uint32 Location = glGetUniformLocation(ShaderID, Name);
 
-	Uniforms.insert({Name, Location});
+	Uniforms.insert({ NameHash, Location });
 
 	return Location;
 }

@@ -2,7 +2,7 @@
 #include <Core/Types.h>
 #include <Core/Vector.h>
 #include <Core/Transform.h>
-#include <map>
+#include <unordered_map>
 
 namespace engine::graphics
 {
@@ -25,7 +25,18 @@ namespace engine::graphics
 		bool Valid = false;
 		bool Unlit = false;
 
-		uint32 GetUniformLocation(string Name) const;
+		uint32 GetUniformLocation(const string& Name) const
+		{
+			std::hash<std::string_view> h;
+			return GetUniformLocation(h(Name), Name.c_str());
+		}
+		uint32 GetUniformLocation(const char* Name) const
+		{
+			std::hash<std::string_view> h;
+			return GetUniformLocation(h(Name), Name);
+		}
+
+		uint32 GetUniformLocation(size_t NameHash, const char* Name) const;
 
 		void SetInt(uint32 UniformLocation, int32 Value);
 		void SetFloat(uint32 UniformLocation, float Value);
@@ -34,7 +45,7 @@ namespace engine::graphics
 		void SetTransform(uint32 UniformLocation, const Transform& Value);
 	private:
 
-		mutable std::map<string, uint32> Uniforms;
+		mutable std::unordered_map<size_t, uint32> Uniforms;
 
 		string VertexFile, FragmentFile, GeometryFile;
 		void Clear();

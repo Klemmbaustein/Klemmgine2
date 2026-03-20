@@ -26,16 +26,13 @@ namespace engine::graphics
 			{
 				delete Debug;
 			}
-			if constexpr (std::is_pointer_v<T>)
+			if (A)
 			{
-				if (A)
-				{
-					delete A;
-				}
-				if (B)
-				{
-					delete B;
-				}
+				delete A;
+			}
+			if (B)
+			{
+				delete B;
 			}
 		}
 

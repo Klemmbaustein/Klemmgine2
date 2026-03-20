@@ -3,6 +3,12 @@
 
 void engine::graphics::Environment::ApplyTo(ShaderObject* TargetShader) const
 {
+	if (LastShaders.contains(TargetShader))
+	{
+		return;
+	}
+	LastShaders.insert(TargetShader);
+
 	TargetShader->SetVec3(TargetShader->GetUniformLocation("u_sunColor"), this->SunColor);
 	TargetShader->SetFloat(TargetShader->GetUniformLocation("u_sunIntensity"), this->SunIntensity);
 	TargetShader->SetVec3(TargetShader->GetUniformLocation("u_skyColor"), this->SkyColor);
@@ -11,5 +17,4 @@ void engine::graphics::Environment::ApplyTo(ShaderObject* TargetShader) const
 	TargetShader->SetFloat(TargetShader->GetUniformLocation("u_sceneFogRange"), this->FogRange);
 	TargetShader->SetFloat(TargetShader->GetUniformLocation("u_sceneFogStart"), this->FogStart);
 	TargetShader->SetVec3(TargetShader->GetUniformLocation("u_sceneFogColor"), this->FogColor);
-
 }

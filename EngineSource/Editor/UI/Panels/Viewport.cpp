@@ -204,7 +204,7 @@ engine::editor::Viewport::Viewport()
 	Grid->IsTransparent = true;
 	Grid->CastShadow = false;
 	Grid->SetScale(1000);
-	Grid->UpdateTransform();
+	Grid->UpdateTransform(false);
 }
 
 bool engine::editor::Viewport::GetShowUI()
