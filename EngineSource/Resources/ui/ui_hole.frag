@@ -6,27 +6,25 @@ layout (location = 0) out vec4 f_color;
 layout (location = 1) out vec4 f_alpha;
 
 uniform vec3 u_color;
-uniform sampler2D u_texture;
-uniform vec3 u_offset; // Scroll bar: X = scrolled distance; Y = MaxDistance; Z MinDistance
+uniform vec4 u_scrollBounds;
 uniform float u_opacity;
-uniform vec4 u_transform;
-uniform float u_aspectRatio;
-uniform vec2 u_screenRes;
 
 void main()
 {
-	vec2 scale = u_transform.zw * vec2(u_aspectRatio, 1.0);
-	vec2 scaledTexCoords = v_texcoords * scale * (1.0 + 0.5 / u_screenRes);
-	vec2 nonAbsCenteredTexCoords = (scaledTexCoords - scale / 2.0) * 2.0;
-	vec2 centeredTexCoords = abs(nonAbsCenteredTexCoords);
-
-	int cornerIndex = int(round(v_cornerIndex));
-
-	if (u_offset.y > v_position.y)
+	if (u_scrollBounds.x > v_position.x)
 	{
 		discard;
 	}
-	if (u_offset.z < v_position.y)
+	if (u_scrollBounds.y < v_position.x)
+	{
+		discard;
+	}
+
+	if (u_scrollBounds.z > v_position.y)
+	{
+		discard;
+	}
+	if (u_scrollBounds.w < v_position.y)
 	{
 		discard;
 	}
