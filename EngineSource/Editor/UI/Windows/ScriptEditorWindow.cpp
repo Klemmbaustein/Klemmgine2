@@ -6,6 +6,9 @@
 #include <Editor/UI/Panels/Viewport.h>
 
 using namespace kui;
+using namespace engine::editor;
+
+ScriptEditorWindow* ScriptEditorWindow::Current = nullptr;
 
 engine::editor::ScriptEditorWindow::ScriptEditorWindow()
 	: IPopupWindow("Scripts", Vec2ui(600, 400), true, true)
@@ -33,6 +36,7 @@ void engine::editor::ScriptEditorWindow::Begin()
 	Popup->OnResizedCallback = [this](Window*) {
 		UI->OnResized(2);
 	};
+	Current = this;
 }
 
 void engine::editor::ScriptEditorWindow::Update()
@@ -44,6 +48,7 @@ void engine::editor::ScriptEditorWindow::Update()
 
 void engine::editor::ScriptEditorWindow::Destroy()
 {
+	Current = nullptr;
 	Settings::GetInstance()->Interface.RemoveListener(this);
 	delete MonospacedFont;
 	delete UI;

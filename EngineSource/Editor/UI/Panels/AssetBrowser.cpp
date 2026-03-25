@@ -10,6 +10,7 @@
 #include <Editor/UI/Windows/ProgressBar.h>
 #include <Editor/UI/Windows/RenameWindow.h>
 #include <Editor/UI/Windows/MessageWindow.h>
+#include <Editor/UI/Windows/ScriptEditorWindow.h>
 #include <Core/File/FileUtil.h>
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
@@ -118,8 +119,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		if (File.IsDirectory)
 		{
 			Extension = "dir/";
-			OnClick = [this, File]()
-			{
+			OnClick = [this, File]() {
 				this->Path.append(file::FileName(File.Path) + "/");
 				ItemsScrollBox->GetScrollObject()->Scrolled = 0;
 				UpdateItems();
@@ -127,8 +127,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		}
 		else if (Extension == "kts")
 		{
-			OnClick = [this, FilePath]()
-			{
+			OnClick = [this, FilePath]() {
 				if (Scene::AsyncLoads)
 					return;
 				delete Scene::GetMain();
@@ -138,8 +137,15 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		}
 		else if (Extension == "ds" || Extension == "kui")
 		{
-			OnClick = [this, FilePath]()
-			{
+			OnClick = [this, FilePath]() {
+				if (ScriptEditorWindow::Current)
+				{
+					ScriptEditorWindow::Current->Queue->Run([FilePath] {
+						ScriptEditorWindow::Current->UI->NavigateTo(FilePath, {});
+					});
+					return;
+				}
+
 				EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath](ScriptEditorPanel* p) {
 					p->UI.NavigateTo(FilePath, {});
 					p->SetFocused();
@@ -148,22 +154,19 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		}
 		else if (Extension == "kmdl")
 		{
-			OnClick = [this, FilePath]()
-			{
+			OnClick = [this, FilePath]() {
 				Viewport::Current->AddChild(new ModelEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
 			};
 		}
 		else if (Extension == "kmt")
 		{
-			OnClick = [this, FilePath]()
-			{
+			OnClick = [this, FilePath]() {
 				Viewport::Current->AddChild(new MaterialEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
 			};
 		}
 		else if (Extension == "png")
 		{
-			OnClick = [this, FilePath]()
-			{
+			OnClick = [this, FilePath]() {
 #if WINDOWS
 				platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
 #else

@@ -48,7 +48,6 @@ namespace engine::editor
 		void Open();
 
 		void SetTitle(string NewTitle);
-		thread::ThreadMessagesRef Queue;
 
 	public:
 
@@ -73,6 +72,7 @@ namespace engine::editor
 		 * @brief The default font of this popup. Use this instead of the main thread's default font for thread safety.
 		 */
 		kui::Font* DefaultFont = nullptr;
+		thread::ThreadMessagesRef Queue;
 
 	private:
 		string Name;
