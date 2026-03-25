@@ -9,6 +9,7 @@ using namespace engine::editor;
 
 engine::editor::Settings::Settings()
 {
+	Instance = this;
 	AddCategory(&Interface);
 	AddCategory(&Script);
 	AddCategory(&Console);

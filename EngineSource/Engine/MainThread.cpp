@@ -1,32 +1,29 @@
 #include "MainThread.h"
-#include <mutex>
-#include <cstdlib>
 #include <Core/Error/EngineError.h>
 
-static std::vector<std::function<void()>> MainThreadFuncs;
-static std::mutex MainThreadFuncsMutex;
+engine::thread::ThreadMessagesRef engine::thread::MainThreadQueue;
+thread_local bool engine::thread::IsMainThread = false;
 
 void engine::thread::ExecuteOnMainThread(std::function<void()> Function)
 {
 	ENGINE_ASSERT(!IsMainThread);
 
-	std::lock_guard g{ MainThreadFuncsMutex };
-	MainThreadFuncs.push_back(Function);
+	MainThreadQueue->Run(Function);
+}
+
+void engine::thread::InitializeMainThread()
+{
+	IsMainThread = true;
+	if (!MainThreadQueue)
+	{
+		MainThreadQueue = std::make_shared<ThreadMessageQueue>();
+	}
 }
 
 void engine::thread::MainThreadUpdate()
 {
 	ENGINE_ASSERT(IsMainThread);
 
-	MainThreadFuncsMutex.lock();
-	std::vector Functions = MainThreadFuncs;
-	MainThreadFuncs.clear();
-	MainThreadFuncsMutex.unlock();
-
-	for (auto& i : Functions)
-	{
-		i();
-	}
+	MainThreadQueue->Update();
 }
 
-thread_local bool engine::thread::IsMainThread = false;

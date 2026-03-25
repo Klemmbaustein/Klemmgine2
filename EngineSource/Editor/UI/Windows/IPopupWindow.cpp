@@ -37,6 +37,7 @@ engine::editor::IPopupWindow::IPopupWindow(string Name, kui::Vec2ui Size, bool R
 	this->Size = Size;
 	this->Resizable = Resizable;
 	this->CanClose = Closable;
+	Queue = std::make_shared<thread::ThreadMessageQueue>();
 }
 
 void engine::editor::IPopupWindow::Close()
@@ -56,6 +57,10 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	}
 	else
 	{
+		if (OpenPopup == this)
+		{
+			OpenPopup = nullptr;
+		}
 		Flags = Flags | Window::WindowFlag::Resizable;
 	}
 
@@ -63,11 +68,10 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	Popup->DPIMultiplier = EditorUI::Instance ? EditorUI::Instance->MainBackground->GetParentWindow()->DPIMultiplier : 1;
 	EditorUI::UpdateTheme(Popup, false);
 
-	bool ReloadTheme = false;
-
-	Settings::GetInstance()->Interface.ListenToSetting(this, "theme", [&ReloadTheme](SerializedValue val) {
-		ReloadTheme = true;
-	});
+	Settings::GetInstance()->Interface.ListenToSetting(this, "theme", [this](SerializedValue) {
+		EditorUI::UpdateTheme(Popup, true);
+		OnThemeChanged();
+	}, Queue);
 
 	Settings::GetInstance()->Interface.ListenToSetting(this, "uiScale", [this](SerializedValue val) {
 		Popup->DPIMultiplier = val.GetFloat();
@@ -90,12 +94,7 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 			break;
 		}
 
-		if (ReloadTheme)
-		{
-			EditorUI::UpdateTheme(Popup, true);
-			OnThemeChanged();
-			ReloadTheme = false;
-		}
+		Queue->Update();
 
 		this->Update();
 	}

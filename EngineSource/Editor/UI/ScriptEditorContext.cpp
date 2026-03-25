@@ -251,7 +251,7 @@ std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorContext::Complet
 	};
 }
 
-void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback)
+void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback, thread::ThreadMessagesRef CallbackContext)
 {
 	if (!Loaded)
 	{
@@ -264,7 +264,7 @@ void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback)
 		return;
 	}
 
-	ScheduleContextTask([this, Callback] {
+	ScheduleContextTask([this, Callback, CallbackContext] {
 		IsCompiling = true;
 		ScriptService->commitChanges();
 
@@ -278,20 +278,21 @@ void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback)
 
 		if (Callback)
 		{
-			CallbackFunctions.push_back(Callback);
+			CallbackFunctions.push_back({ Callback, CallbackContext });
 		}
 		IsCompiling = false;
 		if (Quit)
 		{
 			return;
 		}
-		thread::ExecuteOnMainThread([this, Callback] {
+
+		thread::ExecuteOnMainThread([this, Callback, CallbackContext] {
 			Errors = NewErrors;
 
 			if (ReCompileNext)
 			{
 				ReCompileNext = false;
-				Commit(Callback);
+				Commit(Callback, CallbackContext);
 			}
 		});
 	});
@@ -362,7 +363,7 @@ void engine::editor::ScriptEditorContext::Initialize()
 	Loaded = true;
 	Commit([this] {
 		OnReady.Invoke();
-	});
+	}, thread::MainThreadQueue);
 }
 
 void engine::editor::ScriptEditorContext::ContextCompilerThread()
@@ -386,9 +387,9 @@ void engine::editor::ScriptEditorContext::ContextCompilerThread()
 		}
 		TaskReadMutex.unlock();
 
-		for (auto& i : CallbackFunctions)
+		for (auto& [callback, context] : CallbackFunctions)
 		{
-			thread::ExecuteOnMainThread(i);
+			context->Run(callback);
 		}
 		CallbackFunctions.clear();
 	}

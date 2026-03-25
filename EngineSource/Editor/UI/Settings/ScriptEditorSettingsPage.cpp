@@ -10,6 +10,7 @@ engine::editor::ScriptEditorSettingsPage::ScriptEditorSettingsPage()
 
 	HasMiniMap = Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool();
 	TrimWhitespace = Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool();
+	UseVerticalTabs = Settings::GetInstance()->Script.GetSetting("useVerticalTabs", true).GetBool();;
 }
 
 engine::editor::ScriptEditorSettingsPage::~ScriptEditorSettingsPage()
@@ -68,5 +69,9 @@ void engine::editor::ScriptEditorSettingsPage::Generate(PropertyMenu* Target, Se
 
 	Target->AddBooleanEntry("Trim whitespace on save", TrimWhitespace, [this]() {
 		Settings::GetInstance()->Script.SetSetting("trimWhitespace", SerializedValue(TrimWhitespace));
+	});
+
+	Target->AddBooleanEntry("Use vertical tabs", UseVerticalTabs, [this]() {
+		Settings::GetInstance()->Script.SetSetting("useVerticalTabs", SerializedValue(UseVerticalTabs));
 	});
 }

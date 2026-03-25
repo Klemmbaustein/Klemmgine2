@@ -29,6 +29,8 @@ namespace engine::editor
 
 	private:
 
+		bool Loaded = false;
+
 		string GetSettingsPath();
 
 		std::vector<SettingsCategory*> Categories;

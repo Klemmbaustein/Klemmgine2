@@ -69,33 +69,35 @@ engine::editor::AssetBrowser::AssetBrowser()
 		}
 	});
 
-	AddShortcut(kui::Key::i, kui::Key::CTRL, [this] {
+	auto CtrlMod = ShortcutModifiers{ .Ctrl = true };
+
+	AddShortcut(kui::Key::i, CtrlMod, [this] {
 		Import(GetPathDisplayName());
 	});
 
-	AddShortcut(kui::Key::d, kui::Key::CTRL, [this] {
+	AddShortcut(kui::Key::d, CtrlMod, [this] {
 		EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
 	});
 
-	AddShortcut(kui::Key::n, kui::Key::CTRL, [this] {
+	AddShortcut(kui::Key::n, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts"));
 		resource::ScanForAssets();
 	});
 
-	AddShortcut(kui::Key::m, kui::Key::CTRL, [this] {
+	AddShortcut(kui::Key::m, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt"));
 		resource::ScanForAssets();
 	});
 
-	AddShortcut(kui::Key::t, kui::Key::CTRL, [this] {
+	AddShortcut(kui::Key::t, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag"));
 		resource::ScanForAssets();
 	});
-	AddShortcut(kui::Key::k, kui::Key::CTRL, [this] {
+	AddShortcut(kui::Key::k, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "UIScript", "kui"));
 		resource::ScanForAssets();
 	});
-	AddShortcut(kui::Key::e, kui::Key::CTRL, [this] {
+	AddShortcut(kui::Key::e, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds"));
 		resource::ScanForAssets();
 	});
@@ -139,7 +141,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 			OnClick = [this, FilePath]()
 			{
 				EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath](ScriptEditorPanel* p) {
-					p->NavigateTo(FilePath, {});
+					p->UI.NavigateTo(FilePath, {});
 					p->SetFocused();
 				});
 			};

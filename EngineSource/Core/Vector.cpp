@@ -231,7 +231,7 @@ bool engine::Vector3::operator==(const Vector3& Other) const
 
 Vector3 engine::Vector3::FromString(string VectorString)
 {
-	std::vector Elements = str::Split(VectorString, " \t\n");
+	std::vector Elements = str::Split(VectorString, " \t\n,");
 
 	if (Elements.size() != 3)
 		return 0;

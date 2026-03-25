@@ -9,49 +9,49 @@ using namespace engine;
 
 using std::size_t;
 
-http::HttpUrl::HttpUrl(string fromString)
+http::HttpUrl::HttpUrl(string FromString)
 {
-	const std::vector<string> possibleUris = { SCHEME_HTTP, SCHEME_HTTPS };
-	string uriType;
+	const std::vector<string> PossibleUris = { SCHEME_HTTP, SCHEME_HTTPS };
+	string UriType;
 
-	for (auto& i : possibleUris)
+	for (auto& i : PossibleUris)
 	{
-		if (fromString.substr(0, i.size()) == i)
+		if (FromString.substr(0, i.size()) == i)
 		{
-			uriType = i;
-			fromString = fromString.substr(i.size());
+			UriType = i;
+			FromString = FromString.substr(i.size());
 			break;
 		}
 	}
 
-	if (uriType.empty())
+	if (UriType.empty())
 	{
-		uriType = SCHEME_HTTP;
+		UriType = SCHEME_HTTP;
 	}
 
-	size_t slash = fromString.find_first_of("/");
+	size_t slash = FromString.find_first_of("/");
 	if (slash != string::npos)
 	{
-		this->Path = fromString.substr(slash);
-		fromString = fromString.substr(0, slash);
+		this->Path = FromString.substr(slash);
+		FromString = FromString.substr(0, slash);
 	}
 	else
 	{
 		this->Path = "/";
 	}
 
-	size_t colon = fromString.find_first_of(":");
-	if (colon != string::npos)
+	size_t Colon = FromString.find_first_of(":");
+	if (Colon != string::npos)
 	{
-		this->Port = std::stoi(fromString.substr(colon + 1));
-		fromString = fromString.substr(0, colon);
+		this->Port = std::stoi(FromString.substr(Colon + 1));
+		FromString = FromString.substr(0, Colon);
 	}
 	else
 	{
-		this->Port = uriType == SCHEME_HTTPS ? 443 : 80;
+		this->Port = UriType == SCHEME_HTTPS ? 443 : 80;
 	}
-	this->Scheme = uriType;
-	this->HostName = fromString;
+	this->Scheme = UriType;
+	this->HostName = FromString;
 }
 
 engine::http::HttpUrl::HttpUrl()
@@ -66,49 +66,49 @@ http::HttpResponse* http::SendRequest(string url, string method)
 		});
 }
 
-http::HttpResponse* http::SendRequest(string url, string method, HttpOptions options)
+http::HttpResponse* http::SendRequest(string Url, string Method, HttpOptions Options)
 {
-	HttpUrl urlInfo = url;
-	HttpResponse* response = nullptr;
-#ifdef AIO_WITH_OPENSSL
-	if (urlInfo.scheme == HttpUrl::SCHEME_HTTPS)
+	HttpUrl UrlInfo = Url;
+	HttpResponse* Response = nullptr;
+#ifdef ENGINE_WITH_OPENSSL
+	if (UrlInfo.scheme == HttpUrl::SCHEME_HTTPS)
 	{
-		response = sendRequestSSL(urlInfo, method, options);
+		Response = sendRequestSSL(UrlInfo, Method, Options);
 	}
 	else
 #endif
 	{
-		response = SendRequestNoSSL(urlInfo, method, options);
+		Response = SendRequestNoSSL(UrlInfo, Method, Options);
 	}
-	if (response->Status == HttpStatus::MovedPermanently || response->Status == HttpStatus::PermanentRedirect)
+	if (Response->Status == HttpStatus::MovedPermanently || Response->Status == HttpStatus::PermanentRedirect)
 	{
-		auto newLocation = response->Headers.find("location");
+		auto NewLocation = Response->Headers.find("location");
 
 		// no location header specified, can't redirect
-		if (newLocation == response->Headers.end())
+		if (NewLocation == Response->Headers.end())
 		{
-			return response;
+			return Response;
 		}
 
-		Log::Note(str::Format("redirect: %s -> %s", url.c_str(), newLocation->second.c_str()));
-		return SendRequest(newLocation->second, method, options);
+		Log::Note(str::Format("redirect: %s -> %s", Url.c_str(), NewLocation->second.c_str()));
+		return SendRequest(NewLocation->second, Method, Options);
 	}
-	return response;
+	return Response;
 }
 
-string http::HttpOptions::GetHeadersString(HttpUrl target, string method) const
+string http::HttpOptions::GetHeadersString(HttpUrl Target, string Method) const
 {
-	std::stringstream messageStream;
+	std::stringstream MessageStream;
 
-	messageStream << method << " " << target.Path << " HTTP/1.1\r\n";
-	messageStream << "Host: " << target.HostName << "\r\n";
+	MessageStream << Method << " " << Target.Path << " HTTP/1.1\r\n";
+	MessageStream << "Host: " << Target.HostName << "\r\n";
 	for (auto& i : Headers)
 	{
-		messageStream << i.first << ": " << i.second << "\r\n";
+		MessageStream << i.first << ": " << i.second << "\r\n";
 	}
-	messageStream << "Connection: close\r\n";
-	messageStream << "\r\n";
-	return messageStream.str();
+	MessageStream << "Connection: close\r\n";
+	MessageStream << "\r\n";
+	return MessageStream.str();
 }
 
 engine::http::HttpResponse::HttpResponse(const std::vector<uByte>& headerData, const std::vector<uByte>& content)
@@ -130,79 +130,79 @@ engine::http::HttpResponse::HttpResponse(HttpStatus Status)
 	this->Status = Status;
 }
 
-engine::http::HttpResponse::HttpResponse(string body)
+engine::http::HttpResponse::HttpResponse(string Body)
 {
-	this->Body = new BufferStream((uByte*)body.data(), body.size());
+	this->Body = new BufferStream((uByte*)Body.data(), Body.size());
 	this->Status = HttpStatus::OK;
 }
 
-engine::http::HttpResponse::HttpResponse(string body, HttpStatus Status)
+engine::http::HttpResponse::HttpResponse(string Body, HttpStatus Status)
 {
-	this->Body = new BufferStream((uByte*)body.data(), body.size());
+	this->Body = new BufferStream((uByte*)Body.data(), Body.size());
 	this->Status = Status;
 }
 
-engine::http::HttpResponse::HttpResponse(IBinaryStream* body, HttpStatus Status)
+engine::http::HttpResponse::HttpResponse(IBinaryStream* Body, HttpStatus Status)
 {
-	this->Body = body;
+	this->Body = Body;
 	this->Status = Status;
 }
 
 engine::http::HttpResponse* engine::http::HttpResponse::HttpError(string description)
 {
 	Log::Warn("HTTP error: " + description);
-	HttpResponse newError;
+	HttpResponse NewError;
 
-	newError.Status = HttpStatus::InternalError;
-	newError.Body = new BufferStream((const uByte*)description.data(), description.size());
+	NewError.Status = HttpStatus::InternalError;
+	NewError.Body = new BufferStream((const uByte*)description.data(), description.size());
 
-	return new HttpResponse(newError);
+	return new HttpResponse(NewError);
 }
 
 http::HttpResponse::ParseHeaderData engine::http::HttpResponse::ParseHeaders(const std::vector<uByte>& headerData)
 {
 	std::map<string, string> Headers;
 	HttpStatus Status = HttpStatus::InternalError;
-	string currentHeader;
+	string CurrentHeader;
 
-	uByte last = 0;
-	bool isFirstHeader = true;
+	uByte Last = 0;
+	bool IsFirstHeader = true;
 	for (uByte b : headerData)
 	{
 		if (b == 0)
 			continue;
 
-		if (b == '\n' && last == '\r')
+		if (b == '\n' && Last == '\r')
 		{
 			// Remove the newline
-			currentHeader.pop_back();
+			CurrentHeader.pop_back();
 
 			// Empty line means the content is next
-			if (currentHeader.empty())
+			if (CurrentHeader.empty())
 				break;
 
-			if (isFirstHeader)
+			if (IsFirstHeader)
 			{
-				auto splitValues = str::Split(currentHeader, " ");
+				auto SplitValues = str::Split(CurrentHeader, " ");
 
-				if (splitValues.size() < 3 || (splitValues[0] != "HTTP/1.1" && splitValues[0] != "HTTP/1.0"))
+				if (SplitValues.size() < 3 || (SplitValues[0] != "HTTP/1.1" && SplitValues[0] != "HTTP/1.0"))
 				{
 					return {};
 				}
 
-				Status = HttpStatus(std::atoi(splitValues[1].c_str()));
+				Status = HttpStatus(std::atoi(SplitValues[1].c_str()));
 
-				isFirstHeader = false;
-				currentHeader.clear();
+				IsFirstHeader = false;
+				CurrentHeader.clear();
 				continue;
 			}
 
-			Headers.insert(ParseHeader(currentHeader));
-			currentHeader.clear();
+			Headers.insert(ParseHeader(CurrentHeader));
+			CurrentHeader.clear();
 			continue;
 		}
-		last = b;
-		currentHeader.push_back(b);
+		Last = b;
+		CurrentHeader.push_back(b);
 	}
 	return ParseHeaderData{
 		.Headers = Headers,
@@ -210,15 +210,15 @@ http::HttpResponse::ParseHeaderData engine::http::HttpResponse::ParseHeaders(con
 	};
 }
 
-std::pair<string, string> engine::http::HttpResponse::ParseHeader(string fullHeader)
+std::pair<string, string> engine::http::HttpResponse::ParseHeader(string FullHeader)
 {
-	size_t colon = fullHeader.find_first_of(':');
+	size_t Colon = FullHeader.find_first_of(':');
 
-	if (colon == string::npos)
-		return {str::Trim(fullHeader), "" };
+	if (Colon == string::npos)
+		return {str::Trim(FullHeader), "" };
 
-	string name = str::Trim(fullHeader.substr(0, colon)), value = str::Trim(fullHeader.substr(colon + 1));
-	return { name, value };
+	string Name = str::Trim(FullHeader.substr(0, Colon)), Value = str::Trim(FullHeader.substr(Colon + 1));
+	return { Name, Value };
 }
 
 engine::http::HttpException::HttpException(const string& Message)

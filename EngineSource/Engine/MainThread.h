@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <Core/ThreadMessages.h>
 
 /**
 * @brief
@@ -18,6 +19,9 @@ namespace engine::thread
 	* True if this thread is the main thread, false if not.
 	*/
 	thread_local extern bool IsMainThread;
+	extern ThreadMessagesRef MainThreadQueue;
+
+	void InitializeMainThread();
 
 	void MainThreadUpdate();
 }

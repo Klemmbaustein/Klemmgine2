@@ -112,7 +112,9 @@ engine::editor::Viewport::Viewport()
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
 	}, ShortcutOptions::Global);
 
-	AddShortcut(Key::c, Key::CTRL, [this, Win] {
+	auto CtrlMod = ShortcutModifiers{ .Ctrl = true };
+
+	AddShortcut(Key::c, CtrlMod, [this, Win] {
 		std::stringstream Stream;
 
 		SerializedValue ToCopy = (*SelectedObjects.begin())->Serialize();
@@ -124,7 +126,7 @@ engine::editor::Viewport::Viewport()
 		Win->Input.SetClipboard(Stream.str());
 	});
 
-	AddShortcut(Key::v, Key::CTRL, [this, Win] {
+	AddShortcut(Key::v, CtrlMod, [this, Win] {
 		try
 		{
 			std::stringstream Stream;
@@ -151,14 +153,14 @@ engine::editor::Viewport::Viewport()
 		}
 	});
 
-	AddShortcut(Key::s, Key::CTRL, [this] {
+	AddShortcut(Key::s, CtrlMod, [this] {
 		if (!Engine::IsPlaying && UnsavedChanges)
 		{
 			SaveCurrentScene();
 		}
 	});
 
-	AddShortcut(Key::z, Key::CTRL, [this] {
+	AddShortcut(Key::z, CtrlMod, [this] {
 		if (!Engine::IsPlaying)
 		{
 			UndoLast();
@@ -535,6 +537,7 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 		OnObjectCreated(obj);
 		SelectedObjects.clear();
 		SelectedObjects.insert(obj);
+		return;
 	}
 
 	AssetRef Dropped = AssetRef::FromPath(Item.Path);

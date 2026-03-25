@@ -10,9 +10,11 @@ using namespace kui;
 using namespace ds;
 using namespace engine::editor;
 
-engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile, ScriptEditorContext* Context)
+engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFile, ScriptEditorContext* Context,
+	thread::ThreadMessagesRef Queue)
 	: EngineTextEditorProvider(ScriptFile)
 {
+	this->Queue = Queue;
 	this->Context = Context;
 	Context->AddFile(this->GetContent(), ScriptFile);
 
@@ -26,7 +28,7 @@ engine::editor::ScriptEditorProvider::~ScriptEditorProvider()
 {
 	Context->OnReady.Remove(this);
 	Context->RemoveFile(this->EditedFile);
-	Context->Commit(nullptr);
+	Context->Commit(nullptr, nullptr);
 }
 
 void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)
@@ -451,7 +453,7 @@ void engine::editor::ScriptEditorProvider::ScanFile()
 {
 	Context->Commit([this] {
 		UpdateFileData();
-	});
+	}, Queue);
 }
 
 void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()

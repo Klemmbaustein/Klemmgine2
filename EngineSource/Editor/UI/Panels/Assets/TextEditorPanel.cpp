@@ -42,12 +42,13 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 	this->Background->AddChild((new UIText(12_px, EditorUI::Theme.Text, Asset.FilePath, EditorUI::EditorFont))
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
 
+	auto CtrlMod = ShortcutModifiers{ .Ctrl = true };
 
-	AddShortcut(Key::z, Key::CTRL, [this] {
+	AddShortcut(Key::z, CtrlMod, [this] {
 		Provider->Undo();
 	}, ShortcutOptions::AllowInText);
 
-	AddShortcut(Key::y, Key::CTRL, [this] {
+	AddShortcut(Key::y, CtrlMod, [this] {
 		Provider->Redo();
 	}, ShortcutOptions::AllowInText);
 

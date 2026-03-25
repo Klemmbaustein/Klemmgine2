@@ -82,7 +82,7 @@ namespace engine::http
 
 	struct HttpUrl
 	{
-		HttpUrl(string fromString);
+		HttpUrl(string FromString);
 		HttpUrl();
 
 		string HostName;
@@ -99,7 +99,7 @@ namespace engine::http
 		std::map<string, string> Headers;
 		string Body;
 
-		string GetHeadersString(HttpUrl target, string method) const;
+		string GetHeadersString(HttpUrl Target, string Method) const;
 	};
 
 	struct HttpResponse
@@ -114,7 +114,7 @@ namespace engine::http
 		 * @param content
 		 * The rest of the HTTP response's data.
 		 */
-		HttpResponse(const std::vector<uByte>& headerData, const std::vector<uByte>& content);
+		HttpResponse(const std::vector<uByte>& HeaderData, const std::vector<uByte>& Content);
 
 		/**
 		 * @brief
@@ -134,7 +134,7 @@ namespace engine::http
 		 *
 		 * @see HttpServer
 		 */
-		HttpResponse(HttpStatus status);
+		HttpResponse(HttpStatus Status);
 
 		/**
 		 * @brief
@@ -143,10 +143,10 @@ namespace engine::http
 		 * This is meant to be used with the server API to return raw string content.
 		 * The status code will be set to 200 OK.
 		 *
-		 * @param body
+		 * @param Body
 		 * The body of the response, as an UTF8 string.
 		 */
-		HttpResponse(string body);
+		HttpResponse(string Body);
 
 		/**
 		 * @brief
@@ -154,13 +154,13 @@ namespace engine::http
 		 *
 		 * This is meant to be used with the server API to return raw string content.
 		 *
-		 * @param body
+		 * @param Body
 		 * The body of the response, as an UTF8 string.
 		 *
-		 * @param status
+		 * @param Status
 		 * The status of the response.
 		 */
-		HttpResponse(string body, HttpStatus status);
+		HttpResponse(string Body, HttpStatus Status);
 
 		/**
 		 * @brief
@@ -168,15 +168,17 @@ namespace engine::http
 		 *
 		 * This is meant to be used with the server API to return raw string content.
 		 *
-		 * @param body
+		 * @param Body
 		 * The body of the response.
 		 *
-		 * @param status
+		 * @param Status
 		 * The status of the response.
 		 */
-		HttpResponse(IBinaryStream* body, HttpStatus status);
+		HttpResponse(IBinaryStream* Body, HttpStatus Status);
 
 		HttpResponse(const HttpResponse&) = default;
+
+		~HttpResponse();
 
 		static HttpResponse* HttpError(string description);
 
@@ -186,9 +188,9 @@ namespace engine::http
 			HttpStatus Status;
 		};
 
-		static ParseHeaderData ParseHeaders(const std::vector<uByte>& headerData);
+		static ParseHeaderData ParseHeaders(const std::vector<uByte>& HeaderData);
 
-		static std::pair<string, string> ParseHeader(string fullHeader);
+		static std::pair<string, string> ParseHeader(string FullHeader);
 
 		std::map<string, string> Headers;
 
@@ -200,18 +202,18 @@ namespace engine::http
 		HttpStatus Status = HttpStatus::Unknown;
 	};
 
-	HttpResponse* SendRequest(string url, string method);
+	HttpResponse* SendRequest(string Url, string Method);
 	/**
 	 * @brief
 	 * Sends a HTTP request to a specific URL and returns the response in HttpResponse
 	 *
-	 * @param url
+	 * @param Url
 	 * The URL the request should be sent to
 	 */
-	HttpResponse* SendRequest(string url, string method, HttpOptions options);
+	HttpResponse* SendRequest(string Url, string Method, HttpOptions Options);
 
 #ifdef ENGINE_WITH_OPENSSL
-	HttpResponse* SendRequestSSL(HttpUrl url, string method, HttpOptions options);
+	HttpResponse* SendRequestSSL(HttpUrl Url, string Method, HttpOptions Options);
 #endif
-	HttpResponse* SendRequestNoSSL(HttpUrl url, string method, HttpOptions options);
+	HttpResponse* SendRequestNoSSL(HttpUrl Url, string Method, HttpOptions Options);
 }
