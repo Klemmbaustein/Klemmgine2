@@ -372,6 +372,8 @@ void engine::editor::ScriptEditorPanel::Update()
 	{
 		Tab.Editor->SetMinWidth(EditorBox->GetUsedSize().X);
 		Tab.Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
+		Tab.Editor->SetMaxWidth(EditorBox->GetUsedSize().X);
+		Tab.Editor->SetMaxHeight(EditorBox->GetUsedSize().Y);
 		Tab.Editor->SetPosition(EditorBox->GetScreenPosition());
 		if (&Tab != Selected || !this->Visible)
 		{
