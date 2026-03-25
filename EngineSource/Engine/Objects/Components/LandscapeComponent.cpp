@@ -198,5 +198,5 @@ void engine::LandscapeComponent::SimpleDraw(graphics::ShaderObject* With)
 void engine::LandscapeComponent::UpdateTransform(bool Dirty)
 {
 	ObjectComponent::UpdateTransform(Dirty);
-	this->DrawBoundingBox = BoundingBox(SIZE / 2, SIZE / 2).Translate(WorldTransform);
+	this->DrawBoundingBox = BoundingBox(Vector3(SIZE / 2) * Vector3(1, 0, 1), SIZE / 2).Translate(WorldTransform);
 }

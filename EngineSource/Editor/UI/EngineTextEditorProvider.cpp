@@ -170,7 +170,7 @@ void engine::editor::EngineTextEditorProvider::ApplyHoverBoxPosition(kui::UIBox*
 	this->HoverBox->UpdateElement();
 
 	this->HoverBox->SetPosition(ParentEditor->EditorToScreen(At)
-		+ Vec2f(0, ParentEditor->EditorScrollBox->GetScrollObject()->GetOffset())
+		+ ParentEditor->EditorScrollBox->GetScrollObject()->GetOffset()
 		- Vec2f(0, this->HoverBox->GetUsedSize().GetScreen().Y) + Vec2f(0, (1_px).GetScreen().Y));
 }
 
