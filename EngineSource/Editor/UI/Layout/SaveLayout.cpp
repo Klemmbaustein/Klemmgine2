@@ -1,14 +1,7 @@
 #include "SaveLayout.h"
 #include <Core/File/BinarySerializer.h>
-#include <Editor/UI/Panels/AssetBrowser.h>
-#include <Editor/UI/Panels/ClassBrowser.h>
-#include <Editor/UI/Panels/Viewport.h>
-#include <Editor/UI/Panels/ScriptEditorPanel.h>
-#include <Editor/UI/Panels/ObjectListPanel.h>
-#include <Editor/UI/Panels/ConsolePanel.h>
-#include <Editor/UI/Panels/PropertyPanel.h>
-#include <Editor/UI/Panels/ScenePanel.h>
-#include <Editor/UI/Panels/MessagePanel.h>
+#include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Windows/ScriptEditorWindow.h>
 
 using namespace engine;
 
@@ -17,6 +10,7 @@ void engine::editor::layout::LayoutToFile(EditorPanel* Root, string File)
 	std::vector<SerializedData> Result;
 
 	Result.push_back(SerializedData("root", SerializePanel(Root)));
+	Result.push_back(SerializedData("scriptWindow", EditorUI::Instance->ScriptEditorWindowOpen));
 
 	BinarySerializer::ToFile(Result, File);
 }
@@ -30,6 +24,14 @@ void engine::editor::layout::LoadLayout(EditorPanel* Root, string File, PanelReg
 	if (!FileContent.Contains("root"))
 	{
 		return;
+	}
+
+	if (FileContent.Contains("scriptWindow"))
+	{
+		if (FileContent.At("scriptWindow").GetBool())
+		{
+			new ScriptEditorWindow();
+		}
 	}
 
 	DeSerializePanel(Root, FileContent.At("root"), Registry);

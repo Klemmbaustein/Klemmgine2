@@ -1,6 +1,6 @@
 #ifdef LINUX
 #include <Core/Networking/Http.h>
-#include "HttpInternal.hpp"
+#include "HttpInternal.h"
 #include <Core/Closeable.h>
 #include <cstdint>
 #include <cstdlib>

@@ -112,10 +112,11 @@ void engine::Engine::InitSystems()
 {
 	Log::IsVerbose = launchArgs::GetArg("verbose").has_value() ? true : Log::IsVerbose;
 
+	thread::InitializeMainThread();
+
 	error::InitForThread("Main");
 	error::OnErrorCallback = ErrorCallback;
 
-	thread::IsMainThread = true;
 	ThreadPool::AllocateDefaultThreadPool();
 	Reflection::Init();
 	resource::ScanForAssets();

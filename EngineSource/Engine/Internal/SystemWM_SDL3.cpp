@@ -382,11 +382,23 @@ kui::Vec2i kui::systemWM::GetCursorPosition(SysWindow* Target)
 kui::Vec2ui kui::systemWM::GetScreenSize()
 {
 	SDL_Rect out;
+
+#ifdef LINUX
+	MainThreadBlocking([&out] {
+		if (!SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &out))
+		{
+			app::error::Error(SDL_GetError());
+			out = SDL_Rect(0, 0, 1920, 1080);
+		}
+	});
+#endif
 	if (!SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &out))
 	{
 		app::error::Error(SDL_GetError());
 		return Vec2ui(1920, 1080);
 	}
+
+
 	return Vec2ui(out.w, out.h);
 }
 
@@ -420,7 +432,11 @@ uint32_t kui::systemWM::GetDesiredRefreshRate(SysWindow* From)
 
 void kui::systemWM::SetWindowCursor(SysWindow* Target, Window::Cursor NewCursor)
 {
-	SDL_SetCursor(Target->WindowCursors[size_t(NewCursor)]);
+	if (NewCursor != Target->LastCursor)
+	{
+		SDL_SetCursor(Target->WindowCursors[size_t(NewCursor)]);
+		Target->LastCursor = NewCursor;
+	}
 }
 
 float kui::systemWM::GetDPIScale(SysWindow* Target)
@@ -656,6 +672,7 @@ void kui::systemWM::SysWindow::UpdateEvents()
 		switch (ev.type)
 		{
 		case SDL_EVENT_WINDOW_RESIZED:
+			Parent->UI.RedrawUI();
 			Parent->OnResized();
 			break;
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:

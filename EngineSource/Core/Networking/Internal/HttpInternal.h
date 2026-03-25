@@ -4,5 +4,5 @@
 
 namespace engine::http::internal
 {
-	HttpResponse* HandleConnection(std::function<int64(int64 toRead, void* to)> readFunction);
+	HttpResponse* HandleConnection(std::function<int64(int64 toRead, void* to)> ReadFunction);
 }

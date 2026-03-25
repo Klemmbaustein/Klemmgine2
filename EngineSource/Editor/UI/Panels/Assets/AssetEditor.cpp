@@ -8,7 +8,7 @@ engine::editor::AssetEditor::AssetEditor(string NameFormat, AssetRef Asset)
 	this->NameFormat = NameFormat;
 	this->EditedAsset = Asset;
 
-	AddShortcut(kui::Key::s, kui::Key::CTRL, [this]() {
+	AddShortcut(kui::Key::s, ShortcutModifiers{ .Ctrl = true }, [this]() {
 		if (!Saved)
 		{
 			Save();

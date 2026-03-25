@@ -35,13 +35,13 @@ engine::editor::EditorPanel::EditorPanel(string Name, string InternalName)
 	this->Name = Name;
 }
 
+bool engine::editor::EditorPanel::HasKeyboardFocus()
+{
+	return EditorUI::FocusedPanel == this;
+}
+
 engine::editor::EditorPanel::~EditorPanel()
 {
-	for (auto& s : Shortcuts)
-	{
-		Background->GetParentWindow()->Input.RemoveOnKeyDownCallback(s, this);
-	}
-
 	if (EditorUI::FocusedPanel == this)
 	{
 		EditorUI::FocusedPanel = nullptr;
@@ -151,40 +151,6 @@ void engine::editor::EditorPanel::UpdateLayout()
 		OldUsedSize = UsedSize;
 		OnResized();
 	}
-}
-
-void engine::editor::EditorPanel::AddShortcut(kui::Key NewKey,
-	std::optional<kui::Key> Modifier, std::function<void()> OnPressed, ShortcutOptions Options)
-{
-	bool AllowInText = (int(Options) & int(ShortcutOptions::AllowInText)) > 0;
-	bool Global = (int(Options) & int(ShortcutOptions::Global)) > 0;
-
-	Background->GetParentWindow()->Input.RegisterOnKeyDownCallback(NewKey, this,
-		[this, OnPressed, Modifier, AllowInText, Global]() {
-
-		auto TargetWindow = Background->GetParentWindow();
-
-		if (!input::ShowMouseCursor && !AllowInText)
-		{
-			return;
-		}
-
-		if (!AllowInText && TargetWindow->Input.PollForText)
-		{
-			return;
-		}
-
-		if (!Global && EditorUI::FocusedPanel != this)
-		{
-			return;
-		}
-
-		if ((!Modifier.has_value() || TargetWindow->Input.IsKeyDown(*Modifier)))
-		{
-			OnPressed();
-		}
-	});
-	Shortcuts.push_back(NewKey);
 }
 
 bool engine::editor::EditorPanel::IsHovered()

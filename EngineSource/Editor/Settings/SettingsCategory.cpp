@@ -22,6 +22,7 @@ void engine::editor::SettingsCategory::DeSerialize(SerializedValue* From)
 	{
 		SetSetting(i.Name, i.Value);
 	}
+	Initialized = true;
 }
 
 SerializedValue engine::editor::SettingsCategory::GetSetting(string Name, SerializedValue Default)
@@ -44,20 +45,26 @@ void engine::editor::SettingsCategory::SetSetting(string Name, SerializedValue N
 		SettingsObject.GetObject().push_back(SerializedData(Name, NewValue));
 	}
 
+	if (!Initialized)
+	{
+		return;
+	}
+
+	for (auto& [name, event] : PrivateListeners)
+	{
+		if (name == Name)
+		{
+			event(NewValue);
+		}
+	}
+
 	for (auto& i : Listeners)
 	{
-		for (auto& evt : i.second)
+		for (auto& [name, event] : i.second)
 		{
-			if (evt.first == Name)
+			if (name == Name)
 			{
-				if (!thread::IsMainThread)
-				{
-					thread::ExecuteOnMainThread(std::bind(evt.second, NewValue));
-				}
-				else
-				{
-					evt.second(NewValue);
-				}
+				event.second->Run(std::bind(event.first, NewValue));
 			}
 		}
 	}
@@ -72,20 +79,21 @@ void engine::editor::SettingsCategory::UpdateSetting(string Name)
 
 	auto& Value = SettingsObject.At(Name);
 
+	for (auto& [name, event] : PrivateListeners)
+	{
+		if (name == Name)
+		{
+			event(Value);
+		}
+	}
+
 	for (auto& i : Listeners)
 	{
-		for (auto& evt : i.second)
+		for (auto& [name, event] : i.second)
 		{
-			if (evt.first == Name)
+			if (name == Name)
 			{
-				if (!thread::IsMainThread)
-				{
-					thread::ExecuteOnMainThread(std::bind(evt.second, Value));
-				}
-				else
-				{
-					evt.second(Value);
-				}
+				event.second->Run(std::bind(event.first, Value));
 			}
 		}
 	}
@@ -93,10 +101,21 @@ void engine::editor::SettingsCategory::UpdateSetting(string Name)
 
 void engine::editor::SettingsCategory::ListenToSetting(void* Listener, string Name, SettingsListener OnChanged)
 {
-	this->Listeners[Listener].insert({ Name, OnChanged });
+	this->Listeners[Listener].insert({ Name, { OnChanged, thread::MainThreadQueue } });
+}
+
+void engine::editor::SettingsCategory::ListenToSetting(void* Listener, string Name, SettingsListener OnChanged,
+	thread::ThreadMessagesRef Queue)
+{
+	this->Listeners[Listener].insert({ Name, { OnChanged, Queue } });
 }
 
 void engine::editor::SettingsCategory::RemoveListener(void* Listener)
 {
 	this->Listeners.erase(Listener);
+}
+
+void engine::editor::SettingsCategory::AddPrivateListener(string Name, SettingsListener OnChanged)
+{
+	this->PrivateListeners.insert({Name, OnChanged});
 }

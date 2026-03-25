@@ -1,4 +1,4 @@
-#include "HttpInternal.hpp"
+#include "HttpInternal.h"
 #include <cstddef>
 #include <format>
 #include <array>
@@ -11,7 +11,7 @@ using std::size_t;
 // HTTP parsing function (supporting HTTP 1.1 chunked content) used by both the unix and openssl http implementations.
 // WinInet already does automatically, so it's not needed in the windows implementation.
 
-HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64 toRead, void* to)> readFunction)
+HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64 toRead, void* to)> ReadFunction)
 {
 	const size_t CHUNK_SIZE = 1024;
 
@@ -29,7 +29,7 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 	while (!headersEnded)
 	{
 		headers.resize(headers.size() + CHUNK_SIZE);
-		int64 numRead = readFunction(CHUNK_SIZE, &headers[responsePos]);
+		int64 numRead = ReadFunction(CHUNK_SIZE, &headers[responsePos]);
 		// Error reading from the socket
 		if (numRead < 0)
 			return HttpResponse::HttpError(std::format("Failed to read a response from the socket: {}", strerror(errno)));
@@ -95,7 +95,7 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 		{
 			size_t currentReadBody = body.size() - 1;
 			body.resize(contentSize);
-			int64 numRead = readFunction(CHUNK_SIZE, &body[currentReadBody]);
+			int64 numRead = ReadFunction(CHUNK_SIZE, &body[currentReadBody]);
 			if (numRead < 0)
 				return HttpResponse::HttpError(std::format("Failed to read a response from the socket: {}", strerror(errno)));
 			if (numRead == 0)
@@ -105,14 +105,14 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 		return new HttpResponse(headers, body);
 	}
 
-	auto readChunkHeader = [&readFunction]() -> int64 {
+	auto readChunkHeader = [&ReadFunction]() -> int64 {
 		string chunkHeader;
 		uByte last = 0;
 
 		while (true)
 		{
 			uByte c = 0;
-			auto read = readFunction(1, &c);
+			auto read = ReadFunction(1, &c);
 
 			if (read <= 0)
 			{
@@ -173,7 +173,7 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 		while (toRead != 0)
 		{
 			body.resize(readPosition + toRead);
-			int64 numRead = readFunction(toRead, &body[readPosition]);
+			int64 numRead = ReadFunction(toRead, &body[readPosition]);
 			readPosition += numRead;
 
 			if (numRead < 0)
@@ -186,7 +186,7 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 		// Read chunk end
 		std::array<uByte, 2> chunkEnd = { 0, 0 };
 
-		readFunction(2, chunkEnd.data());
+		ReadFunction(2, chunkEnd.data());
 
 		if (chunkEnd != std::array<uByte, 2>{ '\r', '\n' })
 		{

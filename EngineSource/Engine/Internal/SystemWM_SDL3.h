@@ -35,6 +35,8 @@ namespace kui::systemWM
 
 		std::mutex InputMutex;
 
+		Window::Cursor LastCursor;
+
 		// @endcond
 	};
 }

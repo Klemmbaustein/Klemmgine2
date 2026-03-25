@@ -1,7 +1,7 @@
-#ifdef EDITOR
 #pragma once
 #include <Core/Types.h>
 #include <kui/Window.h>
+#include <Core/ThreadMessages.h>
 
 namespace engine::editor
 {
@@ -48,6 +48,7 @@ namespace engine::editor
 		void Open();
 
 		void SetTitle(string NewTitle);
+		thread::ThreadMessagesRef Queue;
 
 	public:
 
@@ -63,7 +64,7 @@ namespace engine::editor
 		 * Should the window be closable.
 		 *
 		 * When overriding this constructor, call Open() to start the popup's thread
-		 * after you're done ititializing it's variables from the main thread.
+		 * after you're done initializing it's variables from the main thread.
 		 */
 		IPopupWindow(string Name, kui::Vec2ui Size, bool Resizable, bool Closable);
 		void Close();
@@ -82,4 +83,3 @@ namespace engine::editor
 		void WindowThread(string Name, kui::Vec2ui Size);
 	};
 }
-#endif

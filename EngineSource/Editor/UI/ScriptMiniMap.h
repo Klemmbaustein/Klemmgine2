@@ -1,6 +1,7 @@
 #pragma once
 #include <kui/UI/UITextEditor.h>
 #include <Editor/UI/ScriptEditorProvider.h>
+#include <Core/ThreadMessages.h>
 
 namespace engine::editor
 {
@@ -8,7 +9,8 @@ namespace engine::editor
 	{
 	public:
 
-		ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Provider);
+		ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Provider,
+			thread::ThreadMessagesRef Queue);
 
 		~ScriptMiniMap();
 
@@ -21,7 +23,7 @@ namespace engine::editor
 	private:
 
 		void SetPixel(size_t x, size_t y, uByte R, uByte G, uByte B);
-
+		thread::ThreadMessagesRef Queue;
 		std::vector<uByte> Texture;
 		kui::UITextEditor* Editor = nullptr;
 		ScriptEditorProvider* Provider = nullptr;

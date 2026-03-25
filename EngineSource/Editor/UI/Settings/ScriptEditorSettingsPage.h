@@ -15,5 +15,6 @@ namespace engine::editor
 
 		bool HasMiniMap = true;
 		bool TrimWhitespace = true;
+		bool UseVerticalTabs = true;
 	};
 }

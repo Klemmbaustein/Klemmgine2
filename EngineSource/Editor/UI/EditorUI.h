@@ -61,6 +61,8 @@ namespace engine::editor
 		kui::UIBox* DraggedBox = nullptr;
 		kui::UIBox* MainBackground = nullptr;
 
+		bool ScriptEditorWindowOpen = false;
+
 		struct DraggedItem
 		{
 		public:

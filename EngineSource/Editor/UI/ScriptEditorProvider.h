@@ -4,6 +4,7 @@
 #include <kui/Timer.h>
 #include "EngineTextEditorProvider.h"
 #include "ScriptEditorContext.h"
+#include <Core/ThreadMessages.h>
 
 namespace engine::editor
 {
@@ -23,7 +24,7 @@ namespace engine::editor
 	class ScriptEditorProvider : public EngineTextEditorProvider
 	{
 	public:
-		ScriptEditorProvider(string ScriptFile, ScriptEditorContext* Context);
+		ScriptEditorProvider(string ScriptFile, ScriptEditorContext* Context, thread::ThreadMessagesRef Queue);
 		ScriptEditorProvider(const ScriptEditorProvider&) = delete;
 		~ScriptEditorProvider();
 
@@ -83,6 +84,7 @@ namespace engine::editor
 		}
 
 	private:
+		thread::ThreadMessagesRef Queue;
 		std::vector<size_t> Changed;
 		size_t CompletionUsingLine = 0;
 

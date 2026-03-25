@@ -121,7 +121,7 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 		Back();
 	});
 
-	AddShortcut(Key::r, Key::CTRL, [this]() {
+	AddShortcut(Key::r, ShortcutModifiers{.Ctrl = true}, [this]() {
 		UpdateItems();
 	});
 }

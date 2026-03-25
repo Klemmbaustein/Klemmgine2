@@ -5,10 +5,11 @@
 #include <EditorPanel.kui.hpp>
 #include <kui/Input.h>
 #include <optional>
+#include <Editor/UI/KeyboardShortcut.h>
 
 namespace engine::editor
 {
-	class EditorPanel : ISerializable
+	class EditorPanel : ISerializable, public KeyboardShortcuts
 	{
 	public:
 		/**
@@ -118,6 +119,8 @@ namespace engine::editor
 		void SetFocused();
 		void SetName(string NewName);
 
+		bool HasKeyboardFocus() override;
+
 		string GetTypeName() const
 		{
 			return TypeName;
@@ -139,34 +142,6 @@ namespace engine::editor
 		 */
 		size_t IndexOf(EditorPanel* Child) const;
 		Align ChildrenAlign = Align::Horizontal;
-
-		enum class ShortcutOptions
-		{
-			/// No options.
-			None = 0,
-			/// Allow the shortcut to activate while focus is in a text box.
-			AllowInText = 0b01,
-			/// The shortcut is global and doesn't require the panel to be focused.
-			Global = 0b10,
-		};
-
-		/**
-		 * @brief
-		 * Creates a keyboard shortcut for this panel.
-		 *
-		 * The shortcut
-		 * @param NewKey
-		 * The key that the shortcut listens to. When it is pressed, the shortcut activates.
-		 * @param Modifier
-		 * A modifier for the shortcut that also needs to be pressed when the shortcut is activated.
-		 * Usually Shift or Ctrl.
-		 * @param OnPressed
-		 * The function to call once the shortcut was triggered.
-		 * @param Options
-		 * Options for the shortcut.
-		 */
-		void AddShortcut(kui::Key NewKey, std::optional<kui::Key> Modifier, std::function<void()> OnPressed,
-			ShortcutOptions Options = ShortcutOptions::None);
 
 		SerializedValue Serialize() override;
 
@@ -230,8 +205,6 @@ namespace engine::editor
 		std::vector<EditorPanelTab*> TabElements;
 		string Name, TypeName;
 
-		std::vector<kui::Key> Shortcuts;
-
 		kui::Vec2f UsedSize;
 		kui::Vec2f Position;
 		kui::Vec2f OldUsedSize;
@@ -239,10 +212,4 @@ namespace engine::editor
 		kui::Vec2f UsedSizeToPanelSize(kui::Vec2f Used);
 		kui::Vec2f PositionToPanelPosition(kui::Vec2f Pos);
 	};
-}
-
-inline engine::editor::EditorPanel::ShortcutOptions operator|(engine::editor::EditorPanel::ShortcutOptions a,
-	engine::editor::EditorPanel::ShortcutOptions b)
-{
-	return engine::editor::EditorPanel::ShortcutOptions(int(a) | int(b));
 }

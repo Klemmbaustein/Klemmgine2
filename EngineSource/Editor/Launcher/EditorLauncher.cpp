@@ -26,11 +26,11 @@ engine::editor::launcher::EditorLauncher::EditorLauncher()
 
 void engine::editor::launcher::EditorLauncher::InitWindow()
 {
+	thread::InitializeMainThread();
+	editor::OpenEditorAt(std::filesystem::canonical("./Engine/").string());
 	EditorUI::InitTheme();
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
-	thread::IsMainThread = true;
 
-	editor::OpenEditorAt(std::filesystem::canonical("./Engine/").string());
 
 	LauncherWindow = new Window("Klemmgine 2 Project Manager", Window::WindowFlag::Resizable,
 		Window::POSITION_CENTERED, Vec2ui(700, 500));

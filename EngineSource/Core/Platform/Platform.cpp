@@ -215,7 +215,7 @@ engine::platform::SharedLibrary* engine::platform::LoadSharedLibrary(string Path
 
 	if (!Loaded)
 	{
-		Log::Error(strerror(errno));
+		Log::Warn(str::Format("Failed to load library: %s", strerror(errno)));
 	}
 	return Loaded;
 

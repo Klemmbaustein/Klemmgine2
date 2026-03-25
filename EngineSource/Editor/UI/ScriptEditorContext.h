@@ -8,6 +8,7 @@
 #include <queue>
 #include <set>
 #include <Engine/Script/UI/ParseUI.h>
+#include <Core/ThreadMessages.h>
 
 namespace engine::editor
 {
@@ -31,7 +32,7 @@ namespace engine::editor
 		void AddFile(const string& Content, const string& Name);
 		void UpdateFile(const string& Content, const string& Name);
 		void RemoveFile(const string& Name);
-		void Commit(std::function<void()> Callback);
+		void Commit(std::function<void()> Callback, thread::ThreadMessagesRef CallbackContext);
 
 		void Initialize();
 
@@ -44,12 +45,12 @@ namespace engine::editor
 
 		std::vector<ds::AutoCompleteResult> CompleteAt(const string& FileName, size_t character, size_t line,
 			ds::CompletionType type, size_t& OutUsingPosition);
+		bool Quit = false;
 
 	private:
 		bool SendUpdateEvent = false;
 		bool IsCompiling = false;
 		bool ReCompileNext = false;
-		bool Quit = false;
 		bool Exited = false;
 
 		std::condition_variable cv;
@@ -75,6 +76,6 @@ namespace engine::editor
 
 		void ContextCompilerThread();
 
-		std::vector<std::function<void()>> CallbackFunctions;
+		std::vector<std::pair<std::function<void()>, thread::ThreadMessagesRef>> CallbackFunctions;
 	};
 }

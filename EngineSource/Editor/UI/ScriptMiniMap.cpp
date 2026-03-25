@@ -2,14 +2,14 @@
 #include <kui/Image.h>
 #include <kui/UI/UIButton.h>
 #include <Core/ThreadPool.h>
-#include <Engine/MainThread.h>
-#include <Core/Log.h>
 
 using namespace engine::editor;
 using namespace kui;
 
-ScriptMiniMap::ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Provider)
+ScriptMiniMap::ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Provider,
+	thread::ThreadMessagesRef Queue)
 {
+	this->Queue = Queue;
 	this->Editor = Editor;
 	this->Provider = Provider;
 
@@ -65,7 +65,7 @@ void ScriptMiniMap::Update()
 
 			GenerateTexture(h);
 
-			thread::ExecuteOnMainThread([this] {
+			Queue->Run([this] {
 				if (Image)
 				{
 					image::UnloadImage(Image);
