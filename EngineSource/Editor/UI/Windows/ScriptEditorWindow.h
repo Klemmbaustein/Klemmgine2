@@ -17,8 +17,9 @@ namespace engine::editor
 
 		ScriptEditorUI* UI = nullptr;
 
-	private:
+		static ScriptEditorWindow* Current;
 
+	private:
 
 		kui::UIBackground* Background = nullptr;
 		kui::Font* MonospacedFont = nullptr;
