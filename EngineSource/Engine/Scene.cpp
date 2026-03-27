@@ -455,7 +455,12 @@ void engine::Scene::LoadInternal(string File, bool Async)
 void engine::Scene::Init()
 {
 	Graphics.Init();
-	Sound = new sound::SoundContext(Engine::GetSubsystem<sound::SoundSubsystem>());
+	auto System = Engine::GetSubsystem<sound::SoundSubsystem>();
+
+	if (System)
+	{
+		Sound = new sound::SoundContext(System);
+	}
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
 	plugin::OnNewSceneLoaded(this);
 }

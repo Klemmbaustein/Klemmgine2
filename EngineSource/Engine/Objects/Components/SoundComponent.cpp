@@ -19,7 +19,17 @@ void engine::SoundComponent::Load(AssetRef Sound)
 		return;
 	}
 
+	if (!RootObject)
+	{
+		return;
+	}
+
 	Context = RootObject->GetScene()->Sound;
+
+	if (!Context)
+	{
+		return;
+	}
 
 	Buffer = Context->LoadSoundEffect(Sound.FilePath);
 	Source = Context->CreateSoundSource(Buffer);
@@ -31,7 +41,7 @@ void engine::SoundComponent::Play()
 
 void engine::SoundComponent::Update()
 {
-	if (Source)
+	if (Source && Context)
 	{
 		Context->SetSourcePosition(Source, WorldTransform.ApplyTo(0));
 	}
@@ -39,6 +49,11 @@ void engine::SoundComponent::Update()
 
 void engine::SoundComponent::ClearBuffer()
 {
+	if (!Context)
+	{
+		return;
+	}
+
 	if (Source)
 	{
 		Context->FreeSoundSource(Source);
