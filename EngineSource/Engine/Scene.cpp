@@ -347,6 +347,15 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 		{
 			this->Graphics.SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
 		}
+
+		if (SceneInfo.Contains("manager"))
+		{
+			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[SceneInfo.At("manager").GetInt()];
+			SceneObject* Object = Type.CreateInstance();
+			Object->OriginScene = this;
+			Object->InitObj(this, true, Type.TypeID);
+
+		}
 	}
 	catch (SerializeException& SerializeError)
 	{

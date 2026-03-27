@@ -10,6 +10,7 @@
 #include <set>
 #include <Engine/Debug/DebugDraw.h>
 #include "Graphics/Scene/GraphicsScene.h"
+#include <Engine/Objects/Scene/SceneManager.h>
 
 namespace engine
 {
@@ -133,6 +134,7 @@ namespace engine
 		*/
 		void PreLoadAsset(AssetRef Target);
 
+		SceneManager* Manager = nullptr;
 	private:
 
 		struct SceneAsset
