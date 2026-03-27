@@ -12,6 +12,7 @@ namespace engine::graphics
 		Camera(float FOV);
 
 		Vector3 GetForward() const;
+		Vector3 GetUp() const;
 		Vector3 GetPosition() const;
 		void Update();
 		Vector3 ScreenToWorld(Vector2 Screen) const;

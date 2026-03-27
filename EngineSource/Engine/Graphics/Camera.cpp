@@ -2,18 +2,29 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+using namespace engine;
+
 engine::graphics::Camera::Camera(float FOV)
 {
 	this->FOV = FOV;
 }
 
-engine::Vector3 engine::graphics::Camera::GetForward() const
+Vector3 engine::graphics::Camera::GetForward() const
 {
 	if (UseTransform)
 	{
 		return CameraTransform.Forward();
 	}
 	return Vector3::Forward(Rotation * Vector3(1, 1, 0));
+}
+
+Vector3 engine::graphics::Camera::GetUp() const
+{
+	if (UseTransform)
+	{
+		return CameraTransform.Up();
+	}
+	return Vector3::Up(Rotation);
 }
 
 void engine::graphics::Camera::Update()
@@ -23,7 +34,6 @@ void engine::graphics::Camera::Update()
 	if (UseTransform)
 	{
 		View = glm::inverse(CameraTransform.Matrix);
-
 
 		Collider = FrustumCollider::FromCamera(GetPosition(), CameraTransform.ApplyRotationTo(Vector3(0, 0, -1)),
 			CameraTransform.ApplyRotationTo(Vector3(1, 0, 0)), CameraTransform.ApplyRotationTo(Vector3(0, 1, 0)),
@@ -38,11 +48,9 @@ void engine::graphics::Camera::Update()
 		View = glm::translate(View, -glm::vec3(Position.X, Position.Y, Position.Z));
 		Collider = FrustumCollider::FromCamera(Position, Forward, Right, Up, Aspect, FOV, 0.1f, 5000.0f);
 	}
-
-	//Collider = FrustumCollider(Projection);
 }
 
-engine::Vector3 engine::graphics::Camera::GetPosition() const
+Vector3 engine::graphics::Camera::GetPosition() const
 {
 	if (UseTransform)
 	{
@@ -54,7 +62,7 @@ engine::Vector3 engine::graphics::Camera::GetPosition() const
 	}
 }
 
-engine::Vector3 engine::graphics::Camera::ScreenToWorld(Vector2 Screen) const
+Vector3 engine::graphics::Camera::ScreenToWorld(Vector2 Screen) const
 {
 	glm::mat4 InvProjectionView = glm::inverse(Projection * View);
 	glm::vec4 Translated = InvProjectionView * glm::vec4(Screen.X, Screen.Y, 1, 1);

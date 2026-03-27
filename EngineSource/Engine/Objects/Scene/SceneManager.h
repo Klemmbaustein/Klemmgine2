@@ -1,5 +1,5 @@
 #pragma once
-#include <Engine/Scene.h>
+#include <Engine/Objects/SceneObject.h>
 
 namespace engine
 {

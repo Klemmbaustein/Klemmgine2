@@ -1,14 +1,10 @@
 #if !defined(ENGINE_PLUGIN)
 #pragma once
-#include "Graphics/Effects/CascadedShadows.h"
-#include "Graphics/Effects/PostProcess.h"
-#include "Objects/Components/DrawableComponent.h"
 #include "Objects/SceneObject.h"
 #include <atomic>
 #include <Engine/Physics/Physics.h>
-#include <kui/Vec2.h>
 #include <set>
-#include <Engine/Debug/DebugDraw.h>
+#include <Engine/Sound/Sound.h>
 #include "Graphics/Scene/GraphicsScene.h"
 #include <Engine/Objects/Scene/SceneManager.h>
 
@@ -40,6 +36,8 @@ namespace engine
 		* @see SceneObject
 		*/
 		std::vector<SceneObject*> Objects;
+
+		sound::SoundContext* Sound = nullptr;
 
 		graphics::GraphicsScene Graphics;
 
