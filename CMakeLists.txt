@@ -20,6 +20,7 @@ option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF)
 option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripting only)" OFF)
 option(ENGINE_BUILD_ID "Build identifier" "")
+option(ENGINE_ENABLE_SOUND "Enable sound" OFF)
 
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
@@ -143,6 +144,10 @@ endif()
 
 if(USE_ENGINEMAIN)
 	target_compile_definitions(KlemmgineLib PRIVATE USE_ENGINEMAIN)
+endif()
+
+if(ENGINE_ENABLE_SOUND)
+	target_compile_definitions(KlemmgineLib PRIVATE ENGINE_ENABLE_SOUND)
 endif()
 
 if(ENGINE_SERVER)

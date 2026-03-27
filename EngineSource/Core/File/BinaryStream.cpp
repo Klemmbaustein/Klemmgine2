@@ -48,6 +48,11 @@ bool FileStream::IsEmpty() const
 
 bool FileStream::Read(uByte* To, size_t Size)
 {
+	if (!To)
+	{
+		return fseek(FromFile, Size, SEEK_CUR) == 0;
+	}
+
 	size_t read = fread(To, Size, 1, FromFile);
 	if (read != 1)
 	{
@@ -106,7 +111,10 @@ bool BufferStream::Read(uByte* To, size_t Size)
 	if (this->Buffer.size() < Size + StreamPosition)
 		return false;
 
-	memcpy(To, &this->Buffer[StreamPosition], Size);
+	if (To)
+	{
+		memcpy(To, &this->Buffer[StreamPosition], Size);
+	}
 	StreamPosition += Size;
 	return true;
 }
@@ -178,7 +186,10 @@ bool engine::ReadOnlyBufferStream::Read(uByte* To, size_t Size)
 	if (this->Size < Size + StreamPos)
 		return false;
 
-	memcpy(To, &this->Data[StreamPos], Size);
+	if (To)
+	{
+		memcpy(To, &this->Data[StreamPos], Size);
+	}
 	StreamPos += Size;
 	return true;
 }

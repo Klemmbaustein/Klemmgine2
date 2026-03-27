@@ -110,7 +110,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 
 	auto Items = EditorUI::Instance->AssetsProvider->GetFiles("Assets/" + Path);
 
-	for (AssetFile& File : Items)
+	for (const AssetFile& File : Items)
 	{
 		string FilePath = File.Path;
 		string Extension = file::Extension(File.Path);

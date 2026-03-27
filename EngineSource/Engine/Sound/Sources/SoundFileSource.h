@@ -2,10 +2,11 @@
 #include <Core/Types.h>
 #include <Core/File/BinaryStream.h>
 
-namespace engine::source
+namespace engine::sound
 {
 	enum class SoundBitDepth
 	{
+		Int8,
 		Int16,
 		Int32,
 		Float32,
@@ -16,6 +17,7 @@ namespace engine::source
 	public:
 		uByte* SoundBytes = nullptr;
 		size_t NumBytes = 0;
+		uint32 SampleRate = 0;
 		SoundBitDepth BitDepth = SoundBitDepth::Int16;
 		bool IsStereo = false;
 

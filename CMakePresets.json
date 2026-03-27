@@ -28,7 +28,8 @@
 			},
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-				"USE_WINDOWS_SUBSYSTEM": "OFF"
+				"USE_WINDOWS_SUBSYSTEM": "OFF",
+				"ENGINE_ENABLE_SOUND": "ON"
 			}
 		},
 		{

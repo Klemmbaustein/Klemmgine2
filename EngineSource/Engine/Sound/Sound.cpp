@@ -1,25 +1,54 @@
 #include "Sound.h"
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <Engine/File/Resource.h>
+#include <alext.h>
+#include "SoundInternal/SoundInternal.h"
+#include "Sources/WavSoundFileSource.h"
 
 // TODO: fully implement
 
 using namespace engine::subsystem;
+using namespace engine::sound;
+using namespace engine;
 
-namespace engine::sound
+static ALenum GetFormatFromSound(SoundData* Data)
 {
-	struct SoundContext_Private
+	if (Data->IsStereo)
 	{
-		ALCdevice* Device;
-		ALCcontext* Context;
-	};
+		switch (Data->BitDepth)
+		{
+		case SoundBitDepth::Int8:
+			return AL_FORMAT_STEREO8;
+		case SoundBitDepth::Int16:
+			return AL_FORMAT_STEREO16;
+		case SoundBitDepth::Float32:
+			return AL_FORMAT_STEREO_FLOAT32;
+		default:
+		case SoundBitDepth::Int32:
+			throw std::runtime_error("not implemented");
+		}
+	}
+	else
+	{
+		switch (Data->BitDepth)
+		{
+		case SoundBitDepth::Int8:
+			return AL_FORMAT_MONO8;
+		case SoundBitDepth::Int16:
+			return AL_FORMAT_MONO16;
+		case SoundBitDepth::Float32:
+			return AL_FORMAT_MONO_FLOAT32;
+		default:
+		case SoundBitDepth::Int32:
+			throw std::runtime_error("not implemented");
+		}
+	}
 }
 
 engine::sound::SoundContext::SoundContext(subsystem::Subsystem* System)
 {
 	this->System = System;
 	this->SoundData = new SoundContext_Private();
-
+	AddFileSource(new WavSoundFileSource());
 	SoundData->Device = alcOpenDevice(nullptr);
 
 	System->Print(str::Format("Opened sound device: %s",
@@ -32,4 +61,111 @@ engine::sound::SoundContext::SoundContext(subsystem::Subsystem* System)
 engine::sound::SoundContext::~SoundContext()
 {
 	delete this->SoundData;
+}
+
+SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
+{
+	auto Found = Buffers.find(Path);
+
+	if (Found != Buffers.end())
+	{
+		Found->second->References++;
+		return Found->second;
+	}
+
+	alcMakeContextCurrent(SoundData->Context);
+	ReadOnlyBufferStream* File = resource::GetBinaryFile(Path);
+
+	// TODO: Sources store their supported extensions, all sources supporting the extension
+	// are checked. (ParseSoundFile returns null when the file doesn't match it's format)
+	auto Data = Sources[0]->ParseSoundFile(File);
+
+	SoundBuffer* NewBuffer = new SoundBuffer();
+
+	NewBuffer->ALBuffer;
+
+	alGenBuffers(1, &NewBuffer->ALBuffer);
+
+	alBufferData(NewBuffer->ALBuffer, GetFormatFromSound(Data),
+		Data->SoundBytes, Data->NumBytes, Data->SampleRate);
+
+	delete Data;
+	delete File;
+	return NewBuffer;
+}
+
+SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
+{
+	ALuint Source;
+
+	alGenSources(1, &Source);
+
+	alSourcei(Source, AL_BUFFER, With->ALBuffer);
+
+	alSourcePlay(Source);
+
+	auto err = alGetError();
+
+	if (err != AL_NO_ERROR)
+	{
+		Log::Critical(alGetString(err));
+	}
+
+	return new SoundSource{
+		.ALSource = Source
+	};
+}
+
+void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3 NewPosition)
+{
+	alSource3f(Source->ALSource, AL_POSITION, NewPosition.X, NewPosition.Y, NewPosition.Z);
+}
+
+void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
+{
+	alSource3f(Source->ALSource, AL_VELOCITY, NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
+}
+
+void engine::sound::SoundContext::Update(graphics::Camera* FromCamera)
+{
+	Vector3 Pos = FromCamera->GetPosition();
+
+	alListener3f(AL_POSITION, Pos.X, Pos.Y, Pos.Z);
+
+	Vector3 Directions[2] = {
+		FromCamera->GetForward(),
+		FromCamera->GetUp(),
+	};
+
+	alListenerfv(AL_ORIENTATION, &Directions[0].X);
+}
+
+void engine::sound::SoundContext::FreeSoundSource(SoundSource* Source)
+{
+	alDeleteSources(1, &Source->ALSource);
+	delete Source;
+}
+
+void engine::sound::SoundContext::FreeSoundEffect(SoundBuffer* Buffer)
+{
+	Buffer->References--;
+
+	if (Buffer->References == 0)
+	{
+		for (auto it = Buffers.begin(); it != Buffers.end(); it++)
+		{
+			if (it->second == Buffer)
+			{
+				Buffers.erase(it);
+				break;
+			}
+		}
+		alDeleteBuffers(1, &Buffer->ALBuffer);
+		delete Buffer;
+	}
+}
+
+void engine::sound::SoundContext::AddFileSource(SoundFileSource* Source)
+{
+	this->Sources.push_back(Source);
 }

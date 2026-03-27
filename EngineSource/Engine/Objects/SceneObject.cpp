@@ -3,6 +3,7 @@
 #include "PlayerObject.h"
 #include "LandscapeObject.h"
 #include "LightObject.h"
+#include "SoundObject.h"
 #include <Engine/Scene.h>
 #include <Core/Error/EngineAssert.h>
 using namespace engine;
@@ -30,6 +31,7 @@ SerializedValue engine::SceneObject::Serialize()
 	&PlayerObject::Begin;
 	&LandscapeObject::Begin;
 	&LightObject::Begin;
+	&SoundObject::Begin;
 }
 
 void engine::SceneObject::DeSerialize(SerializedValue* From)
@@ -92,6 +94,7 @@ void engine::SceneObject::Attach(ObjectComponent* Component)
 {
 	ENGINE_ASSERT(!Component->ParentComponent && !Component->ParentObject);
 	Component->ParentObject = this;
+	Component->RootObject = Component->GetRootObject();
 	Component->UpdateTransform();
 	Component->OnAttached();
 	ChildComponents.push_back(Component);

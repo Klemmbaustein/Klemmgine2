@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Core/ThreadPool.h"
 #include "Engine.h"
 #include "Subsystem/SceneSubsystem.h"
 #include "Graphics/VideoSubsystem.h"
@@ -11,9 +10,9 @@
 #include <Engine/Plugins/PluginLoader.h>
 #include <filesystem>
 #include <Engine/UI/UICanvas.h>
+#include <Engine/Sound/SoundSubsystem.h>
 
 #if EDITOR
-#include <Editor/EditorSubsystem.h>
 #include <Editor/UI/Panels/Viewport.h>
 #endif
 
@@ -87,6 +86,8 @@ engine::Scene::~Scene()
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	UICanvas::ClearAll();
 
+	delete Sound;
+
 	VideoSystem->OnResizedCallbacks.erase(this);
 }
 
@@ -99,6 +100,9 @@ void engine::Scene::Update()
 {
 	if (Physics.Active)
 		Physics.Update();
+
+	if (Sound)
+		Sound->Update(this->Graphics.UsedCamera);
 
 	for (size_t i = 0; i < Objects.size(); i++)
 	{
@@ -451,6 +455,7 @@ void engine::Scene::LoadInternal(string File, bool Async)
 void engine::Scene::Init()
 {
 	Graphics.Init();
+	Sound = new sound::SoundContext(Engine::GetSubsystem<sound::SoundSubsystem>());
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
 	plugin::OnNewSceneLoaded(this);
 }
