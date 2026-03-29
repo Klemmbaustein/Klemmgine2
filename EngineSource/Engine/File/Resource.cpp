@@ -2,13 +2,10 @@
 #include <map>
 #include <functional>
 #include <fstream>
-#include <sstream>
 #include <filesystem>
 #include <kui/Resource.h>
-#include <Core/File/BinarySerializer.h>
 #include <Engine/File/ArchiveResourceSource.h>
-#include <mutex>
-#include <Core/Log.h>
+#include <Engine/File/EmbeddedResourceSource.h>
 #include <set>
 
 using namespace engine;
@@ -157,10 +154,16 @@ void resource::ScanForAssets()
 
 	static bool ArchiveProviderLoaded = false;
 
-	if (std::filesystem::exists("Assets/archmap.bin") && !ArchiveProviderLoaded)
+	if (!ArchiveProviderLoaded)
 	{
 		ArchiveProviderLoaded = true;
-		AddResourceSource(new ArchiveResourceSource());
+
+		AddResourceSource(new EmbeddedResourceSource());
+
+		if (std::filesystem::exists("Assets/archmap.bin"))
+		{
+			AddResourceSource(new ArchiveResourceSource());
+		}
 	}
 
 	for (auto& i : Sources)
