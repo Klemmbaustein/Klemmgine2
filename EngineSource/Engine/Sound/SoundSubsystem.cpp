@@ -3,5 +3,11 @@
 engine::sound::SoundSubsystem::SoundSubsystem()
 	: Subsystem("Sound", Log::LogColor::Red)
 {
-	MainContext = new SoundContext(this);
+	MainDevice = new SoundDevice(this);
+
+	MainContext = new SoundContext(MainDevice);
+}
+
+engine::sound::SoundSubsystem::~SoundSubsystem()
+{
 }

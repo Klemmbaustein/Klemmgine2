@@ -17,6 +17,7 @@ namespace engine
 		void OnDestroyed() override;
 
 		ObjProperty<AssetRef> SoundFile = ObjProperty<AssetRef>("Sound file", AssetRef::EmptyAsset("wav"), this);
+		ObjProperty<bool> Loop = ObjProperty<bool>("Loop", true, this);
 
 		SoundComponent* Component = nullptr;
 	};

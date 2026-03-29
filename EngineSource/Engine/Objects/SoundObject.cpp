@@ -13,14 +13,17 @@ void engine::SoundObject::Begin()
 	Component = new SoundComponent();
 	Attach(Component);
 
-	this->SoundFile.OnChanged = [this] {
+	SoundFile.OnChanged = [this] {
 		Component->Load(SoundFile.Value);
-		Component->Play();
+		Component->Play(Loop.Value);
+	};
+
+	Loop.OnChanged = [this] {
+		Component->Play(Loop.Value);
 	};
 
 	Component->Load(SoundFile.Value);
-	Component->Play();
-
+	Component->Play(Loop.Value);
 }
 
 void engine::SoundObject::OnDestroyed()

@@ -5,8 +5,12 @@ namespace engine::sound
 {
 	struct SoundContext_Private
 	{
-		ALCdevice* Device;
 		ALCcontext* Context;
+	};
+
+	struct SoundDevice_Private
+	{
+		ALCdevice* Device;
 	};
 
 	struct SoundBuffer

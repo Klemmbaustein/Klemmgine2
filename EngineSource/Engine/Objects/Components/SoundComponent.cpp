@@ -35,8 +35,12 @@ void engine::SoundComponent::Load(AssetRef Sound)
 	Source = Context->CreateSoundSource(Buffer);
 }
 
-void engine::SoundComponent::Play()
+void engine::SoundComponent::Play(bool Loop)
 {
+	if (Context && Source)
+	{
+		Context->PlaySource(Source, Loop);
+	}
 }
 
 void engine::SoundComponent::Update()

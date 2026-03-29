@@ -12,7 +12,8 @@ namespace engine
 		~SoundComponent();
 
 		void Load(AssetRef Sound);
-		void Play();
+		void Play(bool Loop);
+		void Stop();
 
 		void Update() override;
 
