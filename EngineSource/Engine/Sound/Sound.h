@@ -6,15 +6,25 @@
 
 namespace engine::sound
 {
+	struct SoundDevice_Private;
 	struct SoundContext_Private;
 	struct SoundBuffer;
 	struct SoundSource;
+
+	class SoundDevice
+	{
+	public:
+		SoundDevice(subsystem::Subsystem* System);
+		~SoundDevice();
+
+		SoundDevice_Private* DeviceData = nullptr;
+	};
 
 	class SoundContext
 	{
 	public:
 
-		SoundContext(subsystem::Subsystem* System);
+		SoundContext(SoundDevice* Device);
 
 		~SoundContext();
 
@@ -24,6 +34,8 @@ namespace engine::sound
 		void SetSourcePosition(SoundSource* Source, Vector3 NewPosition);
 
 		void SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity);
+		void PlaySource(SoundSource* Source, bool Loop);
+		void StopSource(SoundSource* Source);
 
 		void Update(graphics::Camera* FromCamera);
 

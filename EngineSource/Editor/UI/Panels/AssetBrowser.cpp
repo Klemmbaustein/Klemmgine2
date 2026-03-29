@@ -353,7 +353,14 @@ static bool ImportThread(engine::string CurrentPath)
 
 	for (auto& i : Files)
 	{
-		ImportItem(i, CurrentPath);
+		try
+		{
+			ImportItem(i, CurrentPath);
+		}
+		catch (std::filesystem::filesystem_error& e)
+		{
+			Log::Error(e.what());
+		}
 	}
 	return !Files.empty();
 }

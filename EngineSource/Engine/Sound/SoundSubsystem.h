@@ -9,6 +9,9 @@ namespace engine::sound
 	public:
 		SoundSubsystem();
 
+		~SoundSubsystem();
+
+		SoundDevice* MainDevice = nullptr;
 		SoundContext* MainContext = nullptr;
 	};
 }

@@ -459,7 +459,7 @@ void engine::Scene::Init()
 
 	if (System)
 	{
-		Sound = new sound::SoundContext(System);
+		Sound = new sound::SoundContext(System->MainDevice);
 	}
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
 	plugin::OnNewSceneLoaded(this);

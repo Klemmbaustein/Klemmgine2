@@ -1,5 +1,6 @@
 #if WINDOWS
 #include "BuildWin32.h"
+#include <Editor/Editor.h>
 #include <thread>
 
 using namespace engine;
@@ -67,7 +68,9 @@ void engine::editor::BuildProjectWinX64(BuildOptions Options)
 {
 	string OutPath = Options.OutputPath;
 
-	if (!BuildProjectExecuteCommand("cmake -S . -B " + OutPath + "/out/win-x64/ -Wno-deprecated " + ConfigureArgs(Options), Options, BuildStage::Configure))
+	string Path = editor::GetEditorPath() + "/..";
+
+	if (!BuildProjectExecuteCommand("cmake -S " + Path + " -B " + OutPath + "/out/win-x64/ -Wno-deprecated -DENGINE_ENABLE_SOUND=ON " + ConfigureArgs(Options), Options, BuildStage::Configure))
 	{
 		return;
 	}

@@ -44,23 +44,38 @@ static ALenum GetFormatFromSound(SoundData* Data)
 	}
 }
 
-engine::sound::SoundContext::SoundContext(subsystem::Subsystem* System)
+engine::sound::SoundDevice::SoundDevice(subsystem::Subsystem* System)
 {
-	this->System = System;
-	this->SoundData = new SoundContext_Private();
-	AddFileSource(new WavSoundFileSource());
-	SoundData->Device = alcOpenDevice(nullptr);
+	this->DeviceData = new SoundDevice_Private();
+	this->DeviceData->Device = alcOpenDevice(nullptr);
 
 	System->Print(str::Format("Opened sound device: %s",
-		alcGetString(SoundData->Device, ALC_DEVICE_SPECIFIER)),
+		alcGetString(this->DeviceData->Device, ALC_DEVICE_SPECIFIER)),
 		Subsystem::LogType::Note);
+}
 
-	SoundData->Context = alcCreateContext(SoundData->Device, nullptr);
+engine::sound::SoundDevice::~SoundDevice()
+{
+	alcCloseDevice(this->DeviceData->Device);
+	delete this->DeviceData;
+}
+
+engine::sound::SoundContext::SoundContext(SoundDevice* Device)
+{
+	SoundData = new SoundContext_Private();
+	AddFileSource(new WavSoundFileSource());
+	SoundData->Context = alcCreateContext(Device->DeviceData->Device, nullptr);
 }
 
 engine::sound::SoundContext::~SoundContext()
 {
+	alcDestroyContext(this->SoundData->Context);
 	delete this->SoundData;
+
+	for (auto& i : this->Sources)
+	{
+		delete i;
+	}
 }
 
 SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
@@ -102,8 +117,6 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 
 	alSourcei(Source, AL_BUFFER, With->ALBuffer);
 
-	alSourcePlay(Source);
-
 	auto err = alGetError();
 
 	if (err != AL_NO_ERROR)
@@ -124,6 +137,17 @@ void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3
 void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
 {
 	alSource3f(Source->ALSource, AL_VELOCITY, NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
+}
+
+void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop)
+{
+	alSourcei(Source->ALSource, AL_LOOPING, Loop);
+	alSourcePlay(Source->ALSource);
+}
+
+void engine::sound::SoundContext::StopSource(SoundSource* Source)
+{
+	alSourceStop(Source->ALSource);
 }
 
 void engine::sound::SoundContext::Update(graphics::Camera* FromCamera)

@@ -91,5 +91,5 @@ void engine::SceneSubsystem::LoadSceneThread(string SceneName)
 		Print(str::Format("Finished loading scene: %s", New->Name.c_str()));
 		New->LoadAsyncFinish();
 		Main = New;
-		});
+	});
 }
