@@ -10,4 +10,6 @@ engine::sound::SoundSubsystem::SoundSubsystem()
 
 engine::sound::SoundSubsystem::~SoundSubsystem()
 {
+	delete MainContext;
+	delete MainDevice;
 }

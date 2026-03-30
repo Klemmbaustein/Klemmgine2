@@ -45,9 +45,11 @@ namespace engine::sound
 		void AddFileSource(SoundFileSource* Source);
 
 		subsystem::Subsystem* System = nullptr;
-		SoundContext_Private* SoundData = nullptr;
+		SoundContext_Private* SoundData = nullptr ;
 
 	private:
+
+		void MakeCurrent() const;
 		std::map<string, SoundBuffer*> Buffers;
 
 		std::vector<SoundFileSource*> Sources;

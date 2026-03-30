@@ -69,6 +69,7 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 
 engine::sound::SoundContext::~SoundContext()
 {
+	MakeCurrent();
 	alcDestroyContext(this->SoundData->Context);
 	delete this->SoundData;
 
@@ -88,7 +89,6 @@ SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
 		return Found->second;
 	}
 
-	alcMakeContextCurrent(SoundData->Context);
 	ReadOnlyBufferStream* File = resource::GetBinaryFile(Path);
 
 	// TODO: Sources store their supported extensions, all sources supporting the extension
@@ -99,6 +99,7 @@ SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
 
 	NewBuffer->ALBuffer;
 
+	MakeCurrent();
 	alGenBuffers(1, &NewBuffer->ALBuffer);
 
 	alBufferData(NewBuffer->ALBuffer, GetFormatFromSound(Data),
@@ -113,9 +114,12 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 {
 	ALuint Source;
 
+	MakeCurrent();
 	alGenSources(1, &Source);
 
+	alSourcei(Source, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE);
 	alSourcei(Source, AL_BUFFER, With->ALBuffer);
+	alSourcei(Source, AL_ROLLOFF_FACTOR, 2.0f);
 
 	auto err = alGetError();
 
@@ -131,22 +135,26 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 
 void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3 NewPosition)
 {
+	MakeCurrent();
 	alSource3f(Source->ALSource, AL_POSITION, NewPosition.X, NewPosition.Y, NewPosition.Z);
 }
 
 void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
 {
+	MakeCurrent();
 	alSource3f(Source->ALSource, AL_VELOCITY, NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
 }
 
 void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop)
 {
+	MakeCurrent();
 	alSourcei(Source->ALSource, AL_LOOPING, Loop);
 	alSourcePlay(Source->ALSource);
 }
 
 void engine::sound::SoundContext::StopSource(SoundSource* Source)
 {
+	MakeCurrent();
 	alSourceStop(Source->ALSource);
 }
 
@@ -154,6 +162,7 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera)
 {
 	Vector3 Pos = FromCamera->GetPosition();
 
+	MakeCurrent();
 	alListener3f(AL_POSITION, Pos.X, Pos.Y, Pos.Z);
 
 	Vector3 Directions[2] = {
@@ -166,6 +175,7 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera)
 
 void engine::sound::SoundContext::FreeSoundSource(SoundSource* Source)
 {
+	MakeCurrent();
 	alDeleteSources(1, &Source->ALSource);
 	delete Source;
 }
@@ -184,6 +194,7 @@ void engine::sound::SoundContext::FreeSoundEffect(SoundBuffer* Buffer)
 				break;
 			}
 		}
+		MakeCurrent();
 		alDeleteBuffers(1, &Buffer->ALBuffer);
 		delete Buffer;
 	}
@@ -192,4 +203,9 @@ void engine::sound::SoundContext::FreeSoundEffect(SoundBuffer* Buffer)
 void engine::sound::SoundContext::AddFileSource(SoundFileSource* Source)
 {
 	this->Sources.push_back(Source);
+}
+
+void engine::sound::SoundContext::MakeCurrent() const
+{
+	alcMakeContextCurrent(SoundData->Context);
 }

@@ -192,7 +192,7 @@ void engine::editor::ScriptEditorProvider::Update()
 		{
 			if (NewHoveredError.Error)
 			{
-				CreateHoverBox((new UIText(12_px, 1, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
+				CreateHoverBox((new UIText(12_px, EditorUI::Theme.Text, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
 					->SetPadding(5_px), NewHoveredError.At);
 			}
 			else
@@ -345,9 +345,14 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 			auto Callback = [this, i] {
 				auto DefaultColor = this->TextColor;
 
+				static std::map<ScannedVariable::Kind, string> Type = {
+					{ScannedVariable::Kind::localVariable, "(local variable) "},
+					{ScannedVariable::Kind::classMember, "(member) "},
+					{ScannedVariable::Kind::constant, "(constant) "},
+				};
+
 				std::vector<TextSegment> HoverString = {
-					TextSegment(i.kind == ScannedVariable::Kind::localVariable
-						? "(local variable) " : "(member) ", DefaultColor),
+					TextSegment(Type[i.kind], DefaultColor),
 					TextSegment(i.type + " ", this->TypeColor),
 				};
 
@@ -447,7 +452,8 @@ void engine::editor::ScriptEditorProvider::UpdateFileData()
 	{
 		UpdateLineColorization(i);
 	}
-	ParentEditor->RefreshHighlights();}
+	ParentEditor->RefreshHighlights();
+}
 
 void engine::editor::ScriptEditorProvider::ScanFile()
 {
