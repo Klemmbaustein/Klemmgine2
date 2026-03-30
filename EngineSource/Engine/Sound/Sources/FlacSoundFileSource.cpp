@@ -1,4 +1,5 @@
 #include "FlacSoundFileSource.h"
+#include <cstring>
 
 using namespace engine::sound;
 

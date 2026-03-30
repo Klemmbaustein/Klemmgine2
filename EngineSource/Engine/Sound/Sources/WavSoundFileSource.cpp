@@ -1,6 +1,7 @@
 #include "WavSoundFileSource.h"
 #include <Core/Log.h>
 #include <Core/Error/EngineAssert.h>
+#include <cstring>
 
 using namespace engine::sound;
 
