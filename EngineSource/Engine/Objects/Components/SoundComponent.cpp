@@ -43,6 +43,14 @@ void engine::SoundComponent::Play(bool Loop)
 	}
 }
 
+void engine::SoundComponent::Stop()
+{
+	if (Context && Source)
+	{
+		Context->StopSource(Source);
+	}
+}
+
 void engine::SoundComponent::Update()
 {
 	if (Source && Context)

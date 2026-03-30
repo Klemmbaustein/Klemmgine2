@@ -792,6 +792,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") },
 			nullptr, "setVelocity", &MoveComponent_setVelocity));
 
+	EngineModule.addConstant<Bool>("WITH_EDITOR", BoolInst, true);
+
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "acceleration",
 		.offset = DS_OFFSETOF(MoveComponent, Acceleration),
