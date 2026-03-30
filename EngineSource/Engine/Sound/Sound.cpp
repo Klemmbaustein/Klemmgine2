@@ -1,6 +1,7 @@
 #include "Sound.h"
 #include <Engine/File/Resource.h>
 #include <alext.h>
+#include <stdexcept>
 #include "SoundInternal/SoundInternal.h"
 #include "Sources/WavSoundFileSource.h"
 
