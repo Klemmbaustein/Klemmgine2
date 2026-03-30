@@ -2,6 +2,7 @@
 #include <Core/Log.h>
 #include <Core/Error/EngineAssert.h>
 #include <cstring>
+#include <stdexcept>
 
 using namespace engine::sound;
 
