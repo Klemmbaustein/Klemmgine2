@@ -14,6 +14,8 @@
 #include <Engine/UI/UICanvas.h>
 #include <Engine/Script/UI/ScriptUIElement.h>
 #include <Engine/Script/ScriptSerializer.h>
+#include <Core/LaunchArgs.h>
+#include <Core/Error/EngineAssert.h>
 
 using namespace ds;
 using namespace ds::modules::system::async;
@@ -90,7 +92,9 @@ bool engine::script::ScriptSubsystem::Reload()
 	ThreadPool::Main()->AwaitJoin();
 	auto CurrentScene = Scene::GetMain();
 
-	auto Compiler = this->ScriptLanguage->createCompiler();
+	auto Compiler = this->ScriptLanguage->createCompiler(ParserOptions{
+		.printAssembly = launchArgs::GetArg("printScriptAssembly").has_value()
+		});
 
 	debug::TimeLogger CompileTime = { "Compiled scripts", this->GetLogPrefixes() };
 
@@ -120,10 +124,30 @@ bool engine::script::ScriptSubsystem::Reload()
 	UIFiles.OnCompileFinished(UIData);
 	delete Compiler;
 
+#ifdef EDITOR
+	if (NewInstructions.code.empty())
+	{
+		if (resource::FileExists("scriptCache.bin"))
+		{
+			auto Stream = FileStream("scriptCache.bin", true);
+			script::serialize::DeSerializeBytecode(&NewInstructions, &UIData, &Stream);
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		auto Stream = FileStream("scriptCache.bin", false);
+		script::serialize::SerializeBytecode(&NewInstructions, &UIData, &Stream);
+	}
+#else
 	if (NewInstructions.code.empty())
 	{
 		return false;
 	}
+#endif
 
 	if (CurrentScene)
 	{
@@ -140,14 +164,11 @@ bool engine::script::ScriptSubsystem::Reload()
 		}
 	}
 
-	// TODO: Serialize scripts and deserialize them when a compilation fails so the engine has a compilation result to fall back on.
-	//auto Stream = FileStream("scripts.bin", true);
-	//script::serialize::SerializeBytecode(&NewInstructions, &UIData, &Stream);
-
 	*ScriptInstructions = NewInstructions;
-	//script::serialize::DeSerializeBytecode(ScriptInstructions, &UIData, &Stream);
 	this->Runtime->loadBytecode(ScriptInstructions);
 	ReloadDynamicUIContext();
+
+	ENGINE_ASSERT(RuntimeClass::classRefCount == 0);
 
 	if (CurrentScene)
 	{

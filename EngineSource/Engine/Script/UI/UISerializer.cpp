@@ -52,7 +52,6 @@ void engine::script::ui::SerializeUIProperties(const std::vector<kui::markup::Pr
 void engine::script::ui::SerializeUI(UIParseData* Data, std::vector<SerializedData>& OutValues)
 {
 	std::vector<SerializedValue> Elements;
-
 	for (auto& i : Data->UIData.Elements)
 	{
 		std::vector<SerializedData> Element;
@@ -65,6 +64,13 @@ void engine::script::ui::SerializeUI(UIParseData* Data, std::vector<SerializedDa
 	}
 
 	OutValues.push_back(SerializedData("elems", Elements));
+
+	std::vector<SerializedData> Mappings;
+	for (auto& i : Data->ClassIdMappings)
+	{
+		Mappings.push_back(SerializedData(i.second, int32(i.first)));
+	}
+	OutValues.push_back(SerializedData("mappings", Mappings));
 }
 
 void engine::script::ui::DeSerializeUIElement(kui::markup::UIElement& ToElement, SerializedValue& FromValues)
@@ -108,6 +114,13 @@ UIParseData engine::script::ui::DeSerializeUI(SerializedValue& FromValues)
 			.Root = Element,
 			.FromToken = StringToken(i.At("name").GetString(), 0, 0),
 			});
+	}
+
+	auto& Mappings = FromValues.At("mappings").GetObject();
+
+	for (auto& i : Mappings)
+	{
+		OutData.ClassIdMappings.insert({ ds::TypeId(i.Value.GetInt()), i.Name });
 	}
 
 	return OutData;
