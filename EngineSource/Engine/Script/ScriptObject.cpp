@@ -5,7 +5,7 @@
 #include <ds/modules/system.async.hpp>
 #include <ds/interpreter.hpp>
 #include <ds/parser/types/stringType.hpp>
-#include <ds/language.hpp>
+#include <Engine/MainThread.h>
 
 using namespace ds;
 using ds::modules::system::async::Task;
@@ -206,9 +206,26 @@ void engine::script::ScriptObject::InitializePropertyFlags(ObjPropertyBase* p, c
 
 void engine::script::ScriptObject::InitializeScriptPointer()
 {
-	this->ScriptData = Class.create(Interpreter);
-	ClassRef<SceneObject*> ScriptDataRef = this->ScriptData;
-	ScriptDataRef.getValue() = this;
+	// The constructor (and for that reason also this function) may be called from another thread
+	// when loading a scene asynchronously. In that case, create a new context because using the
+	// main context on another thread (especially when stuff on the main thread might be using that
+	// context at the same time) is a very bad idea!
+	if (!thread::IsMainThread)
+	{
+		InterpretContext* Context = new InterpretContext();
+		Context->code = Interpreter->code;
+		Context->runtime = Interpreter->runtime;
+		this->ScriptData = Class.create(Context);
+		ClassRef<SceneObject*> ScriptDataRef = this->ScriptData;
+		ScriptDataRef.getValue() = this;
+		delete Context;
+	}
+	else
+	{
+		this->ScriptData = Class.create(Interpreter);
+		ClassRef<SceneObject*> ScriptDataRef = this->ScriptData;
+		ScriptDataRef.getValue() = this;
+	}
 }
 
 void engine::script::ScriptObject::OnDestroyed()
