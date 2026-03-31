@@ -1,6 +1,5 @@
 #include "ArchiveResourceSource.h"
 #include <Core/Log.h>
-#include <filesystem>
 #include <set>
 #include <Core/File/BinarySerializer.h>
 

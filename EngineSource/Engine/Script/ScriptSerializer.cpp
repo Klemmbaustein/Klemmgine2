@@ -58,6 +58,24 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 			}));
 	}
 
+	BufferStream Unwind;
+
+	for (auto& i : Stream->unwind.sections)
+	{
+		Unwind.WriteValue(i.offset);
+		Unwind.WriteValue(i.parts.size());
+		for (auto& part : i.parts)
+		{
+			Unwind.WriteValue(part);
+		}
+	}
+	SerializedValue UnwindValue = std::vector<SerializedValue>{};
+
+	for (uByte i : Unwind.GetBuffer())
+	{
+		UnwindValue.Append(i);
+	}
+
 	SerializedValue VTable = std::vector<SerializedValue>{};
 
 	for (const VTableFunction& i : Stream->virtualTable)
@@ -76,6 +94,7 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 		SerializedData("reflect", ReflectData),
 		SerializedData("virtual", VTable),
 		SerializedData("ui", UIObject),
+		SerializedData("unwind", UnwindValue),
 	};
 
 	BinarySerializer::ToBinaryData(BytecodeData.GetObject(), To, SCRIPT_FORMAT_ID);
@@ -90,6 +109,26 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 	for (auto& i : CodeData)
 	{
 		ToStream->code.buffer.push_back(i.GetByte());
+	}
+	auto& UnwindData = Obj.At("unwind").GetArray();
+	BufferStream UnwindStream;
+	for (auto& i : UnwindData)
+	{
+		UnwindStream.WriteByte(i.GetByte());
+	}
+
+	UnwindStream.ResetStreamPosition();
+
+	while (!UnwindStream.IsEmpty())
+	{
+		auto& NewSection = ToStream->unwind.sections.emplace_back();
+		NewSection.offset = UnwindStream.Get<BytecodeOffset>();
+		size_t NumParts = UnwindStream.Get<size_t>();
+
+		for (size_t i = 0; i < NumParts; i++)
+		{
+			NewSection.parts.push_back(UnwindStream.Get<ds::UnwindPart>());
+		}
 	}
 
 	auto& ExternFunctions = Obj.At("extern").GetArray();
