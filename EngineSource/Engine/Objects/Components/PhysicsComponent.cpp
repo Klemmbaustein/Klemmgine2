@@ -1,6 +1,6 @@
 #include "PhysicsComponent.h"
 #include <Engine/Scene.h>
-#include <Core/Log.h>
+#include <Engine/Engine.h>
 using namespace engine;
 
 engine::PhysicsComponent::PhysicsComponent()
@@ -25,6 +25,8 @@ void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, phys
 		Movability,
 		Layers,
 		this);
+
+	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
 
 	auto Root = GetRootObject();
 
@@ -53,6 +55,8 @@ void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics
 		Layers,
 		this);
 
+	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
+
 	if (StartEnabled)
 	{
 		GetRootObject()->GetScene()->Physics.AddBody(Body, true, true);
@@ -77,6 +81,7 @@ void engine::PhysicsComponent::CreateCapsule(physics::MotionType Movability, phy
 		Movability,
 		Layers,
 		this);
+	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
 
 	GetRootObject()->GetScene()->Physics.AddBody(Body, true, StartEnabled);
 	Added = true;
@@ -179,7 +184,7 @@ void engine::PhysicsComponent::Update()
 		return;
 	}
 
-	if (LastTransform != WorldTransform)
+	if (LastTransform != WorldTransform && !IsPhysicsSimulated)
 	{
 		if (Body->ColliderMovability != physics::MotionType::Dynamic)
 		{
@@ -189,6 +194,44 @@ void engine::PhysicsComponent::Update()
 			Body->SetPositionAndRotation(Position, Rotation);
 		}
 		LastTransform = WorldTransform;
+	}
+}
+
+void engine::PhysicsComponent::UpdateTransform(bool IsDirty)
+{
+	if (IsPhysicsSimulated && Engine::Instance->IsPlaying)
+	{
+		if (Body)
+		{
+			auto [NewPosition, NewRotation] = Body->GetPositionAndRotation();
+
+			if (NewPosition != Position || NewRotation != Rotation)
+			{
+				this->TransformDirty = true;
+			}
+
+			if (this->TransformDirty || IsDirty)
+			{
+				Position = NewPosition;
+				Rotation = NewRotation;
+				WorldTransform = Transform(Position, Rotation, Scale);
+			}
+		}
+		for (ObjectComponent* i : Children)
+		{
+			i->UpdateTransform(this->TransformDirty || IsDirty);
+			Vector3 Pos, Scl;
+			Rotation3 Rot;
+			i->WorldTransform.Decompose(Pos, Rot, Scl);
+		}
+		OldPosition = Position;
+		OldScale = Scale;
+		OldRotation = Rotation;
+		this->TransformDirty = false;
+	}
+	else
+	{
+		ObjectComponent::UpdateTransform(IsDirty);
 	}
 }
 

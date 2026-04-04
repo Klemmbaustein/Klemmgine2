@@ -143,7 +143,7 @@ engine::string engine::VideoSubsystem::GetWindowTitle()
 {
 #define STR_INNER(x) # x
 #define STR(x) STR_INNER(x)
-	string Title = str::Format("Klemmgine 2 (%s, OpenGL %s)", STR(ENGINE_COMPILER_ID), OpenGLMode.c_str());
+	string Title = str::Format("Klemmgine 2 (%s, %s)", STR(ENGINE_COMPILER_ID), OpenGLMode.c_str());
 
 #ifdef EDITOR
 	Title.append(" Editor");

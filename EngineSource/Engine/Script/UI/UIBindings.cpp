@@ -28,12 +28,23 @@ static void UIScriptCanvas_empty(InterpretContext* context)
 	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
 }
 
+static void UIScriptCanvas_destroy(InterpretContext* context)
+{
+	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
+	delete cls.getValue();
+	cls.getValue() = nullptr;
+}
+
 static void UIScriptCanvas_getChild(InterpretContext* context)
 {
 	auto type = GenericData(context);
 	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
-
 	auto text = context->popRuntimeString();
+
+	if (!cls.getValue())
+	{
+		return;
+	}
 
 	auto classInstance = cls.getValue();
 	auto box = classInstance->MarkupBox;
@@ -81,6 +92,17 @@ static void UIBox_new(InterpretContext* context)
 	context->pushValue(cls);
 }
 
+static void UICanvasBox_new(InterpretContext* context)
+{
+	ClassRef<UICanvasBox*> cls = context->popValue<RuntimeClass*>();
+
+	SizeVec size = context->popValue<SizeVec>();
+
+	cls.getValue() = new UICanvasBox(0, size);
+
+	context->pushValue(cls);
+}
+
 static void UIBox_getUsedSize(InterpretContext* context)
 {
 	ds::ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
@@ -105,6 +127,28 @@ static void UIBox_setMinSize(InterpretContext* context)
 	SizeVec size = context->popValue<SizeVec>();
 
 	cls.getValue()->SetMinSize(size);
+
+	cls.classPtr->addRef();
+	context->pushValue(cls);
+}
+
+static void UIBox_setMinWidth(InterpretContext* context)
+{
+	ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
+	UISize size = context->popValue<UISize>();
+
+	cls.getValue()->SetMinWidth(size);
+
+	cls.classPtr->addRef();
+	context->pushValue(cls);
+}
+
+static void UIBox_setMinHeight(InterpretContext* context)
+{
+	ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
+	UISize size = context->popValue<UISize>();
+
+	cls.getValue()->SetMinHeight(size);
 
 	cls.classPtr->addRef();
 	context->pushValue(cls);
@@ -180,6 +224,17 @@ static void UIBackground_setBorder(InterpretContext* context)
 	context->pushValue(cls);
 }
 
+static void UIBlurBackground_new(InterpretContext* context)
+{
+	ClassRef<UIBlurBackground*> cls = context->popValue<RuntimeClass*>();
+	Vec3f Color = context->popValue<Vec3f>();
+	Bool Horizontal = context->popValue<Bool>();
+
+	cls.getValue() = new UIBlurBackground(Horizontal, 0, Color);
+
+	context->pushValue(cls);
+}
+
 static void UIButton_new(InterpretContext* context)
 {
 	ClassRef<UIButton*> cls = context->popValue<RuntimeClass*>();
@@ -214,6 +269,7 @@ static void UIText_new(InterpretContext* context)
 
 	context->pushValue(cls);
 }
+
 static void UIText_setText(InterpretContext* context)
 {
 	ClassRef<UIText*> cls = context->popValue<RuntimeClass*>();
@@ -292,6 +348,13 @@ static void UISize_new(InterpretContext* context)
 	context->pushValue(UISize(f, s));
 }
 
+static void UISize_getScreen(InterpretContext* context)
+{
+	UISize vec = context->popValue<UISize>();
+
+	context->pushValue(vec.GetScreen());
+}
+
 static void UISizeVec_new(InterpretContext* context)
 {
 	UISize y = context->popValue<UISize>();
@@ -305,6 +368,19 @@ static void UISizeVec_new_same(InterpretContext* context)
 	UISize xy = context->popValue<UISize>();
 
 	context->pushValue(UISize(xy));
+}
+
+static void UISizeVec_new_screen(InterpretContext* context)
+{
+	Vec2f xy = context->popValue<Vec2f>();
+
+	context->pushValue(SizeVec(xy));
+}
+static void UISizeVec_getScreen(InterpretContext* context)
+{
+	SizeVec vec = context->popValue<SizeVec>();
+
+	context->pushValue(vec.GetScreen());
 }
 
 static void UISize_pixels(InterpretContext* context)
@@ -342,6 +418,8 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		nullptr, "UISize.new.screen", &UISize_new_screen));
 	To.addClassConstructor(SizeType, NativeFunction({ FunctionArgument(FloatInst, "value"), FunctionArgument(SizeModeType, "mode") },
 		nullptr, "UISize.new", &UISize_new));
+	To.addClassMethod(SizeType, NativeFunction({},
+		Vec2Type, "getScreen", &UISize_getScreen));
 	To.addType(SizeType);
 
 	auto SizeVecType = new NativeStructType(sizeof(SizeVec), "UISizeVec");
@@ -353,8 +431,13 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	To.addClassConstructor(SizeVecType, NativeFunction({ FunctionArgument(SizeType, "xy") },
 		nullptr, "UISizeVec.new.same", &UISizeVec_new_same));
+	To.addClassConstructor(SizeVecType, NativeFunction({ FunctionArgument(SizeType, "xy") },
+		nullptr, "UISizeVec.new.screen", &UISizeVec_new_screen));
+	To.addClassMethod(SizeVecType, NativeFunction({},
+		Vec2Type, "getScreen", &UISizeVec_getScreen));
 	To.addType(SizeVecType);
 
+	// UIBox
 	auto UIBoxType = To.createClass<UIBox*>("UIBox");
 
 	UIBoxType->members.push_back(ClassMember{
@@ -400,6 +483,12 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMinSize", &UIBox_setMinSize));
 
+	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeType, "size") },
+		UIBoxType, "setMinWidth", &UIBox_setMinWidth));
+
+	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeType, "size") },
+		UIBoxType, "setMinHeight", &UIBox_setMinHeight));
+
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMaxSize", &UIBox_setMaxSize));
 
@@ -411,6 +500,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeType, "padding") },
 		UIBoxType, "setAllPadding", &UIBox_setAllPadding));
 
+	// UIText
 	auto UITextType = To.createClass<UIText*>("UIText", UIBoxType);
 
 	To.addClassConstructor(UITextType, NativeFunction(
@@ -420,6 +510,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UITextType, NativeFunction({ FunctionArgument(StrType, "newText") },
 		UITextType, "setText", &UIText_setText));
 
+	// UIBackground
 	auto UIBackgroundType = To.createClass<UIBackground*>("UIBackground", UIBoxType);
 	To.addClassConstructor(UIBackgroundType,
 		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color") },
@@ -433,6 +524,20 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		NativeFunction({ FunctionArgument(Vec3Type, "newColor") },
 			UIBackgroundType, "setBorder", &UIBackground_setBorder));
 
+	// UIBlurBackground
+	auto UIBlurBackgroundType = To.createClass<UIBlurBackground*>("UIBlurBackground", UIBackgroundType);
+	To.addClassConstructor(UIBlurBackgroundType,
+		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color") },
+			nullptr, "UIBlurBackground.new", &UIBlurBackground_new));
+
+	// UICanvasBox
+	auto UICanvasBoxType = To.createClass<UICanvasBox*>("UICanvasBox", UIBoxType);
+
+	To.addClassConstructor(UICanvasBoxType, NativeFunction(
+		{ FunctionArgument(SizeType, "size") },
+		nullptr, "UICanvasBox.new", &UICanvasBox_new));
+
+	// UITextField
 	auto UITextFieldType = To.createClass<UIText*>("UITextField", UIBackgroundType);
 	To.addClassConstructor(UITextFieldType, NativeFunction(
 		{ FunctionArgument(Vec3Type, "color") },
@@ -440,12 +545,13 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	AddUIMethod(UITextFieldType, NativeFunction(
 		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
-		UITextFieldType, "setOnSubmit", & UITextField_setOnSubmit));
+		UITextFieldType, "setOnSubmit", &UITextField_setOnSubmit));
 
 	AddUIMethod(UITextFieldType, NativeFunction(
 		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
-		UITextFieldType, "setOnChanged", & UITextField_setOnChanged));
+		UITextFieldType, "setOnChanged", &UITextField_setOnChanged));
 
+	// UIButton
 	auto UIButtonType = To.createClass<UIBackground*>("UIButton", UIBackgroundType);
 	To.addClassConstructor(UIButtonType,
 		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color"),
@@ -456,6 +562,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		NativeFunction({ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onClicked") },
 			UIButtonType, "setOnClicked", &UIButton_setOnClicked));
 
+	// Script canvas
 	auto CanvasType = To.createClass<ScriptUICanvas*>("Canvas");
 
 	CanvasType->baseConstructor = To.addFunction(NativeFunction({}, nullptr, "Canvas.new", &UIScriptCanvas_new));
@@ -463,6 +570,10 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassMethod(CanvasType,
 		NativeGenericFunction({ FunctionArgument(StrType, "name") }, { GenericArgument("T", UIBoxType) },
 			GenericArgumentType::getInstance(0, true), "getChild", &UIScriptCanvas_getChild));
+
+	To.addClassMethod(CanvasType,
+		NativeFunction({ },
+			nullptr, "destroy", &UIScriptCanvas_destroy));
 
 	To.addClassVirtualMethod(CanvasType,
 		NativeFunction({}, nullptr, "update", &UIScriptCanvas_empty), 1);

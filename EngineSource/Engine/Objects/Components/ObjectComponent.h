@@ -72,6 +72,7 @@ namespace engine
 		Vector3 Position;
 		Rotation3 Rotation;
 		Vector3 Scale = 1;
+		Transform WorldTransform;
 
 	protected:
 		Transform GetParentTransform() const;
@@ -81,7 +82,6 @@ namespace engine
 		Rotation3 OldRotation;
 		Vector3 OldScale = 1;
 
-		Transform WorldTransform;
 	private:
 		void UpdateLogic();
 	};
