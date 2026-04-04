@@ -9,6 +9,10 @@ engine::ObjectComponent::ObjectComponent()
 
 engine::ObjectComponent::~ObjectComponent()
 {
+	for (auto& i : this->Children)
+	{
+		Detach(i);
+	}
 }
 
 void engine::ObjectComponent::OnAttached()
@@ -78,6 +82,7 @@ void engine::ObjectComponent::Attach(ObjectComponent* Child)
 	Children.push_back(Child);
 
 	auto Root = GetRootComponent();
+	Child->RootObject = Child->GetRootObject();
 	if (Root)
 		Root->UpdateTransform();
 }

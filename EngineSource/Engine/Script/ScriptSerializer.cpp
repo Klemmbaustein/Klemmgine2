@@ -58,6 +58,8 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 			}));
 	}
 
+	// Do something not that pretty and serialize the unwind data as a raw byte buffer in the file.
+	// Unwind data is pretty large, so this is an efficiency bonus.
 	BufferStream Unwind;
 
 	for (auto& i : Stream->unwind.sections)
@@ -110,6 +112,7 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 	{
 		ToStream->code.buffer.push_back(i.GetByte());
 	}
+
 	auto& UnwindData = Obj.At("unwind").GetArray();
 	BufferStream UnwindStream;
 	for (auto& i : UnwindData)

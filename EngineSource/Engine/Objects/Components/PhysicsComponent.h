@@ -25,11 +25,14 @@ namespace engine
 		bool GetActive() const;
 		void Update() override;
 
+		void UpdateTransform(bool IsDirty) override;
+
 		std::function<void()> OnBeginOverlap;
 
 	private:
 		Transform LastTransform;
 		bool Added = false;
+		bool IsPhysicsSimulated = false;
 		void Clear();
 		physics::PhysicsBody* Body = nullptr;
 	};

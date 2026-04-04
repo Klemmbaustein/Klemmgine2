@@ -174,8 +174,17 @@ void engine::LandscapeComponent::Draw(graphics::Camera* From, graphics::Graphics
 	{
 		LandscapeMaterial->Apply();
 		ShaderObject* Used = LandscapeMaterial->Shader;
-		From->UsedEnvironment->ApplyTo(Used);
+		if (!Used)
+		{
+			return;
+		}
 
+		if (!Used->Unlit)
+		{
+			In->Lights.ApplyToShader(Used, DrawBoundingBox);
+			From->UsedEnvironment->ApplyTo(Used);
+			In->Shadows.BindUniforms(Used);
+		}
 		if (Scene)
 			Scene->Graphics.Shadows.BindUniforms(Used);
 

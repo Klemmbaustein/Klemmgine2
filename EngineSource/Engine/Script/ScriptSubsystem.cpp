@@ -168,8 +168,6 @@ bool engine::script::ScriptSubsystem::Reload()
 	this->Runtime->loadBytecode(ScriptInstructions);
 	ReloadDynamicUIContext();
 
-	ENGINE_ASSERT(RuntimeClass::classRefCount == 0);
-
 	if (CurrentScene)
 	{
 		for (auto& i : CurrentScene->Objects)

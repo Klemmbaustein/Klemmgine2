@@ -20,6 +20,7 @@ engine::script::ui::ScriptUICanvas::ScriptUICanvas(ds::RuntimeClass* ScriptObjec
 engine::script::ui::ScriptUICanvas::~ScriptUICanvas()
 {
 	ScriptSubsystem::Instance->Runtime->baseContext.destruct(ScriptObject);
+	delete MarkupBox;
 }
 
 void engine::script::ui::ScriptUICanvas::Update()

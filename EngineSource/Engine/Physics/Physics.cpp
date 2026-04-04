@@ -2,6 +2,7 @@
 #include <Engine/Objects/Components/CollisionComponent.h>
 #include <Engine/Scene.h>
 #include <Engine/Physics/Internal/JoltPhysics.h>
+#include <Engine/Engine.h>
 using namespace engine::physics;
 
 PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform,
@@ -101,7 +102,10 @@ void engine::physics::PhysicsManager::Init()
 
 void engine::physics::PhysicsManager::Update()
 {
-	PhysicsSystem->Update();
+	if (Engine::Instance->IsPlaying)
+	{
+		PhysicsSystem->Update();
+	}
 }
 
 HitResult engine::physics::PhysicsManager::RayCast(Vector3 Start, Vector3 End, Layer Layers,

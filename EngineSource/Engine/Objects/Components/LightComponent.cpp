@@ -38,6 +38,24 @@ void engine::LightComponent::OnAttached()
 	UpdateLight(NewPosition);
 }
 
+void engine::LightComponent::SetRange(float NewRange)
+{
+	this->Range = NewRange;
+	UpdateLight(WorldTransform.ApplyTo(0));
+}
+
+void engine::LightComponent::SetIntensity(float NewIntensity)
+{
+	this->Intensity = NewIntensity;
+	UpdateLight(WorldTransform.ApplyTo(0));
+}
+
+void engine::LightComponent::SetColor(Vector3 NewColor)
+{
+	this->Color = NewColor;
+	UpdateLight(WorldTransform.ApplyTo(0));
+}
+
 void engine::LightComponent::UpdateLight(Vector3 At)
 {
 	auto Root = RootObject ? RootObject->GetScene() : nullptr;
@@ -55,9 +73,9 @@ void engine::LightComponent::UpdateLight(Vector3 At)
 	this->LastPosition = At;
 
 	LightData = Root->Graphics.Lights.AddLight(graphics::Light{
-		.Intensity = 1,
-		.Range = 2.0f,
-		.Color = 1,
+		.Intensity = Intensity,
+		.Range = Range,
+		.Color = Color,
 		.Position = At,
 		});
 }
