@@ -220,6 +220,7 @@ void engine::internal::JoltInstance::InitJolt()
 {
 	if (IsInitialized)
 		return;
+	IsInitialized = true;
 
 	JPH::RegisterDefaultAllocator();
 
@@ -235,7 +236,6 @@ void engine::internal::JoltInstance::InitJolt()
 	// We need a job system that will execute physics jobs on multiple threads. Typically
 	// you would implement the JobSystem interface yourself and let Jolt Physics run on top
 	// of your own job scheduler. JobSystemThreadPool is an example implementation.
-	IsInitialized = true;
 }
 
 JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(GraphicsModel* From, bool ExtraReference)

@@ -5,7 +5,7 @@
 #include <Engine/Internal/OpenGL.h>
 #include <random>
 
-const size_t AO_SAMPLES = 24;
+const size_t AO_SAMPLES = 32;
 
 engine::graphics::AmbientOcclusion::AmbientOcclusion()
 {
@@ -95,7 +95,7 @@ uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* Wit
 	AoShader->SetInt(AoShader->GetUniformLocation("gPosition"), 0);
 	AoShader->SetInt(AoShader->GetUniformLocation("gNormal"), 1);
 	AoShader->SetInt(AoShader->GetUniformLocation("texNoise"), 2);
-	AoShader->SetVec2(AoShader->GetUniformLocation("noiseScale"), Vector2(float(AoWidth), float(AoWidth)) / 4.0f);
+	AoShader->SetVec2(AoShader->GetUniformLocation("noiseScale"), Vector2(float(AoWidth), float(AoHeight)) / 4.0f);
 	glUniformMatrix4fv(AoShader->GetUniformLocation("projection"), 1, false, &Cam->Projection[0][0]);
 
 	uint32 AoTexture = DrawBuffer(AoBuffer, this->AoWidth, this->AoHeight);
@@ -118,5 +118,4 @@ uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* Wit
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	return ResultBuffer.second;
-
 }
