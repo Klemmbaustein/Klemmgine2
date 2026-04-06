@@ -7,13 +7,13 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D texNoise;
 
-uniform vec3 samples[64];
+uniform vec3 samples[32];
 
-int kernelSize = 24;
+int kernelSize = 32;
 float radius = 0.25;
 float bias = 0.025;
 
-uniform vec2 noiseScale = vec2(1600.0/4.0, 900.0/4.0);
+uniform vec2 noiseScale = vec2(800.0/4.0, 600.0/4.0);
 
 uniform mat4 projection;
 
@@ -23,7 +23,6 @@ void main()
 
 	vec3 normal = normalize(texture(gNormal, v_texcoords).rgb);
 	vec3 randomVec = normalize(texture(texNoise, v_texcoords * noiseScale).xyz);
-
 	// create TBN change-of-basis matrix: from tangent-space to view-space
 	vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
 	vec3 bitangent = cross(normal, tangent);
