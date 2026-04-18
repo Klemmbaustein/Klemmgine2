@@ -7,6 +7,7 @@
 #include <ds/parser/types/functionType.hpp>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <kui/KlemmUI.h>
+#include <Core/Error/EngineError.h>
 
 using namespace engine;
 using namespace engine::script::ui;
@@ -55,6 +56,11 @@ static void UIScriptCanvas_getChild(InterpretContext* context)
 	{
 		context->pushValue(ScriptSubsystem::Instance->UIObjectMappings[found]);
 		return;
+	}
+
+	if (!found)
+	{
+		ENGINE_ASSERT_MESSAGE(false, text.ptr());
 	}
 
 	context->pushValue(NativeModule::makePointerClass<UIBox>(found));

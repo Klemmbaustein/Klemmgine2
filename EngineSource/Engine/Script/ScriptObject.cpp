@@ -212,13 +212,11 @@ void engine::script::ScriptObject::InitializeScriptPointer()
 	// context at the same time) is a very bad idea!
 	if (!thread::IsMainThread)
 	{
-		InterpretContext* Context = new InterpretContext();
-		Context->code = Interpreter->code;
-		Context->runtime = Interpreter->runtime;
-		this->ScriptData = Class.create(Context);
+		auto copy = Interpreter->createCopy();
+		this->ScriptData = Class.create(copy);
 		ClassRef<SceneObject*> ScriptDataRef = this->ScriptData;
 		ScriptDataRef.getValue() = this;
-		delete Context;
+		delete copy;
 	}
 	else
 	{
