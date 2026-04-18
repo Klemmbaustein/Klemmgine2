@@ -32,7 +32,9 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 	ScriptEngine = RegisterEngineModules(this->ScriptLanguage);
 
 	ScriptInstructions = new BytecodeStream();
-	Runtime = this->ScriptLanguage->createRuntime();
+	Runtime = this->ScriptLanguage->createRuntime({
+		.useJustInTimeCompiler = true,
+		});
 	Runtime->createBackgroundThread = [](std::function<void()> function) {
 		ThreadPool::Main()->AddJob(function);
 	};
@@ -75,11 +77,13 @@ void engine::script::ScriptSubsystem::Update()
 
 		if (it->Time <= 0)
 		{
-			completeTask(it->TaskObject, &this->Runtime->baseContext);
-			this->Runtime->baseContext.destruct(it->TaskObject);
+			completeTask(it->TaskObject, this->Runtime->baseContext);
+			this->Runtime->baseContext->destruct(it->TaskObject);
 			ToRemove.push_back(it);
 		}
 	}
+
+	//std::cout << "stk: " << Runtime->baseContext->stackPos << std::endl;
 
 	for (auto& i : ToRemove)
 	{
@@ -200,7 +204,7 @@ bool engine::script::ScriptSubsystem::Reload()
 		string Path = TypeInfo.name.substr(0, LastColon - 1);
 
 		ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() -> SceneObject* {
-			return new ScriptObject(TypeInfo, &this->Runtime->baseContext);
+			return new ScriptObject(TypeInfo, this->Runtime->baseContext);
 		}, Path);
 	}
 	return true;
@@ -227,7 +231,7 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(SceneObject* Object
 	ScriptObjectMappings.insert({ Object, Class });
 	Object->OnDestroyedEvent.Add(this, [this, Object, Class]() {
 		*(void**)Class->getBody() = nullptr;
-		Runtime->baseContext.destruct(Class);
+		Runtime->baseContext->destruct(Class);
 		ScriptObjectMappings.erase(Object);
 	});
 }
@@ -242,7 +246,7 @@ void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
 	{
 		this->UIContext.CreateSpecialMarkupBox[i.second] =
 			[this, cls = i.first](kui::markup::DynamicMarkupContext* c) -> kui::markup::UIDynMarkupBox* {
-			auto Class = Runtime->reflect->types[cls].create(&Runtime->baseContext);
+			auto Class = Runtime->reflect->types[cls].create(Runtime->baseContext);
 
 			ClassRef<ui::ScriptUIElement*> Element = Class;
 

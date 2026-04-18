@@ -573,7 +573,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineUIModule.name = "engine::ui";
 
 	MathBindings Math = AddMathModule(EngineModule, ToContext);
-	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
+	//SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
 	ui::UIBindings UI = ui::AddUIModule(EngineUIModule, EngineModule, ToContext);
 	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
 

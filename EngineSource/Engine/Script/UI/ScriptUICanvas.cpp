@@ -19,7 +19,7 @@ engine::script::ui::ScriptUICanvas::ScriptUICanvas(ds::RuntimeClass* ScriptObjec
 
 engine::script::ui::ScriptUICanvas::~ScriptUICanvas()
 {
-	ScriptSubsystem::Instance->Runtime->baseContext.destruct(ScriptObject);
+	ScriptSubsystem::Instance->Runtime->baseContext->destruct(ScriptObject);
 	delete MarkupBox;
 }
 
@@ -27,7 +27,7 @@ void engine::script::ui::ScriptUICanvas::Update()
 {
 	if (Engine::IsPlaying && ScriptObject && ScriptObject->vtable && ScriptObject->vtable[1])
 	{
-		ScriptSubsystem::Instance->Runtime->baseContext.pushValue(this->ScriptObject);
-		ScriptSubsystem::Instance->Runtime->baseContext.virtualCall(ScriptObject->vtable[1]);
+		ScriptSubsystem::Instance->Runtime->baseContext->pushValue(this->ScriptObject);
+		ScriptSubsystem::Instance->Runtime->baseContext->virtualCall(ScriptObject->vtable[1]);
 	}
 }
