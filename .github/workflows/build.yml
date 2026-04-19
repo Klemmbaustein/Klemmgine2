@@ -63,16 +63,6 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Load cache
-      uses: actions/cache@v5
-      with:
-        path: ${{ steps.strings.outputs.build-output-dir }}/**
-        key: klemmgine-binaries-${{ matrix.os }}-${{ matrix.config }}
-
-    - name: List directories
-      shell: bash
-      run: ls -R build/
-
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
