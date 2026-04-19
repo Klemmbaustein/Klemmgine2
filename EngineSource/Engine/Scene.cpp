@@ -176,12 +176,12 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 	}
 	else
 	{
-		for (SceneObject* i : Objects)
+		for (size_t i = 0; i < Objects.size(); i++)
 		{
-			i->OnDestroyed();
-			i->OnDestroyedEvent.Invoke();
-			i->BeginCalled = false;
-			i->ClearComponents();
+			Objects[i]->OnDestroyed();
+			Objects[i]->OnDestroyedEvent.Invoke();
+			Objects[i]->BeginCalled = false;
+			Objects[i]->ClearComponents();
 		}
 
 		// Begin() might create new objects in some cases, which would invalidate the iterator
