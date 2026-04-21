@@ -103,7 +103,7 @@ bool BufferStream::IsWriteOnly() const
 
 bool BufferStream::IsEmpty() const
 {
-	return this->Buffer.size() >= StreamPosition;
+	return this->Buffer.size() <= StreamPosition;
 }
 
 bool BufferStream::Read(uByte* To, size_t Size)

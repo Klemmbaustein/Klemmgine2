@@ -445,3 +445,5 @@ namespace engine
 	};
 
 }
+
+bool operator==(const engine::SerializedData::DataValue& a, const engine::SerializedData::DataValue& b);

@@ -319,3 +319,39 @@ engine::SerializeReadException::SerializeReadException(string Msg)
 	: SerializeException(str::Format("File read error: %s", Msg.c_str()))
 {
 }
+
+bool operator==(const engine::SerializedData::DataValue& a, const engine::SerializedData::DataValue& b)
+{
+	using DataType = engine::SerializedData::DataType;
+
+	if (a.GetType() != b.GetType())
+	{
+		return false;
+	}
+
+	return true;
+
+	//switch (Type)
+	//{
+	//case DataType::Null:
+	//	return true;
+	//case DataType::Int32:
+	//	return this->Int == other.Int;
+	//case DataType::Float:
+	//	return this->Float == other.Float;
+	//case DataType::Byte:
+	//	return this->Byte == other.Byte;
+	//case DataType::Boolean:
+	//	return this->Byte == other.Byte;
+	//case DataType::Vector3:
+	//	return this->Vec == other.Vec;
+	//case DataType::Vector2:
+	//	return this->Vec2.X == other.Vec2.X && this->Vec2.Y == other.Vec2.Y;
+	//case DataType::Array:
+	//	return *this->Array == *other.Array;
+	//case DataType::Object:
+	//	return *this->Object == *other.Object;
+	//default:
+	//	return false;
+	//}
+}
