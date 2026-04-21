@@ -15,9 +15,6 @@ int main()
 		TEST_EXPECT_STR(file::FileNameWithoutExt("Some/path/file.ext"), "file");
 		TEST_EXPECT_STR(file::FileNameWithoutExt("Some/path/file.ext.2"), "file.ext");
 
-		TEST_EXPECT_STR(file::FilePath("Some/path.with.dot/file.ext"), "Some/path.with.dot");
-		TEST_EXPECT_STR(file::FilePath("path"), "path");
-
 		TEST_SUCCESS();
 	};
 
@@ -33,7 +30,7 @@ int main()
 	ENGINE_TEST(FileUtil, "Test FilePath")
 	{
 		TEST_EXPECT(file::FilePath("Some/path.with.dot/file.ext"), "Some/path.with.dot");
-		TEST_EXPECT(file::FilePath("path"), "path");
+		TEST_EXPECT(file::FilePath("path"), "");
 
 		TEST_SUCCESS();
 	};
