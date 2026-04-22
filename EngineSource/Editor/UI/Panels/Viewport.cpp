@@ -58,11 +58,9 @@ engine::editor::Viewport::Viewport()
 	ViewportStatusText
 		->SetPadding(UISize::Pixels(4));
 
-	LoadingScreenBox = new UIBackground(true, 0, EditorUI::Theme.Background);
+	LoadingScreenBox = new UIBox(true);
 
 	LoadingScreenBox
-		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
-		->SetCorner(5_px)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
 			->SetBackgroundColor(EditorUI::Theme.LightBackground)
@@ -317,7 +315,9 @@ void engine::editor::Viewport::Update()
 		RedrawStats = false;
 	}
 
+
 	Scene* Current = Scene::GetMain();
+	ViewportBackground->SetOpacity(Current == nullptr ? 0.0f : 1.0f);
 
 	bool HasFocus = EditorUI::FocusedPanel == this;
 	UpdateSelection();
@@ -430,11 +430,9 @@ void engine::editor::Viewport::OnThemeChanged()
 {
 	ViewportStatusText->SetColor(EditorUI::Theme.Text);
 	delete LoadingScreenBox;
-	LoadingScreenBox = new UIBackground(true, 0, EditorUI::Theme.Background);
+	LoadingScreenBox = new UIBox(true);
 
 	LoadingScreenBox
-		->SetBorder(1_px, EditorUI::Theme.BackgroundHighlight)
-		->SetCorner(5_px)
 		->SetVerticalAlign(UIBox::Align::Centered)
 		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
 			->SetBackgroundColor(EditorUI::Theme.LightBackground)
