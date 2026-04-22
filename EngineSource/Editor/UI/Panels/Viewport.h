@@ -92,6 +92,6 @@ namespace engine::editor
 
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;
-		kui::UIBackground* LoadingScreenBox = nullptr;
+		kui::UIBox* LoadingScreenBox = nullptr;
 	};
 }
