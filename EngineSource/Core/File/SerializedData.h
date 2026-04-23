@@ -341,6 +341,8 @@ namespace engine
 			* This only works of the data value is an array.
 			*/
 			void Append(const DataValue& New);
+
+			bool operator==(const DataValue& b) const;
 		};
 
 		/**
@@ -445,5 +447,3 @@ namespace engine
 	};
 
 }
-
-bool operator==(const engine::SerializedData::DataValue& a, const engine::SerializedData::DataValue& b);
