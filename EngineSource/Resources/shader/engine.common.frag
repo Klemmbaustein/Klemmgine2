@@ -78,7 +78,7 @@ float SampleFromShadowMap(vec2 distances)
 	return 1 - clamp(ShadowVal / ((PCF_SIZE - 1) * (PCF_SIZE - 1)), 0.0, 1.0);
 }
 
-float lightStrength(vec3 at, float range, float falloff, float intensity)
+vec2 lightStrength(vec3 at, float range, float falloff, float intensity, vec3 viewDir)
 {
 #define Kc 1.0
 #define Kl (falloff / 2.0)
@@ -92,7 +92,15 @@ float lightStrength(vec3 at, float range, float falloff, float intensity)
 
 	float cutoutMultiplier = clamp((range - d), 0, 1);
 
-	return 1.0 / (Kc + Kl * d + Kq * d * d) * intensity * cutoutMultiplier * max(dot(dir, -v_normal), 0.0);
+	float multiplier = intensity * cutoutMultiplier * max(dot(dir, -v_normal), 0.0);
+
+	vec3 reflectDir = reflect(-dir, v_normal);
+	float reflectDiff = dot(viewDir, -reflectDir);
+	float spec_dir = pow(max(reflectDiff, 0.0), 32.0);
+	float spec_power = spec_dir * intensity;
+
+	return vec2(1.0 / (Kc + Kl * d + Kq * d * d) * multiplier,
+		spec_power * multiplier);
 }
 
 float getShadowStrength()
@@ -221,8 +229,10 @@ vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize
 			continue;
 		}
 
-		lightValue += vec3(lightStrength(u_lights[i].position, u_lights[i].rangeFalloffIntensity.x,
-			u_lights[i].rangeFalloffIntensity.y, u_lights[i].rangeFalloffIntensity.z)) * u_lights[i].color;
+		vec2 result = lightStrength(u_lights[i].position, u_lights[i].rangeFalloffIntensity.x,
+			u_lights[i].rangeFalloffIntensity.y, u_lights[i].rangeFalloffIntensity.z, viewDir);
+
+		lightValue += vec3(result.x + result.y) * u_lights[i].color;
 	}
 
 	return applyFog((color * u_sunColor * u_sunIntensity + spec_color) * shadows + ambient + lightValue * color);
