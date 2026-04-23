@@ -125,7 +125,7 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 	while (!UnwindStream.IsEmpty())
 	{
 		auto& NewSection = ToStream->unwind.sections.emplace_back();
-		NewSection.offset = UnwindStream.Get<BytecodeOffset>();
+		NewSection.offset = UnwindStream.Get<Pointer>();
 		size_t NumParts = UnwindStream.Get<size_t>();
 
 		for (size_t i = 0; i < NumParts; i++)
