@@ -14,7 +14,7 @@ engine::sound::WavSoundFileSource::~WavSoundFileSource()
 {
 }
 
-SoundData* engine::sound::WavSoundFileSource::ParseSoundFile(ReadOnlyBufferStream* Stream)
+SoundData* engine::sound::WavSoundFileSource::ParseSoundFile(IBinaryStream* Stream)
 {
 	if (!CheckByteString(Stream, "RIFF"))
 	{
@@ -27,7 +27,6 @@ SoundData* engine::sound::WavSoundFileSource::ParseSoundFile(ReadOnlyBufferStrea
 	{
 		return nullptr;
 	}
-
 
 	auto Result = new WavSoundData();
 	int32 BytePerSecond = 0;
@@ -105,7 +104,7 @@ SoundData* engine::sound::WavSoundFileSource::ParseSoundFile(ReadOnlyBufferStrea
 
 	while (!Stream->IsEmpty())
 	{
-		if (!ReadChunk())
+		if (!ReadChunk() && !Stream->IsEmpty())
 		{
 			return nullptr;
 		}
@@ -116,7 +115,7 @@ SoundData* engine::sound::WavSoundFileSource::ParseSoundFile(ReadOnlyBufferStrea
 	return Result;
 }
 
-bool engine::sound::WavSoundFileSource::CheckByteString(ReadOnlyBufferStream* Stream, const char* String)
+bool engine::sound::WavSoundFileSource::CheckByteString(IBinaryStream* Stream, const char* String)
 {
 	char Buffer[4]{};
 

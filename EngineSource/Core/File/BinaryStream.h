@@ -39,9 +39,31 @@ namespace engine
 			return Out;
 		}
 
+
 		void WriteByte(uByte Byte)
 		{
 			Write(&Byte, sizeof(Byte));
+		}
+
+		bool ReadAll(string& ToString)
+		{
+			size_t PredictedSize = GetSize();
+			if (PredictedSize != 0)
+			{
+				ToString.resize(PredictedSize);
+				return Read((uByte*)ToString.data(), PredictedSize);
+			}
+
+			bool Success = false;
+
+			uByte next = 0;
+
+			while (Read(&next, 1))
+			{
+				ToString.push_back(char(next));
+				Success = true;
+			}
+			return Success;
 		}
 
 		template<typename T>

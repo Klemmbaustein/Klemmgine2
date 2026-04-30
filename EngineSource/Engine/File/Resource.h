@@ -24,7 +24,7 @@ namespace engine::resource
 	bool FileExists(string EnginePath);
 
 	[[nodiscard]]
-	ReadOnlyBufferStream* GetBinaryFile(string EnginePath);
+	IBinaryStream* GetBinaryFile(string EnginePath);
 
 	extern std::map<string, string> LoadedAssets;
 

@@ -138,7 +138,7 @@ namespace engine
 		struct SceneAsset
 		{
 			AssetRef FileReference;
-			const void* LoadedData = nullptr;
+			void* LoadedData = nullptr;
 		};
 
 		void DeSerializeInternal(SerializedValue* From, bool Async);

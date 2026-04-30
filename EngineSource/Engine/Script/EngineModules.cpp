@@ -887,6 +887,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineInputModule.addEnumValue(KeyType, "shift", Key::SHIFT);
 	EngineInputModule.addEnumValue(KeyType, "ctrl", Key::CTRL);
 	EngineInputModule.addEnumValue(KeyType, "enter", Key::RETURN);
+	EngineInputModule.addEnumValue(KeyType, "backspace", Key::BACKSPACE);
+	EngineInputModule.addEnumValue(KeyType, "escape", Key::ESCAPE);
+
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
 		BoolInst, "isKeyDown", &Input_IsKeyDown));
 

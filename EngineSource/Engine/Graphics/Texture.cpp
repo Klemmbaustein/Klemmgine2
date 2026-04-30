@@ -49,10 +49,14 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureOptions Load
 		TextureLoadMutex.unlock();
 	}
 
-	ReadOnlyBufferStream* Bytes = GetBinaryFile(From.FilePath);
+	IBinaryStream* Bytes = GetBinaryFile(From.FilePath);
 	if (!Bytes)
 		return nullptr;
-	const Texture* Result = LoadCompressedBuffer(Bytes->GetData(), Bytes->GetSize(), LoadInfo);
+
+	string str;
+	Bytes->ReadAll(str);
+
+	const Texture* Result = LoadCompressedBuffer((stbi_uc*)str.data(), Bytes->GetSize(), LoadInfo);
 	delete Bytes;
 
 	return Result;
@@ -101,7 +105,7 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 	LoadInfo.Name = Name;
 
 	int w, h, ch;
-	ReadOnlyBufferStream* Bytes = GetBinaryFile(From.FilePath);
+	IBinaryStream* Bytes = GetBinaryFile(From.FilePath);
 
 	if (!Bytes)
 	{
@@ -109,7 +113,11 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 	}
 
 	stbi_set_flip_vertically_on_load(true);
-	auto Pixels = stbi_load_from_memory(Bytes->GetData(), int(Bytes->GetSize()), &w, &h, &ch, 4);
+
+	string str;
+	Bytes->ReadAll(str);
+
+	auto Pixels = stbi_load_from_memory((stbi_uc*)str.data(), int(Bytes->GetSize()), &w, &h, &ch, 4);
 	const Texture* New = &(*LoadedTextures.insert({ Name, Texture{
 		.Options = LoadInfo,
 		.Pixels = Pixels,

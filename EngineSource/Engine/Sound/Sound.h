@@ -18,6 +18,9 @@ namespace engine::sound
 		~SoundDevice();
 
 		SoundDevice_Private* DeviceData = nullptr;
+		std::map<string, SoundBuffer*> Buffers;
+	private:
+		void LoadExtensions();
 	};
 
 	class SoundContext
@@ -45,12 +48,13 @@ namespace engine::sound
 		void AddFileSource(SoundFileSource* Source);
 
 		subsystem::Subsystem* System = nullptr;
-		SoundContext_Private* SoundData = nullptr ;
+		SoundContext_Private* SoundData = nullptr;
 
 	private:
+		SoundDevice* Device = nullptr;
+
 
 		void MakeCurrent() const;
-		std::map<string, SoundBuffer*> Buffers;
 
 		std::vector<SoundFileSource*> Sources;
 	};
