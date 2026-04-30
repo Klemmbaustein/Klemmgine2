@@ -27,7 +27,7 @@ namespace engine::sound
 	class SoundFileSource
 	{
 	public:
-		virtual SoundData* ParseSoundFile(ReadOnlyBufferStream* Stream) = 0;
+		virtual SoundData* ParseSoundFile(IBinaryStream* Stream) = 0;
 
 		virtual ~SoundFileSource() = default;
 	};

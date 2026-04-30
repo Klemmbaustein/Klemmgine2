@@ -37,7 +37,8 @@ string engine::resource::GetTextFile(string EnginePath)
 		return "";
 	}
 
-	string FileContent = string((char*)f->GetData(), f->GetSize());
+	string FileContent;
+	f->ReadAll(FileContent);
 
 	delete f;
 
@@ -87,7 +88,7 @@ bool engine::resource::FileExists(string EnginePath)
 	return kui::resource::FileExists(EnginePath) || std::filesystem::exists(Converted);
 }
 
-ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
+IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 {
 	string FoundPrefix;
 
@@ -120,18 +121,7 @@ ReadOnlyBufferStream* engine::resource::GetBinaryFile(string EnginePath)
 
 		if (std::filesystem::exists(FilePath) && !std::filesystem::is_directory(FilePath))
 		{
-			std::ifstream File = std::ifstream(FilePath, std::ios::binary);
-
-			File.seekg(0, std::ios::end);
-			size_t Size = File.tellg();
-			File.seekg(0, std::ios::beg);
-
-			uint8_t* Buffer = new uint8_t[Size]();
-
-			File.read((char*)Buffer, Size);
-			File.close();
-
-			return new ReadOnlyBufferStream((const uByte*)Buffer, Size, true);
+			return new FileStream(FilePath, true);
 		}
 	}
 

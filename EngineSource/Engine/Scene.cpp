@@ -40,6 +40,13 @@ static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
 
 engine::Scene::Scene(bool DoLoadAsync)
 {
+	auto System = Engine::GetSubsystem<sound::SoundSubsystem>();
+
+	if (System)
+	{
+		Sound = new sound::SoundContext(System->MainDevice);
+	}
+
 	if (!DoLoadAsync)
 	{
 		Init();
@@ -48,6 +55,13 @@ engine::Scene::Scene(bool DoLoadAsync)
 
 engine::Scene::Scene(string FilePath)
 {
+	auto System = Engine::GetSubsystem<sound::SoundSubsystem>();
+
+	if (System)
+	{
+		Sound = new sound::SoundContext(System->MainDevice);
+	}
+
 	LoadInternal(FilePath, false);
 	Init();
 }
@@ -267,7 +281,7 @@ bool engine::Scene::ObjectDestroyed(SceneObject* Target) const
 
 void engine::Scene::PreLoadAsset(AssetRef Target)
 {
-	const void* TargetPtr = nullptr;
+	void* TargetPtr = nullptr;
 	if (Target.Extension == "kmdl")
 	{
 		auto Model = GraphicsModel::RegisterModel(Target);
@@ -283,8 +297,12 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 	}
 	if (Target.Extension == "png" && graphics::TextureLoader::Instance)
 	{
-		TargetPtr = graphics::TextureLoader::Instance->PreLoadBuffer(Target,
-			graphics::TextureOptions{});
+		TargetPtr = const_cast<Texture*>(graphics::TextureLoader::Instance->PreLoadBuffer(Target,
+			graphics::TextureOptions{}));
+	}
+	if (Target.Extension == "wav" && this->Sound)
+	{
+		TargetPtr = Sound->LoadSoundEffect(Target.FilePath);
 	}
 	ReferencedAssets.push_back({ Target, TargetPtr });
 }
@@ -300,6 +318,10 @@ void engine::Scene::UnloadAsset(const SceneAsset& Target)
 	if (Target.FileReference.Extension == "png")
 	{
 		TextureLoader::Instance->FreeTexture(reinterpret_cast<const Texture*>(Target.LoadedData));
+	}
+	if (Target.FileReference.Extension == "wav")
+	{
+		Sound->FreeSoundEffect(reinterpret_cast<sound::SoundBuffer*>(Target.LoadedData));
 	}
 }
 
@@ -455,12 +477,6 @@ void engine::Scene::LoadInternal(string File, bool Async)
 void engine::Scene::Init()
 {
 	Graphics.Init();
-	auto System = Engine::GetSubsystem<sound::SoundSubsystem>();
-
-	if (System)
-	{
-		Sound = new sound::SoundContext(System->MainDevice);
-	}
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
 	plugin::OnNewSceneLoaded(this);
 }

@@ -32,7 +32,10 @@ void engine::SoundComponent::Load(AssetRef Sound)
 	}
 
 	Buffer = Context->LoadSoundEffect(Sound.FilePath);
-	Source = Context->CreateSoundSource(Buffer);
+	if (Buffer)
+	{
+		Source = Context->CreateSoundSource(Buffer);
+	}
 }
 
 void engine::SoundComponent::Play(bool Loop)

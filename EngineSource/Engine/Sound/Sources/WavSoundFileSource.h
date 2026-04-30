@@ -16,9 +16,9 @@ namespace engine::sound
 		~WavSoundFileSource();
 
 		// Inherited via SoundFileSource
-		SoundData* ParseSoundFile(ReadOnlyBufferStream* Stream) override;
+		SoundData* ParseSoundFile(IBinaryStream* Stream) override;
 
 	private:
-		static bool CheckByteString(ReadOnlyBufferStream* Stream, const char* String);
+		static bool CheckByteString(IBinaryStream* Stream, const char* String);
 	};
 }
