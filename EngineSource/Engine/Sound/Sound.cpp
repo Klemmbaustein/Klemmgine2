@@ -157,13 +157,13 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 	//Device->DeviceData->alGenAuxiliaryEffectSlots(1, &this->SoundData->Effects);
 	//Device->DeviceData->alAuxiliaryEffectSloti(this->SoundData->Effects, AL_EFFECTSLOT_EFFECT, Effect);
 
-	auto Error = alGetError();
+	//auto Error = alGetError();
 
-	if (Error != AL_NO_ERROR)
-	{
-		auto str = alGetString(Error);
-		Log::Info(str);
-	}
+	//if (Error != AL_NO_ERROR)
+	//{
+	//	auto str = alGetString(Error);
+	//	Log::Info(str);
+	//}
 }
 
 engine::sound::SoundContext::~SoundContext()
