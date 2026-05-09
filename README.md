@@ -26,6 +26,7 @@ and Linux.
 
 #### (WIP)
 
+- Audio using OpenAL.
 - (Very WIP) Plugin support.
 - A built in command line to interact with the engine directly. (Currently limited, not many commands)
 - (Soon, for now not included by default in builds) A "Visual Studio live share" like feature
@@ -40,9 +41,9 @@ and Linux.
   (see EngineSource/Core/File/JsonSerializer.h)
 
 ### TODO/Missing features:
-- No audio yet!!!
+
 - Missing some graphical effects from Klemmgine 1,
-  such as baked lighting, particles and more types of light sources.
+  such as baked lighting and particles.
 - Fix "Editor Server" live collaboration feature.
 - No multi player features yet, unlike Klemmgine 1.
 - Better general and scripting documentation.
