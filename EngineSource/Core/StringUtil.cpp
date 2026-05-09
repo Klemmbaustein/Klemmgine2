@@ -58,18 +58,6 @@ engine::string engine::str::Trim(string Input)
 	return Input;
 }
 
-int32_t engine::str::Hash(const string& Target)
-{
-	unsigned int hash = 1315423911;
-
-	for (size_t i = 0; i < Target.size(); i++)
-	{
-		hash ^= ((hash << 5) + Target[i] + (hash >> 2));
-	}
-
-	return (hash & 0x7FFFFFFF);
-}
-
 engine::string engine::str::Format(string Format, ...)
 {
 	size_t Size = Format.size() + 50, NewSize = Size;

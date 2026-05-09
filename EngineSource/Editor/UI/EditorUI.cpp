@@ -5,7 +5,6 @@
 #include "Panels/AssetBrowser.h"
 #include "Panels/ClassBrowser.h"
 #include "Panels/ConsolePanel.h"
-#include "Panels/MessagePanel.h"
 #include "Panels/ObjectListPanel.h"
 #include "Panels/PropertyPanel.h"
 #include "Panels/ScenePanel.h"
@@ -28,6 +27,7 @@
 #include <filesystem>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
+#include <Editor/Launcher/EditorLauncher.h>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -265,7 +265,10 @@ engine::editor::EditorUI::EditorUI()
 	AddMenuBarItem("File",
 		{
 			DropdownMenu::Option("New", "", Asset("Plus.png")),
-			DropdownMenu::Option("Open Project"),
+			DropdownMenu::Option("Open Project", "", "", [this] {
+				Engine::Instance->ShouldQuit = true;
+				launcher::EditorLauncher::ReOpenLauncher = true;
+			}),
 			DropdownMenu::Option("Build Project", "", Asset("Build.png"), []() {
 				new BuildWindow();
 			}),
@@ -279,13 +282,13 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("Undo", "Ctrl+Z", Asset("Undo.png"), []() {
 				Viewport::Current->UndoLast();
 			}),
-			//DropdownMenu::Option("Redo", "Ctrl+Y", Asset("Redo.png")),
-			DropdownMenu::Option("Settings", "", Asset("Settings.png"), []() {
-				new SettingsWindow();
-			}),
-			DropdownMenu::Option("Project settings", "", "", []() {
-				new ProjectSettingsWindow();
-			}),
+				//DropdownMenu::Option("Redo", "Ctrl+Y", Asset("Redo.png")),
+				DropdownMenu::Option("Settings", "", Asset("Settings.png"), []() {
+					new SettingsWindow();
+				}),
+				DropdownMenu::Option("Project settings", "", "", []() {
+					new ProjectSettingsWindow();
+				}),
 		});
 
 	AddMenuBarItem("Scene",
@@ -356,6 +359,11 @@ engine::editor::EditorUI::~EditorUI()
 	VideoSystem->OnResized();
 	Engine::GameHasFocus = true;
 	input::ShowMouseCursor = false;
+
+	Instance = nullptr;
+
+	delete MonospaceFont;
+	MonospaceFont = nullptr;
 }
 
 #define PANEL_ENTRY(name, type) Panels.RegisterPanel(name, # type, []() {return new type();}, true)

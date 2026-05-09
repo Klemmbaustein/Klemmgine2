@@ -38,11 +38,12 @@ void engine::SoundComponent::Load(AssetRef Sound)
 	}
 }
 
-void engine::SoundComponent::Play(bool Loop)
+void engine::SoundComponent::Play(bool Loop, bool Is3D)
 {
 	if (Context && Source)
 	{
-		Context->PlaySource(Source, Loop);
+		Update();
+		Context->PlaySource(Source, Loop, Is3D);
 	}
 }
 

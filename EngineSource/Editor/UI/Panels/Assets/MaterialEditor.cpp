@@ -5,6 +5,7 @@
 #include <Editor/UI/Elements/Toolbar.h>
 #include <MaterialEditor.kui.hpp>
 #include <Engine/Objects/MeshObject.h>
+#include <Engine/File/Resource.h>
 #include <Core/File/FileUtil.h>
 #include <stdexcept>
 #include <kui/Window.h>
@@ -289,6 +290,7 @@ void engine::editor::MaterialEditor::Save()
 	Buffer.WriteStringNoNull(FileString.str());
 	Buffer.ResetStreamPosition();
 	EditorUI::Instance->AssetsProvider->SaveToFile(EditedAsset.FilePath, &Buffer, Buffer.GetSize());
+	resource::AssetListeners[EditedAsset.FilePath].Invoke();
 
 }
 void engine::editor::MaterialEditor::OnResized()

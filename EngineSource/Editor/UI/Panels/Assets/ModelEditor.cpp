@@ -120,7 +120,7 @@ void engine::editor::ModelEditor::OnModelLoaded()
 			SceneBackground->AddChild((new UIBox(true, 0))
 				->SetVerticalAlign(UIBox::Align::Centered)
 				->AddChild((new UIBackground(true, 0, 1, 24_px))
-					->SetUseTexture(true, "Engine/Editor/Assets/Error.png")
+					->SetUseTexture(true, EditorUI::Asset("Error.png"))
 					->SetPadding(10_px))
 				->AddChild(new UIText(11_px, 1, "Model failed to load.\nCheck the log for details", EditorUI::EditorFont)));
 		}

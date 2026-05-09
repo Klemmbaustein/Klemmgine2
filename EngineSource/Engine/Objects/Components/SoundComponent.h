@@ -12,7 +12,7 @@ namespace engine
 		~SoundComponent();
 
 		void Load(AssetRef Sound);
-		void Play(bool Loop);
+		void Play(bool Loop, bool Is3D);
 		void Stop();
 
 		void Update() override;

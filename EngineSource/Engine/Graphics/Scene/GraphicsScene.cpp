@@ -347,7 +347,7 @@ void engine::graphics::GraphicsScene::BuildBoundingVolume()
 				}
 			}
 		}
-		
+
 		for (auto& i : OldRemovedDrawables)
 		{
 			RemovedDrawableIds.erase(i);
@@ -355,4 +355,69 @@ void engine::graphics::GraphicsScene::BuildBoundingVolume()
 		DrawableHierarchy = NewHierarchy;
 		RebuildingHierarchy = false;
 	});
+}
+
+SerializedValue engine::graphics::GraphicsScene::Serialize()
+{
+	return std::vector{
+		SerializedData("sunColor", SceneEnvironment.SunColor),
+		SerializedData("sunRotation", SceneEnvironment.SunRotation.EulerVector()),
+		SerializedData("skyColor", SceneEnvironment.SkyColor),
+		SerializedData("groundColor", SceneEnvironment.GroundColor),
+		SerializedData("sunIntensity", SceneEnvironment.SunIntensity),
+		SerializedData("ambientIntensity", SceneEnvironment.AmbientIntensity),
+		SerializedData("fogColor", SceneEnvironment.FogColor),
+		SerializedData("fogRange", SceneEnvironment.FogRange),
+		SerializedData("fogStart", SceneEnvironment.FogStart),
+	};
+}
+
+void engine::graphics::GraphicsScene::DeSerialize(SerializedValue* From)
+{
+	if (!From->Contains("env"))
+	{
+		return;
+	}
+
+	auto& SceneInfo = From->At("env");
+	if (SceneInfo.Contains("sunColor"))
+	{
+		SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
+	}
+	if (SceneInfo.Contains("sunRotation"))
+	{
+		SceneEnvironment.SunRotation = SceneInfo.At("sunRotation").GetVector3();
+	}
+
+	if (SceneInfo.Contains("skyColor"))
+	{
+		SceneEnvironment.SkyColor = SceneInfo.At("skyColor").GetVector3();
+	}
+
+	if (SceneInfo.Contains("groundColor"))
+	{
+		SceneEnvironment.GroundColor = SceneInfo.At("groundColor").GetVector3();
+	}
+
+	if (SceneInfo.Contains("sunIntensity"))
+	{
+		SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
+	}
+	if (SceneInfo.Contains("ambientIntensity"))
+	{
+		SceneEnvironment.AmbientIntensity = SceneInfo.At("ambientIntensity").GetFloat();
+	}
+	if (SceneInfo.Contains("fogColor"))
+	{
+		SceneEnvironment.FogColor = SceneInfo.At("fogColor").GetVector3();
+	}
+	if (SceneInfo.Contains("fogRange"))
+	{
+		SceneEnvironment.FogRange = SceneInfo.At("fogRange").GetFloat();
+	}
+	if (SceneInfo.Contains("fogStart"))
+	{
+		SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
+	}
+
 }

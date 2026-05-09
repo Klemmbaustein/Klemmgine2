@@ -13,7 +13,6 @@ namespace engine::graphics
 		ShaderObject(string VertexFile, string FragmentFile, string GeometryFile = "");
 		~ShaderObject();
 
-
 		void ReCompile(string VertexFile, string FragmentFile);
 		void Compile(string VertexFile, string FragmentFile, string GeometryFile = "");
 

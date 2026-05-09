@@ -187,6 +187,15 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 	Target->SetInt(Target->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 }
 
+void engine::graphics::CascadedShadows::UnloadShadows()
+{
+	if (ShadowShader)
+	{
+		ShadowShader = nullptr;
+		delete ShadowShader;
+	}
+}
+
 CascadedShadows::MatrixEntry CascadedShadows::GetLightSpaceMatrix(graphics::Camera* From, float NearPlane, float FarPlane)
 {
 	glm::mat4 CameraProjection = glm::perspective(From->FOV, From->Aspect, NearPlane, FarPlane);

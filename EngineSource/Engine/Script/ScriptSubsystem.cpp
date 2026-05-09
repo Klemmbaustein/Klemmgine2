@@ -1,21 +1,22 @@
 #include "ScriptSubsystem.h"
-#include "ScriptObject.h"
-#include "FileScriptProvider.h"
-#include <Engine/File/Resource.h>
-#include <Engine/Stats.h>
-#include <Engine/Subsystem/ConsoleSubsystem.h>
+#include <Core/Error/EngineAssert.h>
+#include <Core/File/FileUtil.h>
+#include <Core/LaunchArgs.h>
+#include <Core/ThreadPool.h>
 #include <ds/language.hpp>
 #include <ds/modules/standardLibrary.hpp>
-#include <Engine/Debug/TimeLogger.h>
-#include <Engine/Scene.h>
-#include <Core/File/FileUtil.h>
-#include <Core/ThreadPool.h>
 #include <ds/modules/system.async.hpp>
-#include <Engine/UI/UICanvas.h>
-#include <Engine/Script/UI/ScriptUIElement.h>
+#include <Engine/Debug/TimeLogger.h>
+#include <Engine/File/Resource.h>
+#include <Engine/Scene.h>
+#include <Engine/Script/FileScriptProvider.h>
+#include <Engine/Script/ScriptSceneObject.h>
+#include <Engine/Script/ScriptSceneManager.h>
 #include <Engine/Script/ScriptSerializer.h>
-#include <Core/LaunchArgs.h>
-#include <Core/Error/EngineAssert.h>
+#include <Engine/Script/UI/ScriptUIElement.h>
+#include <Engine/Stats.h>
+#include <Engine/Subsystem/ConsoleSubsystem.h>
+#include <Engine/UI/UICanvas.h>
 
 using namespace ds;
 using namespace ds::modules::system::async;
@@ -33,7 +34,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 	ScriptInstructions = new BytecodeStream();
 	Runtime = this->ScriptLanguage->createRuntime({
-		.useJustInTimeCompiler = true,
+		.useJustInTimeCompiler = !launchArgs::GetArg("noJIT").has_value(),
 		});
 	Runtime->createBackgroundThread = [](std::function<void()> function) {
 		ThreadPool::Main()->AddJob(function);
@@ -153,38 +154,15 @@ bool engine::script::ScriptSubsystem::Reload()
 	}
 #endif
 
-	if (CurrentScene)
-	{
-		UICanvas::ClearAll();
-		for (auto& i : CurrentScene->Objects)
-		{
-			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
-			if (ScriptObj)
-			{
-				ScriptObj->OnDestroyed();
-				ScriptObj->OnDestroyedEvent.Invoke();
-				ScriptObj->ClearComponents();
-			}
-		}
-	}
+	UICanvas::ClearAll();
+
+	BeginHotReloadEvent.Invoke();
 
 	*ScriptInstructions = NewInstructions;
 	this->Runtime->loadBytecode(ScriptInstructions);
 	ReloadDynamicUIContext();
 
-	if (CurrentScene)
-	{
-		for (auto& i : CurrentScene->Objects)
-		{
-			auto ScriptObj = dynamic_cast<ScriptObject*>(i);
-			if (ScriptObj)
-			{
-				ScriptObj->Class = ScriptInstructions->reflect.types[ScriptObj->Class.hash];
-				ScriptObj->LoadScriptData();
-				ScriptObj->Begin();
-			}
-		}
-	}
+	EndHotReloadEvent.Invoke();
 
 	for (auto& [ClassId, ObjectId] : ScriptObjectIds)
 	{
@@ -193,7 +171,10 @@ bool engine::script::ScriptSubsystem::Reload()
 
 	for (auto& [Id, TypeInfo] : ScriptInstructions->reflect.types)
 	{
-		if (!ScriptInstructions->reflect.isSubclassOf(Id, ScriptEngine.ScriptObjectType))
+		bool IsSceneObject = ScriptInstructions->reflect.isSubclassOf(Id, ScriptEngine.SceneObjectType);
+		bool IsSceneManager = ScriptInstructions->reflect.isSubclassOf(Id, ScriptEngine.SceneManagerType);
+
+		if (!IsSceneObject && !IsSceneManager)
 		{
 			continue;
 		}
@@ -203,14 +184,26 @@ bool engine::script::ScriptSubsystem::Reload()
 		string Name = TypeInfo.name.substr(LastColon + 1);
 		string Path = TypeInfo.name.substr(0, LastColon - 1);
 
-		ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() -> SceneObject* {
-			return new ScriptObject(TypeInfo, this->Runtime->baseContext);
-		}, Path);
+		if (IsSceneObject)
+		{
+			ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() {
+				return new ScriptSceneObject(TypeInfo, this->Runtime->baseContext);
+			}, str::Hash("Engine/SceneObject"), Path);
+		}
+		else
+		{
+			ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() {
+				auto NewManager = new ScriptSceneManager(TypeInfo, this->Runtime->baseContext);
+				NewManager->InitializeScriptPointer();
+
+				return NewManager;
+			}, str::Hash("Engine/Scene/SceneManager"), Path);
+		}
 	}
 	return true;
 }
 
-RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(SceneObject* Object)
+RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(ReflectionObject* Object)
 {
 	auto found = ScriptObjectMappings.find(Object);
 
@@ -220,13 +213,13 @@ RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(SceneObject* O
 		return found->second;
 	}
 
-	RuntimeClass* NewObj = NativeModule::makePointerClass<SceneObject>(Object);
+	RuntimeClass* NewObj = NativeModule::makePointerClass<ReflectionObject>(Object);
 	NewObj->addRef();
 	RegisterClassForObject(Object, NewObj);
 	return NewObj;
 }
 
-void engine::script::ScriptSubsystem::RegisterClassForObject(SceneObject* Object, ds::RuntimeClass* Class)
+void engine::script::ScriptSubsystem::RegisterClassForObject(ReflectionObject* Object, ds::RuntimeClass* Class)
 {
 	ScriptObjectMappings.insert({ Object, Class });
 	Object->OnDestroyedEvent.Add(this, [this, Object, Class]() {

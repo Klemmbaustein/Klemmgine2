@@ -20,6 +20,8 @@ using namespace engine;
 using namespace engine::editor;
 using namespace kui;
 
+bool engine::editor::launcher::EditorLauncher::ReOpenLauncher = false;
+
 engine::editor::launcher::EditorLauncher::EditorLauncher()
 {
 }
@@ -187,6 +189,7 @@ void engine::editor::launcher::EditorLauncher::ClearSelection()
 
 void engine::editor::launcher::EditorLauncher::Run()
 {
+	ReOpenLauncher = false;
 	InitWindow();
 	InitLayout();
 
@@ -206,10 +209,20 @@ void engine::editor::launcher::EditorLauncher::Run()
 	{
 	case engine::editor::launcher::LauncherResult::LaunchProject:
 	{
+		auto OldPath = std::filesystem::current_path();
 		std::filesystem::current_path(ProjectPathToLaunch);
 
 		auto Engine = Engine::Init();
 		Engine->Run();
+
+		if (ReOpenLauncher)
+		{
+			std::filesystem::current_path(OldPath);
+			Log::Clear();
+			this->Run();
+			return;
+		}
+
 		break;
 	}
 	case engine::editor::launcher::LauncherResult::ConnectToServer:

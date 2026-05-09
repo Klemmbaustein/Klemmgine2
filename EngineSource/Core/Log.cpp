@@ -71,6 +71,12 @@ size_t engine::Log::GetLogMessagesCount()
 	return LogMessages.size();
 }
 
+void engine::Log::Clear()
+{
+	std::lock_guard g{ LogMutex };
+	LogMessages.clear();
+}
+
 void engine::Log::PrintLine(string Message, LogColor Color, const std::vector<LogPrefix>& Prefixes)
 {
 	using namespace platform;

@@ -37,7 +37,7 @@ namespace engine::sound
 		void SetSourcePosition(SoundSource* Source, Vector3 NewPosition);
 
 		void SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity);
-		void PlaySource(SoundSource* Source, bool Loop);
+		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
 
 		void Update(graphics::Camera* FromCamera);

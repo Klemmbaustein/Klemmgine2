@@ -51,6 +51,7 @@ engine::graphics::ShaderObject::~ShaderObject()
 
 void engine::graphics::ShaderObject::ReCompile(string VertexFile, string FragmentFile)
 {
+	Uniforms.clear();
 	Compile(VertexFile, FragmentFile);
 }
 

@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include "AssetEditor.h"
 #include <Engine/File/AssetRef.h>
@@ -38,4 +37,3 @@ namespace engine::editor
 		bool FailedLoading = false;
 	};
 }
-#endif

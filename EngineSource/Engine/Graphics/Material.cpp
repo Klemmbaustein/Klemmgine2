@@ -1,5 +1,4 @@
 #include "Material.h"
-#include "Material.h"
 #include "ShaderLoader.h"
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
@@ -13,6 +12,15 @@ using namespace engine;
 using namespace engine::graphics;
 
 engine::graphics::Material::Material(AssetRef File)
+{
+	Load(File);
+
+	resource::AssetListeners[File.FilePath].Add(this, [this, File] {
+		Load(File);
+	});
+}
+
+void engine::graphics::Material::Load(AssetRef File)
 {
 	try
 	{
@@ -56,6 +64,7 @@ engine::graphics::Material::Material(AssetRef File)
 		Log::Warn(str::Format("Failed to load material file: '%s'", File.FilePath.c_str()));
 	}
 	SetToDefault();
+
 }
 
 Material* engine::graphics::Material::MakeDefault()
@@ -74,6 +83,7 @@ engine::graphics::Material::Material()
 engine::graphics::Material::~Material()
 {
 	Clear();
+	resource::RemoveListener(this);
 }
 
 void engine::graphics::Material::SetVec3(string Name, Vector3 Value)

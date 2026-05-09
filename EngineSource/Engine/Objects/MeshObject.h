@@ -9,7 +9,7 @@ namespace engine
 	{
 	public:
 
-		ENGINE_OBJECT(MeshObject, "Engine");
+		ENGINE_OBJECT(MeshObject, "Engine/SceneObject", "Engine");
 
 		ObjProperty<AssetRef> ModelName = ObjProperty<AssetRef>("Model", AssetRef::EmptyAsset("kmdl"), this);
 

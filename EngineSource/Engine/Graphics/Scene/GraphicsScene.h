@@ -13,7 +13,7 @@
 
 namespace engine::graphics
 {
-	class GraphicsScene
+	class GraphicsScene : ISerializable
 	{
 	public:
 
@@ -117,6 +117,11 @@ namespace engine::graphics
 		std::set<uint64> RemovedDrawableIds;
 		std::vector<DrawableData> NewDrawables;
 
+		// Inherited via ISerializable
+		SerializedValue Serialize() override;
+
+		void DeSerialize(SerializedValue* From) override;
+
 	private:
 
 		uint32 SceneTexture = 0;
@@ -138,6 +143,5 @@ namespace engine::graphics
 		void MainDrawPass();
 
 		void BuildBoundingVolume();
-
 	};
 }

@@ -2,6 +2,7 @@
 #include <Core/Types.h>
 #include <map>
 #include <Core/File/BinaryStream.h>
+#include <Core/Event.h>
 
 namespace engine::resource
 {
@@ -27,6 +28,9 @@ namespace engine::resource
 	IBinaryStream* GetBinaryFile(string EnginePath);
 
 	extern std::map<string, string> LoadedAssets;
+	extern std::map<string, Event<>> AssetListeners;
+
+	void RemoveListener(void* Target);
 
 	void LoadSceneFiles(string ScenePath);
 	void ScanForAssets();

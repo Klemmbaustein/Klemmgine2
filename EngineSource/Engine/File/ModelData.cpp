@@ -7,6 +7,7 @@
 #include <Engine/Scene.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
+#include <Core/Closeable.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -21,14 +22,13 @@ engine::ModelData::ModelData(string FilePath, bool LoadMaterials)
 
 	std::vector<SerializedData> File;
 
-	IBinaryStream* BinaryFile = resource::GetBinaryFile(FilePath);
+	ClosablePtr<IBinaryStream*> BinaryFile = { resource::GetBinaryFile(FilePath) };
 
 	if (!BinaryFile)
 		return;
 
 	BinarySerializer::FromStream(BinaryFile, File, FormatName);
 	DeSerialize(&File.at(0).Value);
-	delete BinaryFile;
 }
 
 engine::ModelData::ModelData()
@@ -426,10 +426,11 @@ static void AddPlane(Vector3 Dir, Vector3 Offset, Vector3 Up, Vector3 Right, Mod
 	m.Indices.push_back(InitialLength + 2);
 }
 
+static GraphicsModel* Cube = nullptr;
+static GraphicsModel* Plane = nullptr;
+
 engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 {
-	static GraphicsModel* Cube = nullptr;
-
 	if (!Cube)
 	{
 		Cube = new GraphicsModel();
@@ -457,8 +458,6 @@ engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 
 GraphicsModel* engine::GraphicsModel::UnitPlane()
 {
-	static GraphicsModel* Plane = nullptr;
-
 	if (!Plane)
 	{
 		Plane = new GraphicsModel();
@@ -475,4 +474,12 @@ GraphicsModel* engine::GraphicsModel::UnitPlane()
 	}
 
 	return Plane;
+}
+
+void engine::GraphicsModel::ClearAll()
+{
+	delete Cube;
+	Cube = nullptr;
+	delete Plane;
+	Plane = nullptr;
 }

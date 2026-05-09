@@ -1,16 +1,16 @@
 #pragma once
-#include <Engine/Objects/SceneObject.h>
 #include <ds/class.hpp>
 #include <ds/reflection.hpp>
+#include <ds/interpreter.hpp>
+#include <Engine/MainThread.h>
 
 namespace engine::script
 {
-	/// Object running script logic
-	class ScriptObject : public SceneObject
+	class ScriptObject
 	{
 	public:
-
 		ScriptObject(const ds::TypeInfo& Class, ds::InterpretContext* Interpreter);
+		virtual ~ScriptObject();
 
 		/// Type information on the class this object represents
 		ds::TypeInfo Class;
@@ -19,19 +19,37 @@ namespace engine::script
 		/// The current interpret context to run this object's methods on.
 		ds::InterpretContext* Interpreter = nullptr;
 
-		virtual void Begin();
-		virtual void OnDestroyed();
-		virtual void Update();
-
 		/**
 		 * @brief
 		 * Reload the Script object, creating a new instance of the type `this->Class`
 		 */
-		void LoadScriptData();
-	private:
+		virtual void LoadScriptData();
 		void UnloadScriptData();
-		void InitializePropertyFlags(ObjPropertyBase* p, const string& FlagsString);
+		virtual void InitializeScriptPointer() = 0;
+		virtual void BeginHotReload() = 0;
+		virtual void EndHotReload(ds::ReflectInfo* ClassData) = 0;
 
-		void InitializeScriptPointer();
+		template<typename T>
+		void InitializePointerWithValue(T Value)
+		{
+			// The constructor (and for that reason also this function) may be called from another thread
+			// when loading a scene asynchronously. In that case, create a new context because using the
+			// main context on another thread (especially when stuff on the main thread might be using that
+			// context at the same time) is a very bad idea!
+			if (!thread::IsMainThread)
+			{
+				auto copy = Interpreter->createCopy();
+				this->ScriptData = Class.create(copy);
+				ds::ClassRef<T> ScriptDataRef = this->ScriptData;
+				ScriptDataRef.getValue() = Value;
+				delete copy;
+			}
+			else
+			{
+				this->ScriptData = Class.create(Interpreter);
+				ds::ClassRef<T> ScriptDataRef = this->ScriptData;
+				ScriptDataRef.getValue() = Value;
+			}
+		}
 	};
 }

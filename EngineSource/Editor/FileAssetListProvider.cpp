@@ -1,6 +1,7 @@
 #include "FileAssetListProvider.h"
 #include <filesystem>
 #include <fstream>
+#include <Core/Log.h>
 
 using namespace engine;
 
@@ -31,7 +32,14 @@ std::vector<editor::AssetFile> editor::FileAssetListProvider::GetFiles(string Pa
 
 void engine::editor::FileAssetListProvider::DeleteFile(string Path)
 {
-	std::filesystem::remove_all(Path);
+	try
+	{
+		std::filesystem::remove_all(Path);
+	}
+	catch (std::filesystem::filesystem_error& e)
+	{
+		Log::Error(e.what());
+	}
 }
 
 void engine::editor::FileAssetListProvider::NewFile(string Path)

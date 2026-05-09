@@ -121,21 +121,15 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 	//ALuint Effect;
 	//Device->DeviceData->alGenEffects(1, &Effect);
 
-	//EFXEAXREVERBPROPERTIES* reverb = new EFXEAXREVERBPROPERTIES(EFX_REVERB_PRESET_DUSTYROOM);
-
-	//reverb->flDiffusion = 1;
-	//reverb->flAirAbsorptionGainHF = 1;
-	//reverb->flLateReverbGain = 1;
-	//reverb->flGainHF = 15;
-	//reverb->flReflectionsGain = 15;
+	//EFXEAXREVERBPROPERTIES* reverb = new EFXEAXREVERBPROPERTIES(EFX_REVERB_PRESET_GENERIC);
 
 	//Device->DeviceData->alEffecti(Effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DENSITY, reverb->flDensity);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DIFFUSION, reverb->flDiffusion);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAIN, reverb->flGain);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINHF, 0);
+	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINHF, reverb->flGainHF);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINLF, reverb->flGainLF);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_TIME, 15);
+	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_TIME, reverb->flDecayTime);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_HFRATIO, reverb->flDecayHFRatio);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_LFRATIO, reverb->flDecayLFRatio);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_GAIN, reverb->flReflectionsGain);
@@ -149,7 +143,7 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_TIME, reverb->flModulationTime);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_DEPTH, reverb->flModulationDepth);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, reverb->flAirAbsorptionGainHF);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_HFREFERENCE, 200);
+	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_HFREFERENCE, reverb->flHFReference);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LFREFERENCE, reverb->flLFReference);
 	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, reverb->flRoomRolloffFactor);
 	//Device->DeviceData->alEffecti(Effect, AL_EAXREVERB_DECAY_HFLIMIT, reverb->iDecayHFLimit);
@@ -226,11 +220,8 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 
 	MakeCurrent();
 	alGenSources(1, &Source);
-
-	alSourcei(Source, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE);
-	alSourcei(Source, AL_BUFFER, With->ALBuffer);
-	alSourcei(Source, AL_ROLLOFF_FACTOR, 2.0f);
 	//alSource3i(Source, AL_AUXILIARY_SEND_FILTER, (ALint)this->SoundData->Effects, 0, AL_FILTER_NULL);
+	alSourcei(Source, AL_BUFFER, With->ALBuffer);
 
 	auto err = alGetError();
 
@@ -256,11 +247,17 @@ void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3
 	alSource3f(Source->ALSource, AL_VELOCITY, NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
 }
 
-void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop)
+void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, bool Is3D)
 {
 	MakeCurrent();
 	alSourcei(Source->ALSource, AL_LOOPING, Loop);
 	alSourcePlay(Source->ALSource);
+
+	if (Is3D)
+	{
+		alSourcei(Source->ALSource, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE);
+		alSourcei(Source->ALSource, AL_ROLLOFF_FACTOR, 2.0f);
+	}
 }
 
 void engine::sound::SoundContext::StopSource(SoundSource* Source)

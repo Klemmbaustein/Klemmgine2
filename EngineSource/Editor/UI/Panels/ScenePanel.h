@@ -21,5 +21,6 @@ namespace engine::editor
 	private:
 		Scene* CurrentScene = nullptr;
 		PropertyMenu* Properties = nullptr;
+		ObjectTypeID Id = 0;
 	};
 }
