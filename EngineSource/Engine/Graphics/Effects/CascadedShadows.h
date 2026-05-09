@@ -19,6 +19,8 @@ namespace engine::graphics
 		uint32 Draw(GraphicsScene* With);
 		void BindUniforms(ShaderObject* Target) const;
 
+		static void UnloadShadows();
+
 		Vector3 LightDirection = Vector3(1, 2, 1).Normalize();
 
 		static uint32 LightDepthMaps;
@@ -45,7 +47,7 @@ namespace engine::graphics
 			glm::mat4 Matrix;
 			BoundingBox Bounds;
 		};
-		
+
 		std::vector<glm::mat4> Matrices;
 		std::vector<BoundingBox> CascadeBounds;
 

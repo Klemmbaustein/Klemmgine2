@@ -65,7 +65,17 @@ namespace engine
 		* This function is used for object IDs. The object ID is derived from the object's name.
 		*/
 		[[nodiscard]]
-		int32_t Hash(const string& Target);
+		constexpr int32_t Hash(const string& Target)
+		{
+			unsigned int hash = 1315423911;
+
+			for (size_t i = 0; i < Target.size(); i++)
+			{
+				hash ^= ((hash << 5) + Target[i] + (hash >> 2));
+			}
+
+			return (hash & 0x7FFFFFFF);
+		}
 
 		/**
 		* @brief

@@ -97,6 +97,12 @@ engine::Scene::~Scene()
 		delete i;
 	}
 
+	if (Manager)
+	{
+		delete Manager;
+		Manager = nullptr;
+	}
+
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	UICanvas::ClearAll();
 
@@ -118,11 +124,19 @@ void engine::Scene::Update()
 	if (Sound)
 		Sound->Update(this->Graphics.UsedCamera);
 
+	if (Manager)
+		Manager->Update();
+
 	for (size_t i = 0; i < Objects.size(); i++)
 	{
 		Objects[i]->UpdateObject();
 	}
 
+	UpdateDestroyed();
+}
+
+void engine::Scene::UpdateDestroyed()
+{
 	for (SceneObject* Destroyed : DestroyedObjects)
 	{
 		Destroyed->OnDestroyed();
@@ -142,6 +156,30 @@ void engine::Scene::Update()
 	DestroyedObjects.clear();
 }
 
+void engine::Scene::LoadManagerFromID(int32 Id)
+{
+	if (Manager)
+	{
+		delete Manager;
+		Manager = nullptr;
+	}
+
+	if (Reflection::ObjectTypes.contains(Id))
+	{
+		const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[Id];
+		Manager = dynamic_cast<SceneManager*>(Type.CreateInstance());
+		Manager->TypeID = Type.TypeID;
+		if (Manager)
+		{
+			Manager->ManagedScene = this;
+		}
+	}
+	else
+	{
+		Log::Warn(str::Format("The scene %s has an unknown manager type.", this->Name.c_str()));
+	}
+}
+
 engine::Scene* engine::Scene::GetMain()
 {
 	if (!SceneSubsystem::Current)
@@ -153,7 +191,11 @@ engine::Scene* engine::Scene::GetMain()
 engine::SceneObject* engine::Scene::CreateObjectFromID(int32 ID, Vector3 Position, Rotation3 Rotation, Vector3 Scale)
 {
 	const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[ID];
-	SceneObject* Object = Type.CreateInstance();
+	SceneObject* Object = dynamic_cast<SceneObject*>(Type.CreateInstance());
+	if (!Object)
+	{
+		return nullptr;
+	}
 	Object->OriginScene = this;
 	Object->Position = Position;
 	Object->Rotation = Rotation;
@@ -169,6 +211,8 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 
 	if (FromState)
 	{
+		UpdateDestroyed();
+
 		for (SceneObject* i : Objects)
 		{
 			i->OnDestroyed();
@@ -190,6 +234,13 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 	}
 	else
 	{
+		if (Manager)
+		{
+			LoadManagerFromID(Manager->TypeID);
+		}
+
+		UpdateDestroyed();
+
 		for (size_t i = 0; i < Objects.size(); i++)
 		{
 			Objects[i]->OnDestroyed();
@@ -334,53 +385,16 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 	{
 		auto& SceneInfo = From->At("scene");
 
-		if (SceneInfo.Contains("sunColor"))
-		{
-			this->Graphics.SceneEnvironment.SunColor = SceneInfo.At("sunColor").GetVector3();
-		}
-		if (SceneInfo.Contains("sunRotation"))
-		{
-			this->Graphics.SceneEnvironment.SunRotation = SceneInfo.At("sunRotation").GetVector3();
-		}
-
-		if (SceneInfo.Contains("skyColor"))
-		{
-			this->Graphics.SceneEnvironment.SkyColor = SceneInfo.At("skyColor").GetVector3();
-		}
-
-		if (SceneInfo.Contains("groundColor"))
-		{
-			this->Graphics.SceneEnvironment.GroundColor = SceneInfo.At("groundColor").GetVector3();
-		}
-
-		if (SceneInfo.Contains("sunIntensity"))
-		{
-			this->Graphics.SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
-		}
-		if (SceneInfo.Contains("ambientIntensity"))
-		{
-			this->Graphics.SceneEnvironment.AmbientIntensity = SceneInfo.At("ambientIntensity").GetFloat();
-		}
-		if (SceneInfo.Contains("fogColor"))
-		{
-			this->Graphics.SceneEnvironment.FogColor = SceneInfo.At("fogColor").GetVector3();
-		}
-		if (SceneInfo.Contains("fogRange"))
-		{
-			this->Graphics.SceneEnvironment.FogRange = SceneInfo.At("fogRange").GetFloat();
-		}
-		if (SceneInfo.Contains("fogStart"))
-		{
-			this->Graphics.SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
-		}
+		Graphics.DeSerialize(&SceneInfo);
 
 		if (SceneInfo.Contains("manager"))
 		{
-			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes[SceneInfo.At("manager").GetInt()];
-			SceneObject* Object = Type.CreateInstance();
-			Object->OriginScene = this;
-			Object->InitObj(this, true, Type.TypeID);
+			int32 Id = SceneInfo.At("manager").GetInt();
 
+			if (Id != 0)
+			{
+				LoadManagerFromID(Id);
+			}
 		}
 	}
 	catch (SerializeException& SerializeError)
@@ -398,7 +412,19 @@ void engine::Scene::DeSerializeInternal(SerializedValue* From, bool Async)
 			ObjectTypeID ID = i.At("typeId").GetInt();
 
 			const Reflection::ObjectInfo& Type = Reflection::ObjectTypes.at(ID);
-			SceneObject* Object = Type.CreateInstance();
+			auto Inst = Type.CreateInstance();
+			SceneObject* Object = dynamic_cast<SceneObject*>(Inst);
+
+			if (!Object)
+			{
+				if (Inst)
+				{
+					delete Inst;
+				}
+				Log::Warn(str::Format("Failed to create SceneObject with ID %i", ID));
+				continue;
+			}
+
 			Object->OriginScene = this;
 			Object->DeSerialize(&i);
 			Object->InitObj(this, !Async, Type.TypeID);
@@ -484,14 +510,7 @@ void engine::Scene::Init()
 engine::SerializedValue engine::Scene::GetSceneInfo()
 {
 	return std::vector{
-		SerializedData("sunColor", this->Graphics.SceneEnvironment.SunColor),
-		SerializedData("sunRotation", this->Graphics.SceneEnvironment.SunRotation.EulerVector()),
-		SerializedData("skyColor", this->Graphics.SceneEnvironment.SkyColor),
-		SerializedData("groundColor", this->Graphics.SceneEnvironment.GroundColor),
-		SerializedData("sunIntensity", this->Graphics.SceneEnvironment.SunIntensity),
-		SerializedData("ambientIntensity", this->Graphics.SceneEnvironment.AmbientIntensity),
-		SerializedData("fogColor", this->Graphics.SceneEnvironment.FogColor),
-		SerializedData("fogRange", this->Graphics.SceneEnvironment.FogRange),
-		SerializedData("fogStart", this->Graphics.SceneEnvironment.FogStart),
+		SerializedData("env", Graphics.Serialize()),
+		SerializedData("manager", this->Manager ? this->Manager->TypeID : 0)
 	};
 }

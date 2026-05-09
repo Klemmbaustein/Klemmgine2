@@ -7,7 +7,7 @@ namespace engine
 	{
 	public:
 
-		ENGINE_OBJECT(LightObject, "Engine");
+		ENGINE_OBJECT(LightObject, "Engine/SceneObject", "Engine");
 
 		void Begin() override;
 		void OnDestroyed() override;

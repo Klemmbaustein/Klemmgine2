@@ -22,6 +22,8 @@ namespace engine::editor::launcher
 
 		void Run();
 
+		static bool ReOpenLauncher;
+
 	private:
 
 		void UpdateProjectList();

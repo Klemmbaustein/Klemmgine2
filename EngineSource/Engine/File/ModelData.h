@@ -71,6 +71,8 @@ namespace engine
 		static GraphicsModel* UnitCube();
 		static GraphicsModel* UnitPlane();
 
+		static void ClearAll();
+
 	private:
 		static std::unordered_map<string, GraphicsModel> Models;
 	};

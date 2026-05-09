@@ -2,7 +2,6 @@
 #include "Components/ObjectComponent.h"
 #include "Reflection/ObjectPropery.h"
 #include "Reflection/ObjectReflection.h"
-#include <Core/Event.h>
 #include <Core/File/SerializedData.h>
 #include <Core/Transform.h>
 
@@ -12,19 +11,19 @@ namespace engine
 
 	class Scene;
 
-	class SceneObject
+	class SceneObject : public ReflectionObject
 	{
 	public:
+
+		ENGINE_OBJECT(SceneObject, "ReflectionObject", "Engine");
 
 		ObjectID ID = 0;
 
 		Vector3 Position;
 		Rotation3 Rotation;
 		Vector3 Scale = 1;
-		ObjectTypeID TypeID = 0;
 		Transform ObjectTransform;
 		string Name;
-		Event<> OnDestroyedEvent;
 
 		friend struct ObjPropertyBase;
 		friend class Scene;

@@ -1,31 +1,42 @@
 #include "ObjectReflection.h"
 #include <iostream>
 
-std::unordered_map<engine::ObjectTypeID, engine::Reflection::ObjectInfo> engine::Reflection::ObjectTypes;
-std::vector<engine::Reflection::ObjectInfo>* engine::Reflection::MacroTypes = nullptr;
+using namespace engine;
 
-engine::ObjectTypeID engine::Reflection::RegisterObjectMacro(string Name, std::function<SceneObject* ()> NewFunc, string Category)
+std::unordered_map<ObjectTypeID, Reflection::ObjectInfo> Reflection::ObjectTypes;
+
+std::vector<Reflection::ObjectInfo>* Reflection::MacroTypes = nullptr;
+
+ObjectTypeID engine::Reflection::RegisterObjectMacro(string Name, std::function<ReflectionObject* ()> NewFunc,
+	string Category, int32 Super)
 {
-	ObjectTypeID ID = str::Hash(Name + Category);
+	ObjectTypeID ID = str::Hash(Category + "/" + Name);
 
 	if (!MacroTypes)
 	{
 		MacroTypes = new std::vector<ObjectInfo>();
 	}
 
+	if (Super == str::Hash("ReflectionObject"))
+	{
+		Super = 0;
+	}
+
 	MacroTypes->push_back(ObjectInfo{
 		.TypeID = ID,
 		.Name = Name,
 		.Path = Category,
+		.SuperClass = Super,
 		.CreateInstance = NewFunc,
 		});
 
 	return ID;
 }
 
-engine::ObjectTypeID engine::Reflection::RegisterObject(string Name, std::function<SceneObject* ()> NewFunc, string Category)
+engine::ObjectTypeID engine::Reflection::RegisterObject(string Name, std::function<ReflectionObject* ()> NewFunc,
+	int32 Super, string Category)
 {
-	ObjectTypeID ID = str::Hash(Name + Category);
+	ObjectTypeID ID = str::Hash(Category + "/" + Name);
 
 	if (!MacroTypes)
 	{
@@ -36,8 +47,9 @@ engine::ObjectTypeID engine::Reflection::RegisterObject(string Name, std::functi
 		.TypeID = ID,
 		.Name = Name,
 		.Path = Category,
+		.SuperClass = Super,
 		.CreateInstance = NewFunc,
-		};
+	};
 
 	return ID;
 }
@@ -56,4 +68,28 @@ void engine::Reflection::Init()
 			ObjectTypes.insert({ i.TypeID, i });
 		}
 	}
+}
+
+bool engine::Reflection::ObjectInfo::IsSubclassOf(ObjectTypeID Class) const
+{
+	if (Class == TypeID)
+	{
+		return true;
+	}
+
+	if (Class == 0)
+	{
+		return true;
+	}
+
+	if (Class == SuperClass)
+	{
+		return true;
+	}
+
+	if (SuperClass)
+	{
+		return Reflection::ObjectTypes.at(SuperClass).IsSubclassOf(Class);
+	}
+	return false;
 }

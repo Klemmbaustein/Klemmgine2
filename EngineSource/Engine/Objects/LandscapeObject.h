@@ -11,7 +11,7 @@ namespace engine
 		void Begin() override;
 		void OnDestroyed() override;
 
-		ENGINE_OBJECT(LandscapeObject, "Engine");
+		ENGINE_OBJECT(LandscapeObject, "Engine/SceneObject", "Engine");
 
 		ObjProperty<AssetRef> Material = ObjProperty<AssetRef>("Material", AssetRef::EmptyAsset("kmt"), this);
 

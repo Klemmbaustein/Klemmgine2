@@ -53,6 +53,13 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	Properties->AddVecEntry("Fog Color", Target->Graphics.SceneEnvironment.FogColor, OnChanged, true);
 	Properties->AddFloatEntry("Fog range", Target->Graphics.SceneEnvironment.FogRange, OnChanged);
 	Properties->AddFloatEntry("Fog start", Target->Graphics.SceneEnvironment.FogStart, OnChanged);
+
+	Id = Target->Manager ? Target->Manager->TypeID : 0;
+
+	Properties->AddClassEntry("Manager class", Id, str::Hash("Engine/Scene/SceneManager"), [this, Target, OnChanged] {
+		Target->LoadManagerFromID(Id);
+		OnChanged();
+	}, true);
 }
 
 void engine::editor::ScenePanel::OnThemeChanged()

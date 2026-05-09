@@ -2,6 +2,7 @@
 #include <map>
 #include <functional>
 #include <fstream>
+#include <Core/Log.h>
 #include <filesystem>
 #include <kui/Resource.h>
 #include <Engine/File/ArchiveResourceSource.h>
@@ -128,6 +129,14 @@ IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 	return nullptr;
 }
 
+void engine::resource::RemoveListener(void* Target)
+{
+	for (auto& i : AssetListeners)
+	{
+		i.second.Remove(Target);
+	}
+}
+
 void resource::LoadSceneFiles(string ScenePath)
 {
 	for (auto& i : Sources)
@@ -149,6 +158,7 @@ void resource::ScanForAssets()
 		ArchiveProviderLoaded = true;
 
 		AddResourceSource(new EmbeddedResourceSource());
+		Log::Info(std::filesystem::current_path().string());
 
 		if (std::filesystem::exists("Assets/archmap.bin"))
 		{
@@ -187,3 +197,4 @@ void resource::RemoveResourceSource(ResourceSource* Source)
 }
 
 std::map<string, string> resource::LoadedAssets;
+std::map<string, Event<>> resource::AssetListeners;

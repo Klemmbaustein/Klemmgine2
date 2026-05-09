@@ -5,6 +5,7 @@
 #include <Engine/Objects/Components/PhysicsComponent.h>
 #include <Engine/Objects/Components/CollisionComponent.h>
 #include <Engine/Objects/SceneObject.h>
+#include <Engine/Script/ScriptSceneManager.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Engine/Script/ScriptObject.h>
 #include <Engine/Scene.h>
@@ -132,6 +133,20 @@ static void Scene_setName(InterpretContext* context)
 	TargetScene.getValue()->Name = string(NewName.ptr(), NewName.length());
 }
 
+static void Scene_getManager(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	if (TargetScene.getValue()->Manager)
+	{
+		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject(TargetScene.getValue()->Manager));
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
+}
+
 static void Scene_createNewObject(InterpretContext* context)
 {
 	auto obj = GenericData(context);
@@ -157,7 +172,7 @@ static void Scene_createNewObject(InterpretContext* context)
 
 #pragma region SceneObject
 
-static void SceneObject_empty(InterpretContext* context)
+static void Object_empty(InterpretContext* context)
 {
 	context->popValue<RuntimeClass*>();
 }
@@ -567,6 +582,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	auto SceneType = EngineModule.createClass<Scene*>("Scene");
 	auto ObjectType = EngineModule.createClass<SceneObject*>("SceneObject");
+	auto ManagerType = EngineModule.createClass<SceneManager*>("SceneManager");
 	auto ComponentType = EngineModule.createClass<ObjectComponent*>("ObjectComponent");
 
 	NativeModule EngineUIModule;
@@ -582,6 +598,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, StrType, "getName", &Scene_getName));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({}, ManagerType, "getManager", &Scene_getManager));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({ FunctionArgument(StrType, "newName") }, nullptr, "setName", &Scene_setName));
@@ -626,14 +645,17 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	ComponentType->makePointerClass();
 
-	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "onBegin", &SceneObject_empty), 1);
+	EngineModule.addClassVirtualMethod(ManagerType,
+		NativeFunction({}, nullptr, "update", &Object_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "onDestroy", &SceneObject_empty), 2);
+		NativeFunction({}, nullptr, "onBegin", &Object_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "update", &SceneObject_empty), 3);
+		NativeFunction({}, nullptr, "onDestroy", &Object_empty), 2);
+
+	EngineModule.addClassVirtualMethod(ObjectType,
+		NativeFunction({}, nullptr, "update", &Object_empty), 3);
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "position",
@@ -654,6 +676,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		});
 
 	ObjectType->makePointerClass();
+	ManagerType->makePointerClass();
 
 	EngineModule.addClassMethod(ObjectType,
 		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
@@ -792,7 +815,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") },
 			nullptr, "setVelocity", &MoveComponent_setVelocity));
 
+#ifdef EDITOR
 	EngineModule.addConstant<Bool>("WITH_EDITOR", BoolInst, true);
+#else
+	EngineModule.addConstant<Bool>("WITH_EDITOR", BoolInst, false);
+#endif
 
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "acceleration",
@@ -919,7 +946,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	ToContext->addNativeModule(EngineUIModule);
 
 	OutData.Vector3Type = EngineModule.getType("Vector3")->id;
-	OutData.ScriptObjectType = EngineModule.getType("SceneObject")->id;
+	OutData.SceneObjectType = EngineModule.getType("SceneObject")->id;
+	OutData.SceneManagerType = EngineModule.getType("SceneManager")->id;
 	OutData.AssetRefType = EngineModule.getType("AssetRef")->id;
 	OutData.UITextType = EngineUIModule.getType("UIText")->id;
 

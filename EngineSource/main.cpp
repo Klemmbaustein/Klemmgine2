@@ -32,6 +32,11 @@ int32 EngineMain(int argc, char** argv)
 		auto proj = ProjectFile("Assets/project.json");
 		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
 	}
+	if (std::filesystem::exists("project.json"))
+	{
+		auto proj = ProjectFile("project.json");
+		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
+	}
 
 	Instance->Run();
 	return 0;

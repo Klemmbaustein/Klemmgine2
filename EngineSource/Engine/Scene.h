@@ -29,6 +29,8 @@ namespace engine
 		Scene(const Scene&) = delete;
 		void Update();
 
+		void LoadManagerFromID(int32 Id);
+
 		/**
 		* @brief
 		* All objects in this scene.
@@ -133,13 +135,15 @@ namespace engine
 		void PreLoadAsset(AssetRef Target);
 
 		SceneManager* Manager = nullptr;
-	private:
 
+	private:
 		struct SceneAsset
 		{
 			AssetRef FileReference;
 			void* LoadedData = nullptr;
 		};
+
+		void UpdateDestroyed();
 
 		void DeSerializeInternal(SerializedValue* From, bool Async);
 		friend class SceneObject;

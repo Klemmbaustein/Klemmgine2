@@ -138,6 +138,8 @@ namespace engine
 		*/
 		static void Critical(string Message, std::vector<LogPrefix> Prefixes = {});
 
+		static void Clear();
+
 		static std::vector<Message> GetMessages();
 		static size_t GetLogMessagesCount();
 	private:

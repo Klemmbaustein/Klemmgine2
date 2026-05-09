@@ -15,50 +15,36 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, kui::UISize 
 		UpdateSelection();
 		this->OnChanged();
 	}
-
 })
 {
+	IsAsset = true;
+	this->OnChanged = OnChanged;
 	this->EmptyIsDefault = EmptyIsDefault;
 	SelectedAsset = InitialValue;
 	auto c = EditorUI::GetExtIconAndColor(InitialValue.Extension);
-	IconBackground = new UIBackground(true, 0, c.second, 32_px);
+	Init(c.first, c.second, Width);
+}
 
-	AddChild(IconBackground
-		->SetCorner(EditorUI::Theme.CornerSize)
-		->AddChild((new UIBackground(true, 0, 1, 32_px))
-			->SetUseTexture(true, c.first))
-		->SetPadding(UISize(), UISize(), UISize(), 5_px));
-
-	float PaddingSize = (5_px).GetScreen().X;
-
-	float BoxSize = Width.GetScreen().X - (32_px).GetScreen().X - PaddingSize;
-
-	UIBox* RightBox = new UIBox(false);
-	RightBox->SetMinSize(kui::Vec2f(BoxSize, 0));
-	AddChild(RightBox);
-
-	AssetPath = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
-	AssetPath
-		->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath))
-		->SetHintText(SelectedAsset.Extension + " file")
-		->SetTextColor(EditorUI::Theme.Text)
-		->SetTextSize(11_px)
-		->SetMinWidth(UISize::Parent(1));
-
-	AssetPath->OnChanged = [this]()
+engine::editor::AssetSelector::AssetSelector(ObjectTypeID InitialType, ObjectTypeID SuperType, kui::UISize Width,
+	std::function<void()> OnChanged, bool EmptyIsDefault)
+	: DroppableBox(true, [this](EditorUI::DraggedItem itm) {
+	if (itm.ObjectType)
 	{
-		ChangedText = true;
-	};
-
-	RightBox->AddChild(AssetPath);
-
-	PathText = new UIText(11_px, EditorUI::Theme.Text, "", EditorUI::EditorFont);
-	PathText
-		->SetWrapEnabled(true, UISize::Screen(BoxSize - PaddingSize * 2))
-		->SetPadding(5_px, 0, 5_px, 0);
-	RightBox->AddChild(PathText);
-	UpdateSelection();
-	UpdateElement();
+		SelectedId = itm.ObjectType;
+		UpdateObjectClass();
+		UpdateSelection();
+		this->OnChanged();
+	}
+})
+{
+	IsAsset = false;
+	this->OnChanged = OnChanged;
+	this->EmptyIsDefault = EmptyIsDefault;
+	this->SuperType = SuperType;
+	this->SelectedId = InitialType;
+	auto Icon = EditorUI::Instance->ObjectIcons.GetObjectIcon(SuperType);
+	UpdateObjectClass();
+	Init(Icon, 0.5f, Width);
 }
 
 engine::editor::AssetSelector::~AssetSelector()
@@ -131,11 +117,61 @@ void engine::editor::AssetSelector::Tick()
 	}
 }
 
+void engine::editor::AssetSelector::Init(string Icon, Vec3f Color, kui::UISize Width)
+{
+	IconBackground = new UIBackground(true, 0, Color, 32_px);
+
+	AddChild(IconBackground
+		->SetCorner(EditorUI::Theme.CornerSize)
+		->AddChild((new UIBackground(true, 0, 1, 32_px))
+			->SetUseTexture(true, Icon))
+		->SetPadding(UISize(), UISize(), UISize(), 5_px));
+
+	float PaddingSize = (5_px).GetScreen().X;
+
+	float BoxSize = Width.GetScreen().X - (32_px).GetScreen().X - PaddingSize;
+
+	UIBox* RightBox = new UIBox(false);
+	RightBox->SetMinSize(kui::Vec2f(BoxSize, 0));
+	AddChild(RightBox);
+
+	AssetPath = new UITextField(0, EditorUI::Theme.DarkBackground, EditorUI::EditorFont, nullptr);
+	AssetPath
+		->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath))
+		->SetHintText(IsAsset ? (SelectedAsset.Extension + " file") : "Class")
+		->SetTextColor(EditorUI::Theme.Text)
+		->SetTextSize(11_px)
+		->SetMinWidth(UISize::Parent(1));
+
+	AssetPath->OnChanged = [this]() {
+		ChangedText = true;
+	};
+
+	RightBox->AddChild(AssetPath);
+
+	PathText = new UIText(11_px, EditorUI::Theme.Text, "", EditorUI::EditorFont);
+	PathText
+		->SetWrapEnabled(true, UISize::Screen(BoxSize - PaddingSize * 2))
+		->SetPadding(5_px, 0, 5_px, 0);
+	RightBox->AddChild(PathText);
+	UpdateSelection();
+	UpdateElement();
+}
+
 void engine::editor::AssetSelector::UpdateSelection()
 {
-	AssetPath->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath));
-	PathText->SetText(SelectedAsset.FilePath.empty()
-		? (EmptyIsDefault ? "<default>" : "<no file>") : SelectedAsset.FilePath);
+	if (IsAsset)
+	{
+		AssetPath->SetText(file::FileNameWithoutExt(SelectedAsset.FilePath));
+		PathText->SetText(SelectedAsset.FilePath.empty()
+			? (EmptyIsDefault ? "<default>" : "<no file>") : SelectedAsset.FilePath);
+	}
+	else
+	{
+		AssetPath->SetText(Obj.Name);
+		PathText->SetText(SelectedId == 0
+			? (EmptyIsDefault ? "<default>" : "<no class>") : Obj.Path);
+	}
 }
 
 void engine::editor::AssetSelector::UpdateSearchSize()
@@ -162,9 +198,23 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 	ChangedText = false;
 	SearchBackground->DeleteChildren();
 
+	if (IsAsset)
+	{
+		UpdateSearchResultsAsset();
+	}
+	else
+	{
+		UpdateSearchResultsClass();
+	}
+
+	SearchBackground->UpdateElement();
+	SearchBackground->RedrawElement();
+}
+
+void engine::editor::AssetSelector::UpdateSearchResultsAsset()
+{
 	std::map<string, string> FilteredAssets;
 	string SearchText = str::Lower(AssetPath->GetText());
-
 	for (const auto& [Name, Path] : resource::LoadedAssets)
 	{
 		string Ext = Name.substr(Name.find_last_of(".") + 1);
@@ -191,8 +241,7 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 			Third = Name.substr(LastPos);
 		}
 
-		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Path]()
-		{
+		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Path]() {
 			AssetPath->SetText(Name);
 			SelectedAsset = AssetRef::FromPath(Path);
 			ChangedText = false;
@@ -211,6 +260,68 @@ void engine::editor::AssetSelector::UpdateSearchResults()
 				->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - (10_px).GetScreen().X))
 				->SetPadding(4_px, 4_px, 3_px, 3_px)));
 	}
-	SearchBackground->UpdateElement();
-	SearchBackground->RedrawElement();
+}
+
+void engine::editor::AssetSelector::UpdateSearchResultsClass()
+{
+	std::map<string, Reflection::ObjectInfo> FilteredAssets;
+	string SearchText = str::Lower(AssetPath->GetText());
+	for (const auto& [Id, Object] : Reflection::ObjectTypes)
+	{
+		if (!Object.IsSubclassOf(SuperType))
+		{
+			continue;
+		}
+
+		if (SearchText.empty())
+			FilteredAssets.insert({ Object.Name, Object });
+		else if (str::Lower(Object.Name).find(SearchText) != std::string::npos)
+			FilteredAssets.insert({ Object.Name, Object });
+	}
+
+	for (const auto& [Name, Class] : FilteredAssets)
+	{
+		size_t Found = str::Lower(Name).find(SearchText);
+
+		string First = Name.substr(0, Found), Second = Name.substr(Found, SearchText.size()), Third;
+		size_t LastPos = Found + SearchText.size();
+		if (LastPos < Name.size())
+		{
+			Third = Name.substr(LastPos);
+		}
+
+		SearchBackground->AddChild((new UIButton(true, 0, EditorUI::Theme.DarkBackground2, [this, Name, Class]() {
+			AssetPath->SetText(Name);
+			SelectedId = Class.TypeID;
+			Obj = Class;
+			ChangedText = false;
+			UpdateSelection();
+			RemoveSearchResults();
+			if (this->OnChanged)
+				OnChanged();
+		}))
+			->SetMinWidth(UISize::Parent(1))
+			->AddChild((new UIText(11_px,
+				{
+					TextSegment(First, EditorUI::Theme.Text),
+					TextSegment(Second, EditorUI::Theme.HighlightText),
+					TextSegment(Third, EditorUI::Theme.Text),
+				}, EditorUI::EditorFont))
+				->SetWrapEnabled(true, UISize::Screen(AssetPath->GetUsedSize().GetScreen().X - (10_px).GetScreen().X))
+				->SetPadding(4_px, 4_px, 3_px, 3_px)));
+	}
+}
+
+void engine::editor::AssetSelector::UpdateObjectClass()
+{
+	auto Found = Reflection::ObjectTypes.find(this->SelectedId);
+
+	if (Found != Reflection::ObjectTypes.end())
+	{
+		Obj = Found->second;
+	}
+	else
+	{
+		Obj = {};
+	}
 }

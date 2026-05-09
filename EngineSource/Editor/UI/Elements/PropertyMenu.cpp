@@ -245,6 +245,28 @@ void engine::editor::PropertyMenu::AddAssetRefEntry(string Name, AssetRef& Value
 	});
 }
 
+void engine::editor::PropertyMenu::AddClassEntry(string Name, ObjectTypeID& Id, ObjectTypeID SuperType,
+	std::function<void()> OnChanged, bool EmptyIsDefault)
+{
+	auto* New = CreateNewEntry(Name);
+	auto* Selector = new AssetSelector(Id, SuperType, ElementSize, nullptr, EmptyIsDefault);
+
+	Selector->OnChanged = [Selector, &Id, OnChanged] {
+		if (Selector->SelectedId == 0)
+			return;
+		Id = Selector->SelectedId;
+		if (OnChanged)
+			OnChanged();
+	};
+
+	New->valueBox->AddChild(Selector);
+
+	UpdatePropertiesCallback.push_back([Selector, &Id] {
+		Selector->SelectedId = Id;
+		Selector->UpdateSelection();
+	});
+}
+
 void engine::editor::PropertyMenu::AddDropdownEntry(string Name,
 	std::vector<kui::UIDropdown::Option> Values,
 	std::function<void(kui::UIDropdown::Option)> OnChanged, size_t DefaultIndex)

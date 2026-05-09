@@ -16,7 +16,7 @@ STRUCT_MEMBER(ConsoleExecuteCommand, void, (const char* cmd), console::ExecuteCo
 
 // Objects
 STRUCT_MEMBER(RegisterObj, int32, (const char* Name, SceneObject* (*Func)(void* UserData), void* UserData, const char* Category), \
-return Reflection::RegisterObject(Name, [Func, UserData]() -> SceneObject* { return Func(UserData); }, Category);)
+return Reflection::RegisterObject(Name, [Func, UserData]() -> SceneObject* { return Func(UserData); }, 0, Category);)
 
 STRUCT_MEMBER(CreateObj, engine::SceneObject*, (engine::Scene* Scn, int32 TypeID, Vector3 pos, Rotation3 rot, Vector3 scl), \
 { \

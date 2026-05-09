@@ -55,4 +55,55 @@ namespace engine
 			return Value;
 		}
 	};
+
+	template<typename T>
+	struct ClosablePtr
+	{
+	public:
+		T Value;
+		bool Valid = true;
+
+		ClosablePtr(T val)
+		{
+			this->Value = val;
+		}
+
+		ClosablePtr(const ClosablePtr&) = delete;
+
+		~ClosablePtr()
+		{
+			if (Value && Valid)
+			{
+				delete Value;
+			}
+		}
+
+		void Invalidate()
+		{
+			Valid = false;
+		}
+
+		T* operator->()
+		{
+			return &Value;
+		}
+		const T* operator->() const
+		{
+			return &Value;
+		}
+		T& operator*()
+		{
+			return Value;
+		}
+		const T& operator*() const
+		{
+			return Value;
+		}
+
+		operator T()
+		{
+			return Value;
+		}
+
+	};
 }

@@ -245,6 +245,8 @@ void engine::VideoSubsystem::RegisterCommands(ConsoleSubsystem* System)
 engine::VideoSubsystem::~VideoSubsystem()
 {
 	Current = nullptr;
+	GraphicsModel::ClearAll();
+	graphics::CascadedShadows::UnloadShadows();
 	delete MainWindow;
 }
 

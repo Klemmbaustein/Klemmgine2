@@ -8,7 +8,7 @@ namespace engine
 	{
 	public:
 
-		ENGINE_OBJECT(SoundObject, "Engine");
+		ENGINE_OBJECT(SoundObject, "Engine/SceneObject", "Engine");
 
 		SoundObject();
 		~SoundObject();
@@ -18,6 +18,7 @@ namespace engine
 
 		ObjProperty<AssetRef> SoundFile = ObjProperty<AssetRef>("Sound file", AssetRef::EmptyAsset("wav"), this);
 		ObjProperty<bool> Loop = ObjProperty<bool>("Loop", true, this);
+		ObjProperty<bool> Is3D = ObjProperty<bool>("Is 3D", true, this);
 
 		SoundComponent* Component = nullptr;
 	};

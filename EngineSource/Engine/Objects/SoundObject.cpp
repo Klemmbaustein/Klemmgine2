@@ -15,15 +15,17 @@ void engine::SoundObject::Begin()
 
 	SoundFile.OnChanged = [this] {
 		Component->Load(SoundFile.Value);
-		Component->Play(Loop.Value);
+		Component->Play(Loop.Value, Is3D.Value);
 	};
 
 	Loop.OnChanged = [this] {
-		Component->Play(Loop.Value);
+		Component->Play(Loop.Value, Is3D.Value);
 	};
 
+	Is3D.OnChanged = Loop.OnChanged;
+
 	Component->Load(SoundFile.Value);
-	Component->Play(Loop.Value);
+	Component->Play(Loop.Value, Is3D.Value);
 }
 
 void engine::SoundObject::OnDestroyed()

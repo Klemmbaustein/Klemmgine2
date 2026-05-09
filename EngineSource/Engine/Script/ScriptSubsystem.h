@@ -80,13 +80,16 @@ namespace engine::script
 		 */
 		bool Reload();
 
-		ds::RuntimeClass* GetClassFromObject(SceneObject* Object);
-		void RegisterClassForObject(SceneObject* Object, ds::RuntimeClass* Class);
+		ds::RuntimeClass* GetClassFromObject(ReflectionObject* Object);
+		void RegisterClassForObject(ReflectionObject* Object, ds::RuntimeClass* Class);
 
 		/// Maps all objects to their script language representation. This might be a user-defined class for an
 		/// object defined in the scripts or
-		std::map<SceneObject*, ds::RuntimeClass*> ScriptObjectMappings;
+		std::map<ReflectionObject*, ds::RuntimeClass*> ScriptObjectMappings;
 		std::map<void*, ds::RuntimeClass*> UIObjectMappings;
+
+		Event<> BeginHotReloadEvent;
+		Event<> EndHotReloadEvent;
 
 	private:
 		void ReloadDynamicUIContext();

@@ -52,7 +52,11 @@ namespace engine
 		 */
 		void Remove(void* Listener)
 		{
-			Callbacks.erase(Listener);
+			auto Found = Callbacks.find(Listener);
+			if (Found != Callbacks.end())
+			{
+				Callbacks.erase(Found);
+			}
 		}
 
 		bool IsListener(void* Listener)
