@@ -32,8 +32,8 @@ namespace engine::editor
 		void UpdateSelection();
 
 		virtual void Tick() override;
-	private:
 
+	private:
 		void Init(string Icon, kui::Vec3f Color, kui::UISize Width);
 		string LastEnteredText;
 		bool RemoveSearchList = false;

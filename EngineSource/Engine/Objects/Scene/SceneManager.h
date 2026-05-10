@@ -4,6 +4,8 @@
 
 namespace engine
 {
+	class Scene;
+
 	class SceneManager : public ReflectionObject
 	{
 	public:
