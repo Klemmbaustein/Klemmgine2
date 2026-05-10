@@ -20,3 +20,4 @@ Saved/
 /Engine/Export
 /project.json
 /scriptCache.bin
+*.pdb
