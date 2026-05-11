@@ -59,11 +59,11 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 				}
 
 				std::pair newHeader = HttpResponse::ParseHeader(header);
-				if (newHeader.first == "content-length")
+				if (newHeader.first == "Content-Length")
 				{
 					contentSize = std::atoi(newHeader.second.c_str());
 				}
-				else if (newHeader.first == "transfer-encoding" && newHeader.second == "chunked")
+				else if (newHeader.first == "Transfer-Encoding" && newHeader.second == "chunked")
 				{
 					contentSize = SIZE_MAX;
 				}
@@ -86,7 +86,7 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 	// HTTP body has a fixed size declared by content-length: [some_size]
 	if (contentSize != SIZE_MAX)
 	{
-		if (contentSize > body.size())
+		if (contentSize < body.size())
 		{
 			return HttpResponse::HttpError(std::format("Badly formatted HTTP header has obviously incorrect size."));
 		}

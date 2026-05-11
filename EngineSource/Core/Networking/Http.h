@@ -176,7 +176,7 @@ namespace engine::http
 		 */
 		HttpResponse(IBinaryStream* Body, HttpStatus Status);
 
-		HttpResponse(const HttpResponse&) = default;
+		HttpResponse(const HttpResponse&) = delete;
 
 		~HttpResponse();
 

@@ -1,5 +1,4 @@
 #include "Http.h"
-#include "Http.h"
 #include <Core/Log.h>
 #include <sstream>
 #include <format>
@@ -71,9 +70,9 @@ http::HttpResponse* http::SendRequest(string Url, string Method, HttpOptions Opt
 	HttpUrl UrlInfo = Url;
 	HttpResponse* Response = nullptr;
 #ifdef ENGINE_WITH_OPENSSL
-	if (UrlInfo.scheme == HttpUrl::SCHEME_HTTPS)
+	if (UrlInfo.Scheme == HttpUrl::SCHEME_HTTPS)
 	{
-		Response = sendRequestSSL(UrlInfo, Method, Options);
+		Response = SendRequestSSL(UrlInfo, Method, Options);
 	}
 	else
 #endif
@@ -90,7 +89,7 @@ http::HttpResponse* http::SendRequest(string Url, string Method, HttpOptions Opt
 			return Response;
 		}
 
-		Log::Note(str::Format("redirect: %s -> %s", Url.c_str(), NewLocation->second.c_str()));
+		Log::Note(str::Format("HTTP redirect: %s -> %s", Url.c_str(), NewLocation->second.c_str()));
 		return SendRequest(NewLocation->second, Method, Options);
 	}
 	return Response;
@@ -148,15 +147,20 @@ engine::http::HttpResponse::HttpResponse(IBinaryStream* Body, HttpStatus Status)
 	this->Status = Status;
 }
 
+engine::http::HttpResponse::~HttpResponse()
+{
+	delete Body;
+}
+
 engine::http::HttpResponse* engine::http::HttpResponse::HttpError(string description)
 {
 	Log::Warn("HTTP error: " + description);
-	HttpResponse NewError;
+	HttpResponse* NewError = new HttpResponse();
 
-	NewError.Status = HttpStatus::InternalError;
-	NewError.Body = new BufferStream((const uByte*)description.data(), description.size());
+	NewError->Status = HttpStatus::InternalError;
+	NewError->Body = new BufferStream((const uByte*)description.data(), description.size());
 
-	return new HttpResponse(NewError);
+	return NewError;
 }
 
 http::HttpResponse::ParseHeaderData engine::http::HttpResponse::ParseHeaders(const std::vector<uByte>& headerData)

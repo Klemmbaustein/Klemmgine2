@@ -22,7 +22,7 @@ engine::ModelData::ModelData(string FilePath, bool LoadMaterials)
 
 	std::vector<SerializedData> File;
 
-	ClosablePtr<IBinaryStream*> BinaryFile = { resource::GetBinaryFile(FilePath) };
+	CloseablePtr<IBinaryStream*> BinaryFile = { resource::GetBinaryFile(FilePath) };
 
 	if (!BinaryFile)
 		return;
