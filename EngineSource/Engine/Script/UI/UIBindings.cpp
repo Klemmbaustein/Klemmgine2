@@ -84,7 +84,20 @@ static void UIScriptElement_getChild(InterpretContext* context)
 
 	auto classInstance = cls.getValue();
 
-	context->pushValue(NativeModule::makePointerClass<UIBox>(classInstance->NamedChildren[text.ptr()]));
+	auto found = classInstance->NamedChildren[text.ptr()];
+
+	if (ScriptSubsystem::Instance->UIObjectMappings.contains(found))
+	{
+		context->pushValue(ScriptSubsystem::Instance->UIObjectMappings[found]);
+		return;
+	}
+
+	if (!found)
+	{
+		ENGINE_ASSERT_MESSAGE(false, text.ptr());
+	}
+
+	context->pushValue(NativeModule::makePointerClass<UIBox>(found));
 }
 
 static void UIBox_new(InterpretContext* context)

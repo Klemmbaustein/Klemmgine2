@@ -182,6 +182,7 @@ engine::string engine::platform::GetExecutablePath()
 #include <thread>
 #include <sys/types.h>
 #include <pwd.h>
+#include <spawn.h>
 
 void engine::platform::CreateHiddenDirectory(string Path)
 {
@@ -238,7 +239,23 @@ void engine::platform::Execute(string Command)
 
 void engine::platform::Open(string File)
 {
-	std::thread([File]() {system(("xdg-open " + File).c_str()); }).detach();
+	pid_t NewPid = 0;
+
+	posix_spawn_file_actions_t Actions;
+	posix_spawn_file_actions_init(&Actions);
+
+	posix_spawnattr_t Attributes;
+	posix_spawnattr_init(&Attributes);
+
+	string Command = "xdg-open";
+
+	std::vector<char*> Arguments = { Command.data(), File.data(), nullptr };
+	std::vector<char*> Environment = { nullptr };
+
+	posix_spawnp(&NewPid, Command.c_str(), &Actions, &Attributes, Arguments.data(), environ);
+
+	posix_spawn_file_actions_destroy(&Actions);
+	posix_spawnattr_destroy(&Attributes);
 }
 
 void engine::platform::SetThreadName(string Name)

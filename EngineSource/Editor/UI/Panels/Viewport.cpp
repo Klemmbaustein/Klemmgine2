@@ -577,24 +577,27 @@ void engine::editor::Viewport::HighlightObject(SceneObject* Target, bool Highlig
 {
 	for (ObjectComponent* i : Target->GetChildComponents())
 	{
-		DrawableComponent* Drawable = dynamic_cast<DrawableComponent*>(i);
-		if (Drawable)
-		{
-			HighlightComponents(Drawable, Highlighted);
-		}
+		HighlightComponents(i, Highlighted);
 	}
 }
 
-void engine::editor::Viewport::HighlightComponents(DrawableComponent* Target, bool Highlighted)
+void engine::editor::Viewport::HighlightComponents(ObjectComponent* Target, bool Highlighted)
 {
-	Target->DrawStencil = Highlighted;
+	if (!Target)
+	{
+		return;
+	}
+
+	DrawableComponent* Drawable = dynamic_cast<DrawableComponent*>(Target);
+
+	if (Drawable)
+	{
+		Drawable->DrawStencil = Highlighted;
+	}
+
 	for (ObjectComponent* i : Target->Children)
 	{
-		DrawableComponent* Drawable = dynamic_cast<DrawableComponent*>(i);
-		if (Drawable)
-		{
-			HighlightComponents(Drawable, Highlighted);
-		}
+		HighlightComponents(i, Highlighted);
 	}
 }
 
