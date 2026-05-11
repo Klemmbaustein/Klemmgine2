@@ -380,9 +380,9 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		.Icon = EditorUI::Asset("Open.png"),
 		.OnClicked = [this]() {
 #if WINDOWS
-			platform::Execute("explorer.exe \".\\Assets\\" + str::ReplaceChar(Path, '/', '\\') + "\"");
+			platform::Open(str::ReplaceChar(GetPathDisplayName(), '/', '\\'));
 #else
-			std::thread([this]() {platform::Execute("xdg-open \"./Assets/" + Path + "\""); }).detach();
+			platform::Open(GetPathDisplayName());
 #endif
 	}, });
 

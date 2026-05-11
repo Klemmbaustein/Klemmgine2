@@ -86,6 +86,11 @@ HttpResponse* engine::http::internal::HandleConnection(std::function<int64(int64
 	// HTTP body has a fixed size declared by content-length: [some_size]
 	if (contentSize != SIZE_MAX)
 	{
+		if (contentSize > body.size())
+		{
+			return HttpResponse::HttpError(std::format("Badly formatted HTTP header has obviously incorrect size."));
+		}
+
 		// Reading the headers also reads parts of the body, so the body is already partially filled in.
 		size_t toRead = contentSize - body.size();
 

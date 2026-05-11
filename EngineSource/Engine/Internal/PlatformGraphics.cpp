@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <filesystem>
+#include <kui/App.h>
 
 #if WINDOWS
 #include <ShObjIdl_core.h>
@@ -303,30 +304,8 @@ bool engine::platform::ShowMessageBox(string Title, string Message, int Type)
 		return false;
 	}
 
-#if WINDOWS
-	std::array<UINT, 3> Types = { 0, MB_ICONWARNING, MB_ICONERROR };
+#undef MessageBox
 
-	::MessageBoxW(NULL, StrToWstr(Message).c_str(), StrToWstr(Title).c_str(), Types[Type]);
+	kui::app::MessageBox(Message, Title, kui::app::MessageType(Type));
 	return true;
-#else
-	if (CommandExists("kdialog"))
-	{
-		std::array<const char*, 3> Types = { "msgbox", "sorry", "error" };
-
-		Execute("/usr/bin/env kdialog --title \"" + Title + "\" --" + Types[Type] + " \"" + Message + "\"");
-		return true;
-	}
-
-	if (CommandExists("zenity"))
-	{
-		std::array<const char*, 3> Types = { "info", "warning", "error" };
-
-		Execute("/usr/bin/env zenity --no-markup --title \"" + Title + "\" --" + Types[Type] + " --text \"" + Message + "\"");
-		return true;
-	}
-
-	// If kdialog and zenity don't exist, there's no good way of creating a message box.
-	return false;
-#endif
-
 }

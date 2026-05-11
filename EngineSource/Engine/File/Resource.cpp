@@ -17,11 +17,6 @@ static std::map<string, std::function<string(string, string)>> KnownFilePaths =
 	{ "res:", [](string Path, string Pref) {
 		return Path;
 	} },
-	{ "asset:", [](string Path, string Pref) {
-		if (Path.find("..") == string::npos)
-			return "Assets/" + Path.substr(Pref.size());
-		return string("");
-	} },
 	{ "file:", [](string Path, string Pref) {
 		return Path.substr(Pref.size());
 	} },
@@ -108,7 +103,7 @@ IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 
 		return new ReadOnlyBufferStream((const uByte*)res.Data, res.FileSize, false);
 	}
-	if (FoundPrefix == "asset:" || FoundPrefix.empty())
+	if (FoundPrefix.empty())
 	{
 		std::string FilePath = EnginePath;
 
