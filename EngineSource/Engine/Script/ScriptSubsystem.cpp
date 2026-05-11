@@ -239,6 +239,14 @@ void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
 	{
 		this->UIContext.CreateSpecialMarkupBox[i.second] =
 			[this, cls = i.first](kui::markup::DynamicMarkupContext* c) -> kui::markup::UIDynMarkupBox* {
+			auto found = UIObjectMappings.find(c);
+
+			if (found != UIObjectMappings.end())
+			{
+				ClassRef<ui::ScriptUIElement*> Element = found->second;
+				return Element.getValue();
+			}
+
 			auto Class = Runtime->reflect->types[cls].create(Runtime->baseContext);
 
 			ClassRef<ui::ScriptUIElement*> Element = Class;

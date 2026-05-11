@@ -1,5 +1,6 @@
 #include "ScriptSceneManager.h"
 #include <Engine/Script/ScriptSubsystem.h>
+#include <Engine/Engine.h>
 
 engine::script::ScriptSceneManager::ScriptSceneManager(const ds::TypeInfo& Class, ds::InterpretContext* Interpreter)
 	: ScriptObject(Class, Interpreter)
@@ -32,7 +33,7 @@ void engine::script::ScriptSceneManager::EndHotReload(ds::ReflectInfo* ClassData
 
 void engine::script::ScriptSceneManager::Update()
 {
-	if (ScriptData)
+	if (Engine::IsPlaying && ScriptData)
 	{
 		Interpreter->callVirtualMethodVoid(ScriptData, 1);
 	}

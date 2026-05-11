@@ -77,7 +77,7 @@ namespace engine::editor
 		bool LastCursorVisible = false;
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
-		void HighlightComponents(DrawableComponent* Target, bool Highlighted);
+		void HighlightComponents(ObjectComponent* Target, bool Highlighted);
 
 		void UndoChange(Change& Target, Scene* Current);
 		void UpdateSelection();
