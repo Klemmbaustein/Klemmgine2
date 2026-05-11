@@ -146,6 +146,19 @@ else()
 	target_compile_definitions(KlemmgineCore PUBLIC LINUX=1)
 endif()
 
+# These all really should be the default when importing as a subdirectory.
+set(ENABLE_PROGRAMS OFF)
+set(ENABLE_TESTING OFF)
+set(MBEDTLS_FATAL_WARNINGS OFF)
+add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
+if(UNIX)
+	find_package(OpenSSL REQUIRED)
+
+	target_link_libraries(KlemmgineCore PRIVATE OpenSSL::SSL)
+
+	target_compile_definitions(KlemmgineCore PUBLIC ENGINE_WITH_OPENSSL)
+endif()
+
 if(USE_ENGINEMAIN)
 	target_compile_definitions(KlemmgineLib PRIVATE USE_ENGINEMAIN)
 endif()
@@ -183,12 +196,6 @@ elseif(ENGINE_EDITOR)
 	set(IXWEBSOCKET_INSTALL OFF)
 	set(${MBEDTLS_LIBRARIES} mbedtls)
 	set(MBEDTLS_FOUND ON)
-	set(MB)
-	# These all really should be the default when importing as a subdirectory.
-	set(ENABLE_PROGRAMS OFF)
-	set(ENABLE_TESTING OFF)
-	set(MBEDTLS_FATAL_WARNINGS OFF)
-	add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
 	add_subdirectory("Dependencies/IXWebSocket" EXCLUDE_FROM_ALL)
 	target_compile_definitions(KlemmgineCore PUBLIC KLEMMGINE_WEBSOCKETS)
 	target_compile_definitions(ixwebsocket PRIVATE IXWEBSOCKET_USE_MBED_TLS_MIN_VERSION_3)

@@ -57,20 +57,20 @@ namespace engine
 	};
 
 	template<typename T>
-	struct ClosablePtr
+	struct CloseablePtr
 	{
 	public:
 		T Value;
 		bool Valid = true;
 
-		ClosablePtr(T val)
+		CloseablePtr(T val)
 		{
 			this->Value = val;
 		}
 
-		ClosablePtr(const ClosablePtr&) = delete;
+		CloseablePtr(const CloseablePtr&) = delete;
 
-		~ClosablePtr()
+		~CloseablePtr()
 		{
 			if (Value && Valid)
 			{
