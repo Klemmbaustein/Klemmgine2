@@ -250,7 +250,6 @@ void engine::platform::Open(string File)
 	string Command = "xdg-open";
 
 	std::vector<char*> Arguments = { Command.data(), File.data(), nullptr };
-	std::vector<char*> Environment = { nullptr };
 
 	posix_spawnp(&NewPid, Command.c_str(), &Actions, &Attributes, Arguments.data(), environ);
 
