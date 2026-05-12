@@ -1,14 +1,10 @@
 #if defined(ENGINE_WITH_OPENSSL)
 #include <Core/Networking/Http.h>
-#include <Core/Log.h>
 #include <Core/Networking/Internal/HttpInternal.h>
 #include <Core/Closeable.h>
 #include <openssl/ssl.h>
 #include <openssl/x509_vfy.h>
 #include "openssl/err.h"
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netdb.h>
 #include <openssl/x509v3.h>
 
 using namespace engine;
