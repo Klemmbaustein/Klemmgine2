@@ -112,8 +112,7 @@ void engine::editor::EditorUI::SetStatusMessage(string NewMessage, StatusType Ty
 	}
 	else
 	{
-		thread::ExecuteOnMainThread([NewMessage, Type]()
-		{
+		thread::ExecuteOnMainThread([NewMessage, Type]() {
 			SetStatusMainThread(NewMessage, Type);
 		});
 	}
@@ -134,15 +133,25 @@ void engine::editor::EditorUI::InitTheme()
 	Theme.LoadFromFile(Settings::GetInstance()->Interface.GetSetting("theme", "Dark").GetString());
 }
 
+string engine::editor::EditorUI::GetProjectDataPath()
+{
+	auto Project = editor::GetRemoteProjectName();
+
+	if (!Project)
+	{
+		return ".editor";
+	}
+	return GetEditorPath() + "/Remote/" + *Project + "";
+}
+
 void engine::editor::EditorUI::LoadEditorStateConfig()
 {
 	try
 	{
-		auto LastState = JsonSerializer::FromFile(".editor/editorState.json");
+		auto LastState = JsonSerializer::FromFile(GetProjectDataPath() + "/editorState.json");
 
 		string SceneName = LastState.At("scene").GetString();
 		SceneSubsystem::Current->LoadSceneAsync(SceneName);
-
 	}
 	catch (SerializeException& e)
 	{
@@ -161,8 +170,7 @@ void engine::editor::EditorUI::SaveEditorStateConfig()
 		SerializedValue FileData = std::vector<SerializedData>({
 			SerializedData("scene", Scene::GetMain() ? Scene::GetMain()->Name : "")
 			});
-		JsonSerializer::ToFile(FileData, ".editor/editorState.json");
-
+		JsonSerializer::ToFile(FileData, GetProjectDataPath() + "/editorState.json");
 	}
 	catch (SerializeException& e)
 	{

@@ -9,7 +9,6 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Scene.h>
-#include <Engine/Script/FileScriptProvider.h>
 #include <Engine/Script/ScriptSceneObject.h>
 #include <Engine/Script/ScriptSceneManager.h>
 #include <Engine/Script/ScriptSerializer.h>
@@ -43,8 +42,6 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 	this->Runtime->writeError = [this](const char* Message) {
 		Print(Message, LogType::Error);
 	};
-
-	Scripts = new FileScriptProvider();
 
 	Reload();
 }

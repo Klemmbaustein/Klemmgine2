@@ -1,7 +1,6 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
 #include <list>
-#include "ScriptProvider.h"
 #include "UI/ParseUI.h"
 #include "EngineModules.h"
 #include "kui/DynamicMarkup.h"
@@ -43,9 +42,6 @@ namespace engine::script
 
 		/// A list of tasks that are waiting for a timer to expire. (like an `await wait(1.0)` call)
 		std::list<WaitTask> WaitTasks;
-
-		/// Script provider, giving the engine a list of scripts to compile.
-		ScriptProvider* Scripts = nullptr;
 
 		ScriptSubsystem();
 		virtual ~ScriptSubsystem() override;

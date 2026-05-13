@@ -284,8 +284,6 @@ void engine::editor::MaterialEditor::Save()
 	std::stringstream FileString;
 	LoadedMaterial->ToStream(FileString);
 
-	auto Path = EditorUI::Instance->AssetsProvider->GetFileSaveStream(EditedAsset.FilePath);
-
 	BufferStream Buffer;
 	Buffer.WriteStringNoNull(FileString.str());
 	Buffer.ResetStreamPosition();

@@ -7,6 +7,7 @@
 #include <Core/Log.h>
 #include <Engine/File/ModelData.h>
 #include <fstream>
+#include <Editor/EditorSubsystem.h>
 using namespace engine;
 using namespace engine::editor::modelConverter;
 
@@ -152,10 +153,6 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	}
 
 	string Extension = ModelPath.substr(ModelPath.find_last_of(".") + 1);
-	if (Extension == "fbx")
-	{
-		Options.ImportScale /= 100.0f;
-	}
 
 	ConvertContext ctx;
 	ctx.SceneName = file::FileNameWithoutExt(ModelPath);
@@ -223,7 +220,21 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 
 	string OutFileName = file::FileNameWithoutExt(ModelPath) + ".kmdl";
 	ImportPrint("Saving to file...");
-	ctx.Data->ToFile(OutDir + OutFileName);
+	auto Stream = EditorUI::Instance->AssetsProvider->GetFileSaveStream(OutDir + OutFileName);
+
+	if (Stream)
+	{
+		ctx.Data->ToBinary(Stream);
+		delete Stream;
+	}
+	else
+	{
+		BufferStream Stream;
+		ctx.Data->ToBinary(&Stream);
+		Stream.ResetStreamPosition();
+		EditorUI::Instance->AssetsProvider->SaveToFile(OutDir + OutFileName, &Stream, Stream.GetSize());
+	}
+
 	aiDetachLogStream(&stream);
 	ImportPrint("--- Import complete ---");
 

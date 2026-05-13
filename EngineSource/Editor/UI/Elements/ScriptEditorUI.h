@@ -84,7 +84,7 @@ namespace engine::editor
 		std::set<string> GetLastOpenedFiles();
 		void SaveLastOpenedFiles();
 
-		static constexpr auto TABS_OPENED_FILE = ".editor/tabs.json";
+		string GetOpenedTabsFile();
 
 		kui::UIBackground* SeparatorBackgrounds[2];
 

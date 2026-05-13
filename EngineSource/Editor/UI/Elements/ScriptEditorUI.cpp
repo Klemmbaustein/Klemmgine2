@@ -453,14 +453,16 @@ void engine::editor::ScriptEditorUI::Save()
 
 std::set<string> engine::editor::ScriptEditorUI::GetLastOpenedFiles()
 {
-	if (!std::filesystem::exists(TABS_OPENED_FILE))
+	string TabsFile = GetOpenedTabsFile();
+
+	if (!std::filesystem::exists(TabsFile))
 	{
 		return std::set<string>();
 	}
 
 	try
 	{
-		auto Files = JsonSerializer::FromFile(TABS_OPENED_FILE);
+		auto Files = JsonSerializer::FromFile(TabsFile);
 
 		std::set<string> FoundFiles;
 
@@ -472,7 +474,7 @@ std::set<string> engine::editor::ScriptEditorUI::GetLastOpenedFiles()
 	}
 	catch (SerializeException& e)
 	{
-		Log::Warn(str::Format("Failed to load last saved tabs from the file %s: %s", TABS_OPENED_FILE, e.what()));
+		Log::Warn(str::Format("Failed to load last saved tabs from the file %s: %s", TabsFile.c_str(), e.what()));
 		return {};
 	}
 }
@@ -486,7 +488,12 @@ void engine::editor::ScriptEditorUI::SaveLastOpenedFiles()
 		Result.push_back(SerializedValue(i.Provider->EditedFile));
 	}
 
-	JsonSerializer::ToFile(Result, TABS_OPENED_FILE);
+	JsonSerializer::ToFile(Result, GetOpenedTabsFile());
+}
+
+string engine::editor::ScriptEditorUI::GetOpenedTabsFile()
+{
+	return EditorUI::Instance->GetProjectDataPath() + "/tabs.json";
 }
 
 bool engine::editor::ScriptEditorUI::HasKeyboardFocus()

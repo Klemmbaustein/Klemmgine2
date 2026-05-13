@@ -3,6 +3,7 @@
 #include <Core/File/JsonSerializer.h>
 #include <Core/Log.h>
 #include <Core/Platform/Platform.h>
+#include <Engine/Internal/PlatformGraphics.h>
 #include <Editor/UI/EditorUI.h>
 #include <Engine/Version.h>
 #include <Engine/MainThread.h>
@@ -13,6 +14,7 @@
 engine::editor::ServerConnection::ServerConnection(string Url)
 {
 	this->Connection = new http::WebSocketConnection("ws://" + Url + "/ws");
+	ConnectionName = Url;
 
 	this->Connection->OnOpened = [this] {
 		SendMessage("tryConnect", {});
@@ -180,8 +182,9 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 	else if (Type == "connectDeny")
 	{
 		Log::Warn("Connection from server was denied.");
+		platform::ShowMessageBox("Connection from server was denied.", Json.At("data").At("error").GetString(), 2);
 		if (OnConnectionAcceptDeny)
-			OnConnectionAcceptDeny(false);
+			thread::ExecuteOnMainThread(std::bind(OnConnectionAcceptDeny, false));
 	}
 	else if (Type == "connectAllow")
 	{

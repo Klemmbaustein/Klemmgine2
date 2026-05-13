@@ -179,6 +179,8 @@ namespace engine::editor
 
 		PanelRegistry Panels;
 
+		string GetProjectDataPath();
+
 	private:
 
 		void RegisterDefaultPanels();

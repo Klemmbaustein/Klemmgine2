@@ -38,6 +38,7 @@ namespace engine::editor
 		Event<> OnChatMessage;
 		Event<> OnClosed;
 
+		string ConnectionName;
 		string ThisUserName;
 
 		void SendMessageData(SerializedValue Json);

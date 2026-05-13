@@ -189,6 +189,13 @@ static void SceneObject_attach(InterpretContext* context)
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
 	CHECK_OBJ(Data);
 	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
+
+	if ((*Component.get())->ParentObject || (*Component.get())->ParentComponent)
+	{
+		context->runtimePanic("Component attached twice");
+		return;
+	}
+
 	Data.getValue()->Attach(*Component);
 }
 

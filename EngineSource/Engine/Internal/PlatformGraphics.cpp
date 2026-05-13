@@ -10,6 +10,7 @@
 #include <ShObjIdl_core.h>
 #include <functiondiscoverykeys.h>
 #include <dwmapi.h>
+#include <kui/StringReplace.h>
 #pragma comment(lib, "Dwmapi.lib")
 
 static std::string WstrToStr(const std::wstring& wstr)
@@ -294,6 +295,15 @@ std::vector<engine::string> engine::platform::OpenFileDialog(std::vector<FileDia
 
 #endif
 
+static std::string& SanitizeString(std::string& In)
+{
+	kui::strReplace::ReplaceChar(In, '@', "\\@");
+	kui::strReplace::ReplaceChar(In, '\\', "\\\\");
+	kui::strReplace::ReplaceChar(In, '\"', "\\\"");
+	kui::strReplace::ReplaceChar(In, '\n', "\\n");
+	return In;
+}
+
 // Stolen from SystemWM_Win32 and SystemWM_Linux in KlemmUI.
 // SDL also has a message box function but it is rather janky.
 // (It doesn't even seem to use MessageBox() on Windows)
@@ -304,8 +314,33 @@ bool engine::platform::ShowMessageBox(string Title, string Message, int Type)
 		return false;
 	}
 
-#undef MessageBox
+#if WINDOWS
+	std::array<UINT, 3> Types = { 0, MB_ICONWARNING, MB_ICONERROR };
 
-	kui::app::MessageBox(Message, Title, kui::app::MessageType(Type));
+	::MessageBoxW(NULL, StrToWstr(Message).c_str(), StrToWstr(Title).c_str(), Types[Type]);
 	return true;
+#else
+	Tile = SanitizeString(Title);
+	Message = SanitizeString(Message);
+
+	if (CommandExists("kdialog"))
+	{
+		std::array<const char*, 3> Types = { "msgbox", "sorry", "error" };
+
+		Execute("/usr/bin/env kdialog --title \"" + Title + "\" --" + Types[Type] + " \"" + Message + "\"");
+		return true;
+	}
+
+	if (CommandExists("zenity"))
+	{
+		std::array<const char*, 3> Types = { "info", "warning", "error" };
+
+		Execute("/usr/bin/env zenity --no-markup --title \"" + Title + "\" --" + Types[Type] + " --text \"" + Message + "\"");
+		return true;
+	}
+
+	// If kdialog and zenity don't exist, there's no good way of creating a message box.
+	return false;
+#endif
+
 }
