@@ -63,7 +63,13 @@ engine::editor::EditorSubsystem::~EditorSubsystem()
 {
 	Active = false;
 	delete UI;
-	Engine::GetSubsystem<ConsoleSubsystem>()->RemoveCommand("unload_editor");
+
+	auto console = Engine::GetSubsystem<ConsoleSubsystem>();
+
+	if (console)
+	{
+		// TODO
+	}
 }
 
 void engine::editor::EditorSubsystem::Update()

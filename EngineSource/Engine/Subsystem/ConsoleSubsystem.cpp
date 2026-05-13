@@ -27,6 +27,16 @@ engine::ConsoleSubsystem::ConsoleSubsystem()
 		}
 		}
 		});
+
+	AddCommand({
+	Command{
+		.Name = "sys.unload",
+		.Args = {Command::Argument("name")},
+		.OnCalled = [this](const Command::CallContext& ctx) {
+			Engine::GetSubsystemByName(ctx.ProvidedArguments.at(0))->Unload();
+		}
+		}
+		});
 }
 
 void engine::ConsoleSubsystem::ExecuteCommand(const string& Command)
