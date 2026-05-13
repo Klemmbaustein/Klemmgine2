@@ -21,3 +21,4 @@ Saved/
 /project.json
 /scriptCache.bin
 *.pdb
+/Engine/Remote

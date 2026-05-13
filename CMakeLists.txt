@@ -118,15 +118,13 @@ add_subdirectory("Dependencies/SDL" EXCLUDE_FROM_ALL)
 set(ALSOFT_UTILS OFF)
 set(OLD_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
 set(CMAKE_BUILD_TYPE "Release")
+set(ALSOFT_ENABLE_MODULES OFF)
 add_subdirectory("Dependencies/openal-soft" EXCLUDE_FROM_ALL)
 
 if(MSVC AND ENGINE_ENABLE_SOUND)
 	# OpenAL soft uses deprecated GSL functions.
 	target_compile_options(OpenAL PRIVATE "/wd4875")
-	target_compile_options(openal.modules PRIVATE "/wd4875")
 	target_compile_options(alsoft.common PRIVATE "/wd4875")
-	target_compile_options(alsoft.modules PRIVATE "/wd4875")
-	target_compile_options(alsoft.core-modules PRIVATE "/wd4875")
 endif()
 
 set(CMAKE_BUILD_TYPE "${OLD_BUILD_TYPE}")

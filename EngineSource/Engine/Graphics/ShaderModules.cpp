@@ -19,7 +19,7 @@ ShaderModuleLoader::~ShaderModuleLoader()
 ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type)
 {
 	std::stringstream SourceStream;
-	SourceStream << ShaderSource;
+	SourceStream << ShaderSource, '\r';
 
 	std::stringstream OutStream;
 
@@ -63,8 +63,8 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 
 	while (true)
 	{
-		char LineBuffer[8000];
-		SourceStream.getline(LineBuffer, sizeof(LineBuffer));
+		string LineBuffer;
+		std::getline(SourceStream, LineBuffer);
 
 		if (SourceStream.eof())
 		{
@@ -101,7 +101,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 				FoundUniforms.push_back(ReadUniformDefinition(LineString));
 				NextLineIsParam = false;
 			}
-			NextLine(LineBuffer);
+			NextLine(LineString);
 			continue;
 		}
 		else if (NextLineIsExport || NextLineIsParam)

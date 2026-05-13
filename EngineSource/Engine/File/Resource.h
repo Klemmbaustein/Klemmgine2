@@ -30,6 +30,8 @@ namespace engine::resource
 	extern std::map<string, string> LoadedAssets;
 	extern std::map<string, Event<>> AssetListeners;
 
+	extern bool AllowLocalFiles;
+
 	void RemoveListener(void* Target);
 
 	void LoadSceneFiles(string ScenePath);

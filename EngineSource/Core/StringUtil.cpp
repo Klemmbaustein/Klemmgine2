@@ -39,6 +39,20 @@ engine::string engine::str::ReplaceChar(string Target, char c, char With)
 	return Target;
 }
 
+engine::string engine::str::RemoveChar(string Target, char c)
+{
+	string Result;
+	Result.reserve(Target.size());
+
+	for (auto& i : Target)
+	{
+		if (c != i)
+			Result += i;
+	}
+
+	return Result;
+}
+
 engine::string engine::str::Lower(string Input)
 {
 	std::transform(Input.begin(), Input.end(), Input.begin(),
@@ -50,11 +64,11 @@ engine::string engine::str::Trim(string Input)
 {
 	Input.erase(Input.begin(), std::find_if(Input.begin(), Input.end(), [](unsigned char ch) {
 		return !std::isspace(ch) && ch != '\r';
-		}));
+	}));
 
 	Input.erase(std::find_if(Input.rbegin(), Input.rend(), [](unsigned char ch) {
 		return !std::isspace(ch) && ch != '\r';
-		}).base(), Input.end());
+	}).base(), Input.end());
 	return Input;
 }
 

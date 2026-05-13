@@ -43,6 +43,12 @@ namespace engine
 		*/
 		[[nodiscard]]
 		string ReplaceChar(string Target, char c, char With);
+		/**
+		* @brief
+		* Returns a string where all occurrences of the character 'c' are removed
+		*/
+		[[nodiscard]]
+		string RemoveChar(string Target, char c);
 
 		/**
 		* @brief

@@ -29,9 +29,17 @@ engine::editor::EditorSubsystem::EditorSubsystem()
 	UI = new EditorUI();
 	Active = true;
 
-	if (!std::filesystem::exists(".editor/"))
+	auto RemoteProject = editor::GetRemoteProjectName();
+	if (RemoteProject)
 	{
-		platform::CreateHiddenDirectory(".editor/");
+		std::filesystem::create_directories(GetEditorPath() + "/Remote/" + *RemoteProject + "/");
+	}
+	else
+	{
+		if (!std::filesystem::exists(".editor/"))
+		{
+			platform::CreateHiddenDirectory(".editor/");
+		}
 	}
 
 	Settings::GetInstance()->Graphics.Apply();

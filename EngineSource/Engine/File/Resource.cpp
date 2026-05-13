@@ -1,13 +1,13 @@
 #include "Resource.h"
 #include <map>
 #include <functional>
-#include <fstream>
 #include <Core/Log.h>
 #include <filesystem>
 #include <kui/Resource.h>
 #include <Engine/File/ArchiveResourceSource.h>
 #include <Engine/File/EmbeddedResourceSource.h>
 #include <set>
+#include <Editor/Editor.h>
 
 using namespace engine;
 using namespace engine::resource;
@@ -81,7 +81,7 @@ bool engine::resource::FileExists(string EnginePath)
 		}
 	}
 
-	return kui::resource::FileExists(EnginePath) || std::filesystem::exists(Converted);
+	return kui::resource::FileExists(EnginePath) || (std::filesystem::exists(Converted) && AllowLocalFiles);
 }
 
 IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
@@ -115,7 +115,14 @@ IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 			}
 		}
 
-		if (std::filesystem::exists(FilePath) && !std::filesystem::is_directory(FilePath))
+		bool AllowFiles = AllowLocalFiles;
+
+#ifdef EDITOR
+		// Allow loading local files belonging to the editor
+		AllowFiles = AllowLocalFiles || EnginePath.starts_with(editor::GetEditorPath()) && !EnginePath.contains("..");
+#endif
+		if (AllowFiles && std::filesystem::exists(FilePath)
+			&& !std::filesystem::is_directory(FilePath))
 		{
 			return new FileStream(FilePath, true);
 		}
@@ -148,7 +155,7 @@ void resource::ScanForAssets()
 
 	static bool ArchiveProviderLoaded = false;
 
-	if (!ArchiveProviderLoaded)
+	if (AllowLocalFiles && !ArchiveProviderLoaded)
 	{
 		ArchiveProviderLoaded = true;
 
@@ -170,14 +177,17 @@ void resource::ScanForAssets()
 			LoadedAssets.insert(asset);
 		}
 	}
-	for (const auto& i : recursive_directory_iterator("Assets/"))
+	if (AllowLocalFiles)
 	{
-		if (i.is_regular_file())
-			LoadedAssets.insert(
-				{
-					i.path().filename().string(),
-					str::ReplaceChar(i.path().string(), '\\', '/')
-				});
+		for (const auto& i : recursive_directory_iterator("Assets/"))
+		{
+			if (i.is_regular_file())
+				LoadedAssets.insert(
+					{
+						i.path().filename().string(),
+						str::ReplaceChar(i.path().string(), '\\', '/')
+					});
+		}
 	}
 }
 
@@ -193,3 +203,4 @@ void resource::RemoveResourceSource(ResourceSource* Source)
 
 std::map<string, string> resource::LoadedAssets;
 std::map<string, Event<>> resource::AssetListeners;
+bool resource::AllowLocalFiles = true;

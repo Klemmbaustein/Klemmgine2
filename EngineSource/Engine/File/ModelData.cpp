@@ -130,8 +130,10 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 	}
 	this->Bounds.Position = this->Bounds.Position / float(MeshesArray.size());
 
-	CastShadow = From->At("shadow").GetBool();
-	HasCollision = From->At("collision").GetBool();
+	if (From->Contains("shadow"))
+		CastShadow = From->At("shadow").GetBool();
+	if (From->Contains("collision"))
+		HasCollision = From->At("collision").GetBool();
 }
 
 engine::ModelData::Mesh::Mesh(const std::vector<Vertex>& Vertices, const std::vector<uint32>& Indices)
