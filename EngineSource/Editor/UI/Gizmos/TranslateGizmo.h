@@ -33,5 +33,8 @@ namespace engine::editor
 		{
 			this->GizmoMesh->IsVisible = NewVisible;
 		}
+
+	private:
+		MeshComponent* Grid = nullptr;
 	};
 }

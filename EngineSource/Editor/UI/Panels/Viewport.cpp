@@ -284,37 +284,38 @@ void engine::editor::Viewport::Update()
 	Window* Win = VideoSystem->MainWindow;
 	FameCount++;
 
-	LoadingScreenBox->IsVisible = !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
+	LoadingScreenBox->IsVisible = SceneSubsystem::Current && !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
 	PolledForText = Win->Input.PollForText;
-
 
 	if ((StatsRedrawTimer.Get() > 1 || RedrawStats))
 	{
 		SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
-		uint64 Fps = uint64(std::round(float(FameCount) / StatsRedrawTimer.Get()));
-
-		int ObjCount = 0;
-		string SceneName = "<No scene>";
-
-		if (SceneSystem->Main)
+		if (SceneSystem)
 		{
-			SceneName = SceneSystem->Main->Name;
-			ObjCount = int(SceneSystem->Main->Objects.size());
+			uint64 Fps = uint64(std::round(float(FameCount) / StatsRedrawTimer.Get()));
+
+			int ObjCount = 0;
+			string SceneName = "<No scene>";
+
+			if (SceneSystem->Main)
+			{
+				SceneName = SceneSystem->Main->Name;
+				ObjCount = int(SceneSystem->Main->Objects.size());
+			}
+
+			string ViewportText = str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, Fps);
+
+			if (Engine::IsPlaying)
+			{
+				ViewportText.append(" | Esc: Stop | Shift+Esc: Release mouse cursor");
+			}
+
+			ViewportStatusText->SetText(ViewportText);
+			FameCount = 0;
+			StatsRedrawTimer.Reset();
+			RedrawStats = false;
 		}
-
-		string ViewportText = str::Format("Scene: %s | %i Object(s) | %i FPS", SceneName.c_str(), ObjCount, Fps);
-
-		if (Engine::IsPlaying)
-		{
-			ViewportText.append(" | Esc: Stop | Shift+Esc: Release mouse cursor");
-		}
-
-		ViewportStatusText->SetText(ViewportText);
-		FameCount = 0;
-		StatsRedrawTimer.Reset();
-		RedrawStats = false;
 	}
-
 
 	Scene* Current = Scene::GetMain();
 	ViewportBackground->SetOpacity(Current == nullptr ? 0.0f : 1.0f);

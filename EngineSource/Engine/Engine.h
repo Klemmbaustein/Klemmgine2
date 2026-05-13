@@ -80,6 +80,22 @@ namespace engine
 			}
 			return nullptr;
 		}
+		static subsystem::Subsystem* GetSubsystemByName(string Name)
+		{
+			if (!Instance)
+			{
+				return nullptr;
+			}
+
+			for (subsystem::Subsystem* i : Instance->LoadedSystems)
+			{
+				if (i->GetName() == Name)
+				{
+					return i;
+				}
+			}
+			return nullptr;
+		}
 
 		friend class engine::subsystem::Subsystem;
 

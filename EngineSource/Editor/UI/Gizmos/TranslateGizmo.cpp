@@ -26,6 +26,18 @@ engine::editor::TranslateGizmo::TranslateGizmo()
 
 engine::editor::TranslateGizmo::~TranslateGizmo()
 {
+	auto Current = Scene::GetMain();
+	if (Current)
+	{
+		auto Effect = Current->Graphics.Post.GetEffect<EditorOutline>();
+
+		if (Effect)
+		{
+			Current->Graphics.RemoveDrawnComponent(Grid);
+			Current->Graphics.RemoveDrawnComponent(GizmoMesh);
+		}
+	}
+
 	delete GizmoMesh;
 	delete Collider;
 }
@@ -33,11 +45,17 @@ engine::editor::TranslateGizmo::~TranslateGizmo()
 void engine::editor::TranslateGizmo::Update(Viewport* With)
 {
 	auto Current = Scene::GetMain();
+
+	if (!Current)
+	{
+		return;
+	}
 	auto Effect = Current->Graphics.Post.GetEffect<EditorOutline>();
 
 	if (!Effect)
 	{
 		Effect = new EditorOutline();
+		Grid = With->Grid;
 		Current->Graphics.AddDrawnComponent(With->Grid);
 		Current->Graphics.AddDrawnComponent(GizmoMesh);
 		Current->Graphics.Post.AddEffect(Effect);

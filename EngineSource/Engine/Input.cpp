@@ -16,5 +16,7 @@ bool engine::input::IsKeyDown(Key k)
 	if (!kui::Window::GetActiveWindow() || kui::Window::GetActiveWindow()->Input.PollForText)
 		return false;
 
-	return Engine::GetSubsystem<subsystem::InputSubsystem>()->KeyDown(k);
+	auto sys = Engine::GetSubsystem<subsystem::InputSubsystem>();
+
+	return sys && sys->KeyDown(k);
 }

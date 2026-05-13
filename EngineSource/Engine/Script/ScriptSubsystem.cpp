@@ -51,6 +51,11 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
 {
+	for (auto& [ClassId, ObjectId] : ScriptObjectIds)
+	{
+		Reflection::UnRegisterObject(ObjectId);
+	}
+
 	// Check for memory leaks. Ideally if the reference counting works as expected this should be 0.
 	Print("Script classes leaked: " + std::to_string(RuntimeClass::classRefCount), LogType::Note);
 

@@ -18,7 +18,9 @@ void engine::script::ScriptSceneObject::OnDestroyed()
 engine::script::ScriptSceneObject::ScriptSceneObject(const ds::TypeInfo& Class, ds::InterpretContext* Interpreter)
 	: ScriptObject(Class, Interpreter)
 {
+	ScriptObject::LoadScriptData();
 
+	LoadProperties();
 }
 
 void engine::script::ScriptSceneObject::Begin()

@@ -27,6 +27,11 @@ namespace engine::subsystem
 
 	public:
 
+		const char* GetName()
+		{
+			return Name;
+		}
+
 		/**
 		* @brief
 		* Unloads this subsystem.

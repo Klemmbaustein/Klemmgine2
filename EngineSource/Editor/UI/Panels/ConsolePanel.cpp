@@ -46,7 +46,13 @@ engine::editor::ConsolePanel::ConsolePanel()
 
 		Log::Info("> " + Command);
 		Element->commandField->field->SetText("");
-		Engine::GetSubsystem<ConsoleSubsystem>()->ExecuteCommand(Command);
+
+		auto sys = Engine::GetSubsystem<ConsoleSubsystem>();
+
+		if (sys)
+		{
+			sys->ExecuteCommand(Command);
+		}
 	};
 
 	Element->searchField->field->OnValueChanged = [this]() {

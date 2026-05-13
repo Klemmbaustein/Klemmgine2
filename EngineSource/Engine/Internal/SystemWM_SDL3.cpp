@@ -654,7 +654,10 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 	}
 
 	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
-	InputSys->SetKeyDown(input::Key(k), IsDown);
+	if (InputSys)
+	{
+		InputSys->SetKeyDown(input::Key(k), IsDown);
+	}
 }
 
 void kui::systemWM::SysWindow::UpdateEvents()
