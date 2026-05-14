@@ -5,7 +5,7 @@ using namespace engine;
 using namespace engine::subsystem;
 
 static string EditorPath = "Engine";
-static std::optional<string> RemoteProject = "";
+static std::optional<string> RemoteProject = std::nullopt;
 
 const bool editor::IsActive()
 {
