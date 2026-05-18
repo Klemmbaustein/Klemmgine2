@@ -320,7 +320,7 @@ bool engine::platform::ShowMessageBox(string Title, string Message, int Type)
 	::MessageBoxW(NULL, StrToWstr(Message).c_str(), StrToWstr(Title).c_str(), Types[Type]);
 	return true;
 #else
-	Tile = SanitizeString(Title);
+	Title = SanitizeString(Title);
 	Message = SanitizeString(Message);
 
 	if (CommandExists("kdialog"))
