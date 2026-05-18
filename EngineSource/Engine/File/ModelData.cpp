@@ -118,17 +118,18 @@ void engine::ModelData::DeSerialize(SerializedValue* From)
 
 	auto& MeshesArray = From->At("meshes").GetArray();
 
+	Vector3 MinBounds;
+	Vector3 MaxBounds;
+
 	for (SerializedValue& Elem : MeshesArray)
 	{
 		Mesh& NewMesh = Meshes.emplace_back(LoadMaterials);
 		NewMesh.DeSerialize(&Elem);
-		this->Bounds.Position += NewMesh.Bounds.Position;
-		this->Bounds.Extents = Vector3(
-			std::max(NewMesh.Bounds.Extents.X, Bounds.Extents.X),
-			std::max(NewMesh.Bounds.Extents.Y, Bounds.Extents.Y),
-			std::max(NewMesh.Bounds.Extents.Z, Bounds.Extents.Z));
+		MinBounds = MinBounds.Min(NewMesh.Bounds.Position - NewMesh.Bounds.Extents);
+		MaxBounds = MaxBounds.Max(NewMesh.Bounds.Position + NewMesh.Bounds.Extents);
 	}
-	this->Bounds.Position = this->Bounds.Position / float(MeshesArray.size());
+
+	this->Bounds = BoundingBox::FromMinMax(MinBounds, MaxBounds);
 
 	if (From->Contains("shadow"))
 		CastShadow = From->At("shadow").GetBool();
@@ -470,7 +471,7 @@ GraphicsModel* engine::GraphicsModel::UnitPlane()
 		AddPlane(Vector3(0, 1, 0), 0, Vector3(1, 0, 0), Vector3(0, 0, 1), m);
 		AddPlane(Vector3(0, -1, 0), 0, Vector3(-1, 0, 0), Vector3(0, 0, 1), m);
 
-		Plane->Data->Bounds = BoundingBox(0, 1);
+		Plane->Data->Bounds = BoundingBox(0, Vector3(1, 0, 1));
 
 		Plane->Drawable = new graphics::Model(Plane->Data);
 	}

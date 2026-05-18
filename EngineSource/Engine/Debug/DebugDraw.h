@@ -44,6 +44,8 @@ namespace engine::debug
 		DebugDraw();
 		~DebugDraw();
 
+		void Clear();
+
 		void Draw(graphics::GraphicsScene* With);
 
 		void AddShape(DebugShape* Shape);

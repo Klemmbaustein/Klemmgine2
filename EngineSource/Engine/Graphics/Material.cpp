@@ -167,6 +167,12 @@ SerializedValue Material::Serialize()
 	Values.push_back(SerializedData("fragmentShader",
 		FragmentShader
 	));
+	Values.push_back(SerializedData("isTwoSided",
+		IsTwoSided
+	));
+	Values.push_back(SerializedData("isTransparent",
+		IsTransparent
+	));
 
 	return Values;
 }
@@ -188,6 +194,16 @@ void Material::DeSerialize(SerializedValue* From)
 			if (i.Name == "fragmentShader")
 			{
 				FragmentShader = i.Value.GetString();
+				continue;
+			}
+			if (i.Name == "isTwoSided")
+			{
+				IsTwoSided = i.Value.GetBool();
+				continue;
+			}
+			if (i.Name == "isTransparent")
+			{
+				IsTransparent = i.Value.GetBool();
 				continue;
 			}
 		}

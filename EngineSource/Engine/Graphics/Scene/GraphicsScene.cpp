@@ -149,7 +149,7 @@ void engine::graphics::GraphicsScene::Draw()
 	Lights.UpdateBounds(this);
 }
 
-static void ShowDebugNodes(GraphicsScene* With, BvhNode<DrawableComponent*>* Node, size_t Depth)
+static void ShowDebugNodes(GraphicsScene* With, BvhNode<GraphicsScene::DrawableData>* Node, size_t Depth)
 {
 	if (Node->A)
 	{
@@ -253,23 +253,11 @@ void engine::graphics::GraphicsScene::MainDrawPass()
 	}
 
 	std::sort(SortedComponents.begin(), SortedComponents.end(), [](const Entry& a, const Entry& b) -> bool {
-		if (a.second->IsTransparent && !b.second->IsTransparent)
-		{
-			return false;
-		}
-		if (!a.second->IsTransparent && b.second->IsTransparent)
-		{
-			return true;
-		}
-		if (a.second->IsTransparent && b.second->IsTransparent)
-		{
-			// Draw transparent objects in reverse order
-			return a.first.Position.X > b.first.Position.X;
-		}
-
 		return a.first.Position.X < b.first.Position.X;
 	});
 
+	glDisable(GL_BLEND);
+	bool FoundTransparent = false;
 	for (auto& [_, i] : SortedComponents)
 	{
 		if (i->DrawStencil && !LastDrawStencil)
@@ -282,20 +270,41 @@ void engine::graphics::GraphicsScene::MainDrawPass()
 			glStencilMask(0);
 			LastDrawStencil = false;
 		}
-		if (i->IsTransparent && !LastIsTransparent)
+		if (i->IsTransparent)
 		{
-			glEnable(GL_BLEND);
-			LastIsTransparent = true;
+			FoundTransparent = true;
 		}
-		else if (!i->IsTransparent && LastDrawStencil)
+		if (i->IsOpaque)
 		{
-			glDisable(GL_BLEND);
-			LastIsTransparent = false;
+			i->Draw(UsedCamera, this);
 		}
-		i->Draw(UsedCamera, this);
 	}
 
-	glEnable(GL_BLEND);
+	if (FoundTransparent)
+	{
+		glEnable(GL_BLEND);
+		for (auto i = SortedComponents.rbegin(); i != SortedComponents.rend(); i++)
+		{
+			if (i->second->DrawStencil && !LastDrawStencil)
+			{
+				glStencilMask(1);
+				LastDrawStencil = true;
+			}
+			else if (!i->second->DrawStencil && LastDrawStencil)
+			{
+				glStencilMask(0);
+				LastDrawStencil = false;
+			}
+			if (i->second->IsTransparent)
+			{
+				i->second->DrawTransparent(UsedCamera, this);
+			}
+		}
+	}
+	else
+	{
+		glEnable(GL_BLEND);
+	}
 	Debug.Draw(this);
 	glDisable(GL_BLEND);
 	Buffer->Unbind();
@@ -316,7 +325,10 @@ void engine::graphics::GraphicsScene::BuildBoundingVolume()
 
 	for (auto& i : this->DrawnComponents)
 	{
-		Components.push_back({ i, i.Component->DrawBoundingBox });
+		if (i.Component->DrawBoundingBox.Extents != 0)
+		{
+			Components.push_back({ i, i.Component->DrawBoundingBox });
+		}
 	}
 
 	// All new drawables that were new when the BVH building started

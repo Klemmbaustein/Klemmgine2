@@ -232,10 +232,6 @@ void engine::internal::JoltInstance::InitJolt()
 
 	TempAllocator = new JPH::TempAllocatorImpl(1024 * 1024);
 	JobSystem = new JoltJobSystemImpl(ThreadPool::Main());
-
-	// We need a job system that will execute physics jobs on multiple threads. Typically
-	// you would implement the JobSystem interface yourself and let Jolt Physics run on top
-	// of your own job scheduler. JobSystemThreadPool is an example implementation.
 }
 
 JPH::MeshShape* engine::internal::JoltInstance::CreateNewMeshShape(GraphicsModel* From, bool ExtraReference)

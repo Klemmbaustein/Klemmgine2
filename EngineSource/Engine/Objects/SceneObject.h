@@ -74,7 +74,7 @@ namespace engine
 
 		std::vector<ObjectComponent*> ChildComponents;
 		bool BeginCalled = false;
-		Vector3 OldPosition;
+		Vector3 OldPosition = INFINITY;
 		Rotation3 OldRotation;
 		Vector3 OldScale = 1;
 

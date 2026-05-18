@@ -32,7 +32,7 @@ namespace engine
 		void Attach(ObjectComponent* Child);
 
 		Transform GetWorldTransform();
-		virtual void UpdateTransform(bool Dirty = false);
+		virtual bool UpdateTransform(bool Dirty = false);
 
 		SceneObject* RootObject = nullptr;
 

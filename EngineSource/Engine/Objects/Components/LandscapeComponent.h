@@ -18,7 +18,7 @@ namespace engine
 		void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
 		void SimpleDraw(graphics::ShaderObject* With) override;
 
-		void UpdateTransform(bool Dirty) override;
+		bool UpdateTransform(bool Dirty) override;
 
 		graphics::Material* LandscapeMaterial = nullptr;
 

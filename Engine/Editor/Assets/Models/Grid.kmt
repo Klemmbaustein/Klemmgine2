@@ -1,4 +1,5 @@
 {
 	"vertexShader": str = "res:shader/basic.vert";
 	"fragmentShader": str = "res:shader/internal/grid.frag";
+	"isTransparent": bool = 1;
 }

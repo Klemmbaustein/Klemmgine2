@@ -197,7 +197,7 @@ void engine::PhysicsComponent::Update()
 	}
 }
 
-void engine::PhysicsComponent::UpdateTransform(bool IsDirty)
+bool engine::PhysicsComponent::UpdateTransform(bool IsDirty)
 {
 	if (IsPhysicsSimulated && Engine::Instance->IsPlaying)
 	{
@@ -228,10 +228,11 @@ void engine::PhysicsComponent::UpdateTransform(bool IsDirty)
 		OldScale = Scale;
 		OldRotation = Rotation;
 		this->TransformDirty = false;
+		return true;
 	}
 	else
 	{
-		ObjectComponent::UpdateTransform(IsDirty);
+		return ObjectComponent::UpdateTransform(IsDirty);
 	}
 }
 
