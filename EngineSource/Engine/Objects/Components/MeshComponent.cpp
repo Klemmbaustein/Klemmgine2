@@ -13,12 +13,28 @@ void engine::MeshComponent::Update()
 
 void engine::MeshComponent::Draw(graphics::Camera* From, graphics::GraphicsScene* In)
 {
-	auto Root = GetRootObject();
+	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
+	{
+		IsTransparent = false;
+		for (auto& i : this->Materials)
+		{
+			if (i->IsTransparent)
+			{
+				IsTransparent = true;
+			}
+		}
 
+		DrawnModel->Drawable->Draw(DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
+			From, Materials, DrawBoundingBox, DrawStencil, false);
+	}
+}
+
+void engine::MeshComponent::DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In)
+{
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
 		DrawnModel->Drawable->Draw(DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
-			From, Materials, DrawBoundingBox, DrawStencil);
+			From, Materials, DrawBoundingBox, DrawStencil, true);
 	}
 }
 
@@ -97,13 +113,14 @@ engine::MeshComponent::~MeshComponent()
 	}
 }
 
-void engine::MeshComponent::UpdateTransform(bool IsDirty)
+bool engine::MeshComponent::UpdateTransform(bool IsDirty)
 {
-	ObjectComponent::UpdateTransform(IsDirty);
-	if (DrawnModel)
+	bool Result = ObjectComponent::UpdateTransform(IsDirty);
+	if (DrawnModel && (DrawBoundingBox.Extents == 0 || Result))
 	{
 		DrawBoundingBox = DrawnModel->Data->Bounds.Translate(WorldTransform);
 	}
+	return Result;
 }
 
 void engine::MeshComponent::ClearModel(bool RemoveDrawnComponent)

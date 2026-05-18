@@ -24,7 +24,7 @@ namespace engine::graphics
 		std::vector<VertexBuffer*> ModelVertexBuffers;
 
 		virtual void Draw(GraphicsScene* In, const Transform& At, Camera* With,
-			std::vector<Material*>& UsedMaterials, const BoundingBox& Bounds, bool Stencil);
+			std::vector<Material*>& UsedMaterials, const BoundingBox& Bounds, bool Stencil, bool IsTransparent);
 		virtual void SimpleDraw(const Transform& At, ShaderObject* Shader,
 			std::vector<Material*>& UsedMaterials);
 	};

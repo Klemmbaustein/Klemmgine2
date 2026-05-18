@@ -49,8 +49,8 @@ uniform vec3 u_sceneFogColor = vec3(0.0);
 uniform float u_sceneFogRange = 0.0;
 uniform float u_sceneFogStart = 0.0;
 
-#define PCF_SIZE 4
-#define PCF_HALF_SIZE 2
+#define PCF_SIZE 5
+#define PCF_HALF_SIZE 3
 
 float shadowValues[PCF_SIZE][PCF_SIZE];
 

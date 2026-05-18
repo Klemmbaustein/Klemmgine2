@@ -3,7 +3,7 @@ element ToolBarButton
 {
 	var Icon
 	var Name = "Some name"
-	var Color
+	var Color = 0.1
 
 	allAlign = centered
 	height = 100%
@@ -39,6 +39,36 @@ element ToolBarButton
 			color = Color_Text
 			leftPadding = -3px
 			padding = 5px
+		}
+
+		child UIButton advancedOptionsButton
+		{
+			leftPadding = 4px
+			color = Color
+			corners = Theme_CornerSize
+			bottomLeftCorner = false
+			topLeftCorner = false
+
+			width = 23px
+			height = 100%
+
+			child UIBackground
+			{
+				width = 1px
+				height = 100%
+				color = Color_BackgroundHighlight
+				upPadding = 3px
+				downPadding = 3px
+			}
+
+			child UIBackground
+			{
+				image = $"DownArrow.png"
+				size = 14px
+				upPadding = 8px
+				downPadding = 8px
+				leftPadding = 4px
+			}
 		}
 	}
 }

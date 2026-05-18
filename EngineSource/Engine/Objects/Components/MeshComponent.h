@@ -18,6 +18,7 @@ namespace engine
 		virtual void Update() override;
 
 		virtual void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
+		virtual void DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In) override;
 		virtual void SimpleDraw(graphics::ShaderObject* With) override;
 
 		void Load(AssetRef From, bool LoadMaterials = true);
@@ -27,7 +28,7 @@ namespace engine
 
 		~MeshComponent() override;
 
-		void UpdateTransform(bool IsDirty) override;
+		bool UpdateTransform(bool IsDirty) override;
 
 		void ClearModel(bool RemoveDrawnComponent);
 	private:

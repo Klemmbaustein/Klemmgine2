@@ -18,8 +18,13 @@ namespace engine
 		bool DrawStencil = false;
 		bool IsVisible = true;
 		bool CastShadow = true;
+		bool IsOpaque = true;
 		bool IsTransparent = false;
 		virtual void Draw(graphics::Camera* From, graphics::GraphicsScene* In) = 0;
+		virtual void DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In)
+		{
+
+		}
 		virtual void SimpleDraw(graphics::ShaderObject* With) {};
 
 	private:

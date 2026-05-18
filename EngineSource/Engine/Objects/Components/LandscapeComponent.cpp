@@ -204,8 +204,12 @@ void engine::LandscapeComponent::SimpleDraw(graphics::ShaderObject* With)
 	LandscapeMesh->Draw();
 }
 
-void engine::LandscapeComponent::UpdateTransform(bool Dirty)
+bool engine::LandscapeComponent::UpdateTransform(bool Dirty)
 {
-	ObjectComponent::UpdateTransform(Dirty);
-	this->DrawBoundingBox = BoundingBox(Vector3(SIZE / 2) * Vector3(1, 0, 1), SIZE / 2).Translate(WorldTransform);
+	bool Result = ObjectComponent::UpdateTransform(Dirty);
+	if (Result)
+	{
+		this->DrawBoundingBox = BoundingBox(Vector3(SIZE / 2) * Vector3(1, 0, 1), SIZE / 2).Translate(WorldTransform);
+	}
+	return Result;
 }

@@ -25,7 +25,7 @@ namespace engine
 		bool GetActive() const;
 		void Update() override;
 
-		void UpdateTransform(bool IsDirty) override;
+		bool UpdateTransform(bool IsDirty) override;
 
 		std::function<void()> OnBeginOverlap;
 

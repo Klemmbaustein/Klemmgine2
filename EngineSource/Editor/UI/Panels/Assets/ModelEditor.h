@@ -24,6 +24,9 @@ namespace engine::editor
 	private:
 		void OnModelLoaded();
 
+		void ShowBounds();
+		void HideBounds();
+
 		void OnModelChanged();
 
 		bool ModelLoaded = false;
@@ -34,6 +37,8 @@ namespace engine::editor
 		MeshObject* CurrentObj = nullptr;
 		std::thread LoadModelThread;
 		std::shared_ptr<bool> CancelLoad;
+		debug::DebugBox* BoundsBox = nullptr;
 		bool FailedLoading = false;
+		bool ShouldShowBounds = false;
 	};
 }

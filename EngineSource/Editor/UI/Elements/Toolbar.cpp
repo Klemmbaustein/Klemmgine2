@@ -45,6 +45,23 @@ void engine::editor::Toolbar::AddButton(string Name, string Icon, std::function<
 	Button->SetColor(this->GetColor());
 	Button->btn->OnClicked = OnClicked;
 	Button->dropdownButton->IsCollapsed = true;
+	Button->advancedOptionsButton->IsCollapsed = true;
+	AddChild(Button);
+	this->Buttons.push_back(Button);
+}
+
+void engine::editor::Toolbar::AddButton(string Name, string Icon, std::function<void()> OnClicked,
+	std::function<std::vector<DropdownMenu::Option>()> Options)
+{
+	auto Button = new ToolBarButton();
+	Button->SetName(Name);
+	Button->SetIcon(Icon);
+	Button->SetColor(this->GetColor());
+	Button->btn->OnClicked = OnClicked;
+	Button->dropdownButton->IsCollapsed = true;
+	Button->advancedOptionsButton->OnClicked = [Options, Button] {
+		new DropdownMenu(Options(), Button->btn->GetPosition());
+	};
 	AddChild(Button);
 	this->Buttons.push_back(Button);
 }
@@ -55,10 +72,10 @@ void engine::editor::Toolbar::AddDropdown(string Name, string Icon, std::vector<
 	Button->SetName(Name);
 	Button->SetIcon(Icon);
 	Button->SetColor(this->GetColor());
-	Button->btn->OnClicked = [Options, Button]()
-		{
-			new DropdownMenu(Options, Button->btn->GetPosition());
-		};
+	Button->advancedOptionsButton->IsCollapsed = true;
+	Button->btn->OnClicked = [Options, Button]() {
+		new DropdownMenu(Options, Button->btn->GetPosition());
+	};
 	AddChild(Button);
 	this->Buttons.push_back(Button);
 }
@@ -70,8 +87,8 @@ void engine::editor::Toolbar::AddDropdown(string Name, string Icon,
 	Button->SetName(Name);
 	Button->SetIcon(Icon);
 	Button->SetColor(this->GetColor());
-	Button->btn->OnClicked = [Options, Button]()
-	{
+	Button->advancedOptionsButton->IsCollapsed = true;
+	Button->btn->OnClicked = [Options, Button]() {
 		new DropdownMenu(Options(), Button->btn->GetPosition());
 	};
 	AddChild(Button);

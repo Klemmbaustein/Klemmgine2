@@ -10,6 +10,17 @@ engine::debug::DebugDraw::DebugDraw()
 
 engine::debug::DebugDraw::~DebugDraw()
 {
+	Clear();
+}
+
+void engine::debug::DebugDraw::Clear()
+{
+	auto ShapeCopy = this->Shapes;
+	for (DebugShape* i : ShapeCopy)
+	{
+		delete i;
+	}
+	this->Shapes.clear();
 }
 
 void engine::debug::DebugDraw::Draw(GraphicsScene* With)
@@ -64,7 +75,8 @@ engine::debug::DebugBox::~DebugBox()
 void engine::debug::DebugBox::Draw(GraphicsScene* With)
 {
 	std::vector<Material*> Materials = { CubeMaterial };
-	this->CubeModel->Draw(With, CubeTransform, With->UsedCamera, Materials, BoundingBox(), false);
+	this->CubeModel->Draw(With, CubeTransform, With->UsedCamera, Materials, BoundingBox(), false,
+		false);
 }
 
 void engine::debug::DebugBox::SetColor(Vector3 NewColor)

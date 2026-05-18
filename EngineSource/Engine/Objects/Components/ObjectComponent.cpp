@@ -110,8 +110,9 @@ void engine::ObjectComponent::UpdateLogic()
 	}
 }
 
-void engine::ObjectComponent::UpdateTransform(bool Dirty)
+bool engine::ObjectComponent::UpdateTransform(bool Dirty)
 {
+	bool DidUpdate = false;
 	if (OldPosition != Position || OldScale != Scale || OldRotation != Rotation)
 	{
 		this->TransformDirty = true;
@@ -120,6 +121,7 @@ void engine::ObjectComponent::UpdateTransform(bool Dirty)
 	if (this->TransformDirty || Dirty)
 	{
 		WorldTransform = GetWorldTransform();
+		DidUpdate = true;
 	}
 	for (ObjectComponent* i : Children)
 	{
@@ -129,4 +131,5 @@ void engine::ObjectComponent::UpdateTransform(bool Dirty)
 	OldScale = Scale;
 	OldRotation = Rotation;
 	this->TransformDirty = false;
+	return DidUpdate;
 }

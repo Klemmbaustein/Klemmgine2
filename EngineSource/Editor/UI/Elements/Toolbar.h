@@ -15,6 +15,8 @@ namespace engine::editor
 		~Toolbar();
 
 		void AddButton(string Name, string Icon, std::function<void()> OnClicked);
+		void AddButton(string Name, string Icon, std::function<void()> OnClicked,
+			std::function<std::vector<DropdownMenu::Option>()> Options);
 		void AddDropdown(string Name, string Icon, std::vector<DropdownMenu::Option> Options);
 		void AddDropdown(string Name, string Icon, std::function<std::vector<DropdownMenu::Option>()> Options);
 

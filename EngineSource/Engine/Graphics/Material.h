@@ -84,6 +84,8 @@ namespace engine::graphics
 		[[nodiscard]]
 		Material::Field* FindField(string Name, Field::Type Type);
 		bool UseTexture = false;
+		bool IsTransparent = false;
+		bool IsTwoSided = false;
 
 	private:
 		size_t TextureField = SIZE_MAX;

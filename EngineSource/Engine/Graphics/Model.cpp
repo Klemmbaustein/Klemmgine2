@@ -20,7 +20,7 @@ engine::graphics::Model::~Model()
 }
 
 void engine::graphics::Model::Draw(GraphicsScene* In, const Transform& At, graphics::Camera* With,
-	std::vector<Material*>& UsedMaterials, const BoundingBox& Bounds, bool Stencil)
+	std::vector<Material*>& UsedMaterials, const BoundingBox& Bounds, bool Stencil, bool IsTransparent)
 {
 	if (!In && Stencil)
 	{
@@ -29,6 +29,11 @@ void engine::graphics::Model::Draw(GraphicsScene* In, const Transform& At, graph
 
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
+		if (IsTransparent != UsedMaterials[i]->IsTransparent)
+		{
+			continue;
+		}
+
 		UsedMaterials[i]->Apply();
 		ShaderObject* Used = UsedMaterials[i]->Shader;
 

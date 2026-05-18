@@ -40,6 +40,17 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 		[this] {
 		Save();
 	});
+	ModelToolbar->AddDropdown("View", EditorUI::Asset("Options.png"),
+		[this]() -> std::vector<DropdownMenu::Option> {
+		return {
+			DropdownMenu::Option("Show bounding box", "",
+				this->ShouldShowBounds ? EditorUI::Asset("Dot.png") : "", [this] {
+				this->ShouldShowBounds = !this->ShouldShowBounds;
+				this->ShowBounds();
+				OnModelChanged();
+			})
+		};
+	});
 
 	MainBox->AddChild(ModelToolbar);
 
@@ -79,12 +90,14 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 				return;
 			}
 			this->CurrentObj->LoadMesh(ModelFile);
+			this->CurrentObj->CheckComponentTransform();
 
-			Vector3 Pos = Vector3(0.75f) * CurrentObj->Mesh->DrawnModel->Data->Bounds.Extents.Length()
+			Vector3 Pos = Vector3(1.0f) * CurrentObj->Mesh->DrawnModel->Data->Bounds.Extents.Length()
 				+ CurrentObj->Mesh->DrawnModel->Data->Bounds.Position;
 
 			EditorScene->Graphics.SceneCamera->Position = Pos;
 			EditorScene->Graphics.SceneCamera->Rotation = Vector3(-35, 45, 0);
+			ShowBounds();
 			this->SceneBackground->RedrawElement();
 			this->ModelLoaded = true;
 			this->EditorScene->Graphics.RedrawNextFrame = true;
@@ -180,6 +193,30 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	Sidebar->AddInfoEntry("RefCount", std::to_string(Data->References));
 }
 
+void engine::editor::ModelEditor::ShowBounds()
+{
+	HideBounds();
+
+	if (ShouldShowBounds)
+	{
+		GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
+
+		BoundsBox = new debug::DebugBox(Data->Data->Bounds.Position, 0, Data->Data->Bounds.Extents, Vector3(1, 0, 0));
+
+		EditorScene->Graphics.Debug.AddShape(BoundsBox);
+	}
+}
+
+void engine::editor::ModelEditor::HideBounds()
+{
+	if (BoundsBox)
+	{
+		EditorScene->Graphics.Debug.RemoveShape(BoundsBox);
+		delete BoundsBox;
+		BoundsBox = nullptr;
+	}
+}
+
 void engine::editor::ModelEditor::OnModelChanged()
 {
 	CurrentObj->LoadMesh(EditedAsset);
@@ -202,6 +239,12 @@ void engine::editor::ModelEditor::Update()
 
 void engine::editor::ModelEditor::Save()
 {
+	if (!CurrentObj->Mesh->DrawnModel)
+	{
+		Log::Info("Cannot save model that is still loading: " + EditedAsset.FilePath);
+		return;
+	}
+
 	AssetEditor::Save();
 	GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 	Log::Info("Writing model data to file: " + EditedAsset.FilePath);
