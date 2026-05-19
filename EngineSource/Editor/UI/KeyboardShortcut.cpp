@@ -42,15 +42,15 @@ void engine::editor::KeyboardShortcuts::AddShortcut(kui::Key NewKey, ShortcutMod
 			return;
 		}
 
-		if (Modifiers.Ctrl && !TargetWindow->Input.IsKeyDown(Key::CTRL))
+		if (Modifiers.Ctrl != TargetWindow->Input.IsKeyDown(Key::CTRL))
 		{
 			return;
 		}
-		if (Modifiers.Shift && !TargetWindow->Input.IsKeyDown(Key::SHIFT))
+		if (Modifiers.Shift != TargetWindow->Input.IsKeyDown(Key::SHIFT))
 		{
 			return;
 		}
-		if (Modifiers.Alt && !TargetWindow->Input.IsKeyDown(Key::ALT))
+		if (Modifiers.Alt != TargetWindow->Input.IsKeyDown(Key::ALT))
 		{
 			return;
 		}
