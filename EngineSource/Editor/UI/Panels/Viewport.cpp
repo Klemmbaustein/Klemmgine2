@@ -158,6 +158,13 @@ engine::editor::Viewport::Viewport()
 		}
 	});
 
+	AddShortcut(Key::s, ShortcutModifiers{ .Ctrl = true, .Alt = true }, [this] {
+		if (!Engine::IsPlaying && UnsavedChanges)
+		{
+			SaveCurrentScene();
+		}
+	}, ShortcutOptions::Global);
+
 	AddShortcut(Key::z, CtrlMod, [this] {
 		if (!Engine::IsPlaying)
 		{
