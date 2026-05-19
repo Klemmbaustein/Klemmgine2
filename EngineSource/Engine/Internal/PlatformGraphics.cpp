@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <kui/App.h>
+#include <kui/StringReplace.h>
 
 #if WINDOWS
 #include <ShObjIdl_core.h>
