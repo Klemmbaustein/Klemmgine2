@@ -168,6 +168,26 @@ namespace engine::graphics
 			}
 		}
 
+		void QueryPoint(const Vector3& Point, std::vector<T>& Result)
+		{
+			if (this->Bounds.Contains(Point))
+			{
+				for (auto& i : Items)
+				{
+					Result.push_back(i);
+				}
+
+				if (A)
+				{
+					A->QueryPoint(Point, Result);
+				}
+				if (B)
+				{
+					B->QueryPoint(Point, Result);
+				}
+			}
+		}
+
 		void QueryFrustum(const FrustumCollider& Frustum, std::vector<T>& Result)
 		{
 			if (Frustum.OverlapsBounds(this->Bounds))

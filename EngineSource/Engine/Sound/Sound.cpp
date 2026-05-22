@@ -2,16 +2,20 @@
 #include <Engine/File/Resource.h>
 #include <AL/alext.h>
 #include <AL/efx-presets.h>
+#include <Core/ThreadPool.h>
 #include <stdexcept>
 #include "SoundInternal/SoundInternal.h"
 #include "Sources/WavSoundFileSource.h"
 #include "Sources/FlacSoundFileSource.h"
+#include <iostream>
 
 // TODO: fully implement
 
 using namespace engine::subsystem;
 using namespace engine::sound;
 using namespace engine;
+using graphics::BvhNode;
+using graphics::BoundingBox;
 
 static ALenum GetFormatFromSound(SoundData* Data)
 {
@@ -105,7 +109,6 @@ void engine::sound::SoundDevice::LoadExtensions()
 		LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTIV, alGetAuxiliaryEffectSlotiv);
 		LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTF, alGetAuxiliaryEffectSlotf);
 		LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTFV, alGetAuxiliaryEffectSlotfv);
-
 	}
 }
 
@@ -116,52 +119,55 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 	AddFileSource(new WavSoundFileSource());
 	SoundData->Context = alcCreateContext(Device->DeviceData->Device, nullptr);
 
-	//MakeCurrent();
+	MakeCurrent();
 
-	//ALuint Effect;
-	//Device->DeviceData->alGenEffects(1, &Effect);
+	ALuint Effect;
+	Device->DeviceData->alGenEffects(1, &Effect);
 
-	//EFXEAXREVERBPROPERTIES* reverb = new EFXEAXREVERBPROPERTIES(EFX_REVERB_PRESET_GENERIC);
+	EFXEAXREVERBPROPERTIES* reverb = new EFXEAXREVERBPROPERTIES(EFX_REVERB_PRESET_WOODEN_LARGEROOM);
 
-	//Device->DeviceData->alEffecti(Effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DENSITY, reverb->flDensity);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DIFFUSION, reverb->flDiffusion);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAIN, reverb->flGain);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINHF, reverb->flGainHF);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINLF, reverb->flGainLF);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_TIME, reverb->flDecayTime);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_HFRATIO, reverb->flDecayHFRatio);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_LFRATIO, reverb->flDecayLFRatio);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_GAIN, reverb->flReflectionsGain);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_DELAY, reverb->flReflectionsDelay);
-	//Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_REFLECTIONS_PAN, reverb->flReflectionsPan);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_GAIN, reverb->flLateReverbGain);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_DELAY, reverb->flLateReverbDelay);
-	//Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_LATE_REVERB_PAN, reverb->flLateReverbPan);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_TIME, reverb->flEchoTime);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_DEPTH, reverb->flEchoDepth);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_TIME, reverb->flModulationTime);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_DEPTH, reverb->flModulationDepth);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, reverb->flAirAbsorptionGainHF);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_HFREFERENCE, reverb->flHFReference);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LFREFERENCE, reverb->flLFReference);
-	//Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, reverb->flRoomRolloffFactor);
-	//Device->DeviceData->alEffecti(Effect, AL_EAXREVERB_DECAY_HFLIMIT, reverb->iDecayHFLimit);
+	Device->DeviceData->alEffecti(Effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DENSITY, reverb->flDensity);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DIFFUSION, reverb->flDiffusion);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAIN, reverb->flGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINHF, reverb->flGainHF);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINLF, reverb->flGainLF);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_TIME, reverb->flDecayTime);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_HFRATIO, reverb->flDecayHFRatio);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_LFRATIO, reverb->flDecayLFRatio);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_GAIN, reverb->flReflectionsGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_DELAY, reverb->flReflectionsDelay);
+	Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_REFLECTIONS_PAN, reverb->flReflectionsPan);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_GAIN, reverb->flLateReverbGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_DELAY, reverb->flLateReverbDelay);
+	Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_LATE_REVERB_PAN, reverb->flLateReverbPan);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_TIME, reverb->flEchoTime);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_DEPTH, reverb->flEchoDepth);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_TIME, reverb->flModulationTime);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_DEPTH, reverb->flModulationDepth);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, reverb->flAirAbsorptionGainHF);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_HFREFERENCE, reverb->flHFReference);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LFREFERENCE, reverb->flLFReference);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, reverb->flRoomRolloffFactor);
+	Device->DeviceData->alEffecti(Effect, AL_EAXREVERB_DECAY_HFLIMIT, reverb->iDecayHFLimit);
 
-	//Device->DeviceData->alGenAuxiliaryEffectSlots(1, &this->SoundData->Effects);
-	//Device->DeviceData->alAuxiliaryEffectSloti(this->SoundData->Effects, AL_EFFECTSLOT_EFFECT, Effect);
+	Device->DeviceData->alGenAuxiliaryEffectSlots(1, &this->SoundData->Effects);
+	Device->DeviceData->alAuxiliaryEffectSloti(this->SoundData->Effects, AL_EFFECTSLOT_EFFECT, Effect);
+	Device->DeviceData->alAuxiliaryEffectSlotf(this->SoundData->Effects, AL_EFFECTSLOT_GAIN, 0);
 
-	//auto Error = alGetError();
+	auto Error = alGetError();
 
-	//if (Error != AL_NO_ERROR)
-	//{
-	//	auto str = alGetString(Error);
-	//	Log::Info(str);
-	//}
+	if (Error != AL_NO_ERROR)
+	{
+		auto str = alGetString(Error);
+		Log::Error(str);
+	}
 }
 
 engine::sound::SoundContext::~SoundContext()
 {
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	ThreadData->Stop = true;
 	MakeCurrent();
 	alcDestroyContext(this->SoundData->Context);
 	delete this->SoundData;
@@ -202,6 +208,7 @@ SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
 
 	NewBuffer->ALBuffer;
 
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alGenBuffers(1, &NewBuffer->ALBuffer);
 
@@ -216,11 +223,12 @@ SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
 
 SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 {
-	ALuint Source;
-
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
+
+	ALuint Source;
 	alGenSources(1, &Source);
-	//alSource3i(Source, AL_AUXILIARY_SEND_FILTER, (ALint)this->SoundData->Effects, 0, AL_FILTER_NULL);
+	alSource3i(Source, AL_AUXILIARY_SEND_FILTER, (ALint)this->SoundData->Effects, 0, AL_FILTER_NULL);
 	alSourcei(Source, AL_BUFFER, With->ALBuffer);
 
 	auto err = alGetError();
@@ -237,18 +245,21 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 
 void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3 NewPosition)
 {
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSource3f(Source->ALSource, AL_POSITION, NewPosition.X, NewPosition.Y, NewPosition.Z);
 }
 
 void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
 {
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSource3f(Source->ALSource, AL_VELOCITY, NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
 }
 
 void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, bool Is3D)
 {
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSourcei(Source->ALSource, AL_LOOPING, Loop);
 	alSourcePlay(Source->ALSource);
@@ -262,6 +273,7 @@ void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, boo
 
 void engine::sound::SoundContext::StopSource(SoundSource* Source)
 {
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSourceStop(Source->ALSource);
 }
@@ -269,20 +281,29 @@ void engine::sound::SoundContext::StopSource(SoundSource* Source)
 void engine::sound::SoundContext::Update(graphics::Camera* FromCamera)
 {
 	Vector3 Pos = FromCamera->GetPosition();
-
-	MakeCurrent();
-	alListener3f(AL_POSITION, Pos.X, Pos.Y, Pos.Z);
+	alListenerf(AL_GAIN, 10);
 
 	Vector3 Directions[2] = {
 		FromCamera->GetForward(),
 		FromCamera->GetUp(),
 	};
 
-	alListenerfv(AL_ORIENTATION, &Directions[0].X);
+	ThreadPool::Main()->AddJob([this, Pos, Directions] {
+		std::lock_guard g{ ThreadData->SoundUpdateMutex };
+
+		MakeCurrent();
+		alListener3f(AL_POSITION, Pos.X, Pos.Y, Pos.Z);
+
+		alListenerfv(AL_ORIENTATION, &Directions[0].X);
+
+		UpdateReverb(Pos);
+		UpdateReverbVolumeTree();
+	});
 }
 
 void engine::sound::SoundContext::FreeSoundSource(SoundSource* Source)
 {
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alDeleteSources(1, &Source->ALSource);
 	delete Source;
@@ -297,6 +318,7 @@ void engine::sound::SoundContext::FreeSoundEffect(SoundBuffer* Buffer)
 
 	Buffer->References--;
 
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	if (Buffer->References == 0)
 	{
 		for (auto it = Device->Buffers.begin(); it != Device->Buffers.end(); it++)
@@ -318,7 +340,131 @@ void engine::sound::SoundContext::AddFileSource(SoundFileSource* Source)
 	this->Sources.push_back(Source);
 }
 
+SoundReverbVolume* engine::sound::SoundContext::AddReverbVolume(Transform At)
+{
+	auto& NewVolume = ReverbVolumes.emplace_back();
+
+	NewVolume.AtTransform = At;
+	NewVolume.Data.Volume = 1;
+	NewVolume.UpdateTransform();
+	this->TreeModified = true;
+	return &NewVolume;
+}
+
+void engine::sound::SoundContext::RemoveReverbVolume(SoundReverbVolume* Target)
+{
+	for (auto it = ReverbVolumes.begin(); it != ReverbVolumes.end(); it++)
+	{
+		if (&*it == Target)
+		{
+			ReverbVolumes.erase(it);
+			TreeModified = true;
+			break;
+		}
+	}
+}
+
+void engine::sound::SoundContext::UpdateReverbVolumeTransform(SoundReverbVolume* Target, Transform NewTransform)
+{
+	if (Target->AtTransform == NewTransform)
+	{
+		return;
+	}
+
+	Target->AtTransform = NewTransform;
+	Target->UpdateTransform();
+	this->TreeModified = true;
+}
+
+void engine::sound::SoundContext::Debug_ShowReverbAreas(debug::DebugDraw* DrawInstance)
+{
+	for (auto& i : this->ReverbVolumes)
+	{
+		if (i.Box)
+		{
+			delete i.Box;
+		}
+	}
+
+	for (auto& i : this->ReverbVolumes)
+	{
+		i.Box = new debug::DebugBox(i.AtTransform, Vector3(0, 1, 1));
+		DrawInstance->AddShape(i.Box);
+	}
+}
+
+Vector3 engine::sound::SoundContext::Debug_MeasureDistance(Vector3 Position)
+{
+	return Vector3(CurrentReverb.Volume);
+}
+
 void engine::sound::SoundContext::MakeCurrent() const
 {
 	alcMakeContextCurrent(SoundData->Context);
+}
+
+void engine::sound::SoundContext::UpdateReverbVolumeTree()
+{
+	if (!this->TreeModified)
+	{
+		return;
+	}
+
+	std::list<std::pair<SoundReverbVolume*, BoundingBox>> Nodes;
+	ThreadData->CurrentReverbVolumes = this->ReverbVolumes;
+
+	for (auto& i : ThreadData->CurrentReverbVolumes)
+	{
+		Nodes.push_back({ &i, BoundingBox(0, 1).Translate(i.AtTransform) });
+	}
+	ThreadPool::Main()->AddJob([this, Data = this->ThreadData, Nodes = std::move(Nodes)] {
+
+		auto NewTree = std::make_shared<BvhNode<SoundReverbVolume*>>(Nodes);
+		std::lock_guard g{ Data->TreeBuildMutex };
+
+		if (Data->Stop)
+		{
+			return;
+		}
+
+		this->ReverbTree = NewTree;
+	});
+}
+
+void engine::sound::SoundContext::UpdateReverb(Vector3 AtPosition)
+{
+	std::lock_guard g{ ThreadData->TreeBuildMutex };
+	if (!ReverbTree)
+	{
+		return;
+	}
+	std::vector<SoundReverbVolume*> Volumes;
+	ReverbTree->QueryPoint(AtPosition, Volumes);
+
+	bool FoundReverb = false;
+
+	for (auto& i : Volumes)
+	{
+		Vector3 VolumeDistance = i->AtInverse.ApplyTo(AtPosition).Abs();
+		if (VolumeDistance.X <= 1.0f && VolumeDistance.Y <= 1.0f && VolumeDistance.Z <= 1.0f)
+		{
+			this->CurrentReverb = i->Data;
+			Vector3 Position, Scale;
+			Rotation3 Rotation;
+
+			i->AtInverse.Decompose(Position, Rotation, Scale);
+
+			Vector3 AbsoluteDistance = (VolumeDistance * Scale) - (Scale - 0.1f);
+
+			float Distance = std::max(std::max(AbsoluteDistance.X, AbsoluteDistance.Y), AbsoluteDistance.Z) * (1.0f / 0.1f);
+
+			CurrentReverbIntensity = 1.0f - std::max(Distance, 0.0f);
+			FoundReverb = true;
+		}
+	}
+	if (!FoundReverb)
+	{
+		this->CurrentReverb = ReverbData();
+	}
+	Device->DeviceData->alAuxiliaryEffectSlotf(this->SoundData->Effects, AL_EFFECTSLOT_GAIN, CurrentReverb.Volume * CurrentReverbIntensity);
 }

@@ -17,6 +17,10 @@
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/UI/UICanvas.h>
 
+#if EDITOR
+#include <Editor/UI/EditorUI.h>
+#endif
+
 using namespace ds;
 using namespace ds::modules::system::async;
 
@@ -86,8 +90,6 @@ void engine::script::ScriptSubsystem::Update()
 		}
 	}
 
-	//std::cout << "stk: " << Runtime->baseContext->stackPos << std::endl;
-
 	for (auto& i : ToRemove)
 	{
 		WaitTasks.erase(i);
@@ -132,11 +134,13 @@ bool engine::script::ScriptSubsystem::Reload()
 	delete Compiler;
 
 #ifdef EDITOR
+	string ScriptCachePath = editor::EditorUI::Instance->GetProjectDataPath() + "/scriptCache.bin";
+
 	if (NewInstructions.code.empty())
 	{
-		if (resource::FileExists("scriptCache.bin"))
+		if (resource::FileExists(ScriptCachePath))
 		{
-			auto Stream = FileStream("scriptCache.bin", true);
+			auto Stream = FileStream(ScriptCachePath, true);
 			script::serialize::DeSerializeBytecode(&NewInstructions, &UIData, &Stream);
 		}
 		else
@@ -146,7 +150,7 @@ bool engine::script::ScriptSubsystem::Reload()
 	}
 	else
 	{
-		auto Stream = FileStream("scriptCache.bin", false);
+		auto Stream = FileStream(ScriptCachePath, false);
 		script::serialize::SerializeBytecode(&NewInstructions, &UIData, &Stream);
 	}
 #else

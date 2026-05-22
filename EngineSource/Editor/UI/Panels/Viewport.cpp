@@ -539,6 +539,11 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 
 	if (Item.ObjectType != 0)
 	{
+		if (Reflection::ObjectTypes[Item.ObjectType].IsSubclassOf(str::Hash("Engine/Scene/SceneManager")))
+		{
+			return;
+		}
+
 		auto obj = Scene::GetMain()->CreateObjectFromID(Item.ObjectType, EndPosition);
 		OnObjectCreated(obj);
 		SelectedObjects.clear();
