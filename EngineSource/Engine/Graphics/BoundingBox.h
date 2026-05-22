@@ -55,6 +55,12 @@ namespace engine::graphics
 			return FromMinMax(Min, Max);
 		}
 
+		bool Contains(const Vector3& Point) const
+		{
+			Vector3 Difference = (Point - Position).Abs();
+			return Difference.X <= Extents.X && Difference.Y <= Extents.Y && Difference.Z <= Extents.Z;
+		}
+
 		Vector3 Position;
 		Vector3 Extents;
 	};

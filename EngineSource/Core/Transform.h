@@ -43,6 +43,7 @@ namespace engine
 		Vector3 ApplyRotationTo(Vector3 Vec) const;
 
 		Transform Combine(const Transform& Other) const;
+		Transform Inverse() const;
 
 		void Decompose(Vector3& Position, Rotation3& Rotation, Vector3& Scale) const;
 

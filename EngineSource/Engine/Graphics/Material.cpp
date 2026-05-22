@@ -306,6 +306,16 @@ void engine::graphics::Material::Apply()
 		return;
 	Shader->Bind();
 	uint8 TextureSlot = 4;
+
+	if (IsTwoSided)
+	{
+		glDisable(GL_CULL_FACE);
+	}
+	else
+	{
+		glEnable(GL_CULL_FACE);
+	}
+
 	for (auto& i : Fields)
 	{
 		if (i.UniformLocation == 0)

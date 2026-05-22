@@ -8,12 +8,12 @@ namespace engine::sound
 	{
 		ALCcontext* Context = nullptr;
 
-		ALuint Effects;
+		ALuint Effects = 0;
 	};
 
 	struct SoundDevice_Private
 	{
-		ALCdevice* Device;
+		ALCdevice* Device = nullptr;
 
 		LPALGENFILTERS alGenFilters = nullptr;
 		LPALDELETEFILTERS alDeleteFilters = nullptr;
@@ -55,7 +55,7 @@ namespace engine::sound
 	struct SoundBuffer
 	{
 		ALuint ALBuffer = 0;
-		size_t References = 1;
+		std::atomic<size_t> References = 1;
 	};
 	struct SoundSource
 	{
