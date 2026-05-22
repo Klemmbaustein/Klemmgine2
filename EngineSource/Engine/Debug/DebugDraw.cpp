@@ -76,6 +76,11 @@ engine::debug::DebugBox::~DebugBox()
 void engine::debug::DebugBox::Draw(GraphicsScene* With)
 {
 	std::vector<Material*> Materials = { CubeMaterial };
+
+	Vector3 Pos = this->CubeTransform.Inverse().ApplyTo(With->UsedCamera->Position).Abs();
+
+	CubeMaterial->IsTwoSided = Pos.X < 1.0f && Pos.Y < 1.0f && Pos.Z < 1.0f;
+
 	this->CubeModel->Draw(With, CubeTransform, With->UsedCamera, Materials, BoundingBox(), false,
 		false);
 }
