@@ -8,7 +8,7 @@ namespace engine
 	{
 	public:
 
-		ENGINE_OBJECT(SoundObject, "Engine/SceneObject", "Engine");
+		ENGINE_OBJECT(SoundObject, "Engine/SceneObject", "Engine/Sound");
 
 		SoundObject();
 		~SoundObject();

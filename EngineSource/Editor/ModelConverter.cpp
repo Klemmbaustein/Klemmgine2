@@ -229,10 +229,10 @@ string engine::editor::modelConverter::ConvertModel(string ModelPath, string Out
 	}
 	else
 	{
-		BufferStream Stream;
-		ctx.Data->ToBinary(&Stream);
-		Stream.ResetStreamPosition();
-		EditorUI::Instance->AssetsProvider->SaveToFile(OutDir + OutFileName, &Stream, Stream.GetSize());
+		BufferStream OutStream;
+		ctx.Data->ToBinary(&OutStream);
+		OutStream.ResetStreamPosition();
+		EditorUI::Instance->AssetsProvider->SaveToFile(OutDir + OutFileName, &OutStream, OutStream.GetSize());
 	}
 
 	aiDetachLogStream(&stream);

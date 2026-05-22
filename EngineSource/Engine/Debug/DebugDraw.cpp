@@ -62,6 +62,7 @@ engine::debug::DebugBox::DebugBox(Transform WithTransform, Vector3 Color)
 	CubeMaterial = new Material();
 	CubeMaterial->VertexShader = "res:shader/basic.vert";
 	CubeMaterial->FragmentShader = "res:shader/internal/debugShape.frag";
+	CubeMaterial->IsTwoSided = true;
 	CubeMaterial->UpdateShader();
 	CubeMaterial->VerifyUniforms();
 	SetColor(Color);

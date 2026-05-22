@@ -305,10 +305,10 @@ void engine::graphics::GraphicsScene::MainDrawPass()
 	{
 		glEnable(GL_BLEND);
 	}
+	glDisable(GL_STENCIL_TEST);
 	Debug.Draw(this);
 	glDisable(GL_BLEND);
 	Buffer->Unbind();
-	glDisable(GL_STENCIL_TEST);
 	glDisable(GL_CULL_FACE);
 }
 

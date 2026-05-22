@@ -28,7 +28,7 @@ engine::editor::AssetSelector::AssetSelector(AssetRef InitialValue, kui::UISize 
 engine::editor::AssetSelector::AssetSelector(ObjectTypeID InitialType, ObjectTypeID SuperType, kui::UISize Width,
 	std::function<void()> OnChanged, bool EmptyIsDefault)
 	: DroppableBox(true, [this](EditorUI::DraggedItem itm) {
-	if (itm.ObjectType)
+	if (itm.ObjectType && Reflection::ObjectTypes[itm.ObjectType].IsSubclassOf(this->SuperType))
 	{
 		SelectedId = itm.ObjectType;
 		UpdateObjectClass();
