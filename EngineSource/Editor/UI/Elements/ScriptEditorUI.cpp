@@ -408,15 +408,18 @@ void engine::editor::ScriptEditorUI::Save()
 
 	if (Tab)
 	{
-		std::ofstream out = std::ofstream(Tab->Provider->EditedFile);
-
 		if (Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool())
 		{
 			Tab->Provider->TrimWhitespace(Tab->Editor->SelectionEnd.Line);
 		}
+		
+		BufferStream OutStream;
+		string Content = Tab->Provider->GetContent();
+		OutStream.Write(reinterpret_cast<uByte*>(Content.data()), Content.size());
 
-		out << Tab->Provider->GetContent();
-		out.close();
+		OutStream.ResetStreamPosition();
+
+		EditorUI::Instance->AssetsProvider->SaveToFile(Tab->Provider->EditedFile, &OutStream, OutStream.GetSize());
 		Tab->TabName->SetText(file::FileName(Tab->Provider->EditedFile));
 		Tab->IsSaved = true;
 

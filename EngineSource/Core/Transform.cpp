@@ -50,6 +50,11 @@ void engine::Transform::Scale(Vector3 NewScale)
 	Matrix = glm::scale(Matrix, glm::vec3(NewScale.X, NewScale.Y, NewScale.Z));
 }
 
+Transform engine::Transform::Inverse() const
+{
+	return Transform(glm::inverse(this->Matrix));
+}
+
 Vector3 engine::Transform::Forward() const
 {
 	return ApplyRotationTo(Vector3(0, 0, -1));

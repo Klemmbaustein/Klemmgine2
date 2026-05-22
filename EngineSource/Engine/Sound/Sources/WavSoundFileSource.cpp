@@ -47,7 +47,10 @@ SoundData* engine::sound::WavSoundFileSource::ParseSoundFile(IBinaryStream* Stre
 		{
 			uint16 Format = Stream->Get<int16>();
 
-			ENGINE_ASSERT(ChunkSize == 16);
+			if (ChunkSize != 16)
+			{
+				throw std::runtime_error("WAV file contains invalid chunk size for FMT");
+			}
 
 			// No compression support
 			if (Format != 1)
