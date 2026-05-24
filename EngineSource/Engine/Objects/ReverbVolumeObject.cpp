@@ -32,6 +32,7 @@ void engine::ReverbVolumeObject::OnDestroyed()
 	if (EditorCollider)
 	{
 		Detach(EditorCollider);
+		EditorCollider = nullptr;
 	}
 	GetScene()->Sound->RemoveReverbVolume(Volume);
 }
