@@ -160,8 +160,6 @@ void resource::ScanForAssets()
 		ArchiveProviderLoaded = true;
 
 		AddResourceSource(new EmbeddedResourceSource());
-		Log::Info(std::filesystem::current_path().string());
-
 		if (std::filesystem::exists("Assets/archmap.bin"))
 		{
 			AddResourceSource(new ArchiveResourceSource());

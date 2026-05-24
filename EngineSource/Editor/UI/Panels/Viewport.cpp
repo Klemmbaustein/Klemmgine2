@@ -88,23 +88,23 @@ engine::editor::Viewport::Viewport()
 
 	auto Win = Window::GetActiveWindow();
 
-	AddShortcut(Key::LEFT, {}, [this, Win] {
+	AddShortcut(Key::LEFT, { .AlwaysTrigger = true }, [this, Win] {
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, -Speed));
 	}, ShortcutOptions::Global);
 
-	AddShortcut(Key::RIGHT, {}, [this, Win] {
+	AddShortcut(Key::RIGHT, { .AlwaysTrigger = true }, [this, Win] {
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(Vector3(0, 0, Speed));
 	}, ShortcutOptions::Global);
 
-	AddShortcut(Key::DOWN, {}, [this, Win] {
+	AddShortcut(Key::DOWN, { .AlwaysTrigger = true }, [this, Win] {
 		bool ShiftDown = Win->Input.IsKeyDown(Key::SHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, -Speed, 0) : Vector3(-Speed, 0, 0));
 	}, ShortcutOptions::Global);
 
-	AddShortcut(Key::UP, {}, [this, Win] {
+	AddShortcut(Key::UP, { .AlwaysTrigger = true }, [this, Win] {
 		bool ShiftDown = Win->Input.IsKeyDown(Key::SHIFT);
 		float Speed = (Win->Input.IsKeyDown(Key::CTRL) ? 10 : 1) * GridSize;
 		ShiftSelected(ShiftDown ? Vector3(0, Speed, 0) : Vector3(Speed, 0, 0));
@@ -177,22 +177,25 @@ engine::editor::Viewport::Viewport()
 		{
 			return;
 		}
-		if (input::IsKeyDown(input::Key::SHIFT))
+
+		Engine::GetSubsystem<EditorSubsystem>()->StopProject();
+		input::ShowMouseCursor = true;
+		Viewport::Current->RedrawStats = true;
+		Viewport::Current->SetName(Viewport::Current->UnsavedChanges
+			? "Viewport*" : "Viewport");
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::ESCAPE, { .Shift = true }, [this] {
+		if (!Engine::IsPlaying || PolledForText)
 		{
-			EditorUI::FocusedPanel = nullptr;
-			UpdateFocusState();
-			Engine::GameHasFocus = false;
-			LastCursorVisible = input::ShowMouseCursor;
-			input::ShowMouseCursor = true;
+			return;
 		}
-		else
-		{
-			Engine::GetSubsystem<EditorSubsystem>()->StopProject();
-			input::ShowMouseCursor = true;
-			Viewport::Current->RedrawStats = true;
-			Viewport::Current->SetName(Viewport::Current->UnsavedChanges
-				? "Viewport*" : "Viewport");
-		}
+
+		EditorUI::FocusedPanel = nullptr;
+		UpdateFocusState();
+		Engine::GameHasFocus = false;
+		LastCursorVisible = input::ShowMouseCursor;
+		input::ShowMouseCursor = true;
 	}, ShortcutOptions::AllowInText);
 
 	AddShortcut(Key::F5, {}, [this] {
@@ -221,7 +224,9 @@ bool engine::editor::Viewport::GetShowUI()
 
 std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 {
-	return {
+	auto Current = Scene::GetMain();
+
+	std::vector Result = {
 		DropdownMenu::Option{
 			.Name = "Show Game UI",
 			.Icon = this->ShowUI ? EditorUI::Asset("Dot.png") : "",
@@ -235,8 +240,35 @@ std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 			.OnClicked = [this] {
 				this->ShowGrid = !this->ShowGrid;
 			},
-		}
+		},
 	};
+
+	if (Current)
+	{
+		bool SoundBoundsVisible = Engine::IsPlaying ? Current->Sound->GetShowDebugBounds() : Current->Sound->ShowDebugBoundsInEditor;
+
+		Result.push_back(DropdownMenu::Option{
+			.Name = "Show Sound Volumes",
+			.Icon = SoundBoundsVisible ? EditorUI::Asset("Dot.png") : "",
+			.OnClicked = [this] {
+				auto Current = Scene::GetMain();
+				if (Current)
+				{
+					if (!Engine::IsPlaying)
+					{
+						Current->Sound->ShowDebugBoundsInEditor = !Current->Sound->ShowDebugBoundsInEditor;
+						Current->Sound->MarkReverbDirty();
+					}
+					else
+					{
+						Current->Sound->SetShowDebugBounds(!Current->Sound->GetShowDebugBounds());
+					}
+				}
+			},
+			});
+	}
+
+	return Result;
 }
 
 engine::editor::Viewport::~Viewport()
@@ -334,6 +366,12 @@ void engine::editor::Viewport::Update()
 
 	if (Engine::IsPlaying)
 	{
+		// Only give back focus if the 3d scene is clicked (avoid stuff like the View dropdown giving focus to the game)
+		if (!Engine::GameHasFocus && (Win->UI.HoveredBox != ViewportBackground
+			|| !(Win->Input.IsLMBClicked || Win->Input.IsRMBClicked)))
+		{
+			HasFocus = false;
+		}
 		if (!Engine::GameHasFocus && HasFocus)
 		{
 			input::ShowMouseCursor = LastCursorVisible;
@@ -580,6 +618,8 @@ void engine::editor::Viewport::Run()
 
 	Viewport::Current->ClearSelected();
 	SetFocused();
+
+	Scene::GetMain()->Sound->MarkReverbDirty();
 
 	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	SetName("Viewport (playing)");

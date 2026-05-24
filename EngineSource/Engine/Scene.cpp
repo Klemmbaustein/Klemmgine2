@@ -122,7 +122,7 @@ void engine::Scene::Update()
 		Physics.Update();
 
 	if (Sound)
-		Sound->Update(this->Graphics.UsedCamera);
+		Sound->Update(Graphics.UsedCamera, &Graphics.Debug);
 
 	if (Manager)
 		Manager->Update();

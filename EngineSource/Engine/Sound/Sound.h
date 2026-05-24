@@ -67,7 +67,7 @@ namespace engine::sound
 		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
 
-		void Update(graphics::Camera* FromCamera);
+		void Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug);
 
 		void FreeSoundSource(SoundSource* Source);
 		void FreeSoundEffect(SoundBuffer* Buffer);
@@ -83,7 +83,13 @@ namespace engine::sound
 
 		void Debug_ShowReverbAreas(debug::DebugDraw* DrawInstance);
 
-		Vector3 Debug_MeasureDistance(Vector3 Position);
+		void SetShowDebugBounds(bool NewShowDebugBounds);
+		const bool& GetShowDebugBounds() const
+		{
+			return ShowDebugBounds;
+		}
+		bool ShowDebugBoundsInEditor = true;
+		void MarkReverbDirty();
 
 	private:
 		void MakeCurrent() const;
@@ -104,9 +110,12 @@ namespace engine::sound
 		std::shared_ptr<graphics::BvhNode<SoundReverbVolume*>> ReverbTree;
 		bool TreeModified = false;
 		bool TreeCalculating = false;
+		bool ShowDebugBounds = false;
+		bool BoundsModified = false;
 
 		void UpdateReverbVolumeTree();
 		void UpdateReverb(Vector3 AtPosition);
+
 
 		SoundDevice* Device = nullptr;
 		std::vector<SoundFileSource*> Sources;

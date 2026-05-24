@@ -186,12 +186,20 @@ void engine::PhysicsComponent::Update()
 
 	if (LastTransform != WorldTransform && !IsPhysicsSimulated)
 	{
+		Vector3 LastPosition, LastScale;
+		Rotation3 LastRotation;
+		LastTransform.Decompose(LastPosition, LastRotation, LastScale);
+
 		if (Body->ColliderMovability != physics::MotionType::Dynamic)
 		{
 			Vector3 Position, Scale;
 			Rotation3 Rotation;
 			WorldTransform.Decompose(Position, Rotation, Scale);
 			Body->SetPositionAndRotation(Position, Rotation);
+			if (LastScale != Scale)
+			{
+				Body->Scale((Scale / LastScale).Max(0.0000001f));
+			}
 		}
 		LastTransform = WorldTransform;
 	}
@@ -220,9 +228,6 @@ bool engine::PhysicsComponent::UpdateTransform(bool IsDirty)
 		for (ObjectComponent* i : Children)
 		{
 			i->UpdateTransform(this->TransformDirty || IsDirty);
-			Vector3 Pos, Scl;
-			Rotation3 Rot;
-			i->WorldTransform.Decompose(Pos, Rot, Scl);
 		}
 		OldPosition = Position;
 		OldScale = Scale;

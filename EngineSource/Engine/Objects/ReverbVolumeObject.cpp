@@ -5,29 +5,29 @@
 void engine::ReverbVolumeObject::Begin()
 {
 	Volume = GetScene()->Sound->AddReverbVolume(this->ObjectTransform);
+
 	if (!Engine::IsPlaying)
 	{
-		GetScene()->Sound->Debug_ShowReverbAreas(&GetScene()->Graphics.Debug);
+		EditorCollider = new CollisionComponent();
+		Attach(EditorCollider);
+		EditorCollider->Load(GraphicsModel::UnitCube());
 	}
 }
 
 void engine::ReverbVolumeObject::Update()
 {
+	if (EditorCollider)
+	{
+		EditorCollider->SetCollisionEnabled(GetScene()->Sound->ShowDebugBoundsInEditor);
+	}
+
 	if (this->Volume->AtTransform != this->ObjectTransform)
 	{
 		GetScene()->Sound->UpdateReverbVolumeTransform(this->Volume, this->ObjectTransform);
-		if (!Engine::IsPlaying)
-		{
-			GetScene()->Sound->Debug_ShowReverbAreas(&GetScene()->Graphics.Debug);
-		}
 	}
 }
 
 void engine::ReverbVolumeObject::OnDestroyed()
 {
 	GetScene()->Sound->RemoveReverbVolume(Volume);
-	if (!Engine::IsPlaying)
-	{
-		GetScene()->Sound->Debug_ShowReverbAreas(&GetScene()->Graphics.Debug);
-	}
 }
