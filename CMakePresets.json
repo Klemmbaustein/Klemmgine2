@@ -78,7 +78,8 @@
 				"rhs": "Linux"
 			},
 			"environment": {
-				"WAYLAND_DISPLAY": "wayland-0"
+				"WAYLAND_DISPLAY": "wayland-0",
+				"GALLIUM_DRIVER": "d3d12"
 			},
 			"vendor": {
 				"microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {

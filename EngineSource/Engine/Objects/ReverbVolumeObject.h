@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Sound/Sound.h>
+#include <Engine/Objects/Components/CollisionComponent.h>
 
 namespace engine
 {
@@ -16,5 +17,6 @@ namespace engine
 
 	private:
 		sound::SoundReverbVolume* Volume = nullptr;
+		CollisionComponent* EditorCollider = nullptr;
 	};
 }

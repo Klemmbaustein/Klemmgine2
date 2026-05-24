@@ -7,7 +7,7 @@
 #include "SoundInternal/SoundInternal.h"
 #include "Sources/WavSoundFileSource.h"
 #include "Sources/FlacSoundFileSource.h"
-#include <iostream>
+#include <Engine/Engine.h>
 
 // TODO: fully implement
 
@@ -266,8 +266,10 @@ void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, boo
 
 	if (Is3D)
 	{
-		alSourcei(Source->ALSource, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE);
-		alSourcei(Source->ALSource, AL_ROLLOFF_FACTOR, 2.0f);
+		alSourcei(Source->ALSource, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE_CLAMPED);
+		float Factor = 100.0f / 200.0f;
+		alSourcef(Source->ALSource, AL_REFERENCE_DISTANCE, 1.0f);
+		alSourcef(Source->ALSource, AL_ROLLOFF_FACTOR, Factor);
 	}
 }
 
@@ -278,8 +280,14 @@ void engine::sound::SoundContext::StopSource(SoundSource* Source)
 	alSourceStop(Source->ALSource);
 }
 
-void engine::sound::SoundContext::Update(graphics::Camera* FromCamera)
+void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug)
 {
+	if (BoundsModified)
+	{
+		Debug_ShowReverbAreas(Debug);
+		BoundsModified = false;
+	}
+
 	Vector3 Pos = FromCamera->GetPosition();
 	alListenerf(AL_GAIN, 10);
 
@@ -347,7 +355,7 @@ SoundReverbVolume* engine::sound::SoundContext::AddReverbVolume(Transform At)
 	NewVolume.AtTransform = At;
 	NewVolume.Data.Volume = 1;
 	NewVolume.UpdateTransform();
-	this->TreeModified = true;
+	MarkReverbDirty();
 	return &NewVolume;
 }
 
@@ -357,8 +365,13 @@ void engine::sound::SoundContext::RemoveReverbVolume(SoundReverbVolume* Target)
 	{
 		if (&*it == Target)
 		{
+			if (it->Box)
+			{
+				delete it->Box;
+			}
+
 			ReverbVolumes.erase(it);
-			TreeModified = true;
+			MarkReverbDirty();
 			break;
 		}
 	}
@@ -373,7 +386,7 @@ void engine::sound::SoundContext::UpdateReverbVolumeTransform(SoundReverbVolume*
 
 	Target->AtTransform = NewTransform;
 	Target->UpdateTransform();
-	this->TreeModified = true;
+	MarkReverbDirty();
 }
 
 void engine::sound::SoundContext::Debug_ShowReverbAreas(debug::DebugDraw* DrawInstance)
@@ -383,19 +396,27 @@ void engine::sound::SoundContext::Debug_ShowReverbAreas(debug::DebugDraw* DrawIn
 		if (i.Box)
 		{
 			delete i.Box;
+			i.Box = nullptr;
 		}
 	}
 
-	for (auto& i : this->ReverbVolumes)
+	if (Engine::IsPlaying ? ShowDebugBounds : ShowDebugBoundsInEditor)
 	{
-		i.Box = new debug::DebugBox(i.AtTransform, Vector3(0, 1, 1));
-		DrawInstance->AddShape(i.Box);
+		for (auto& i : this->ReverbVolumes)
+		{
+			i.Box = new debug::DebugBox(i.AtTransform, Vector3(0, 1, 1));
+			DrawInstance->AddShape(i.Box);
+		}
 	}
 }
 
-Vector3 engine::sound::SoundContext::Debug_MeasureDistance(Vector3 Position)
+void engine::sound::SoundContext::SetShowDebugBounds(bool NewShowDebugBounds)
 {
-	return Vector3(CurrentReverb.Volume);
+	if (NewShowDebugBounds != ShowDebugBounds)
+	{
+		ShowDebugBounds = NewShowDebugBounds;
+		BoundsModified = true;
+	}
 }
 
 void engine::sound::SoundContext::MakeCurrent() const
@@ -467,4 +488,10 @@ void engine::sound::SoundContext::UpdateReverb(Vector3 AtPosition)
 		this->CurrentReverb = ReverbData();
 	}
 	Device->DeviceData->alAuxiliaryEffectSlotf(this->SoundData->Effects, AL_EFFECTSLOT_GAIN, CurrentReverb.Volume * CurrentReverbIntensity);
+}
+
+void engine::sound::SoundContext::MarkReverbDirty()
+{
+	TreeModified = true;
+	BoundsModified = true;
 }

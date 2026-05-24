@@ -27,6 +27,7 @@ namespace engine::editor
 			bool Shift : 1 = false;
 			bool Ctrl : 1 = false;
 			bool Alt : 1 = false;
+			bool AlwaysTrigger : 1 = false;
 		};
 
 		/**
