@@ -20,7 +20,7 @@ option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF)
 option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripting only)" OFF)
 option(ENGINE_BUILD_ID "Build identifier" "")
-option(ENGINE_ENABLE_SOUND "Enable sound" OFF)
+option(ENGINE_ENABLE_SOUND "Enable sound" ON)
 
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
