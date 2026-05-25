@@ -608,6 +608,11 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 
 void engine::editor::Viewport::Run()
 {
+	if (Engine::IsPlaying)
+	{
+		Engine::GetSubsystem<EditorSubsystem>()->StopProject();
+	}
+
 	using namespace subsystem;
 
 	if (!Scene::GetMain())

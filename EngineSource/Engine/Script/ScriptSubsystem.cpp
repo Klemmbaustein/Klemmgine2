@@ -37,7 +37,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 	ScriptInstructions = new BytecodeStream();
 	Runtime = this->ScriptLanguage->createRuntime({
-		.useJustInTimeCompiler = !launchArgs::GetArg("noJIT").has_value(),
+		.useJustInTimeCompiler = launchArgs::GetArg("useJIT").has_value(),
 		});
 	Runtime->createBackgroundThread = [](std::function<void()> function) {
 		ThreadPool::Main()->AddJob(function);
