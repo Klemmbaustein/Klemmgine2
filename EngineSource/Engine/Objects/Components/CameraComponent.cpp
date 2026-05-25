@@ -12,7 +12,7 @@ engine::CameraComponent::CameraComponent()
 		return;
 	}
 
-	ComponentCamera = graphics::Camera(Rotation3::PI / 2);
+	ComponentCamera = graphics::Camera(90);
 	ComponentCamera.UseTransform = true;
 }
 
@@ -50,15 +50,14 @@ void engine::CameraComponent::Use()
 
 void engine::CameraComponent::SetFov(float NewFov)
 {
-	NewFov = Rotation3::DegreeToRadian(NewFov);
 	if (this->Fov != NewFov)
 	{
-		ComponentCamera.FOV = NewFov;
+		ComponentCamera.FOV = Rotation3::DegreeToRadian(NewFov);
 		this->Fov = NewFov;
 	}
 }
 
 float engine::CameraComponent::GetFov() const
 {
-	return Rotation3::RadianToDegree(Fov);
+	return Fov;
 }

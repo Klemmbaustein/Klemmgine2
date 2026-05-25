@@ -10,7 +10,7 @@ void engine::script::ScriptSceneObject::OnDestroyed()
 	if (ScriptData->vtable[2])
 	{
 		Interpreter->pushValue(this->ScriptData);
-		Interpreter->virtualCall(ScriptData->vtable[2]);
+		Interpreter->virtualCall(ScriptData->vtable[3]);
 	}
 	UnloadScriptData();
 }
@@ -38,14 +38,18 @@ void engine::script::ScriptSceneObject::Begin()
 	ScriptSubsystem::Instance->RegisterClassForObject(this, ScriptData);
 
 	Interpreter->callVirtualMethodVoid(ScriptData, 1);
+	if (Engine::IsPlaying)
+	{
+		Interpreter->callVirtualMethodVoid(ScriptData, 2);
+	}
 }
 
 void engine::script::ScriptSceneObject::Update()
 {
-	if (Engine::IsPlaying && ScriptData && ScriptData->vtable[3])
+	if (Engine::IsPlaying && ScriptData && ScriptData->vtable[4])
 	{
 		Interpreter->pushValue(this->ScriptData);
-		Interpreter->virtualCall(ScriptData->vtable[3]);
+		Interpreter->virtualCall(ScriptData->vtable[4]);
 	}
 }
 
