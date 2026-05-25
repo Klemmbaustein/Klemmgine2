@@ -89,9 +89,9 @@ void engine::graphics::GraphicsScene::Init()
 #endif
 		Buffer = new Framebuffer(int64(BufferSize.X), int64(BufferSize.Y));
 
-		SceneCamera = new Camera(1);
-		SceneCamera->Position.Z = 2;
-		SceneCamera->Rotation.Y = -90;
+		SceneCamera = new Camera(70.0f);
+		SceneCamera->Position.Y = 2.0f;
+
 		SceneCamera->UsedEnvironment = &this->SceneEnvironment;
 
 		SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);

@@ -18,7 +18,7 @@ namespace engine::graphics
 		Vector3 ScreenToWorld(Vector2 Screen) const;
 
 		float Aspect = 16.0f / 9.0f;
-		float FOV = 2.0f;
+		float FOV = 90.0f;
 
 		glm::mat4 View = glm::mat4(1);
 		glm::mat4 Projection = glm::mat4(1);

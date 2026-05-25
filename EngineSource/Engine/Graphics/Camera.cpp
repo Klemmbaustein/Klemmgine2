@@ -6,7 +6,7 @@ using namespace engine;
 
 engine::graphics::Camera::Camera(float FOV)
 {
-	this->FOV = FOV;
+	this->FOV = glm::radians(FOV);
 }
 
 Vector3 engine::graphics::Camera::GetForward() const

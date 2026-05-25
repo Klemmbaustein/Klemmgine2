@@ -60,6 +60,11 @@ static void Scene_new(InterpretContext* context)
 	context->pushValue(NewScene);
 }
 
+static void engine_isPlaying(InterpretContext* context)
+{
+	context->pushValue<Bool>(Engine::IsPlaying);
+}
+
 static void Scene_setAsMain(InterpretContext* context)
 {
 	ClassRef<Scene*> NewScene = context->popValue<RuntimeClass*>();
@@ -659,10 +664,13 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({}, nullptr, "onBegin", &Object_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "onDestroy", &Object_empty), 2);
+		NativeFunction({}, nullptr, "onBeginPlay", &Object_empty), 2);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
-		NativeFunction({}, nullptr, "update", &Object_empty), 3);
+		NativeFunction({}, nullptr, "onDestroy", &Object_empty), 3);
+
+	EngineModule.addClassVirtualMethod(ObjectType,
+		NativeFunction({}, nullptr, "update", &Object_empty), 4);
 
 	ObjectType->members.push_back(ClassMember{
 		.name = "position",
@@ -882,6 +890,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(StrType, "extension") },
 			AssetRefType, "emptyAsset", &AssetRef_emptyAsset));
 
+	EngineModule.addFunction(
+		NativeFunction({ },
+			BoolInst, "isPlaying", &engine_isPlaying));
 
 	NativeModule EngineInputModule;
 	EngineInputModule.name = "engine::input";
