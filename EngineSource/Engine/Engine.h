@@ -1,7 +1,7 @@
 #pragma once
 #include <Core/Types.h>
 #include "Subsystem/Subsystem.h"
-#include <typeinfo>
+#include <functional>
 
 namespace engine
 {
@@ -31,7 +31,7 @@ namespace engine
 		* Creates a new engine instance if none exists, otherwise it
 		* returns the current engine instance.
 		*/
-		static Engine* Init();
+		static Engine* Init(std::function<void(Engine*)> LoadSystems = nullptr);
 
 		/**
 		* @brief
@@ -105,6 +105,7 @@ namespace engine
 	private:
 
 		Engine();
+		Engine(const Engine&) = delete;
 		~Engine()
 		{
 			Instance = nullptr;

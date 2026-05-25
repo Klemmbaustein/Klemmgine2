@@ -32,7 +32,10 @@ void engine::subsystem::Subsystem::UpdateUnloading()
 
 Subsystem::Subsystem(const char* Name, engine::Log::LogColor Color)
 {
-	Engine::Instance->LoadedSystems.push_back(this);
+	if (Engine::Instance)
+	{
+		Engine::Instance->LoadedSystems.push_back(this);
+	}
 	this->Name = Name;
 	this->SubsystemColor = Color;
 	Print("Creating subsystem: " + string(Name), LogType::Note);

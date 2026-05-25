@@ -1,5 +1,4 @@
 #include "EditorServerSubsystem.h"
-#include <Core/File/JsonSerializer.h>
 #include <Engine/Engine.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/UI/EditorUI.h>
@@ -7,7 +6,6 @@
 #include <Editor/UI/Panels/ConsolePanel.h>
 #include <Editor/Server/ServerAssetsProvider.h>
 #include <Editor/Server/ServerResourceSource.h>
-#include <sstream>
 using namespace engine::editor;
 
 EditorServerSubsystem::EditorServerSubsystem(ServerConnection* Connection)

@@ -28,9 +28,10 @@ bool Engine::GameHasFocus = true;
 
 Engine::Engine()
 {
+	Instance->InitSystems();
 }
 
-Engine* Engine::Init()
+Engine* engine::Engine::Init(std::function<void(Engine*)> LoadSystems)
 {
 	if (Instance)
 	{
@@ -42,8 +43,6 @@ Engine* Engine::Init()
 
 	Instance = new Engine();
 
-	Instance->InitSystems();
-
 	Instance->LoadSubsystem(new ConsoleSubsystem());
 	Instance->LoadSubsystem(new PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
@@ -53,6 +52,9 @@ Engine* Engine::Init()
 #endif
 	Instance->LoadSubsystem(new script::ScriptSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());
+
+	if (LoadSystems)
+		LoadSystems(Instance);
 
 #ifdef EDITOR
 	Instance->LoadSubsystem(new editor::EditorSubsystem());

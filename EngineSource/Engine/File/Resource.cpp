@@ -119,7 +119,7 @@ IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 
 #ifdef EDITOR
 		// Allow loading local files belonging to the editor
-		AllowFiles = AllowLocalFiles || (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") != string::npos);
+		AllowFiles = AllowLocalFiles || (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
 #endif
 		if (AllowFiles && std::filesystem::exists(FilePath)
 			&& !std::filesystem::is_directory(FilePath))

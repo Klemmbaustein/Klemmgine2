@@ -228,9 +228,10 @@ void engine::editor::launcher::EditorLauncher::Run()
 	case engine::editor::launcher::LauncherResult::ConnectToServer:
 	{
 		editor::SetRemoteProject(Connection.Connection->ConnectionName);
-		auto Engine = Engine::Init();
-		Engine->LoadSubsystem(new EditorServerSubsystem(this->Connection.Connection));
-		Engine->Run();
+		auto Runtime = Engine::Init([this](Engine* Instance) {
+			Instance->LoadSubsystem(new EditorServerSubsystem(this->Connection.Connection));
+		});
+		Runtime->Run();
 		editor::ClearRemoteProject();
 		break;
 	}
