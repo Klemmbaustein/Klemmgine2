@@ -18,6 +18,7 @@
 #include <Editor/Editor.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Engine/Engine.h>
+#include <Core/Platform/Platform.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Input.h>
@@ -322,9 +323,14 @@ engine::editor::EditorUI::EditorUI()
 		});
 
 	AddMenuBarItem("Help",
-		{ DropdownMenu::Option("About", "", Asset("Info.png"), []() {
+		{
+			DropdownMenu::Option("About", "", Asset("Info.png"), []() {
 				new AboutWindow();
-			}), }
+			}),
+			DropdownMenu::Option("View log directory", "", Asset("Open.png"), []() {
+				platform::Open("Logs");
+			}),
+		}
 	);
 
 	Update();
