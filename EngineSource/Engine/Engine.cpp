@@ -141,6 +141,8 @@ void engine::Engine::ErrorCallback(string Error, string StackTrace)
 
 	Log::Critical(ErrorMessage);
 
+	ConsoleSubsystem::FlushLogs();
+
 	kui::app::MessageBox(ErrorMessage,
 		"Engine error", kui::app::MessageBoxType::Error);
 #endif

@@ -2,8 +2,22 @@
 #include <Engine/Engine.h>
 #include <sstream>
 #include <Core/Error/EngineError.h>
+#include <Core/Log.h>
+#include <Core/LaunchArgs.h>
+#include <Editor/Editor.h>
+#include <fstream>
+#include <chrono>
+#include <filesystem>
+#include <Core/Error/EngineError.h>
 
+using namespace engine;
 using namespace engine::console;
+
+bool ConsoleSubsystem::WriteLogs = false;
+std::condition_variable ConsoleSubsystem::LogWriteCondition;
+std::mutex ConsoleSubsystem::LogWriteMutex;
+static bool StopLogWrite = false;
+std::thread LogWriteThread;
 
 engine::ConsoleSubsystem::ConsoleSubsystem()
 	: Subsystem("Console", Log::LogColor::White)
@@ -37,6 +51,28 @@ engine::ConsoleSubsystem::ConsoleSubsystem()
 		}
 		}
 		});
+
+	WriteLogs = launchArgs::GetArg("writeLogs").has_value();
+
+	if (WriteLogs || editor::IsActive())
+	{
+		LogWriteThread = std::thread(LogWriteFunction);
+	}
+}
+
+engine::ConsoleSubsystem::~ConsoleSubsystem()
+{
+	FlushLogs();
+}
+
+void engine::ConsoleSubsystem::FlushLogs()
+{
+	{
+		std::unique_lock g{ LogWriteMutex };
+		StopLogWrite = true;
+		LogWriteCondition.notify_all();
+	}
+	LogWriteThread.join();
 }
 
 void engine::ConsoleSubsystem::ExecuteCommand(const string& Command)
@@ -88,6 +124,11 @@ void engine::ConsoleSubsystem::ExecuteCommand(const string& Command)
 	Print(str::Format("Unknown command: %s", FirstWord.c_str()), LogType::Error);
 }
 
+void engine::ConsoleSubsystem::Update()
+{
+	LogWriteCondition.notify_one();
+}
+
 void engine::ConsoleSubsystem::AddCommand(const console::Command& NewCommand)
 {
 	Commands.insert({ NewCommand.Name, NewCommand });
@@ -97,4 +138,49 @@ void engine::ConsoleSubsystem::RemoveCommand(const string& CommandName)
 {
 	if (Commands.contains(CommandName))
 		Commands.erase(CommandName);
+}
+
+void engine::ConsoleSubsystem::LogWriteFunction()
+{
+	error::InitForThread("Log write thread");
+
+	size_t LastMessages = 0;
+
+	std::filesystem::create_directory("Logs/");
+
+	auto TimeValue = std::chrono::system_clock::now();
+
+	string s = std::format("Logs/Engine-{:%Y-%m-%d-%H-%M-%OS}.txt", TimeValue);
+
+	std::ofstream LogsStream = std::ofstream(s);
+
+	do {
+		std::unique_lock g{ LogWriteMutex };
+
+		LogWriteCondition.wait(g);
+
+		if (Log::GetLogMessagesCount() != LastMessages)
+		{
+			std::vector Messages = Log::GetMessages();
+			if (Messages.size() < LastMessages)
+			{
+				LastMessages = 0;
+			}
+
+			for (size_t i = LastMessages; i < Messages.size(); i++)
+			{
+				auto TimeValue = std::chrono::system_clock::now();
+
+				LogsStream << std::format("{:%H:%M:%OS} > ", TimeValue);
+				for (auto& i : Messages[i].Prefixes)
+				{
+					LogsStream << "[" << i.Text << "]: ";
+				}
+				LogsStream << Messages[i].Message << std::endl;
+			}
+			LastMessages = Messages.size();
+		}
+
+	} while (!StopLogWrite);
+	LogsStream.close();
 }

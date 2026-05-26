@@ -47,7 +47,7 @@ engine::editor::EditorSubsystem::EditorSubsystem()
 
 void engine::editor::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
 {
-	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
+	System->AddCommand(console::Command{
 		.Name = "ed.run",
 		.Args = {},
 		.OnCalled = [](const console::Command::CallContext& ctx) {
@@ -56,7 +56,7 @@ void engine::editor::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
 				Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 			}
 		} });
-	Engine::GetSubsystem<ConsoleSubsystem>()->AddCommand(console::Command{
+	System->AddCommand(console::Command{
 		.Name = "ed.edit",
 		.Args = {},
 		.OnCalled = [this](const console::Command::CallContext& ctx) {
@@ -76,7 +76,8 @@ engine::editor::EditorSubsystem::~EditorSubsystem()
 
 	if (console)
 	{
-		// TODO
+		console->RemoveCommand("ed.edit");
+		console->RemoveCommand("ed.run");
 	}
 }
 
