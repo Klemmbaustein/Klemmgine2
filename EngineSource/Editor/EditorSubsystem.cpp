@@ -97,6 +97,13 @@ void engine::editor::EditorSubsystem::StartProject()
 	Engine::GameHasFocus = true;
 	//Unload();
 
+	bool ClearConsole = Settings::GetInstance()->Console.GetSetting("clearLogWhenGameStarts", false).GetBool();
+
+	if (ClearConsole)
+	{
+		Log::Clear();
+	}
+
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	LastSceneName = Scene::GetMain()->Name;

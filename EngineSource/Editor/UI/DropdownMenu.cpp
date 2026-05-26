@@ -18,7 +18,8 @@ void engine::editor::DropdownMenu::Clear(size_t ToDepth)
 
 thread_local std::vector<DropdownMenu*> DropdownMenu::Current;
 
-engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool RemoveOld, size_t Depth)
+engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position,
+	bool AlignUp, bool RemoveOld, size_t Depth)
 {
 	if (RemoveOld)
 	{
@@ -60,7 +61,7 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 			{
 				Vec2f Position = Button->GetPosition() + Button->GetUsedSize().GetScreen();
 				Clear(Depth + 1);
-				new DropdownMenu(Option.SubMenu, Position, false, Depth + 1);
+				new DropdownMenu(Option.SubMenu, Position, false, false, Depth + 1);
 				return;
 			}
 			Clear();
@@ -111,7 +112,7 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 
 	Box->UpdateElement();
 
-	float Height = Box->GetUsedSize().GetScreen().Y;
+	float Height = AlignUp ? 0.0f : Box->GetUsedSize().GetScreen().Y;
 
 	Box->SetPosition((Box->GetPosition() - Vec2f(0, Height))
 		.Clamp(-1, Vec2f(1) - Box->GetUsedSize().GetScreen()));

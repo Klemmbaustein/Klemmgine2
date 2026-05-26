@@ -13,5 +13,6 @@ namespace engine::editor
 
 	private:
 		bool VerboseLog = false;
+		bool ClearLogWhenGameStarts = false;
 	};
 }

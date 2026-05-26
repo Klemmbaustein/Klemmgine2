@@ -5,33 +5,36 @@
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/Engine.h>
 #include <kui/Window.h>
-#include <iostream>
+#include <Editor/Settings/EditorSettings.h>
+#include <Editor/UI/Windows/SettingsWindow.h>
+
+using namespace kui;
 using namespace engine;
 
-static std::map<Log::LogColor, kui::Vec3f> LogColorValues =
+static std::map<Log::LogColor, Vec3f> LogColorValues =
 {
-	{Log::LogColor::Default, kui::Vec3f(0.7f)},
-	{Log::LogColor::White, kui::Vec3f(1)},
-	{Log::LogColor::Gray, kui::Vec3f(0.7f)},
-	{Log::LogColor::Red, kui::Vec3f(1, 0.2f, 0.0f)},
-	{Log::LogColor::Green, kui::Vec3f(0.5f, 1.0f, 0.0f)},
-	{Log::LogColor::Cyan, kui::Vec3f(0, 1, 1)},
-	{Log::LogColor::Magenta, kui::Vec3f(1, 0.1f, 1)},
-	{Log::LogColor::Blue, kui::Vec3f(0.25f, 0.25f, 1)},
-	{Log::LogColor::Yellow, kui::Vec3f(1, 1, 0)},
+	{Log::LogColor::Default, Vec3f(0.7f)},
+	{Log::LogColor::White, Vec3f(1)},
+	{Log::LogColor::Gray, Vec3f(0.7f)},
+	{Log::LogColor::Red, Vec3f(1, 0.2f, 0.0f)},
+	{Log::LogColor::Green, Vec3f(0.5f, 1.0f, 0.0f)},
+	{Log::LogColor::Cyan, Vec3f(0, 1, 1)},
+	{Log::LogColor::Magenta, Vec3f(1, 0.1f, 1)},
+	{Log::LogColor::Blue, Vec3f(0.25f, 0.25f, 1)},
+	{Log::LogColor::Yellow, Vec3f(1, 1, 0)},
 };
 
-static std::map<Log::LogColor, kui::Vec3f> LogColorValuesLight =
+static std::map<Log::LogColor, Vec3f> LogColorValuesLight =
 {
-	{Log::LogColor::Default, kui::Vec3f(0.3f)},
-	{Log::LogColor::White, kui::Vec3f(0)},
-	{Log::LogColor::Gray, kui::Vec3f(0.3f)},
-	{Log::LogColor::Red, kui::Vec3f(1, 0.0f, 0.0f)},
-	{Log::LogColor::Green, kui::Vec3f(0.0f, 0.6f, 0.0f)},
-	{Log::LogColor::Cyan, kui::Vec3f(0, 0.6f, 0.6f)},
-	{Log::LogColor::Magenta, kui::Vec3f(0.6f, 0, 0.6f)},
-	{Log::LogColor::Blue, kui::Vec3f(0, 0, 0.6f)},
-	{Log::LogColor::Yellow, kui::Vec3f(0.6f, 0.6f, 0)},
+	{Log::LogColor::Default, Vec3f(0.3f)},
+	{Log::LogColor::White, Vec3f(0)},
+	{Log::LogColor::Gray, Vec3f(0.3f)},
+	{Log::LogColor::Red, Vec3f(1, 0.0f, 0.0f)},
+	{Log::LogColor::Green, Vec3f(0.0f, 0.6f, 0.0f)},
+	{Log::LogColor::Cyan, Vec3f(0, 0.6f, 0.6f)},
+	{Log::LogColor::Magenta, Vec3f(0.6f, 0, 0.6f)},
+	{Log::LogColor::Blue, Vec3f(0, 0, 0.6f)},
+	{Log::LogColor::Yellow, Vec3f(0.6f, 0.6f, 0)},
 };
 
 engine::editor::ConsolePanel::ConsolePanel()
@@ -41,7 +44,7 @@ engine::editor::ConsolePanel::ConsolePanel()
 	Element->commandField->field->OnChanged = [this]() {
 		string Command = Element->commandField->field->GetText();
 
-		if (Command.empty() || !Element->GetParentWindow()->Input.IsKeyDown(kui::Key::RETURN))
+		if (Command.empty() || !Element->GetParentWindow()->Input.IsKeyDown(Key::RETURN))
 			return;
 
 		Log::Info("> " + Command);
@@ -58,6 +61,29 @@ engine::editor::ConsolePanel::ConsolePanel()
 	Element->searchField->field->OnValueChanged = [this]() {
 		this->Filter = str::Lower(Element->searchField->field->GetText());
 		UpdateLog(true);
+	};
+
+	Element->optionsButton->OnClicked = [this] {
+		bool ClearConsole = Settings::GetInstance()->Console.GetSetting("clearLogWhenGameStarts", false).GetBool();
+		bool VerboseLog = Settings::GetInstance()->Console.GetSetting("verboseLog", false).GetBool();
+
+		new DropdownMenu(
+			{
+				DropdownMenu::Option("Clear log now", "", EditorUI::Asset("Reload.png"), &Log::Clear, {}, true),
+				DropdownMenu::Option("Clear log when game starts", "", ClearConsole ? EditorUI::Asset("Dot.png") : "",
+					[ClearConsole] {
+					Settings::GetInstance()->Console.SetSetting("clearLogWhenGameStarts", !ClearConsole);
+				}),
+				DropdownMenu::Option("Verbose log messages", "", VerboseLog ? EditorUI::Asset("Dot.png") : "",
+					[VerboseLog] {
+					Settings::GetInstance()->Console.SetSetting("verboseLog", !VerboseLog);
+				}),
+				DropdownMenu::Option("Show all console settings", "", EditorUI::Asset("Open.png"),
+					[] {
+					new SettingsWindow("Console");
+				})
+			},
+			Element->optionsButton->GetPosition() + SizeVec::Pixels(-5, 16).GetScreen(), true);
 	};
 
 	Background->AddChild(Element);
@@ -92,12 +118,18 @@ void engine::editor::ConsolePanel::UpdateLog(bool Full)
 {
 	using namespace kui;
 
+	std::vector LogMessages = Log::GetMessages();
+
+	if (LogMessages.size() < LastLogSize)
+	{
+		Full = true;
+	}
+
 	if (Full)
 	{
 		Element->logBox->DeleteChildren();
 		LastLogSize = 0;
 	}
-	std::vector LogMessages = Log::GetMessages();
 
 	auto& Children = Element->logBox->GetChildren();
 

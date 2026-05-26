@@ -115,6 +115,48 @@ static void Scene_getObjects(InterpretContext* context)
 	context->pushValue(outArray);
 }
 
+static void Scene_getObjectByName(InterpretContext* context)
+{
+	auto obj = GenericData(context);
+
+	auto found = script::ScriptSubsystem::Instance->ScriptObjectIds.find(obj.id);
+
+	if (found == script::ScriptSubsystem::Instance->ScriptObjectIds.end())
+	{
+		context->runtimePanic("getObjectByName<T> was given an invalid type.");
+		return;
+	}
+
+	auto& ReflectType = Reflection::ObjectTypes[found->second];
+
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	RuntimeStr Name = context->popRuntimeString();
+
+	SceneObject* FoundObject = nullptr;
+
+	for (auto& i : TargetScene.getValue()->Objects)
+	{
+		if (ReflectType.IsSubclassOf(i->TypeID) && i->Name == Name.ptr())
+		{
+			if (FoundObject)
+			{
+				Log::Warn("getObjectByName<T> found multiple matching objects, but can only return one.");
+			}
+			FoundObject = i;
+		}
+	}
+
+	if (FoundObject)
+	{
+		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject(FoundObject));
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
+}
+
 static void Scene_getPhysics(InterpretContext* context)
 {
 	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
@@ -626,6 +668,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, ToContext->registry->getArray(ObjectType), "getObjects", &Scene_getObjects));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeGenericFunction({FunctionArgument(StrType, "name")}, {GenericArgument("T", ObjectType)},
+			GenericArgumentType::getInstance(0, true)->nullable, "getObjectByName", &Scene_getObjectByName));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, Physics.PhysicsManagerType, "getPhysics", &Scene_getPhysics));
