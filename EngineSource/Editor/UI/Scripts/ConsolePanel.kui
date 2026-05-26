@@ -48,5 +48,13 @@ element ConsolePanelElement
 			HintText = "Search log";
 			Image = $"Search.png";
 		}
+
+		child UIButton optionsButton
+		{
+			leftPadding = 15px
+			color = Color_Text
+			image = $"DownArrow.png"
+			size = 12px
+		}
 	}
 }

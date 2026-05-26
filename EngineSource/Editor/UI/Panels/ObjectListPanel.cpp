@@ -3,7 +3,9 @@
 #include <Core/File/FileUtil.h>
 #include "Viewport.h"
 #include <Engine/Input.h>
+#include <Editor/UI/Elements/DroppableBox.h>
 #include <Editor/UI/EditorUI.h>
+#include <Engine/Objects/MeshObject.h>
 using namespace kui;
 
 engine::editor::ObjectListPanel::ObjectListPanel()
@@ -15,7 +17,43 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 		Filter = str::Lower(Heading->search->field->GetText());
 		DisplayList();
 	};
-	Background->AddChild(Heading);
+	Background->AddChild((new DroppableBox(false, [](EditorUI::DraggedItem Item) {
+		if (!Scene::GetMain())
+			return;
+
+		if (Item.ObjectType != 0)
+		{
+			if (Reflection::ObjectTypes[Item.ObjectType].IsSubclassOf(str::Hash("Engine/Scene/SceneManager")))
+			{
+				return;
+			}
+
+			auto obj = Scene::GetMain()->CreateObjectFromID(Item.ObjectType, 0);
+			Viewport::Current->OnObjectCreated(obj);
+			Viewport::Current->SelectedObjects.clear();
+			Viewport::Current->SelectedObjects.insert(obj);
+			return;
+		}
+
+		AssetRef Dropped = AssetRef::FromPath(Item.Path);
+
+		if (Dropped.Extension != "kmdl")
+		{
+			EditorUI::SetStatusMessage("Cannot add an item of type '" + Dropped.Extension + "' into the scene",
+				EditorUI::StatusType::Error);
+			return;
+		}
+
+		auto obj = Scene::GetMain()->CreateObject<MeshObject>(0);
+		obj->Name = Dropped.DisplayName();
+		obj->LoadMesh(Dropped);
+		Viewport::Current->OnObjectCreated(obj);
+		Viewport::Current->SelectedObjects.clear();
+		Viewport::Current->SelectedObjects.insert(obj);
+
+	}))
+		->SetSize(UISize::Parent(1))
+		->AddChild(Heading));
 
 	DisplayList();
 }

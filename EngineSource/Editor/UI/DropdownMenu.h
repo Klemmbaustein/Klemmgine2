@@ -19,8 +19,8 @@ namespace engine::editor
 			bool Separator = false;
 		};
 
-		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position)
-			: DropdownMenu(Options, Position, true, 0)
+		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool AlignUp = false)
+			: DropdownMenu(Options, Position, AlignUp, true, 0)
 		{
 
 		}
@@ -33,6 +33,6 @@ namespace engine::editor
 		static void Clear(size_t ToDepth = 0);
 
 	private:
-		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool RemoveOld, size_t Depth);
+		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool AlignUp, bool RemoveOld, size_t Depth);
 	};
 }

@@ -42,12 +42,29 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 	ScriptToolbar->AddDropdown("Settings", EditorUI::Asset("Settings.png"),
 		[this]() -> std::vector<DropdownMenu::Option> {
 		auto TrimWhitespace = Settings::GetInstance()->Script.GetSetting("trimWhitespace", true).GetBool();
+		auto UseVerticalTabs = Settings::GetInstance()->Script.GetSetting("useVerticalTabs", true).GetBool();
+		auto ShowMiniMap = Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool();
+
 		return {
 			DropdownMenu::Option{
 				.Name = "Trim whitespace on save",
 				.Icon = TrimWhitespace ? EditorUI::Asset("Dot.png") : "",
 				.OnClicked = [TrimWhitespace]() {
 					Settings::GetInstance()->Script.SetSetting("trimWhitespace", !TrimWhitespace);
+				},
+			},
+			DropdownMenu::Option{
+				.Name = "Use vertical document tab list",
+				.Icon = UseVerticalTabs ? EditorUI::Asset("Dot.png") : "",
+				.OnClicked = [UseVerticalTabs]() {
+					Settings::GetInstance()->Script.SetSetting("useVerticalTabs", !UseVerticalTabs);
+				},
+			},
+			DropdownMenu::Option{
+				.Name = "Show editor MiniMap",
+				.Icon = ShowMiniMap ? EditorUI::Asset("Dot.png") : "",
+				.OnClicked = [ShowMiniMap]() {
+					Settings::GetInstance()->Script.SetSetting("miniMap", !ShowMiniMap);
 				},
 				.Separator = true,
 			},

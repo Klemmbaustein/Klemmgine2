@@ -429,33 +429,7 @@ void engine::editor::Viewport::Update()
 
 	if (MouseGrabbed && Current)
 	{
-		float Speed = stats::DeltaTime * 5;
-
-		if (input::IsKeyDown(input::Key::SHIFT))
-		{
-			Speed *= 5;
-		}
-
-		if (input::IsKeyDown(input::Key::w))
-		{
-			Current->Graphics.SceneCamera->Position += Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
-		}
-		if (input::IsKeyDown(input::Key::s))
-		{
-			Current->Graphics.SceneCamera->Position -= Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
-		}
-		if (input::IsKeyDown(input::Key::d))
-		{
-			Current->Graphics.SceneCamera->Position += Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
-		}
-		if (input::IsKeyDown(input::Key::a))
-		{
-			Current->Graphics.SceneCamera->Position -= Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
-		}
-
-		Win->Input.PollForText = false;
-		Current->Graphics.SceneCamera->Rotation = Current->Graphics.SceneCamera->Rotation
-			- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
+		UpdateSceneControls(Current, Win);
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
 		&& input::IsLMBClicked && !Translate->HasGrabbedClick)
@@ -470,6 +444,49 @@ void engine::editor::Viewport::Update()
 			this->SelectedObjects.insert(hit.HitComponent->GetRootObject());
 		}
 	}
+}
+
+void engine::editor::Viewport::UpdateSceneControls(Scene* Current, kui::Window* Win)
+{
+	float Speed = stats::DeltaTime * 5;
+
+	if (input::IsKeyDown(input::Key::SHIFT))
+	{
+		Speed *= 5;
+	}
+	if (input::IsKeyDown(input::Key::CTRL))
+	{
+		Speed /= 2;
+	}
+
+	if (input::IsKeyDown(input::Key::w))
+	{
+		Current->Graphics.SceneCamera->Position += Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
+	}
+	if (input::IsKeyDown(input::Key::s))
+	{
+		Current->Graphics.SceneCamera->Position -= Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
+	}
+	if (input::IsKeyDown(input::Key::d))
+	{
+		Current->Graphics.SceneCamera->Position += Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
+	}
+	if (input::IsKeyDown(input::Key::a))
+	{
+		Current->Graphics.SceneCamera->Position -= Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
+	}
+	if (input::IsKeyDown(input::Key::q))
+	{
+		Current->Graphics.SceneCamera->Position -= Vector3::Up(Vector3()) * Speed;
+	}
+	if (input::IsKeyDown(input::Key::e))
+	{
+		Current->Graphics.SceneCamera->Position += Vector3::Up(Vector3()) * Speed;
+	}
+
+	Win->Input.PollForText = false;
+	Current->Graphics.SceneCamera->Rotation = Current->Graphics.SceneCamera->Rotation
+		- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
 }
 
 void engine::editor::Viewport::OnThemeChanged()
@@ -568,8 +585,6 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 {
 	if (!Scene::GetMain())
 		return;
-
-	Window* Win = Window::GetActiveWindow();
 
 	auto hit = RayAtCursor(100, 10);
 

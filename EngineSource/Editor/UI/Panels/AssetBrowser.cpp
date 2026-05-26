@@ -210,6 +210,17 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 						ExpandedItems.insert(RelativePath);
 					}) : nullptr),
 					});
+
+				Options.push_back(DropdownMenu::Option{
+					.Name = "Open in file explorer",
+					.Icon = EditorUI::Asset("Open.png"),
+					.OnClicked = [this, FilePath]() {
+			#if WINDOWS
+						platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
+			#else
+						platform::Open(FilePath);
+			#endif
+				}, });
 			}
 
 			Options.push_back(DropdownMenu::Option{

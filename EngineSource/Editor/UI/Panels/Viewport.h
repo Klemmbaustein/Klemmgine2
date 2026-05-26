@@ -82,6 +82,8 @@ namespace engine::editor
 		void UndoChange(Change& Target, Scene* Current);
 		void UpdateSelection();
 
+		void UpdateSceneControls(Scene* Current, kui::Window* Win);
+
 		bool PolledForText = false;
 
 		Toolbar* ViewportToolbar = nullptr;
