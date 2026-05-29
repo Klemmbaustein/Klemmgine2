@@ -22,6 +22,7 @@
 #include <ds/parser/types/arrayType.hpp>
 #include <ds/callableWrapper.hpp>
 #include <Core/Log.h>
+#include <kui/Window.h>
 
 #include "Bindings/MathBindings.h"
 #include "Bindings/SerializeBindings.h"
@@ -29,6 +30,11 @@
 #include "UI/UIBindings.h"
 #include <ds/parser/types/functionType.hpp>
 #include <Engine/Subsystem/SceneSubsystem.h>
+
+#ifdef EDITOR
+#include <Editor/Editor.h>
+#include <Editor/UI/Panels/Viewport.h>
+#endif
 
 #define CHECK_OBJ(obj) if (!obj.getValue()) { \
 	context->runtimePanic(str::Format("Got null object: %s", __FUNCTION__).c_str()); \
@@ -490,18 +496,26 @@ static void CameraComponent_setFOV(InterpretContext* context)
 	Component.getValue()->SetFov(FOV);
 }
 
+static void CameraComponent_screenToWorldDirection(InterpretContext* context)
+{
+	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Vector2 Screen = context->popValue<Vector2>();
+	context->pushValue(Component.getValue()->ScreenToWorld(Screen));
+}
+
 #pragma endregion
 
 #pragma region Log
 
-static void Log_Info(InterpretContext* context)
+static void Log_info(InterpretContext* context)
 {
 	auto message = context->popRuntimeString();
 
 	Log::Info(string(message.ptr(), message.length()));
 }
 
-static void Log_Warn(InterpretContext* context)
+static void Log_warn(InterpretContext* context)
 {
 	auto message = context->popRuntimeString();
 
@@ -510,21 +524,45 @@ static void Log_Warn(InterpretContext* context)
 
 #pragma endregion
 
-static void Stats_GetDelta(InterpretContext* context)
+static void Stats_getDelta(InterpretContext* context)
 {
 	context->pushValue(stats::DeltaTime);
 }
 
 #pragma region Input
 
-static void Input_IsKeyDown(InterpretContext* context)
+static void Input_isKeyHeld(InterpretContext* context)
 {
-	context->pushValue<Bool>(IsKeyDown(context->popValue<Key>()));
+	context->pushValue<Bool>(IsKeyHeld(context->popValue<Key>()));
 }
 
-static void Input_GetMouseMovement(InterpretContext* context)
+static void Input_isKeyDown(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsKeyPressed(context->popValue<Key>()));
+}
+
+static void Input_isKeyUp(InterpretContext* context)
+{
+	context->pushValue<Bool>(IsKeyReleased(context->popValue<Key>()));
+}
+
+static void Input_getMouseMovement(InterpretContext* context)
 {
 	context->pushValue<Vector2>(MouseMovement);
+}
+
+static void Input_getMousePosition(InterpretContext* context)
+{
+#ifdef EDITOR
+	if (editor::IsActive())
+	{
+		context->pushValue<kui::Vec2f>(editor::Viewport::GetMousePositionViewportRelative());
+	}
+	else
+#endif
+	{
+		context->pushValue<kui::Vec2f>(kui::Window::GetActiveWindow()->Input.MousePosition);
+	}
 }
 
 static void Input_IsLMBDown(InterpretContext* context)
@@ -757,11 +795,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "message") },
-			nullptr, "info", &Log_Info));
+			nullptr, "info", &Log_info));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "message") },
-			nullptr, "warn", &Log_Warn));
+			nullptr, "warn", &Log_warn));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds") },
@@ -769,7 +807,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addFunction(
 		NativeFunction({ },
-			FloatInst, "getDelta", &Stats_GetDelta));
+			FloatInst, "getDelta", &Stats_getDelta));
 
 	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Vec3, "getWorldPosition",
 		&ObjectComponent_GetWorldPosition));
@@ -982,7 +1020,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineInputModule.addEnumValue(KeyType, "escape", Key::ESCAPE);
 
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
-		BoolInst, "isKeyDown", &Input_IsKeyDown));
+		BoolInst, "isKeyDown", &Input_isKeyDown));
+
+	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
+		BoolInst, "isKeyHeld", &Input_isKeyHeld));
+	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(KeyType, "toCheck") },
+		BoolInst, "isKeyUp", &Input_isKeyUp));
 
 	EngineInputModule.addFunction(NativeFunction({},
 		BoolInst, "isLMBDown", &Input_IsLMBDown));
@@ -997,7 +1040,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		BoolInst, "isRMBClicked", &Input_IsRMBClicked));
 
 	EngineInputModule.addFunction(NativeFunction({ },
-		Math.Vec2, "getMouseMovement", &Input_GetMouseMovement));
+		Math.Vec2, "getMouseMovement", &Input_getMouseMovement));
+
+	EngineInputModule.addFunction(NativeFunction({ },
+		Math.Vec2, "getMousePosition", &Input_getMousePosition));
 
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(BoolInst, "newValue") }, nullptr,
 		"setShowMouseCursor", &Input_setShowMouseCursor));

@@ -567,5 +567,7 @@ namespace engine::input
 	 * @return
 	 * True if the key is currently being pressed, false if not.
 	 */
-	bool IsKeyDown(Key k);
+	bool IsKeyHeld(Key k);
+	bool IsKeyPressed(Key k);
+	bool IsKeyReleased(Key k);
 }

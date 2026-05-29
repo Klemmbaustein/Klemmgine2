@@ -33,7 +33,7 @@ STRUCT_MEMBER(ComponentAttach, void, (void* Parent, void* Comp), ((ObjectCompone
 STRUCT_MEMBER(MeshComponentLoad, void, (void* Comp, const char* Name), ((MeshComponent*)Comp)->Load(AssetRef::Convert(Name)))
 
 // Input
-STRUCT_MEMBER(InputIsKeyDown, bool, (int KeyCode), return input::IsKeyDown(input::Key(KeyCode)))
+STRUCT_MEMBER(InputIsKeyDown, bool, (int KeyCode), return input::IsKeyHeld(input::Key(KeyCode)))
 
 // UI
 STRUCT_MEMBER(CreateUICanvas, void*, (const char* Name, const char* Source, engine::plugin::PluginCanvasInterface * Canvas), \

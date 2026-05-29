@@ -13,6 +13,8 @@
 #include <kui/StringReplace.h>
 
 using namespace kui;
+using namespace engine::subsystem;
+using namespace engine;
 
 #if WINDOWS
 #include <Windows.h>
@@ -637,8 +639,6 @@ std::string kui::systemWM::SelectFileDialog(bool PickFolders)
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 {
-	using namespace engine::subsystem;
-	using namespace engine;
 	std::lock_guard g{ InputMutex };
 
 	if (k == SDLK_TAB && IsDown)
@@ -662,13 +662,17 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 
 void kui::systemWM::SysWindow::UpdateEvents()
 {
-	using namespace engine;
-
 	std::vector<SDL_Event> EventsCopy;
 	EventsCopy = Events;
 	Events.clear();
 
 	input::MouseMovement = 0;
+
+	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
+	if (InputSys)
+	{
+		InputSys->NextInputUpdate();
+	}
 
 	for (auto& ev : EventsCopy)
 	{

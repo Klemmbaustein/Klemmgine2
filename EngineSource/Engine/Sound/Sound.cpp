@@ -72,7 +72,7 @@ void engine::sound::SoundDevice::LoadExtensions()
 {
 	if (alcIsExtensionPresent(this->DeviceData->Device, "ALC_EXT_EFX"))
 	{
-#define LOAD_PROC(type, name) this->DeviceData->name = reinterpret_cast<type>(alGetProcAddress(# name));
+#define LOAD_PROC(type, name) this->DeviceData->name = reinterpret_cast<type>(alGetProcAddress(# name))
 
 		LOAD_PROC(LPALGENFILTERS, alGenFilters);
 		LOAD_PROC(LPALDELETEFILTERS, alDeleteFilters);
@@ -150,6 +150,8 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LFREFERENCE, reverb->flLFReference);
 	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, reverb->flRoomRolloffFactor);
 	Device->DeviceData->alEffecti(Effect, AL_EAXREVERB_DECAY_HFLIMIT, reverb->iDecayHFLimit);
+
+	delete reverb;
 
 	Device->DeviceData->alGenAuxiliaryEffectSlots(1, &this->SoundData->Effects);
 	Device->DeviceData->alAuxiliaryEffectSloti(this->SoundData->Effects, AL_EFFECTSLOT_EFFECT, Effect);

@@ -2,8 +2,8 @@
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
 #include <Engine/Engine.h>
-#include <Engine/Input.h>
-#include <Core/Log.h>
+
+using namespace engine;
 
 engine::CameraComponent::CameraComponent()
 {
@@ -60,4 +60,9 @@ void engine::CameraComponent::SetFov(float NewFov)
 float engine::CameraComponent::GetFov() const
 {
 	return Fov;
+}
+
+Vector3 engine::CameraComponent::ScreenToWorld(Vector2 Screen) const
+{
+	return ComponentCamera.ScreenToWorld(Screen);
 }

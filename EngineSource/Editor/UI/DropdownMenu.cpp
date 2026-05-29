@@ -143,7 +143,7 @@ void engine::editor::DropdownMenu::UpdateDropdowns()
 
 	if (!Current.empty()
 		&& (((input::IsLMBClicked || input::IsRMBClicked) && !IsHovered)
-			|| input::IsKeyDown(input::Key::ESCAPE)))
+			|| input::IsKeyHeld(input::Key::ESCAPE)))
 	{
 		Clear();
 	}
