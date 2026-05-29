@@ -70,6 +70,8 @@ namespace engine::editor
 		std::vector<DropdownMenu::Option> GetViewDropdown();
 		MeshComponent* Grid = nullptr;
 
+		static kui::Vec2f GetMousePositionViewportRelative();
+
 	private:
 
 		void OnItemDropped(EditorUI::DraggedItem Item);

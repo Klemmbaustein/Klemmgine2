@@ -16,6 +16,8 @@ namespace engine
 		void SetFov(float NewFov);
 		float GetFov() const;
 
+		Vector3 ScreenToWorld(Vector2 Screen) const;
+
 	protected:
 		float Fov = Rotation3::PI / 2;
 

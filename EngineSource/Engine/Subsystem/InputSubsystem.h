@@ -7,15 +7,26 @@ namespace engine::subsystem
 {
 	class InputSubsystem : public Subsystem
 	{
-		std::map<input::Key, bool> PressedKeys;
+		struct KeyData
+		{
+			bool IsPressed = false;
+			uint64 ChangedFrame = SIZE_MAX;
+		};
+
+		std::map<input::Key, KeyData> PressedKeys;
 		bool CursorVisible = true;
 	public:
 		InputSubsystem();
 
+		uint64 InputFrame = 0;
+
+		void NextInputUpdate();
+
 		void Update() override;
 
-		bool KeyDown(input::Key Key);
+		bool IsKeyHeld(input::Key Key);
+		bool IsKeyPressed(input::Key Key);
+		bool IsKeyReleased(input::Key Key);
 		void SetKeyDown(input::Key Key, bool Value);
-		bool KeyPressed(input::Key Key);
 	};
 }

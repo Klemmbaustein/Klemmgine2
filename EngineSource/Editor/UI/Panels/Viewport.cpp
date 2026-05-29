@@ -434,7 +434,7 @@ void engine::editor::Viewport::Update()
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
 		&& input::IsLMBClicked && !Translate->HasGrabbedClick)
 	{
-		if (!input::IsKeyDown(input::Key::SHIFT))
+		if (!input::IsKeyHeld(input::Key::SHIFT))
 		{
 			Viewport::Current->ClearSelected();
 		}
@@ -450,36 +450,36 @@ void engine::editor::Viewport::UpdateSceneControls(Scene* Current, kui::Window* 
 {
 	float Speed = stats::DeltaTime * 5;
 
-	if (input::IsKeyDown(input::Key::SHIFT))
+	if (input::IsKeyHeld(input::Key::SHIFT))
 	{
 		Speed *= 5;
 	}
-	if (input::IsKeyDown(input::Key::CTRL))
+	if (input::IsKeyHeld(input::Key::CTRL))
 	{
 		Speed /= 2;
 	}
 
-	if (input::IsKeyDown(input::Key::w))
+	if (input::IsKeyHeld(input::Key::w))
 	{
 		Current->Graphics.SceneCamera->Position += Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
 	}
-	if (input::IsKeyDown(input::Key::s))
+	if (input::IsKeyHeld(input::Key::s))
 	{
 		Current->Graphics.SceneCamera->Position -= Vector3::Forward(Current->Graphics.SceneCamera->Rotation) * Speed;
 	}
-	if (input::IsKeyDown(input::Key::d))
+	if (input::IsKeyHeld(input::Key::d))
 	{
 		Current->Graphics.SceneCamera->Position += Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
 	}
-	if (input::IsKeyDown(input::Key::a))
+	if (input::IsKeyHeld(input::Key::a))
 	{
 		Current->Graphics.SceneCamera->Position -= Vector3::Right(Current->Graphics.SceneCamera->Rotation) * Speed;
 	}
-	if (input::IsKeyDown(input::Key::q))
+	if (input::IsKeyHeld(input::Key::q))
 	{
 		Current->Graphics.SceneCamera->Position -= Vector3::Up(Vector3()) * Speed;
 	}
-	if (input::IsKeyDown(input::Key::e))
+	if (input::IsKeyHeld(input::Key::e))
 	{
 		Current->Graphics.SceneCamera->Position += Vector3::Up(Vector3()) * Speed;
 	}
@@ -636,6 +636,9 @@ void engine::editor::Viewport::Run()
 		return;
 	}
 
+	// TODO: Somehow keep track of objects over scene reloads, because otherwise there is no viable way to keep the undo history.
+	ObjectChanges = {};
+
 	Viewport::Current->ClearSelected();
 	SetFocused();
 
@@ -692,16 +695,20 @@ physics::HitResult engine::editor::Viewport::RayAtCursor(float Distance, float F
 
 Vector3 engine::editor::Viewport::GetCursorDirection()
 {
-	Window* Win = Window::GetActiveWindow();
+	auto MousePos = GetMousePositionViewportRelative();
 	graphics::Camera* Cam = Scene::GetMain()->Graphics.UsedCamera;
-
-	Vec2f Pos = ViewportBackground->GetScreenPosition();
-	Vec2f Size = ViewportBackground->GetUsedSize().GetScreen();
-
-	Vec2f MousePos = (((Win->Input.MousePosition - Pos) / Size) * 2 - 1).Clamp(-1, 1);
-
 	Vector3 Direction = Cam->ScreenToWorld(Vector2(MousePos.X, MousePos.Y));
 	return Direction;
+}
+
+Vec2f engine::editor::Viewport::GetMousePositionViewportRelative()
+{
+	Window* Win = Window::GetActiveWindow();
+
+	Vec2f Pos = Current->ViewportBackground->GetScreenPosition();
+	Vec2f Size = Current->ViewportBackground->GetUsedSize().GetScreen();
+
+	return (((Win->Input.MousePosition - Pos) / Size) * 2 - 1).Clamp(-1, 1);
 }
 
 void engine::editor::Viewport::ShiftSelected(Vector3 Direction)

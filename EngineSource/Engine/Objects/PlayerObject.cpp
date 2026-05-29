@@ -39,24 +39,24 @@ void engine::PlayerObject::Update()
 
 	Transform CameraTransform = Cam->GetWorldTransform();
 
-	if (input::IsKeyDown(input::Key::w))
+	if (input::IsKeyHeld(input::Key::w))
 	{
 		Move(CameraTransform.Forward() * Speed);
 	}
-	if (input::IsKeyDown(input::Key::s))
+	if (input::IsKeyHeld(input::Key::s))
 	{
 		Move(-CameraTransform.Forward() * Speed);
 	}
-	if (input::IsKeyDown(input::Key::d))
+	if (input::IsKeyHeld(input::Key::d))
 	{
 		Move(CameraTransform.Right() * Speed);
 	}
-	if (input::IsKeyDown(input::Key::a))
+	if (input::IsKeyHeld(input::Key::a))
 	{
 		Move(-CameraTransform.Right() * Speed);
 	}
 
-	if (input::IsKeyDown(input::Key::SPACE))
+	if (input::IsKeyHeld(input::Key::SPACE))
 	{
 		Movement->Jump();
 	}

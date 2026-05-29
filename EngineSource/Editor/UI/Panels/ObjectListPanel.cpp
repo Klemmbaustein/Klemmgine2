@@ -71,11 +71,11 @@ void engine::editor::ObjectListPanel::Update()
 	if ((EditorUI::FocusedPanel == this || EditorUI::FocusedPanel == Viewport::Current)
 		&& !Viewport::Current->SelectedObjects.empty())
 	{
-		if (input::IsKeyDown(input::Key::ESCAPE))
+		if (input::IsKeyHeld(input::Key::ESCAPE))
 		{
 			Viewport::Current->ClearSelected();
 		}
-		else if (input::IsKeyDown(input::Key::DELETE))
+		else if (input::IsKeyHeld(input::Key::DELETE))
 		{
 			Viewport::Current->RemoveSelected();
 		}
@@ -199,7 +199,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 			delete Elem->arrow;
 
 		Elem->button->OnClicked = [this, Obj]() {
-			if (!input::IsKeyDown(input::Key::SHIFT))
+			if (!input::IsKeyHeld(input::Key::SHIFT))
 				Viewport::Current->ClearSelected();
 
 			if (Obj.From)

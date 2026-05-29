@@ -16,6 +16,11 @@ engine::subsystem::InputSubsystem::InputSubsystem()
 #endif
 }
 
+void engine::subsystem::InputSubsystem::NextInputUpdate()
+{
+	InputFrame++;
+}
+
 void engine::subsystem::InputSubsystem::Update()
 {
 	VideoSubsystem* VideoSys = Engine::GetSubsystem<VideoSubsystem>();
@@ -31,23 +36,31 @@ void engine::subsystem::InputSubsystem::Update()
 	}
 }
 
-bool engine::subsystem::InputSubsystem::KeyDown(input::Key Key)
+bool engine::subsystem::InputSubsystem::IsKeyHeld(input::Key Key)
 {
 	if (PressedKeys.contains(Key))
-		return PressedKeys[Key];
+		return PressedKeys[Key].IsPressed;
+	return false;
+}
+
+bool engine::subsystem::InputSubsystem::IsKeyPressed(input::Key Key)
+{
+	if (PressedKeys.contains(Key))
+		return PressedKeys[Key].ChangedFrame == InputFrame && PressedKeys[Key].IsPressed;
+	return false;
+}
+
+bool engine::subsystem::InputSubsystem::IsKeyReleased(input::Key Key)
+{
+	if (PressedKeys.contains(Key))
+		return PressedKeys[Key].ChangedFrame == InputFrame && !PressedKeys[Key].IsPressed;
 	return false;
 }
 
 void engine::subsystem::InputSubsystem::SetKeyDown(input::Key Key, bool Value)
 {
-	if (PressedKeys.contains(Key))
-		PressedKeys[Key] = Value;
-	PressedKeys.insert({ Key, Value });
-}
-
-bool engine::subsystem::InputSubsystem::KeyPressed(input::Key Key)
-{
-	if (PressedKeys.contains(Key))
-		return PressedKeys[Key];
-	return false;
+	PressedKeys[Key] = KeyData{
+		.IsPressed = Value,
+		.ChangedFrame = InputFrame,
+	};
 }

@@ -520,7 +520,7 @@ void engine::editor::ItemBrowser::OnButtonClicked(size_t i, kui::UIBox* Element,
 
 	if (!Buttons[i].first.Selected)
 	{
-		if (!input::IsKeyDown(input::Key::SHIFT))
+		if (!input::IsKeyHeld(input::Key::SHIFT))
 		{
 			for (auto& btn : Buttons)
 			{
