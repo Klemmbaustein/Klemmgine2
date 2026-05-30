@@ -163,6 +163,8 @@ static std::map<int, kui::Key> Keys =
 	{ SDLK_COMMA, Key::COMMA },
 	{ SDLK_PERIOD, Key::PERIOD },
 	{ SDLK_SLASH, Key::SLASH },
+	{ SDLK_HOME, Key::HOME },
+	{ SDLK_END, Key::END },
 	{ SDLK_0, Key::k0 },
 	{ SDLK_1, Key::k1 },
 	{ SDLK_2, Key::k2 },

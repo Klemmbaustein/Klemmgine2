@@ -54,9 +54,12 @@ engine::ConsoleSubsystem::ConsoleSubsystem()
 
 	WriteLogs = launchArgs::GetArg("writeLogs").has_value();
 
-	if (WriteLogs || editor::IsActive())
+#ifndef WITH_EDITOR
+	if (WriteLogs)
+#endif
 	{
 		LogWriteThread = std::thread(LogWriteFunction);
+		WriteLogs = true;
 	}
 }
 
@@ -67,12 +70,15 @@ engine::ConsoleSubsystem::~ConsoleSubsystem()
 
 void engine::ConsoleSubsystem::FlushLogs()
 {
+	if (WriteLogs)
 	{
-		std::unique_lock g{ LogWriteMutex };
-		StopLogWrite = true;
-		LogWriteCondition.notify_all();
+		{
+			std::unique_lock g{ LogWriteMutex };
+			StopLogWrite = true;
+			LogWriteCondition.notify_all();
+		}
+		LogWriteThread.join();
 	}
-	LogWriteThread.join();
 }
 
 void engine::ConsoleSubsystem::ExecuteCommand(const string& Command)
