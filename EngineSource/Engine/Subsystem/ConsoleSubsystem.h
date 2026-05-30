@@ -3,6 +3,7 @@
 #include <Engine/Console.h>
 #include <unordered_map>
 #include <thread>
+#include <condition_variable>
 
 namespace engine
 {
