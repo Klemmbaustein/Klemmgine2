@@ -12,7 +12,7 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 	: EditorPanel("Objects", "ObjectListPanel")
 {
 	Heading = new ObjectListHeader();
-	Heading->search->field->OnChanged = [this]()
+	Heading->search->field->OnValueChanged = [this]()
 	{
 		Filter = str::Lower(Heading->search->field->GetText());
 		DisplayList();
@@ -138,7 +138,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 		if (Current->ObjectDestroyed(i))
 			continue;
 
-		if (!Filter.empty() && str::Lower(i->Name).find(Filter) != std::string::npos)
+		if (!Filter.empty() && str::Lower(i->Name).find(Filter) == std::string::npos)
 		{
 			continue;
 		}
