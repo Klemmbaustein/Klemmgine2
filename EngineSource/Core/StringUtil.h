@@ -92,6 +92,28 @@ namespace engine
 		[[nodiscard]]
 		string Format(string Format, ...);
 
+		constexpr string AddSpacesToName(const string& Target)
+		{
+			bool LastWasLower = false;
+
+			string Result;
+			Result.reserve(Target.size());
+
+			for (auto& i : Target)
+			{
+				if (std::isupper(i) && LastWasLower)
+				{
+					LastWasLower = false;
+					Result.push_back(' ');
+				}
+				else if (std::islower(i))
+				{
+					LastWasLower = true;
+				}
+				Result.push_back(i);
+			}
+			return Result;
+		}
 
 		string FloatToString(float Val, size_t Precision = 0);
 	}

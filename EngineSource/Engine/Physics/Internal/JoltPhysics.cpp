@@ -215,6 +215,8 @@ static void JoltPhysicsTrace(const char* inFMT, ...)
 bool internal::JoltInstance::IsInitialized = false;
 JPH::TempAllocatorImpl* internal::JoltInstance::TempAllocator = nullptr;
 JoltJobSystemImpl* internal::JoltInstance::JobSystem = nullptr;
+static uint32 PhysicsSystemCount = 0;
+static std::mutex InitMutex;
 
 void engine::internal::JoltInstance::InitJolt()
 {
@@ -403,6 +405,10 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 
 engine::internal::JoltInstance::JoltInstance()
 {
+	std::lock_guard g{ InitMutex };
+
+	InitJolt();
+
 	const uint32 cMaxBodies = 65536;
 
 	const uint32 cNumBodyMutexes = 0;
@@ -419,6 +425,7 @@ engine::internal::JoltInstance::JoltInstance()
 		ObjectVsObjectFilter);
 
 	System->SetContactListener(&ContactListener);
+	PhysicsSystemCount++;
 
 	JoltBodyInterface = &System->GetBodyInterface();
 }
@@ -434,6 +441,19 @@ engine::internal::JoltInstance::~JoltInstance()
 	}
 
 	delete System;
+	{
+		std::lock_guard g{ InitMutex };
+		PhysicsSystemCount--;
+
+		if (PhysicsSystemCount == 0)
+		{
+			delete TempAllocator;
+			delete JobSystem;
+			TempAllocator = nullptr;
+			JobSystem = nullptr;
+			IsInitialized = false;
+		}
+	}
 }
 
 void engine::internal::JoltInstance::Update()

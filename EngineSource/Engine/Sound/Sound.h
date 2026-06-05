@@ -12,6 +12,7 @@ namespace engine::sound
 {
 	struct SoundDevice_Private;
 	struct SoundContext_Private;
+	struct ReverbVolume_Private;
 	struct SoundBuffer;
 	struct SoundSource;
 
@@ -31,6 +32,31 @@ namespace engine::sound
 	{
 	public:
 		float Volume = 0;
+
+		float Density = 1.0f;
+		float Diffusion = 1.0f;
+		float Gain = 0.315f;
+		float HighFrequencyGain = 0.9f;
+		float LowFrequencyGain = 1.0f;
+		float DecayTime = 1.5f;
+		float DecayHighFrequencyRatio = 0.85f;
+		float DecayLowFrequencyRatio = 1.0f;
+		float ReflectionsGain = 0.05f;
+		float ReflectionsDelay = 0.007f;
+		Vector3 ReflectionsPan = 0;
+		float LateReverbGain = 1.0f;
+		float LateReverbDelay = 0;
+		Vector3 LateReverbPan = 0;
+		float EchoTime = 0.2500f;
+		float EchoDepth = 0;
+		float ModulationTime = 0.2500f;
+		float ModulationDepth = 0;
+		float HighFrequencyAirAbsorptionGain = 1.0f;
+		float HighFrequencyReference = 5000.0f;
+		float LowFrequencyReference = 250.0f;
+		float RoomRolloffFactor = 1.0f;
+		int32 DecayHighFrequencyLimit = 1;
+
 	};
 
 	class SoundReverbVolume
@@ -48,6 +74,7 @@ namespace engine::sound
 		}
 
 		debug::DebugBox* Box = nullptr;
+		std::shared_ptr<ReverbVolume_Private> VolumeData;
 	};
 
 	class SoundContext
@@ -77,7 +104,7 @@ namespace engine::sound
 		subsystem::Subsystem* System = nullptr;
 		SoundContext_Private* SoundData = nullptr;
 
-		SoundReverbVolume* AddReverbVolume(Transform At);
+		SoundReverbVolume* AddReverbVolume(Transform At, ReverbData Data);
 		void RemoveReverbVolume(SoundReverbVolume* Target);
 		void UpdateReverbVolumeTransform(SoundReverbVolume* Target, Transform NewTransform);
 
@@ -96,6 +123,7 @@ namespace engine::sound
 
 		std::list<SoundReverbVolume> ReverbVolumes;
 		ReverbData CurrentReverb;
+		std::shared_ptr<ReverbVolume_Private> CurrentReverbData;
 		float CurrentReverbIntensity = 1.0f;
 
 		struct MultiThreadData

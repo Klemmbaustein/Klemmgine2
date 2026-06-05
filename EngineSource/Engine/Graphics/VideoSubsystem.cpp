@@ -107,8 +107,7 @@ engine::VideoSubsystem::VideoSubsystem()
 
 	MainWindow->SetTitle(GetWindowTitle().c_str());
 
-	MainWindow->OnResizedCallback = [this](Window*)
-	{
+	MainWindow->OnResizedCallback = [this](Window*) {
 		OnResized();
 	};
 
@@ -120,8 +119,7 @@ engine::VideoSubsystem::VideoSubsystem()
 	Shaders.Modules.ScanModules();
 	ModulesTime.End();
 
-	MainWindow->Input.RegisterOnKeyDownCallback(Key::F11, [](Window* w)
-	{
+	MainWindow->Input.RegisterOnKeyDownCallback(Key::F11, [](Window* w) {
 		w->SetMaximized(!w->GetWindowFullScreen());
 	});
 
@@ -247,6 +245,7 @@ engine::VideoSubsystem::~VideoSubsystem()
 	Current = nullptr;
 	GraphicsModel::ClearAll();
 	graphics::CascadedShadows::UnloadShadows();
+
 	delete MainWindow;
 }
 

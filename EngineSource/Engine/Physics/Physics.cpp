@@ -96,7 +96,6 @@ engine::physics::PhysicsManager::~PhysicsManager()
 
 void engine::physics::PhysicsManager::Init()
 {
-	internal::JoltInstance::InitJolt();
 	this->PhysicsSystem = new internal::JoltInstance();
 }
 
