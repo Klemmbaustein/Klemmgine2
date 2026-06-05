@@ -52,6 +52,11 @@ namespace engine::sound
 		LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv = nullptr;
 	};
 
+	struct ReverbVolume_Private
+	{
+		ALuint ALEffectSlot = 0;
+	};
+
 	struct SoundBuffer
 	{
 		ALuint ALBuffer = 0;

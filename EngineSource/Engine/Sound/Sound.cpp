@@ -121,40 +121,7 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 
 	MakeCurrent();
 
-	ALuint Effect;
-	Device->DeviceData->alGenEffects(1, &Effect);
-
-	EFXEAXREVERBPROPERTIES* reverb = new EFXEAXREVERBPROPERTIES(EFX_REVERB_PRESET_WOODEN_LARGEROOM);
-
-	Device->DeviceData->alEffecti(Effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DENSITY, reverb->flDensity);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DIFFUSION, reverb->flDiffusion);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAIN, reverb->flGain);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINHF, reverb->flGainHF);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINLF, reverb->flGainLF);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_TIME, reverb->flDecayTime);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_HFRATIO, reverb->flDecayHFRatio);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_LFRATIO, reverb->flDecayLFRatio);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_GAIN, reverb->flReflectionsGain);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_DELAY, reverb->flReflectionsDelay);
-	Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_REFLECTIONS_PAN, reverb->flReflectionsPan);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_GAIN, reverb->flLateReverbGain);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_DELAY, reverb->flLateReverbDelay);
-	Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_LATE_REVERB_PAN, reverb->flLateReverbPan);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_TIME, reverb->flEchoTime);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_DEPTH, reverb->flEchoDepth);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_TIME, reverb->flModulationTime);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_DEPTH, reverb->flModulationDepth);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, reverb->flAirAbsorptionGainHF);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_HFREFERENCE, reverb->flHFReference);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LFREFERENCE, reverb->flLFReference);
-	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, reverb->flRoomRolloffFactor);
-	Device->DeviceData->alEffecti(Effect, AL_EAXREVERB_DECAY_HFLIMIT, reverb->iDecayHFLimit);
-
-	delete reverb;
-
 	Device->DeviceData->alGenAuxiliaryEffectSlots(1, &this->SoundData->Effects);
-	Device->DeviceData->alAuxiliaryEffectSloti(this->SoundData->Effects, AL_EFFECTSLOT_EFFECT, Effect);
 	Device->DeviceData->alAuxiliaryEffectSlotf(this->SoundData->Effects, AL_EFFECTSLOT_GAIN, 0);
 
 	auto Error = alGetError();
@@ -350,13 +317,54 @@ void engine::sound::SoundContext::AddFileSource(SoundFileSource* Source)
 	this->Sources.push_back(Source);
 }
 
-SoundReverbVolume* engine::sound::SoundContext::AddReverbVolume(Transform At)
+SoundReverbVolume* engine::sound::SoundContext::AddReverbVolume(Transform At, ReverbData Data)
 {
 	auto& NewVolume = ReverbVolumes.emplace_back();
 
 	NewVolume.AtTransform = At;
-	NewVolume.Data.Volume = 1;
+	NewVolume.Data = Data;
 	NewVolume.UpdateTransform();
+	NewVolume.VolumeData = std::make_shared<ReverbVolume_Private>();
+
+	ALuint& Effect = NewVolume.VolumeData->ALEffectSlot;
+	auto& Reverb = NewVolume.Data;
+
+	MakeCurrent();
+	Device->DeviceData->alGenEffects(1, &Effect);
+
+	Device->DeviceData->alEffecti(Effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DENSITY, Reverb.Density);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DIFFUSION, Reverb.Diffusion);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAIN, Reverb.Gain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINHF, Reverb.HighFrequencyGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_GAINLF, Reverb.LowFrequencyGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_TIME, Reverb.DecayTime);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_HFRATIO, Reverb.DecayHighFrequencyRatio);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_DECAY_LFRATIO, Reverb.DecayLowFrequencyRatio);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_GAIN, Reverb.ReflectionsGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_REFLECTIONS_DELAY, Reverb.ReflectionsDelay);
+	Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_REFLECTIONS_PAN, &Reverb.ReflectionsPan[0]);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_GAIN, Reverb.LateReverbGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LATE_REVERB_DELAY, Reverb.LateReverbDelay);
+	Device->DeviceData->alEffectfv(Effect, AL_EAXREVERB_LATE_REVERB_PAN, &Reverb.LateReverbPan[0]);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_TIME, Reverb.EchoTime);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ECHO_DEPTH, Reverb.EchoDepth);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_TIME, Reverb.ModulationTime);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_MODULATION_DEPTH, Reverb.ModulationDepth);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, Reverb.HighFrequencyAirAbsorptionGain);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_HFREFERENCE, Reverb.HighFrequencyReference);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_LFREFERENCE, Reverb.LowFrequencyReference);
+	Device->DeviceData->alEffectf(Effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, Reverb.RoomRolloffFactor);
+	Device->DeviceData->alEffecti(Effect, AL_EAXREVERB_DECAY_HFLIMIT, Reverb.DecayHighFrequencyLimit);
+
+	auto Error = alGetError();
+
+	if (Error != AL_NO_ERROR)
+	{
+		auto str = alGetString(Error);
+		Log::Error(str);
+	}
+
 	MarkReverbDirty();
 	return &NewVolume;
 }
@@ -471,7 +479,8 @@ void engine::sound::SoundContext::UpdateReverb(Vector3 AtPosition)
 		Vector3 VolumeDistance = i->AtInverse.ApplyTo(AtPosition).Abs();
 		if (VolumeDistance.X <= 1.0f && VolumeDistance.Y <= 1.0f && VolumeDistance.Z <= 1.0f)
 		{
-			this->CurrentReverb = i->Data;
+			CurrentReverb = i->Data;
+			CurrentReverbData = i->VolumeData;
 			Vector3 Position, Scale;
 			Rotation3 Rotation;
 
@@ -487,7 +496,12 @@ void engine::sound::SoundContext::UpdateReverb(Vector3 AtPosition)
 	}
 	if (!FoundReverb)
 	{
-		this->CurrentReverb = ReverbData();
+		CurrentReverb = ReverbData();
+		CurrentReverbData = nullptr;
+	}
+	if (CurrentReverbData)
+	{
+		Device->DeviceData->alAuxiliaryEffectSloti(this->SoundData->Effects, AL_EFFECTSLOT_EFFECT, CurrentReverbData->ALEffectSlot);
 	}
 	Device->DeviceData->alAuxiliaryEffectSlotf(this->SoundData->Effects, AL_EFFECTSLOT_GAIN, CurrentReverb.Volume * CurrentReverbIntensity);
 }

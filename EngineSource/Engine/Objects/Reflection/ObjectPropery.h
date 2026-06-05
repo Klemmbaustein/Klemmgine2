@@ -193,4 +193,6 @@ namespace engine
 
 		AssetRef Value;
 	};
+
+#define PROPERTY(t, n, eq, v) ObjProperty<t> n eq ObjProperty<t>(str::AddSpacesToName(# n), v, this)
 }
