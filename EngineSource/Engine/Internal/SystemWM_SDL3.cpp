@@ -338,7 +338,7 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)
 				{
-					if (ev.type == SDL_EVENT_TEXT_INPUT)
+					if (ev.type == SDL_EVENT_TEXT_INPUT && !i->Parent->Input.IsKeyDown(Key::CTRL))
 					{
 						std::lock_guard g{ i->InputMutex };
 						i->TextInput += ev.text.text;

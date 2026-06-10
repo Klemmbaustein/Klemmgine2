@@ -1,5 +1,6 @@
 #include <Engine/Script/ScriptSceneObject.h>
 #include "Engine/Engine.h"
+#include <Engine/Script/Bindings/AssetBindings.h>
 #include <ds/parser/types/stringType.hpp>
 #include "ScriptSubsystem.h"
 
