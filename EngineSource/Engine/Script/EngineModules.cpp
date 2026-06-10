@@ -23,13 +23,14 @@
 #include <ds/callableWrapper.hpp>
 #include <Core/Log.h>
 #include <kui/Window.h>
+#include <ds/parser/types/functionType.hpp>
+#include <Engine/Subsystem/SceneSubsystem.h>
 
 #include "Bindings/MathBindings.h"
 #include "Bindings/SerializeBindings.h"
 #include "Bindings/PhysicsBindings.h"
+#include "Bindings/AssetBindings.h"
 #include "UI/UIBindings.h"
-#include <ds/parser/types/functionType.hpp>
-#include <Engine/Subsystem/SceneSubsystem.h>
 
 #ifdef EDITOR
 #include <Editor/Editor.h>
@@ -631,13 +632,6 @@ static void Vector3_Length(InterpretContext* context)
 	context->pushValue(context->popValue<Vector3>().Length());
 }
 
-static void AssetRef_delete(InterpretContext* context)
-{
-	ClassPtr<AssetRef*> Ref = context->popPtr<AssetRef*>();
-	auto ref = *Ref.get();
-	delete ref;
-}
-
 static void Wait(InterpretContext* context)
 {
 	using namespace ds::modules::system::async;
@@ -662,29 +656,6 @@ static void Wait(InterpretContext* context)
 	context->pushValue(t);
 }
 
-static RuntimeFunction AssetRef_vTable = RuntimeFunction{
-	.nativeFn = &AssetRef_delete
-};
-
-static void AssetRef_new(InterpretContext* context)
-{
-	ClassRef<AssetRef*> NewAssetRef = context->popValue<RuntimeClass*>();
-	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
-	RuntimeStr FilePath = context->popValue<RuntimeClass*>();
-
-	NewAssetRef.getValue() = new AssetRef(AssetRef::Convert(string(FilePath.ptr(), FilePath.length())));
-	context->pushValue(NewAssetRef);
-}
-
-static void AssetRef_emptyAsset(InterpretContext* context)
-{
-	RuntimeStr Extension = context->popRuntimeString();
-
-	ClassRef<AssetRef*> Asset = script::CreateAssetRef();
-	Asset.getValue()->Extension = string(Extension.ptr(), Extension.length());
-	context->pushValue(Asset);
-}
-
 engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageContext* ToContext)
 {
 	NativeModule EngineModule;
@@ -693,13 +664,6 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	auto StrType = ToContext->registry->getEntry<StringType>();
 	auto FloatInst = ToContext->registry->getEntry<FloatType>();
 	auto BoolInst = ToContext->registry->getEntry<BoolType>();
-
-	auto AssetRefType = EngineModule.createClass<AssetRef*>("AssetRef");
-
-	EngineModule.addClassConstructor(AssetRefType, NativeFunction{
-		{FunctionArgument(StrType, "path")}, nullptr, "AssetRef.new",
-		&AssetRef_new
-		});
 
 	auto SceneType = EngineModule.createClass<Scene*>("Scene");
 	auto ObjectType = EngineModule.createClass<SceneObject*>("SceneObject");
@@ -711,6 +675,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	MathBindings Math = AddMathModule(EngineModule, ToContext);
 	//SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
+	AssetBindings Assets = AddAssetBindings(EngineModule, ToContext);
 	ui::UIBindings UI = ui::AddUIModule(EngineUIModule, EngineModule, ToContext);
 	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
 
@@ -854,7 +819,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			nullptr, "MeshComponent.new", &MeshComponent_new));
 
 	EngineModule.addClassMethod(MeshComponentType,
-		NativeFunction({ FunctionArgument(AssetRefType, "file") },
+		NativeFunction({ FunctionArgument(Assets.AssetRef, "file") },
 			nullptr, "load", &MeshComponent_load));
 
 
@@ -913,7 +878,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		"CollisionComponent.new", &CollisionComponent_new));
 
 	EngineModule.addClassMethod(CollisionComponentType,
-		NativeFunction({ FunctionArgument(AssetRefType, "mesh") }, nullptr,
+		NativeFunction({ FunctionArgument(Assets.AssetRef, "mesh") }, nullptr,
 			"load", &CollisionComponent_load));
 
 	EngineModule.addClassMethod(CollisionComponentType,
@@ -1006,10 +971,6 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			nullptr, "setFOV", &CameraComponent_setFOV));
 
 	EngineModule.addFunction(
-		NativeFunction({ FunctionArgument(StrType, "extension") },
-			AssetRefType, "emptyAsset", &AssetRef_emptyAsset));
-
-	EngineModule.addFunction(
 		NativeFunction({ },
 			BoolInst, "isPlaying", &engine_isPlaying));
 
@@ -1097,15 +1058,6 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	OutData.UITextType = EngineUIModule.getType("UIText")->id;
 
 	return OutData;
-}
-
-ds::RuntimeClass* engine::script::CreateAssetRef()
-{
-	ClassRef<AssetRef*> NewAssetRef = RuntimeClass::allocateClass(sizeof(AssetRef*), 0, &AssetRef_vTable);
-	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
-
-	NewAssetRef.getValue() = new AssetRef();
-	return NewAssetRef.classPtr;
 }
 
 ds::RuntimeClass* engine::script::CreateSceneObject(SceneObject* From)

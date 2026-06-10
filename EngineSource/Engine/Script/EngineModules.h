@@ -23,8 +23,6 @@ namespace engine::script
 
 	EngineModuleData RegisterEngineModules(ds::LanguageContext* ToContext);
 
-	ds::RuntimeClass* CreateAssetRef();
-
 	ds::RuntimeClass* CreateSceneObject(SceneObject* From);
 
 	void UpdateWaitTasks();
