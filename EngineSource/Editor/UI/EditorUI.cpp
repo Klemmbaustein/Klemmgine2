@@ -194,6 +194,8 @@ engine::editor::EditorUI::EditorUI()
 		RootPanel->UpdatePanel();
 	} });
 
+	Documentation.Initialize(GetEditorPath());
+
 	UpdateTheme(VideoSystem->MainWindow, false);
 
 	if (!MonospaceFont)

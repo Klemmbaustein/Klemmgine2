@@ -4,6 +4,7 @@
 #include <Editor/UI/DropdownMenu.h>
 #include <algorithm>
 #include <kui/Window.h>
+#include <Core/Log.h>
 #include <Editor/UI/EditorUI.h>
 
 using namespace kui;
@@ -287,8 +288,8 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 		{
 			auto Callback = [this, Fn = &i] {
 				std::vector<TextSegment> HoverString = {
-					TextSegment("fn ", this->KeywordColor),
-					TextSegment(Fn->name, this->FunctionColor),
+					TextSegment(Fn->isVirtual ? "virtual fn " : "fn ", this->KeywordColor),
+					TextSegment(Fn->shortName, this->FunctionColor),
 					TextSegment("(", this->TextColor)
 				};
 
@@ -309,14 +310,46 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 					HoverString.push_back(TextSegment(Fn->returnType, TypeColor));
 				}
 
-				HoverString.push_back(TextSegment(Fn->definition ?
-					"\nDefined in " + Fn->definition->file
-					+ " at line " + std::to_string(Fn->definition->at.position.line + 1)
-					: "\nDefined in native code.", this->TextColor));
+				string InfoText;
 
-				return (new UIText(12_px, HoverString, EditorUI::MonospaceFont))
-					->SetWrapEnabled(true, 1000_px)
-					->SetPadding(5_px);
+				auto ResultUI = (new UIBox(false))
+					->AddChild((new UIText(12_px, HoverString, EditorUI::MonospaceFont))
+						->SetWrapEnabled(true, 800_px)
+						->SetPadding(5_px));
+
+				auto Documentation = EditorUI::Instance->Documentation.GetFunction(Fn->name);
+
+				if (Documentation)
+				{
+					InfoText.append(Documentation->Description + "\n\n");
+
+					if (!Documentation->Arguments.empty())
+					{
+						InfoText.append("Arguments:\n");
+						for (auto& i : Documentation->Arguments)
+						{
+							InfoText.append("\t" + i.Name + ": " + i.Description + "\n");
+						}
+						InfoText.append("\n");
+					}
+
+					if (!Documentation->ReturnValueDescription.empty())
+					{
+						InfoText.append("Returns: " + Documentation->ReturnValueDescription + "\n\n");
+					}
+				}
+
+				InfoText.append(Fn->definition ?
+					"Defined in " + Fn->definition->file
+					+ " at line " + std::to_string(Fn->definition->at.position.line + 1)
+					: "Defined in native code.");
+
+				ResultUI
+					->AddChild((new UIText(12_px, EditorUI::Theme.Text, InfoText, EditorUI::EditorFont))
+						->SetWrapEnabled(true, 800_px)
+						->SetPadding(0, 5_px, 5_px, 15_px));
+
+				return ResultUI;
 			};
 
 			std::function<SymbolDefinition()> GetDefinition;
@@ -345,14 +378,15 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 			auto Callback = [this, i] {
 				auto DefaultColor = this->TextColor;
 
+				string Description;
+
 				static std::map<ScannedVariable::Kind, string> Type = {
-					{ScannedVariable::Kind::localVariable, "(local variable) "},
-					{ScannedVariable::Kind::classMember, "(member) "},
-					{ScannedVariable::Kind::constant, "(constant) "},
+					{ScannedVariable::Kind::localVariable, "Local variable"},
+					{ScannedVariable::Kind::classMember, "Class member"},
+					{ScannedVariable::Kind::constant, "Constant"},
 				};
 
 				std::vector<TextSegment> HoverString = {
-					TextSegment(Type[i.kind], DefaultColor),
 					TextSegment(i.type + " ", this->TypeColor),
 				};
 
@@ -369,9 +403,24 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 					HoverString.push_back(TextSegment(" = " + i.defaultValue, DefaultColor));
 				}
 
-				return (new UIText(12_px, HoverString, EditorUI::MonospaceFont))
-					->SetWrapEnabled(true, 1000_px)
-					->SetPadding(5_px);
+				Description.append(Type[i.kind]);
+
+				if (i.kind == ScannedVariable::Kind::classMember)
+				{
+					auto FoundMember = EditorUI::Instance->Documentation.GetTypeMember(i.inClass, i.name);
+					if (FoundMember)
+					{
+						Description.append("\n" + FoundMember->Description);
+					}
+				}
+
+				return (new UIBox(false))
+					->AddChild((new UIText(12_px, HoverString, EditorUI::MonospaceFont))
+						->SetWrapEnabled(true, 800_px)
+						->SetPadding(5_px))
+					->AddChild((new UIText(12_px, EditorUI::Theme.Text, Description, EditorUI::EditorFont))
+						->SetWrapEnabled(true, 800_px)
+						->SetPadding(0, 5_px, 5_px, 15_px));
 			};
 
 			std::function<SymbolDefinition()> GetDefinition;

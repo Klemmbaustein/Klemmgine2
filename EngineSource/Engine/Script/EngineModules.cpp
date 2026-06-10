@@ -293,6 +293,12 @@ static void ObjectComponent_attach(InterpretContext* context)
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
 	ClassPtr<ObjectComponent*> SubComponent = context->popPtr<ObjectComponent*>();
 
+	if ((*SubComponent.get())->ParentObject || (*SubComponent.get())->ParentComponent)
+	{
+		context->runtimePanic("Component attached twice");
+		return;
+	}
+
 	Component.getValue()->Attach(*SubComponent);
 }
 
@@ -309,6 +315,29 @@ static void MeshComponent_load(InterpretContext* context)
 	ClassPtr<AssetRef*> File = context->popPtr<AssetRef*>();
 
 	Component.getValue()->Load(**File);
+}
+
+static void DrawableComponent_getBounds(InterpretContext* context)
+{
+	ClassRef<DrawableComponent*> Component = context->popValue<RuntimeClass*>();
+
+	context->pushValue(Component.getValue()->DrawBoundingBox);
+}
+
+static void MeshComponent_getMesh(InterpretContext* context)
+{
+	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
+
+	auto Model = Component.getValue()->DrawnModel;
+
+	if (Model)
+	{
+		context->pushValue(NativeModule::makeClass<GraphicsModel*>(Model));
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
 }
 
 static void PhysicsComponent_new(InterpretContext* context)
@@ -692,7 +721,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({}, StrType, "getName", &Scene_getName));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeFunction({}, ManagerType, "getManager", &Scene_getManager));
+		NativeFunction({}, ManagerType->nullable, "getManager", &Scene_getManager));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({ FunctionArgument(StrType, "newName") }, nullptr, "setName", &Scene_setName));
@@ -772,6 +801,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.name = "scale",
 		.offset = DS_OFFSETOF(SceneObject, Scale),
 		.type = Math.Vec3
+		});
+
+	ObjectType->members.push_back(ClassMember{
+		.name = "objectTransform",
+		.offset = DS_OFFSETOF(SceneObject, ObjectTransform),
+		.type = Math.Transform
 		});
 
 	ObjectType->makePointerClass();

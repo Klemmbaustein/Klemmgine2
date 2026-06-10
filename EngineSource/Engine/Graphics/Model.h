@@ -3,7 +3,7 @@
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/Graphics/Camera.h>
 #include <Engine/Graphics/Material.h>
-#include <Engine/Graphics/BoundingBox.h>
+#include <Core/BoundingBox.h>
 #include <Core/Transform.h>
 
 namespace engine

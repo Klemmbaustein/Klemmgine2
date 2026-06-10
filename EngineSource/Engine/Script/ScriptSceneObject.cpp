@@ -7,7 +7,7 @@ using namespace ds;
 
 void engine::script::ScriptSceneObject::OnDestroyed()
 {
-	if (ScriptData->vtable[2])
+	if (ScriptData  && ScriptData->vtable[2])
 	{
 		Interpreter->pushValue(this->ScriptData);
 		Interpreter->virtualCall(ScriptData->vtable[3]);
@@ -25,9 +25,15 @@ engine::script::ScriptSceneObject::ScriptSceneObject(const ds::TypeInfo& Class, 
 
 void engine::script::ScriptSceneObject::Begin()
 {
-	if (!this->ScriptData)
+	if (!ScriptData)
 	{
 		InitializeScriptPointer();
+	}
+
+	// If it failed to load the script data, give up
+	if (!ScriptData)
+	{
+		return;
 	}
 
 	for (auto& i : this->Properties)
@@ -230,5 +236,12 @@ void engine::script::ScriptSceneObject::LoadScriptData()
 
 void engine::script::ScriptSceneObject::InitializeScriptPointer()
 {
-	InitializePointerWithValue<SceneObject*>(this);
+	if (Class.hash)
+	{
+		InitializePointerWithValue<SceneObject*>(this);
+	}
+	else
+	{
+		ScriptData = nullptr;
+	}
 }

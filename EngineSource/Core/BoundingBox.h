@@ -3,7 +3,7 @@
 #include <Core/Transform.h>
 #include <array>
 
-namespace engine::graphics
+namespace engine
 {
 	struct BoundingBox
 	{

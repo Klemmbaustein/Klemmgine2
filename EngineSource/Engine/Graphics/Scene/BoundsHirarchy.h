@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 #include <Engine/Debug/DebugDraw.h>
-#include <Engine/Graphics/BoundingBox.h>
+#include <Core/BoundingBox.h>
 #include <Engine/Graphics/FrustumCollider.h>
 #include <span>
 

@@ -8,6 +8,7 @@
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 #include <kui/UI/UIBackground.h>
 #include <Editor/FileAssetListProvider.h>
+#include <Editor/UI/Documentation/DocumentationDatabase.h>
 
 namespace engine::editor
 {
@@ -178,6 +179,7 @@ namespace engine::editor
 		static string GetLayoutConfigPath();
 
 		PanelRegistry Panels;
+		DocumentationDatabase Documentation;
 
 		string GetProjectDataPath();
 
