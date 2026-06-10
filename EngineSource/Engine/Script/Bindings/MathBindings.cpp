@@ -2,6 +2,7 @@
 #include <ds/parser/types/stringType.hpp>
 #include <Core/Vector.h>
 #include <Core/Transform.h>
+#include <Core/BoundingBox.h>
 #include <ds/language.hpp>
 
 using namespace ds;
@@ -95,6 +96,49 @@ static void Vector3_toString(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(str.data(), str.size()));
 }
 
+static void Transform_decompose(InterpretContext* context)
+{
+	script::DecomposeResult Result{};
+	context->popValue<Transform>().Decompose(Result.Position, Result.Rotation, Result.Scale);
+
+	context->pushValue(Result);
+}
+
+static void Transform_translate(InterpretContext* context)
+{
+	auto Value = context->popValue<Transform>();
+	Value.Translate(context->popValue<Vector3>());
+	context->pushValue(Value);
+}
+
+static void Transform_rotate(InterpretContext* context)
+{
+	auto Value = context->popValue<Transform>();
+	Value.Rotate(context->popValue<Rotation3>());
+	context->pushValue(Value);
+}
+
+static void Transform_scale(InterpretContext* context)
+{
+	auto Value = context->popValue<Transform>();
+
+	Value.Scale(context->popValue<Vector3>());
+
+	context->pushValue(Value);
+}
+
+static void Transform_rotateAround(InterpretContext* context)
+{
+	auto Value = context->popValue<Transform>();
+
+	auto Amount = context->popValue<Float>();
+	auto Axis = context->popValue<Vector3>();
+
+	Value.RotateAround(Axis, Amount);
+
+	context->pushValue(Value);
+}
+
 script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
 	script::MathBindings Math;
@@ -103,10 +147,30 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 	auto StrInst = ToContext->registry->getEntry<StringType>();
 
 	Math.Vec3 = DS_CREATE_STRUCT(Vector3);
+	Math.Bounds = DS_CREATE_STRUCT(BoundingBox);
+	Math.Transform = DS_CREATE_STRUCT(Transform);
+	Math.Rot = DS_CREATE_STRUCT(Rotation3);
+	Math.Vec2 = DS_CREATE_STRUCT(Vector2);
+
+	auto DecomposeResultType = DS_CREATE_STRUCT(DecomposeResult);
 
 	DS_STRUCT_MEMBER_NAME(Math.Vec3, Vector3, X, x, FloatInst);
 	DS_STRUCT_MEMBER_NAME(Math.Vec3, Vector3, Y, y, FloatInst);
 	DS_STRUCT_MEMBER_NAME(Math.Vec3, Vector3, Z, z, FloatInst);
+
+	DS_STRUCT_MEMBER_NAME(Math.Bounds, BoundingBox, Position, position, Math.Vec3);
+	DS_STRUCT_MEMBER_NAME(Math.Bounds, BoundingBox, Extents, extents, Math.Vec3);
+
+	DS_STRUCT_MEMBER_NAME(DecomposeResultType, DecomposeResult, Position, position, Math.Vec3);
+	DS_STRUCT_MEMBER_NAME(DecomposeResultType, DecomposeResult, Rotation, rotation, Math.Rot);
+	DS_STRUCT_MEMBER_NAME(DecomposeResultType, DecomposeResult, Scale, scale, Math.Vec3);
+
+	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, P, p, FloatInst);
+	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, Y, y, FloatInst);
+	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, R, r, FloatInst);
+
+	DS_STRUCT_MEMBER_NAME(Math.Vec2, Vector2, X, x, FloatInst);
+	DS_STRUCT_MEMBER_NAME(Math.Vec2, Vector2, Y, y, FloatInst);
 
 	Math.Vec3->operators.push_back({
 		Operator::add,
@@ -173,12 +237,6 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 		context->pushValue(Vector3(xyz));
 	})));
 
-	Math.Rot = DS_CREATE_STRUCT(Rotation3);
-
-	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, P, p, FloatInst);
-	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, Y, y, FloatInst);
-	DS_STRUCT_MEMBER_NAME(Math.Rot, Rotation3, R, r, FloatInst);
-
 	To.addClassMethod(Math.Rot,
 		NativeFunction({ },
 			Math.Vec3, "forward", &Rotation3_forward));
@@ -191,16 +249,26 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 		NativeFunction({ },
 			Math.Vec3, "up", &Rotation3_up));
 
+	To.addClassMethod(Math.Transform, NativeFunction({},
+		DecomposeResultType, "decompose", &Transform_decompose));
+
+	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "value") },
+		DecomposeResultType, "translate", &Transform_translate));
+
+	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Rot, "value") },
+		DecomposeResultType, "rotate", &Transform_rotate));
+
+	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Rot, "axis"), FunctionArgument(FloatInst, "value") },
+		DecomposeResultType, "rotate", &Transform_rotateAround));
+
+	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "value") },
+		DecomposeResultType, "scale", Transform_scale));
+
 	auto Rot3Function = To.addFunction(
-		NativeFunction({ FunctionArgument(FloatInst, "p"),FunctionArgument(FloatInst, "y"),FunctionArgument(FloatInst, "r") },
+		NativeFunction({ FunctionArgument(FloatInst, "p"), FunctionArgument(FloatInst, "y"), FunctionArgument(FloatInst, "r") },
 			Math.Rot, "rot3", [](InterpretContext* context) {}));
 
 	Math.Rot->addConstructor(Rot3Function);
-
-	Math.Vec2 = DS_CREATE_STRUCT(Vector2);
-
-	DS_STRUCT_MEMBER_NAME(Math.Vec2, Vector2, X, x, FloatInst);
-	DS_STRUCT_MEMBER_NAME(Math.Vec2, Vector2, Y, y, FloatInst);
 
 	auto Vec2Function = To.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "x"),FunctionArgument(FloatInst, "y") },
@@ -211,6 +279,9 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 	To.addType(Math.Rot);
 	To.addType(Math.Vec3);
 	To.addType(Math.Vec2);
+	To.addType(Math.Bounds);
+	To.addType(Math.Transform);
+	To.addType(DecomposeResultType);
 
 	return Math;
 }

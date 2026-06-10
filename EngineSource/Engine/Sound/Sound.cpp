@@ -15,7 +15,6 @@ using namespace engine::subsystem;
 using namespace engine::sound;
 using namespace engine;
 using graphics::BvhNode;
-using graphics::BoundingBox;
 
 static ALenum GetFormatFromSound(SoundData* Data)
 {

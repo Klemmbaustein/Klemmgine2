@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 #include "Light.h"
-#include <Engine/Graphics/BoundingBox.h>
+#include <Core/BoundingBox.h>
 #include <Engine/Graphics/Scene/BoundsHirarchy.h>
 
 namespace engine::graphics

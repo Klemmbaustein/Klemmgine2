@@ -232,6 +232,7 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(ReflectionObject* O
 		*(void**)Class->getBody() = nullptr;
 		Runtime->baseContext->destruct(Class);
 		ScriptObjectMappings.erase(Object);
+		Object->OnDestroyedEvent.Remove(this);
 	});
 }
 

@@ -76,11 +76,12 @@ namespace engine
 
 	protected:
 		Transform GetParentTransform() const;
-		bool TransformDirty = true;
 
 		Vector3 OldPosition;
 		Rotation3 OldRotation;
 		Vector3 OldScale = 1;
+
+		bool TransformDirty = true;
 
 	private:
 		void UpdateLogic();

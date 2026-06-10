@@ -1,0 +1,81 @@
+{
+	"type": "bindings",
+	"module": "engine",
+
+	"functions": {
+		"info": {
+			"description": "Prints an info message to the log.",
+			"arguments": {
+				"message": "The message to print"
+			}
+		},
+		"getMainScene": {
+			"description": "Returns the engine's main scene.\nIf there is no main scene loaded, or if the main scene is still being loaded asynchronously, this function returns null instead."
+		},
+		"isPlaying": {
+			"description": "Returns true if the game is currently playing. If false, the scripts are being run in the editor."
+		},
+		"getDelta": {
+			"description": "Returns the time that has passed since the last frame in seconds."
+		}
+	},
+
+	"types": {
+		"Scene": {
+			"methods": {
+				"getName": {
+					"description": "Returns the name of this scene. If this scene was loaded from a file, this is usually the filename"
+				},
+				"getManager": {
+					"description": "Gets the current manager of this scene or null if none is set.\nThe manager is an instance of the engine::SceneManager class which is accessible to every other object in the scene and should control global scene logic.\nTo check if the scene manager has a given type, use the is and as operators."
+				},
+				"createNewObject": {
+					"description": "Creates a new scene object with the given type."
+				},
+				"getObjectByName": {
+					"description": "Searches for an object in this scene that has the given type and the given name.\nIf multiple objects match the criteria, a warning will be logged and only one of them will be returned.",
+					"arguments": {
+						"name": "The name of the object to search for"
+					},
+					"return": "The found object or null if no such object exists in this scene."
+				},
+				"getPhysics": {
+					"description": "Returns the physics manager of this scene."
+				}
+			}
+		},
+		"SceneObject": {
+			"methods": {
+				"attach": {
+					"description": "Attaches a component to this object.",
+					"arguments": {
+						"component": "The component to attach to the object"
+					}
+				},
+				"onBegin": {
+					"description": "Called when the object is created or when the object is loaded with a scene."
+				},
+				"destroy": {
+					"description": "Destroys this object, calling it's onDestroy() function and removing it and it's components from the scene."
+				},
+				"getScene": {
+					"description": "Gets the scene that this object is in."
+				}
+			},
+			"members": {
+				"position": {
+					"description": "The position of this object and it's components in the scene."
+				},
+				"rotation": {
+					"description": "The rotation of this object and it's components in the scene."
+				},
+				"scale": {
+					"description": "The scale of this object and it's components in the scene."
+				},
+				"objectTransform": {
+					"description": "The transform of this object in the scene. It is derived from this object's position, rotation and scale members. All components attached to this object will be transformed by this value."
+				}
+			}
+		}
+	}
+}

@@ -56,7 +56,7 @@ void engine::editor::ScriptEditorSettingsPage::Generate(PropertyMenu* Target, Se
 	Target->AddDropdownEntry("Code appearance", Options, [Target, TargetWindow](UIDropdown::Option o) {
 		auto& Script = Settings::GetInstance()->Script;
 
-		if (o.Name == "Same as interface theme")
+		if (o.Name == "Same as interface")
 		{
 			Script.SetSetting("useMainThemeColors", true);
 		}

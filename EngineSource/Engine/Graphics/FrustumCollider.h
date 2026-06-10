@@ -2,7 +2,7 @@
 #include <glm/matrix.hpp>
 #include <array>
 #include <Core/Vector.h>
-#include <Engine/Graphics/BoundingBox.h>
+#include <Core/BoundingBox.h>
 
 namespace engine::graphics
 {

@@ -25,7 +25,8 @@ namespace engine
 		 */
 		void Invoke(Args... args)
 		{
-			for (const auto& [_, c] : Callbacks)
+			std::map clb = Callbacks;
+			for (const auto& [_, c] : clb)
 			{
 				c(args...);
 			}
