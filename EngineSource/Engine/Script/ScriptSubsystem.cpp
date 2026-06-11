@@ -188,7 +188,7 @@ bool engine::script::ScriptSubsystem::Reload()
 		size_t LastColon = TypeInfo.name.find_last_of(':');
 
 		string Name = TypeInfo.name.substr(LastColon + 1);
-		string Path = TypeInfo.name.substr(0, LastColon - 1);
+		string Path = LastColon == string::npos ? "" : TypeInfo.name.substr(0, LastColon - 1);
 
 		if (IsSceneObject)
 		{

@@ -15,9 +15,12 @@ namespace engine::script
 	{
 		GraphicsModel* Model;
 		ds::RuntimeClass* Meshes;
+
+		void UpdateMeshArray(ds::InterpretContext* context);
 	};
 
 	AssetBindings AddAssetBindings(ds::NativeModule& To, ds::LanguageContext* ToContext);
 
 	ds::RuntimeClass* CreateAssetRef();
+	ds::RuntimeClass* CreateModelDataClass(GraphicsModel* InModel, ds::InterpretContext* Context);
 }

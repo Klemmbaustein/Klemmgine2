@@ -12,16 +12,20 @@ engine::PhysicsComponent::~PhysicsComponent()
 	Clear();
 }
 
-void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, physics::Layer Layers, bool StartEnabled)
+void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, physics::Layer Layers,
+	float InScale, bool StartEnabled)
 {
 	if (Body)
 	{
 		Clear();
 	}
 
-	Body = new physics::SphereBody(WorldTransform.ApplyTo(0),
+	UpdateTransform(false);
+	this->Offset = Scale;
+
+	Body = new physics::SphereBody(Position,
 		Rotation,
-		(Scale.X + Scale.Y + Scale.Z) / 3,
+		(Scale.X + Scale.Y + Scale.Z) / 3 * InScale,
 		Movability,
 		Layers,
 		this);
@@ -41,25 +45,31 @@ void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, phys
 	}
 }
 
-void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics::Layer Layers, bool StartEnabled)
+void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics::Layer Layers,
+	Vector3 InScale, bool StartEnabled)
 {
 	if (Body)
 	{
 		Clear();
 	}
 
+	UpdateTransform(false);
+	Offset = InScale;
+
 	Body = new physics::BoxBody(WorldTransform.ApplyTo(0),
 		Rotation,
-		Scale,
+		Scale * Offset,
 		Movability,
 		Layers,
 		this);
 
 	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
 
-	if (StartEnabled)
+	auto Root = GetRootObject();
+
+	if (StartEnabled && Root)
 	{
-		GetRootObject()->GetScene()->Physics.AddBody(Body, true, true);
+		Root->GetScene()->Physics.AddBody(Body, true, true);
 		Added = true;
 	}
 	else
@@ -68,23 +78,37 @@ void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics
 	}
 }
 
-void engine::PhysicsComponent::CreateCapsule(physics::MotionType Movability, physics::Layer Layers, bool StartEnabled)
+void engine::PhysicsComponent::CreateCapsule(physics::MotionType Movability, physics::Layer Layers,
+	Vector2 InScale, bool StartEnabled)
 {
 	if (Body)
 	{
 		Clear();
 	}
 
-	Body = new physics::CapsuleBody(WorldTransform.ApplyTo(0),
+	this->Offset = Vector3(Scale.X, Scale.Y, Scale.X);
+
+	UpdateTransform(false);
+
+	Body = new physics::CapsuleBody(Position,
 		Rotation,
-		Vector2(Scale.X, Scale.Y),
+		Vector2(Scale.X, Scale.Y) * InScale,
 		Movability,
 		Layers,
 		this);
 	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
 
-	GetRootObject()->GetScene()->Physics.AddBody(Body, true, StartEnabled);
-	Added = true;
+	auto Root = GetRootObject();
+
+	if (StartEnabled && Root)
+	{
+		Root->GetScene()->Physics.AddBody(Body, true, true);
+		Added = true;
+	}
+	else
+	{
+		Body->IsCollisionEnabled = false;
+	}
 }
 
 std::vector<physics::HitResult> engine::PhysicsComponent::ShapeCast(Transform Start, Vector3 End,

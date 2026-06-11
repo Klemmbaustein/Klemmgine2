@@ -342,7 +342,18 @@ ScriptEditorProvider::HoverSymbolData engine::editor::ScriptEditorProvider::GetS
 				InfoText.append(Fn->definition ?
 					"Defined in " + Fn->definition->file
 					+ " at line " + std::to_string(Fn->definition->at.position.line + 1)
-					: "Defined in native code.");
+					: "Defined in native code");
+
+				string Module = Fn->name.substr(0, Fn->name.find_last_of(':') - 1);
+
+				if (Module.empty())
+				{
+					InfoText.append(", in the global module");
+				}
+				else
+				{
+					InfoText.append(", in module " + Module);
+				}
 
 				ResultUI
 					->AddChild((new UIText(12_px, EditorUI::Theme.Text, InfoText, EditorUI::EditorFont))

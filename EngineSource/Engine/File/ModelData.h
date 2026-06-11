@@ -7,6 +7,7 @@
 #include <Core/File/SerializedData.h>
 #include <Engine/Graphics/Model.h>
 #include <unordered_map>
+#include <list>
 #include "AssetRef.h"
 #include <Core/File/BinaryStream.h>
 
@@ -47,7 +48,7 @@ namespace engine
 		virtual void DeSerialize(SerializedValue* From) override;
 
 		BoundingBox Bounds;
-		std::vector<Mesh> Meshes;
+		std::list<Mesh> Meshes;
 		bool HasCollision = true;
 		bool CastShadow = true;
 		bool LoadMaterials = true;

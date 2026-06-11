@@ -17,6 +17,13 @@
 		},
 		"getDelta": {
 			"description": "Returns the time that has passed since the last frame in seconds."
+		},
+		"wait": {
+			"description": "Creates a task object that waits for a specified amount of time",
+
+			"arguments": {
+				"timeInSeconds": "The time to wait, in seconds"
+			}
 		}
 	},
 
