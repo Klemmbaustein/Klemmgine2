@@ -58,7 +58,7 @@ static void ModelData_new(InterpretContext* context)
 	Model.classPtr->vtable = &ModelData_vTable;
 
 	Model->Model = GraphicsModel::RegisterModel(ModelData(), "ScriptModel_" + std::to_string(ModelCounter++));
-	Model->Meshes = modules::system::createArray<ModelData::Mesh*>(nullptr, 0, true);
+	Model->Meshes = modules::system::createArray<ds::RuntimeClass*>(nullptr, 0, true);
 
 	context->pushValue(Model);
 }
@@ -70,10 +70,24 @@ static void ModelData_getMeshes(InterpretContext* context)
 	// Copy the array, because any modifications to it do not actually affect the model.
 	ClassRef<modules::system::ArrayData> MeshArray = Model->Meshes;
 
-	auto Array = modules::system::createArray<ModelData::Mesh*>(
-		reinterpret_cast<ModelData::Mesh**>(MeshArray->data), MeshArray->length, true);
+	for (Size i = 0; i < MeshArray->length; i++)
+	{
+		MeshArray->at<ds::RuntimeClass*>(i)->addRef();
+	}
+
+	auto Array = modules::system::createArray<ds::RuntimeClass*>(
+		reinterpret_cast<ds::RuntimeClass**>(MeshArray->data), MeshArray->length, true);
 
 	context->pushValue(Array);
+}
+
+static void ModelData_getBounds(InterpretContext* context)
+{
+	ClassRef<ScriptModelData> Model = context->popValue<RuntimeClass*>();
+
+	auto m = Model->Model;
+
+	context->pushValue(m->Data->Bounds);
 }
 
 ds::RuntimeClass* engine::script::CreateAssetRef()
@@ -85,6 +99,21 @@ ds::RuntimeClass* engine::script::CreateAssetRef()
 	return NewAssetRef.classPtr;
 }
 
+ds::RuntimeClass* engine::script::CreateModelDataClass(GraphicsModel* InModel, ds::InterpretContext* Context)
+{
+	ClassRef<ScriptModelData> NewAssetRef = RuntimeClass::allocateClass(sizeof(ScriptModelData), 0, &ModelData_vTable);
+	NewAssetRef.classPtr->vtable = &ModelData_vTable;
+
+	GraphicsModel::ReferenceModel(InModel);
+
+	NewAssetRef.getValue() = ScriptModelData{
+		.Model = InModel,
+	};
+
+	NewAssetRef.getValue().UpdateMeshArray(Context);
+	return NewAssetRef.classPtr;
+}
+
 AssetBindings engine::script::AddAssetBindings(ds::NativeModule& To, ds::LanguageContext* ToContext)
 {
 	AssetBindings Asset;
@@ -93,6 +122,7 @@ AssetBindings engine::script::AddAssetBindings(ds::NativeModule& To, ds::Languag
 	auto StrType = ToContext->registry->getEntry<StringType>();
 	auto FloatInst = ToContext->registry->getEntry<FloatType>();
 	auto BoolInst = ToContext->registry->getEntry<BoolType>();
+	auto BoundsType = To.getType("BoundingBox");
 
 	auto Vec3Type = To.getType("Vector3");
 	auto Vec2Type = To.getType("Vector2");
@@ -115,10 +145,30 @@ AssetBindings engine::script::AddAssetBindings(ds::NativeModule& To, ds::Languag
 	AssetModule.addClassConstructor(Asset.ModelData, NativeFunction(
 		{}, nullptr, "ModelData.new", &ModelData_new));
 
-	auto MeshArray = ToContext->registry->getArray(MeshData);
+	auto MeshArrayType = ToContext->registry->getArray(MeshData);
 
-	AssetModule.addClassMethod(Asset.ModelData, NativeFunction({}, MeshArray, "getMeshes", &ModelData_getMeshes));
+	AssetModule.addClassMethod(Asset.ModelData,
+		NativeFunction({}, MeshArrayType, "getMeshes", &ModelData_getMeshes));
+	AssetModule.addClassMethod(Asset.ModelData,
+		NativeFunction({}, BoundsType, "getBounds", &ModelData_getBounds));
 
 	ToContext->addNativeModule(AssetModule);
 	return Asset;
+}
+
+void engine::script::ScriptModelData::UpdateMeshArray(ds::InterpretContext* context)
+{
+	if (Meshes)
+	{
+		context->destruct(Meshes);
+	}
+
+	std::vector<ds::RuntimeClass*> NewArray;
+
+	for (auto& i : Model->Data->Meshes)
+	{
+		NewArray.push_back(NativeModule::makePointerClass<ModelData::Mesh>(&i));
+	}
+
+	Meshes = modules::system::createArray<ds::RuntimeClass*>(NewArray.data(), NewArray.size(), true);
 }

@@ -2,7 +2,6 @@
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Engine.h>
 #include <Engine/Stats.h>
-#include <iostream>
 
 using namespace engine;
 
@@ -15,7 +14,7 @@ void engine::MoveComponent::OnAttached()
 	Collider = new PhysicsComponent();
 	Attach(Collider);
 	Collider->SetScale(Vector3(this->ColliderSize.X, this->ColliderSize.Y, 1));
-	Collider->CreateCapsule(physics::MotionType::Static, physics::Layer::Static, false);
+	Collider->CreateCapsule(physics::MotionType::Static, physics::Layer::Static, 1, false);
 }
 
 void engine::MoveComponent::Update()

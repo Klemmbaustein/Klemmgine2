@@ -318,14 +318,7 @@ static void MeshComponent_load(InterpretContext* context)
 	Component.getValue()->Load(**File);
 }
 
-static void DrawableComponent_getBounds(InterpretContext* context)
-{
-	ClassRef<DrawableComponent*> Component = context->popValue<RuntimeClass*>();
-
-	context->pushValue(Component.getValue()->DrawBoundingBox);
-}
-
-static void MeshComponent_getMesh(InterpretContext* context)
+static void MeshComponent_getModel(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
 
@@ -333,12 +326,19 @@ static void MeshComponent_getMesh(InterpretContext* context)
 
 	if (Model)
 	{
-		context->pushValue(NativeModule::makeClass<GraphicsModel*>(Model));
+		context->pushValue(script::CreateModelDataClass(Model, context));
 	}
 	else
 	{
 		context->pushValue(nullptr);
 	}
+}
+
+static void DrawableComponent_getBounds(InterpretContext* context)
+{
+	ClassRef<DrawableComponent*> Component = context->popValue<RuntimeClass*>();
+
+	context->pushValue(Component.getValue()->DrawBoundingBox);
 }
 
 static void PhysicsComponent_new(InterpretContext* context)
@@ -352,20 +352,22 @@ static void PhysicsComponent_createBox(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
 
+	Vector3 Scale = context->popValue<Vector3>();
 	physics::Layer Layer = physics::Layer(context->popValue<Int>());
 	physics::MotionType MotionType = physics::MotionType(context->popValue<Int>());
 
-	Component.getValue()->CreateBox(MotionType, Layer);
+	Component.getValue()->CreateBox(MotionType, Layer, Scale);
 }
 
 static void PhysicsComponent_createSphere(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
 
+	Float Scale = context->popValue<Float>();
 	physics::Layer Layer = physics::Layer(context->popValue<Int>());
 	physics::MotionType MotionType = context->popValue<physics::MotionType>();
 
-	Component.getValue()->CreateSphere(MotionType, Layer);
+	Component.getValue()->CreateSphere(MotionType, Layer, Scale);
 }
 
 static void PhysicsComponent_setIsActive(InterpretContext* context)
@@ -674,7 +676,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineUIModule.name = "engine::ui";
 
 	MathBindings Math = AddMathModule(EngineModule, ToContext);
-	//SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
+	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
 	AssetBindings Assets = AddAssetBindings(EngineModule, ToContext);
 	ui::UIBindings UI = ui::AddUIModule(EngineUIModule, EngineModule, ToContext);
 	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
@@ -702,7 +704,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({}, ToContext->registry->getArray(ObjectType), "getObjects", &Scene_getObjects));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeGenericFunction({FunctionArgument(StrType, "name")}, {GenericArgument("T", ObjectType)},
+		NativeGenericFunction({ FunctionArgument(StrType, "name") }, { GenericArgument("T", ObjectType) },
 			GenericArgumentType::getInstance(0, true)->nullable, "getObjectByName", &Scene_getObjectByName));
 
 	EngineModule.addClassMethod(SceneType,
@@ -822,6 +824,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(Assets.AssetRef, "file") },
 			nullptr, "load", &MeshComponent_load));
 
+	EngineModule.addClassMethod(MeshComponentType,
+		NativeFunction({},
+			Assets.ModelData->nullable, "getModel", &MeshComponent_getModel));
+
 
 	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);
 
@@ -831,13 +837,15 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
-			{ FunctionArgument(Physics.MotionTypeType, "motionType"), FunctionArgument(Physics.LayerType, "layer") },
+			{ FunctionArgument(Physics.MotionTypeType, "motionType"), FunctionArgument(Physics.LayerType, "layer"),
+			FunctionArgument(Math.Vec3, "scale") },
 			nullptr, "createBox",
 			&PhysicsComponent_createBox));
 
 	EngineModule.addClassMethod(PhysicsComponentType,
 		NativeFunction(
-			{ FunctionArgument(Physics.MotionTypeType, "motionType"), FunctionArgument(Physics.LayerType, "layer") },
+			{ FunctionArgument(Physics.MotionTypeType, "motionType"), FunctionArgument(Physics.LayerType, "layer"),
+			FunctionArgument(FloatInst, "scale") },
 			nullptr, "createSphere",
 			&PhysicsComponent_createSphere));
 

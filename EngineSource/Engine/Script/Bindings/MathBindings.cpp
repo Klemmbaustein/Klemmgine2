@@ -139,6 +139,20 @@ static void Transform_rotateAround(InterpretContext* context)
 	context->pushValue(Value);
 }
 
+static void Transform_identity(InterpretContext* context)
+{
+	context->pushValue(Transform());
+}
+
+static void Transform_new(InterpretContext* context)
+{
+	auto Scale = context->popValue<Vector3>();
+	auto Rotation = context->popValue<Rotation3>();
+	auto Position = context->popValue<Vector3>();
+
+	context->pushValue(Transform(Position, Rotation, Scale));
+}
+
 script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, LanguageContext* ToContext)
 {
 	script::MathBindings Math;
@@ -263,6 +277,12 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 
 	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "value") },
 		DecomposeResultType, "scale", Transform_scale));
+
+	To.addClassConstructor(Math.Transform, NativeFunction({ },
+		nullptr, "Transform.new.identity", Transform_identity));
+
+	To.addClassConstructor(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "position"), FunctionArgument(Math.Rot, "rotation"), FunctionArgument(Math.Vec3, "scale") },
+		nullptr, "Transform.new", Transform_new));
 
 	auto Rot3Function = To.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "p"), FunctionArgument(FloatInst, "y"), FunctionArgument(FloatInst, "r") },
