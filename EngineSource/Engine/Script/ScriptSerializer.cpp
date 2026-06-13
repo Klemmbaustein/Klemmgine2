@@ -1,4 +1,4 @@
-#include "ScriptSerializer.h"
+﻿#include "ScriptSerializer.h"
 #include <Engine/Script/UI/UISerializer.h>
 #include <Core/File/BinarySerializer.h>
 using namespace ds;
@@ -145,8 +145,10 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 	ToStream->virtualTable.clear();
 	for (size_t i = 0; i < VirtualData.size(); i += 2)
 	{
+		auto offset = BytecodeOffset(VirtualData[i].GetInt());
+
 		ToStream->virtualTable.push_back(VTableFunction{
-			.codeOffset = BytecodeOffset(VirtualData[i].GetInt()),
+			.codeOffset = Pointer(offset == UINT32_MAX ? UINTPTR_MAX : offset),
 			.nativeFunction = uint32_t(VirtualData[i + 1].GetInt()),
 			});
 	}

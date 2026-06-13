@@ -99,5 +99,9 @@ namespace engine::editor
 		void UpdateFileContent();
 		void UpdateFileData();
 		void UpdateSyntaxHighlight();
+
+		std::optional<HoverSymbolData> GetHoveredFunction(kui::EditorPosition Position, ds::ScannedFile& File);
+		std::optional<HoverSymbolData> GetHoveredVariable(kui::EditorPosition Position, ds::ScannedFile& File);
+		std::optional<HoverSymbolData> GetHoveredType(kui::EditorPosition Position, ds::ScannedFile& File);
 	};
 }

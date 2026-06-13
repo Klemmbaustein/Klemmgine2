@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <ds/native/nativeModule.hpp>
 #include <Core/File/SerializedData.h>
 
@@ -25,10 +25,34 @@ namespace engine::script
 		ds::Float FloatValue;
 	};
 
+	struct ScriptSerializedString : ScriptSerializedValue
+	{
+		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedString");
+		ds::RuntimeClass* StringValue;
+	};
+
+	struct ScriptSerializedVector3 : ScriptSerializedValue
+	{
+		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedVector3");
+		Vector3 Vector3Value;
+	};
+
+	struct ScriptSerializedVector2 : ScriptSerializedValue
+	{
+		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedVector2");
+		Vector2 Vector2Value;
+	};
+
 	struct ScriptSerializedObject : ScriptSerializedValue
 	{
 		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedObject");
 		ds::RuntimeClass* KeyValueArray;
+	};
+
+	struct ScriptSerializedArray : ScriptSerializedValue
+	{
+		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedArray");
+		ds::RuntimeClass* ValueArray;
 	};
 
 	struct ScriptSerializedKeyValue
@@ -49,4 +73,7 @@ namespace engine::script
 
 	ds::RuntimeClass* MarshalSerializedData(SerializedData& DataValue);
 	ds::RuntimeClass* MarshalSerializedValue(SerializedValue& Value);
+
+	SerializedData UnMarshalSerializedData(ds::RuntimeClass* cls);
+	SerializedValue UnMarshalSerializedValue(ds::RuntimeClass* cls);
 }

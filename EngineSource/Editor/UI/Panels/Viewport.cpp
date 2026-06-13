@@ -1,4 +1,4 @@
-#include "Viewport.h"
+﻿#include "Viewport.h"
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Effects/Outline.h>
 #include <Editor/UI/Elements/DroppableBox.h>
@@ -642,7 +642,10 @@ void engine::editor::Viewport::Run()
 	Viewport::Current->ClearSelected();
 	SetFocused();
 
-	Scene::GetMain()->Sound->MarkReverbDirty();
+	if (Scene::GetMain()->Sound)
+	{
+		Scene::GetMain()->Sound->MarkReverbDirty();
+	}
 
 	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	SetName("Viewport (playing)");
