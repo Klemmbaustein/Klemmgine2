@@ -175,12 +175,12 @@ void engine::ConsoleSubsystem::LogWriteFunction()
 
 			for (size_t i = LastMessages; i < Messages.size(); i++)
 			{
-				auto TimeValue = std::chrono::system_clock::now();
+				auto MessageTimestamp = std::chrono::system_clock::now();
 
-				LogsStream << std::format("{:%H:%M:%OS} > ", TimeValue);
-				for (auto& i : Messages[i].Prefixes)
+				LogsStream << std::format("{:%H:%M:%OS} > ", MessageTimestamp);
+				for (auto& pref : Messages[i].Prefixes)
 				{
-					LogsStream << "[" << i.Text << "]: ";
+					LogsStream << "[" << pref.Text << "]: ";
 				}
 				LogsStream << Messages[i].Message << std::endl;
 			}

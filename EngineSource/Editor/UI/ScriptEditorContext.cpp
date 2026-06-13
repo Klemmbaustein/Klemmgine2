@@ -315,8 +315,8 @@ void engine::editor::ScriptEditorContext::PublishUIData(kui::markup::UIElement& 
 
 	for (auto& i : For.Children)
 	{
-		FileData.types.push_back(Token(i.TypeName.Text,
-			TokenPos(i.TypeName.BeginChar, i.TypeName.EndChar, i.TypeName.Line)));
+		FileData.types.push_back(ScannedTypeUsage(Token(i.TypeName.Text,
+			TokenPos(i.TypeName.BeginChar, i.TypeName.EndChar, i.TypeName.Line))));
 		PublishUIData(i, File);
 	}
 }
