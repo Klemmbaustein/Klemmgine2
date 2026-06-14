@@ -1,4 +1,4 @@
-﻿#include "SerializeBindings.h"
+#include "SerializeBindings.h"
 #include <ds/language.hpp>
 #include <ds/modules/system.hpp>
 #include <sstream>
@@ -7,6 +7,7 @@
 #include <ds/parser/types/arrayType.hpp>
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
+#include <Engine/File/AssetRef.h>
 
 using namespace engine::script;
 using namespace engine;
@@ -196,6 +197,26 @@ static void Serialize_parseJsonFile(InterpretContext* context)
 	}
 }
 
+static void Serialize_parseJsonAsset(InterpretContext* context)
+{
+	auto ref = context->popPtr<AssetRef*>();
+
+	std::stringstream Stream;
+
+	Stream << resource::GetTextFile((*ref)->FilePath);
+
+	try
+	{
+		auto Value = JsonSerializer::FromStream(Stream);
+		context->pushValue(MarshalSerializedValue(Value));
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(e.what());
+		context->pushValue(nullptr);
+	}
+}
+
 static void Serialize_writeJsonFile(InterpretContext* context)
 {
 	auto value = context->popPtr<ScriptSerializedValue>();
@@ -268,6 +289,7 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	auto FloatInst = ToContext->registry->getEntry<FloatType>();
 	auto IntInst = ToContext->registry->getEntry<IntType>();
 	auto BoolInst = ToContext->registry->getEntry<BoolType>();
+	auto AssetRefTypeInst = To.getType("AssetRef");
 
 	SerializeBindings out;
 
@@ -277,7 +299,7 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 
 	out.SerializedValue = Serialize.createClass<ScriptSerializedValue>("SerializedValue");
 
-	Serialize.addClassMethod(out.SerializedValue, NativeFunction({FunctionArgument(BoolInst, "prettyPrint")},
+	Serialize.addClassMethod(out.SerializedValue, NativeFunction({ FunctionArgument(BoolInst, "prettyPrint") },
 		StrType->nullable, "toJsonString", &SerializedValue_toJsonString));
 
 	Serialize.addClassMethod(out.SerializedValue, NativeFunction({},
@@ -372,6 +394,9 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 
 	Serialize.addFunction(NativeFunction({ FunctionArgument(StrType, "filePath") },
 		out.SerializedValue->nullable, "parseJsonFile", &Serialize_parseJsonFile));
+
+	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset") },
+		out.SerializedValue->nullable, "parseJsonAsset", &Serialize_parseJsonAsset));
 
 	Serialize.addFunction(NativeFunction(
 		{ FunctionArgument(StrType, "filePath"), FunctionArgument(out.SerializedValue, "data") },

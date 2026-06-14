@@ -46,27 +46,55 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 
 	AddShortcut(kui::Key::DELETE, {}, [this] {
+
+		std::vector<Item> Selected;
+
 		for (auto& i : this->Buttons)
 		{
 			if (i.first.Selected)
 			{
-				new MessageWindow(str::Format("Really delete %s?", i.first.Path.c_str()), "Delete file", {
-					IDialogWindow::Option{
-						.Name = "Yes",
-						.OnClicked = [this, i]() {
-							EditorUI::Instance->AssetsProvider->DeleteFile(i.first.Path);
-							resource::ScanForAssets();
-							UpdateItems();
-						},
-						.IsAccept = true,
-					},
-					IDialogWindow::Option{
-						.Name = "No",
-						.IsClose = true,
-					}
-					});
-				return;
+				Selected.push_back(i.first);
 			}
+		}
+
+		if (Selected.size() == 1)
+		{
+			new MessageWindow(str::Format("Really delete %s?", Selected[0].Path.c_str()), "Delete file", {
+			IDialogWindow::Option{
+				.Name = "Yes",
+				.OnClicked = [this, i = Selected[0]]() {
+					EditorUI::Instance->AssetsProvider->DeleteFile(i.Path);
+					resource::ScanForAssets();
+					UpdateItems();
+				},
+				.IsAccept = true,
+			},
+			IDialogWindow::Option{
+				.Name = "No",
+				.IsClose = true,
+			}
+			});
+		}
+		else
+		{
+			new MessageWindow(str::Format("Really delete %i items?", Selected.size()), "Delete file", {
+			IDialogWindow::Option{
+				.Name = "Yes",
+				.OnClicked = [this, Selected]() {
+					for (auto& i : Selected)
+					{
+						EditorUI::Instance->AssetsProvider->DeleteFile(i.Path);
+					}
+					resource::ScanForAssets();
+					UpdateItems();
+				},
+				.IsAccept = true,
+			},
+			IDialogWindow::Option{
+				.Name = "No",
+				.IsClose = true,
+			}
+			});
 		}
 	});
 
@@ -233,7 +261,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 				.Name = "Rename",
 				.Shortcut = "F2",
 				.Icon = EditorUI::Asset("Rename.png"),
-				.OnClicked = std::bind(&AssetBrowser::RenameFile, this, FilePath),
+				.OnClicked = std::bind(&AssetBrowser::RenameFile, this, FilePath, false),
 				});
 
 			Options.push_back(DropdownMenu::Option{
@@ -439,13 +467,13 @@ void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
 	UpdateItems();
 }
 
-void engine::editor::AssetBrowser::RenameFile(string FilePath)
+void engine::editor::AssetBrowser::RenameFile(string FilePath, bool IsNew)
 {
 	new RenameWindow(FilePath, [this, FilePath](string NewPath) {
 		std::filesystem::rename(FilePath, NewPath);
 		resource::ScanForAssets();
 		UpdateItems();
-	});
+	}, IsNew);
 }
 
 std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(string WorkDir, std::function<void()> OnAddCallback)
@@ -479,17 +507,21 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 		},
 	};
 
+	auto CreateLocalFile = [this, WorkDir](string Name, string Extension) {
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, Name, Extension), true);
+		resource::ScanForAssets();
+	};
+
 	for (auto& i : Types)
 	{
 		Options.push_back(DropdownMenu::Option{
 			.Name = i.Name,
 			.Shortcut = i.Shortcut,
 			.Icon = EditorUI::GetExtIconAndColor(i.Extension).first,
-			.OnClicked = [this, WorkDir, i = i, OnAddCallback]() {
+			.OnClicked = [this, i = i, OnAddCallback, CreateLocalFile]() {
 				if (OnAddCallback)
 					OnAddCallback();
-				AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, i.FileName, i.Extension));
-				resource::ScanForAssets();
+				CreateLocalFile(i.FileName, i.Extension);
 			} });
 	}
 
@@ -499,20 +531,41 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 			DropdownMenu::Option{
 			.Name = "New Fragment Shader",
 			.Icon = EditorUI::GetExtIconAndColor("frag").first,
-			.OnClicked = [this, WorkDir, OnAddCallback]() {
+			.OnClicked = [this, CreateLocalFile, OnAddCallback]() {
 				if (OnAddCallback)
 					OnAddCallback();
-				AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, "Fragment", "frag"));
-				resource::ScanForAssets();
+				CreateLocalFile("Fragment", "frag");
 			} },
 			DropdownMenu::Option{
 			.Name = "New Vertex Shader",
 			.Icon = EditorUI::GetExtIconAndColor("vert").first,
-			.OnClicked = [this, WorkDir, OnAddCallback]() {
+			.OnClicked = [this, CreateLocalFile, OnAddCallback]() {
 				if (OnAddCallback)
 					OnAddCallback();
-				AssetBrowser::RenameFile(EditorUI::CreateAsset(WorkDir, "Vertex", "vert"));
-				resource::ScanForAssets();
+				CreateLocalFile("Vertex", "vert");
+			} }
+
+		},
+		});
+
+	Options.push_back(DropdownMenu::Option{
+		.Name = "New Resource",
+		.SubMenu = {
+			DropdownMenu::Option{
+			.Name = "New Text Resource",
+			.Icon = EditorUI::GetExtIconAndColor("k2t").first,
+			.OnClicked = [this, CreateLocalFile, OnAddCallback]() {
+				if (OnAddCallback)
+					OnAddCallback();
+				CreateLocalFile("Resource", "k2t");
+			} },
+			DropdownMenu::Option{
+			.Name = "New JSON Resource",
+			.Icon = EditorUI::GetExtIconAndColor("json").first,
+			.OnClicked = [this, CreateLocalFile, OnAddCallback]() {
+				if (OnAddCallback)
+					OnAddCallback();
+				CreateLocalFile("Resource", "json");
 			} }
 
 		},

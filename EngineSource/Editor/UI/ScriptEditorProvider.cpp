@@ -1,4 +1,4 @@
-#include "ScriptEditorProvider.h"
+﻿#include "ScriptEditorProvider.h"
 #include <kui/UI/UITextEditor.h>
 #include <ds/service/languageService.hpp>
 #include <Editor/UI/DropdownMenu.h>
@@ -525,6 +525,12 @@ std::optional<ScriptEditorProvider::HoverSymbolData> engine::editor::ScriptEdito
 
 			if (FoundType)
 			{
+				auto FoundDocumentation = EditorUI::Instance->Documentation.GetType(i.fullName);
+				if (FoundDocumentation)
+				{
+					Description.append(FoundDocumentation->Description + "\n\n");
+				}
+
 				Description.append(FoundType->definition ?
 					"Defined in " + FoundType->definition->file
 					+ " at line " + std::to_string(FoundType->definition->at.position.line + 1)

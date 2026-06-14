@@ -1,4 +1,4 @@
-#include "DocumentationDatabase.h"
+﻿#include "DocumentationDatabase.h"
 #include <Core/File/JsonSerializer.h>
 #include <Core/Log.h>
 #include <filesystem>
@@ -66,6 +66,10 @@ void engine::editor::DocumentationDatabase::LoadDocumentationFile(string Path)
 	{
 		for (auto& Type : Loaded.At("types").GetObject())
 		{
+			if (Type.Value.Contains("description"))
+			{
+				this->Classes[CurrentModule + "::" + Type.Name].Description = Type.At("description").GetString();
+			}
 			if (Type.Value.Contains("methods"))
 			{
 				for (auto& i : Type.Value.At("methods").GetObject())
@@ -109,6 +113,18 @@ DocumentationMember* engine::editor::DocumentationDatabase::GetTypeMember(string
 		{
 			return member->second;
 		}
+	}
+
+	return nullptr;
+}
+
+DocumentationClass* engine::editor::DocumentationDatabase::GetType(string Type)
+{
+	auto found = this->Classes.find(Type);
+
+	if (found != this->Classes.end())
+	{
+		return &found->second;
 	}
 
 	return nullptr;

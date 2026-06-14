@@ -25,8 +25,9 @@ namespace engine::editor
 		string Description;
 	};
 
-	struct DocumentationClasses
+	struct DocumentationClass
 	{
+		string Description;
 		std::unordered_map<string, DocumentationMember*> Members;
 	};
 
@@ -47,8 +48,10 @@ namespace engine::editor
 
 		DocumentationFunction* GetFunction(string FullName);
 		DocumentationMember* GetTypeMember(string Type, string FullName);
+		DocumentationClass* GetType(string Type);
+
 
 		std::unordered_map<string, DocumentationFunction*> Functions;
-		std::unordered_map<string, DocumentationClasses> Classes;
+		std::unordered_map<string, DocumentationClass> Classes;
 	};
 }

@@ -38,6 +38,7 @@ element DialogWindowMainElement
 element RenameWindowElement
 {
 	var FromString = "From: <some file>";
+	var ToString = "To:   ";
 
 	padding = 10px;
 	orientation = vertical;
@@ -57,15 +58,15 @@ element RenameWindowElement
 		minSize = (300, 35)px;
 		child UIText
 		{
-			text = "To: ";
+			text = ToString;
 			size = 12px;
-			rightPadding = 12px;
+			widthOverride = 40px
 			color = Color_Text;
 		}
 
 		child EditorTextField field
 		{
-			Size = 220px;
+			Size = 210px;
 			HintText = "Rename";
 			Image = $"Rename.png";
 			padding = 5px;
