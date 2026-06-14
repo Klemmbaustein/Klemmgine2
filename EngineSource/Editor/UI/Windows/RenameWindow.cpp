@@ -2,15 +2,18 @@
 #include <DialogWindow.kui.hpp>
 #include <Core/File/FileUtil.h>
 #include <Engine/MainThread.h>
+#include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Panels/AssetBrowser.h>
 using namespace kui;
 
-engine::editor::RenameWindow::RenameWindow(string File, std::function<void(string NewName)> OnRenamed)
-	: IDialogWindow("Rename",
+engine::editor::RenameWindow::RenameWindow(string File, std::function<void(string NewName)> OnRenamed, bool IsNewFile)
+	: IDialogWindow(IsNewFile ? "Create file" : "Rename",
 		{
-			Option{.Name = "Rename", .OnClicked = [this]() { Confirm(); Close(); }, .OnMainThread = false,},
+			Option{.Name = IsNewFile ? "Create" : "Rename", .OnClicked = [this]() { Confirm(); Close(); }, .OnMainThread = false,},
 			Option{ .Name = "Cancel", .Close = true, },
 		}, Vec2ui(300, 130))
 {
+	this->IsNewFile = IsNewFile;
 	this->File = File;
 	this->OnRenamed = OnRenamed;
 	Open();
@@ -22,7 +25,15 @@ void engine::editor::RenameWindow::Begin()
 
 	auto RenameElement = new RenameWindowElement();
 
-	RenameElement->SetFromString(str::Format("From:  %s", file::FileNameWithoutExt(File).c_str()));
+	if (IsNewFile)
+	{
+		RenameElement->SetFromString(str::Format("Type:  %s", file::Extension(File).c_str()));
+		RenameElement->SetToString("Name:");
+	}
+	else
+	{
+		RenameElement->SetFromString(str::Format("From:  %s", file::FileNameWithoutExt(File).c_str()));
+	}
 	RenameElement->field->field->SetText(file::FileNameWithoutExt(File));
 	EditField = RenameElement->field->field;
 	EditField->SelectAll();
@@ -48,6 +59,15 @@ void engine::editor::RenameWindow::Update()
 
 void engine::editor::RenameWindow::Destroy()
 {
+	if (IsNewFile)
+	{
+		thread::ExecuteOnMainThread([File = this->File] {
+			EditorUI::Instance->AssetsProvider->DeleteFile(File);
+			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* i) {
+				i->UpdateItems();
+			});
+		});
+	}
 }
 
 void engine::editor::RenameWindow::Confirm()

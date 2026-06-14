@@ -21,6 +21,7 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 	"obj",
 	"str",
 	"byte",
+	"null",
 	};
 
 	Toolbar* EditorToolbar = new Toolbar();
@@ -50,6 +51,10 @@ engine::editor::TextEditorPanel::TextEditorPanel(AssetRef Asset)
 
 	AddShortcut(Key::y, CtrlMod, [this] {
 		Provider->Redo();
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::s, CtrlMod, [this] {
+		Save();
 	}, ShortcutOptions::AllowInText);
 
 

@@ -429,7 +429,7 @@ void engine::editor::ScriptEditorUI::Save()
 		{
 			Tab->Provider->TrimWhitespace(Tab->Editor->SelectionEnd.Line);
 		}
-		
+
 		BufferStream OutStream;
 		string Content = Tab->Provider->GetContent();
 		OutStream.Write(reinterpret_cast<uByte*>(Content.data()), Content.size());
@@ -451,7 +451,7 @@ void engine::editor::ScriptEditorUI::Save()
 				EditorUI::SetStatusMessage("Failed to compile scripts", EditorUI::StatusType::Error);
 			}
 
-			EditorUI::Instance->ForEachPanel<ClassBrowser>([](ClassBrowser* Browser) {
+			EditorUI::ForEachPanel<ClassBrowser>([](ClassBrowser* Browser) {
 				Browser->UpdateItems();
 			});
 		};
