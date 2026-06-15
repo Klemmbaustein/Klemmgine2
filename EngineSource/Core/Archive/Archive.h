@@ -23,6 +23,9 @@ namespace engine
 
 		std::vector<string> GetArchiveFiles();
 
+		static IBinaryStream* StreamAsset(IBinaryStream* FromStream, string Name);
+		static std::vector<string> GetAssets(IBinaryStream* FromStream);
+
 		void Save(string FilePath);
 		void Save(IBinaryStream* Stream);
 	private:

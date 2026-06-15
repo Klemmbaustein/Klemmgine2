@@ -134,6 +134,126 @@ void engine::Archive::Save(IBinaryStream* Stream)
 	}
 }
 
+IBinaryStream* engine::Archive::StreamAsset(IBinaryStream* Stream, string Name)
+{
+	// Reads file header: [format string (string)] [file count (size_t)]
+
+	string FileHeader;
+	Stream->ReadString(FileHeader);
+	if (FileHeader != ARCHIVE_FORMAT_STRING)
+	{
+		Log::Error("Format error. Incorrect header.");
+		return nullptr;
+	}
+
+	size_t NumFiles = Stream->Get<size_t>();
+
+	for (size_t i = 0; i < NumFiles; i++)
+	{
+		// Reads file entry: [name (string)] [compressed size (size_t)] [uncompressed size (size_t)] [file buffer (uByte * compressed size)]
+
+		string FileName;
+		Stream->ReadString(FileName);
+		size_t CompressedSize = Stream->Get<size_t>();
+		mz_ulong FileSize = mz_ulong(Stream->Get<size_t>());
+
+		if (file::FileName(FileName) != Name && FileName != Name)
+		{
+			if (SIZE_MAX == CompressedSize)
+			{
+				Stream->Read(nullptr, FileSize);
+			}
+			else
+			{
+				Stream->Read(nullptr, CompressedSize);
+			}
+			continue;
+		}
+
+		if (!CompressedSize)
+		{
+			return new BufferStream();
+		}
+
+		// No compression
+		if (SIZE_MAX == CompressedSize)
+		{
+			uByte* CompressedFile = new uByte[FileSize];
+
+			if (!Stream->Read(CompressedFile, FileSize))
+			{
+				Log::Error(str::Format("Format error. Could not read %i bytes of file %s", FileSize, FileName.c_str()));
+				delete[] CompressedFile;
+				return nullptr;
+			}
+
+			return new ReadOnlyBufferStream(CompressedFile, FileSize, true);
+		}
+
+		uByte* CompressedFile = new uByte[CompressedSize];
+
+		if (!Stream->Read(CompressedFile, CompressedSize))
+		{
+			Log::Error(str::Format("Format error. Could not read %i bytes of file %s", CompressedSize, FileName.c_str()));
+			delete[] CompressedFile;
+			return nullptr;
+		}
+		uByte* DecompressedFile = new uByte[FileSize];
+
+		int Error = mz_uncompress(DecompressedFile, &FileSize, CompressedFile, mz_ulong(CompressedSize));
+
+		if (Error != MZ_OK)
+		{
+			Log::Error("Deflate compress error: " + string(mz_error(Error)));
+			break;
+		}
+
+		delete[] CompressedFile;
+
+		return new ReadOnlyBufferStream(DecompressedFile, FileSize, true);
+	}
+
+	return nullptr;
+}
+
+std::vector<string> engine::Archive::GetAssets(IBinaryStream* Stream)
+{
+	std::vector<string> Assets;
+
+	// Reads file header: [format string (string)] [file count (size_t)]
+
+	string FileHeader;
+	Stream->ReadString(FileHeader);
+	if (FileHeader != ARCHIVE_FORMAT_STRING)
+	{
+		Log::Error("Format error. Incorrect header.");
+		return {};
+	}
+
+	size_t NumFiles = Stream->Get<size_t>();
+
+	for (size_t i = 0; i < NumFiles; i++)
+	{
+		// Reads file entry: [name (string)] [compressed size (size_t)] [uncompressed size (size_t)] [file buffer (uByte * compressed size)]
+
+		string FileName;
+		Stream->ReadString(FileName);
+		size_t CompressedSize = Stream->Get<size_t>();
+		mz_ulong FileSize = mz_ulong(Stream->Get<size_t>());
+
+		if (SIZE_MAX == CompressedSize)
+		{
+			Stream->Read(nullptr, FileSize);
+		}
+		else
+		{
+			Stream->Read(nullptr, CompressedSize);
+		}
+		Assets.push_back(FileName);
+	}
+	return Assets;
+}
+
 void engine::Archive::LoadInternal(IBinaryStream* Stream)
 {
 	// Reads file header: [format string (string)] [file count (size_t)]
