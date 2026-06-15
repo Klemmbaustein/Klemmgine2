@@ -11,7 +11,7 @@ namespace engine::resource
 	public:
 		virtual ~ResourceSource() = default;
 		virtual bool FileExists(string Path) = 0;
-		virtual ReadOnlyBufferStream* GetFile(string Path) = 0;
+		virtual IBinaryStream* GetFile(string Path) = 0;
 		virtual std::map<string, string> GetFiles() = 0;
 		virtual void LoadSceneFiles(string ScenePath) {};
 	};

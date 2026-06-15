@@ -7,7 +7,7 @@ bool engine::resource::EmbeddedResourceSource::FileExists(string Path)
 	return false;
 }
 
-ReadOnlyBufferStream* engine::resource::EmbeddedResourceSource::GetFile(string Path)
+IBinaryStream* engine::resource::EmbeddedResourceSource::GetFile(string Path)
 {
 	return nullptr;
 }

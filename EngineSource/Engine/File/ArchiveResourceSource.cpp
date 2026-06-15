@@ -1,6 +1,7 @@
 #include "ArchiveResourceSource.h"
 #include <Core/Log.h>
 #include <set>
+#include <Core/File/FileUtil.h>
 #include <Core/File/BinarySerializer.h>
 
 using namespace engine;
@@ -27,30 +28,38 @@ engine::resource::ArchiveResourceSource::ArchiveResourceSource()
 			Scenes.push_back(scn.GetString());
 		}
 
+		FileStream Stream = FileStream(ArchiveNameToPath(i.Name), true);
+		auto Files = Archive::GetAssets(&Stream);
+		for (auto& f : Files)
+		{
+			ArchiveAssets.insert({ file::FileName(f), f });
+			FileMap.insert({f, i.Name});
+		}
+
 		SceneArchives.insert({ i.Name, Scenes });
 	}
 }
 
 bool engine::resource::ArchiveResourceSource::FileExists(string Path)
 {
-	for (auto& i : LoadedArchives)
-	{
-		if (i.second->HasFile(Path))
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return FileMap.contains(Path);
 }
 
-ReadOnlyBufferStream* engine::resource::ArchiveResourceSource::GetFile(string Path)
+IBinaryStream* engine::resource::ArchiveResourceSource::GetFile(string Path)
 {
 	for (auto& i : LoadedArchives)
 	{
 		ReadOnlyBufferStream* f = i.second->GetFile(Path);
 		if (f)
 			return f;
+	}
+
+	auto found = this->FileMap.find(Path);
+
+	if (found != this->FileMap.end())
+	{
+		FileStream Stream = FileStream(ArchiveNameToPath(found->second), true);
+		return Archive::StreamAsset(&Stream, Path);
 	}
 
 	return nullptr;
@@ -113,13 +122,7 @@ void engine::resource::ArchiveResourceSource::LoadArchive(string Name)
 
 	Log::Note(str::Format("Loading archive: %s", Name.c_str()));
 
-	Archive* NewArchive = new Archive("Assets/" + Name + ".bin");
-
-	auto Files = NewArchive->GetArchiveFiles();
-	for (auto& i : Files)
-	{
-		ArchiveAssets.insert({ i, NewArchive->ConvertFileName(i) });
-	}
+	Archive* NewArchive = new Archive(ArchiveNameToPath(Name));
 
 	LoadedArchives.insert({ Name, NewArchive });
 }

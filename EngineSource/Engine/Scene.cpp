@@ -272,7 +272,9 @@ void engine::Scene::LoadAsyncFinish()
 {
 	AsyncLoads--;
 	Init();
-	for (SceneObject* obj : Objects)
+
+	auto ObjectCopy = Objects;
+	for (SceneObject* obj : ObjectCopy)
 	{
 		obj->CheckTransform();
 		obj->Begin();

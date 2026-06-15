@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for Klemmgine2, include source and define
+# CMakeList.txt : CMake project for Klemmgine2, include source and define
 # project specific logic here.
 #
 cmake_minimum_required(VERSION 3.20)
@@ -153,12 +153,6 @@ if(WIN32)
 else()
 	target_compile_definitions(KlemmgineCore PUBLIC LINUX=1)
 endif()
-
-# These all really should be the default when importing as a subdirectory.
-set(ENABLE_PROGRAMS OFF)
-set(ENABLE_TESTING OFF)
-set(MBEDTLS_FATAL_WARNINGS OFF)
-add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
 if(UNIX)
 	find_package(OpenSSL REQUIRED)
 
@@ -178,6 +172,12 @@ endif()
 if(ENGINE_SERVER)
 	target_compile_definitions(KlemmgineLib PUBLIC SERVER)
 elseif(ENGINE_EDITOR)
+	# These all really should be the default when importing as a subdirectory.
+	set(ENABLE_PROGRAMS OFF)
+	set(ENABLE_TESTING OFF)
+	set(MBEDTLS_FATAL_WARNINGS OFF)
+	add_subdirectory("Dependencies/mbedtls" EXCLUDE_FROM_ALL)
+
 	set(ASSIMP_INSTALL OFF)
 	set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 	set(BUILD_SHARED_LIBS OFF)
