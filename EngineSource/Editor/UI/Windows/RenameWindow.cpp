@@ -82,6 +82,8 @@ void engine::editor::RenameWindow::Confirm()
 	else
 		OutFile = OldPath + OutFile + "." + OldExtension;
 
+	this->IsNewFile = false;
+
 	thread::ExecuteOnMainThread([CopyOnRenamed, OutFile]() {
 		CopyOnRenamed(OutFile);
 		});
