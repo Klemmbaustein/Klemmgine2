@@ -238,7 +238,7 @@ void engine::JsonSerializer::ReadObject(std::vector<SerializedData>& Object, std
 	{
 		if (!TryReadChar(Stream, '"'))
 		{
-			throw SerializeReadException("Expected a string key in JSON object.");
+			throw SerializeReadException(str::Format("Expected a string key in JSON object. Got %i", GetNextChar(Stream)));
 		}
 		string Name = ReadString(Stream);
 
@@ -305,7 +305,7 @@ SerializedValue engine::JsonSerializer::FromFile(string File)
 		return {};
 	}
 
-	std::ifstream In = std::ifstream(File);
+	std::ifstream In = std::ifstream(File, std::ios::binary);
 	auto Result = ReadValue(In);
 	In.close();
 	return Result;
