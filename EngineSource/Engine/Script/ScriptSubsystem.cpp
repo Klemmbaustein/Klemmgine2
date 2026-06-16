@@ -18,6 +18,7 @@
 #include <Engine/UI/UICanvas.h>
 
 #if EDITOR
+#include <Editor/UI/Panels/PropertyPanel.h>
 #include <Editor/UI/EditorUI.h>
 #endif
 
@@ -206,6 +207,15 @@ bool engine::script::ScriptSubsystem::Reload()
 			}, str::Hash("Engine/Scene/SceneManager"), Path);
 		}
 	}
+
+#if EDITOR
+
+	editor::EditorUI::ForEachPanel<editor::PropertyPanel>([](editor::PropertyPanel* p) {
+		p->OnResized();
+	});
+
+#endif
+
 	return true;
 }
 
