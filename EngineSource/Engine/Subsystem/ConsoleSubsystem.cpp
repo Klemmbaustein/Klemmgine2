@@ -54,7 +54,7 @@ engine::ConsoleSubsystem::ConsoleSubsystem()
 
 	WriteLogs = launchArgs::GetArg("writeLogs").has_value();
 
-#ifndef WITH_EDITOR
+#ifndef EDITOR
 	if (WriteLogs)
 #endif
 	{
