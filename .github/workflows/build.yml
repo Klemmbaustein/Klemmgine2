@@ -124,6 +124,8 @@ jobs:
       run: |
         rm ${{ github.workspace }}/out/editor/KlemmUI*
         rm ${{ github.workspace }}/out/release/KlemmUI*
+        rm ${{ github.workspace }}/out/editor/*.so.*
+        rm ${{ github.workspace }}/out/release/*.so.*
 
     - name: Copy editor assets into build
       shell: bash
