@@ -74,6 +74,9 @@ namespace engine
 
 		static void ClearAll();
 
+		static inline constexpr const char* DEFAULT_CUBE_NAME = "<Builtin Cube>.kmdl";
+		static inline constexpr const char* DEFAULT_PLANE_NAME = "<Builtin Plane>.kmdl";
+
 	private:
 		static std::unordered_map<string, GraphicsModel> Models;
 	};

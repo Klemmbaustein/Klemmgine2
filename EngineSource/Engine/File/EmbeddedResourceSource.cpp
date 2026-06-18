@@ -1,4 +1,5 @@
 #include "EmbeddedResourceSource.h"
+#include <Engine/File/ModelData.h>
 
 using namespace engine;
 
@@ -19,6 +20,8 @@ std::map<string, string> engine::resource::EmbeddedResourceSource::GetFiles()
 		{"res:basic.frag", "res:shader/basic.frag"},
 		{"res:basic.vert", "res:shader/basic.vert"},
 		{"res:sky.frag", "res:shader/sky.frag"},
+		{"<Builtin Cube>.kmdl", GraphicsModel::DEFAULT_CUBE_NAME},
+		{"<Builtin Plane>.kmdl", GraphicsModel::DEFAULT_PLANE_NAME},
 	};
 
 	return Files;

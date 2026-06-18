@@ -254,6 +254,15 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(const ModelData& Mes
 
 engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool LoadMaterials, bool Lock)
 {
+	if (Asset.FilePath == DEFAULT_CUBE_NAME)
+	{
+		return UnitCube();
+	}
+	if (Asset.FilePath == DEFAULT_PLANE_NAME)
+	{
+		return UnitPlane();
+	}
+
 	if (Lock)
 		ModelDataMutex.lock();
 
@@ -305,6 +314,15 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool
 
 engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset, bool LoadMaterials)
 {
+	if (Asset.FilePath == DEFAULT_CUBE_NAME)
+	{
+		return UnitCube();
+	}
+	if (Asset.FilePath == DEFAULT_PLANE_NAME)
+	{
+		return UnitPlane();
+	}
+
 	std::lock_guard g{ ModelDataMutex };
 	auto Found = Models.find(Asset.FilePath);
 	if (Found == Models.end())
@@ -437,8 +455,8 @@ engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 	if (!Cube)
 	{
 		Cube = new GraphicsModel();
-		Cube->Data = new ModelData();
 
+		Cube->Data = new ModelData();
 		auto& m = Cube->Data->Meshes.emplace_back(false);
 
 		auto AddFace = [&](Vector3 Dir, Vector3 Up, Vector3 Right) {
@@ -453,6 +471,13 @@ engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 		AddFace(Vector3(0, 0, -1), Vector3(0, -1, 0), Vector3(1, 0, 0));
 
 		Cube->Data->Bounds = BoundingBox(0, 1);
+		if (thread::IsMainThread)
+		{
+			Cube->Drawable = new graphics::Model(Cube->Data);
+		}
+	}
+	else if (thread::IsMainThread && !Cube->Drawable)
+	{
 		Cube->Drawable = new graphics::Model(Cube->Data);
 	}
 
@@ -473,7 +498,14 @@ GraphicsModel* engine::GraphicsModel::UnitPlane()
 
 		Plane->Data->Bounds = BoundingBox(0, Vector3(1, 0, 1));
 
-		Plane->Drawable = new graphics::Model(Plane->Data);
+		if (thread::IsMainThread)
+		{
+			Plane->Drawable = new graphics::Model(Plane->Data);
+		}
+	}
+	else if (thread::IsMainThread && !Plane->Drawable)
+	{
+		Plane->Drawable = new graphics::Model(Cube->Data);
 	}
 
 	return Plane;
