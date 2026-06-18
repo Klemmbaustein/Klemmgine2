@@ -152,6 +152,7 @@ target_compile_definitions(KlemmgineLib PRIVATE BUILD_LIBRARY=1)
 
 if(WIN32)
 	target_compile_definitions(KlemmgineCore PUBLIC WINDOWS=1)
+	target_compile_definitions(KlemmgineCore PUBLIC _CRT_BEST_PRACTICES_USAGE=1)
 else()
 	target_compile_definitions(KlemmgineCore PUBLIC LINUX=1)
 endif()

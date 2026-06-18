@@ -103,8 +103,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::AssetRef:
 		{
 			auto* Ref = static_cast<ObjProperty<AssetRef>*>(i);
-			Properties->AddAssetRefEntry(i->Name, Ref->Value, [Object, Ref] {
+			Properties->AddAssetRefEntry(i->Name, Ref->Value, [Object, Ref, OldValue = Ref->Value] {
+				AssetRef v = OldValue;
+				std::swap(Ref->Value, v);
 				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = v;
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 			});
@@ -114,8 +117,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::String:
 		{
 			auto* Ref = static_cast<ObjProperty<string>*>(i);
-			Properties->AddStringEntry(i->Name, Ref->Value, [Object, Ref] {
+			Properties->AddStringEntry(i->Name, Ref->Value, [Object, Ref, OldValue = Ref->Value] {
+				string v = OldValue;
+				std::swap(Ref->Value, v);
 				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = v;
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 			});
@@ -124,8 +130,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::Int:
 		{
 			auto* Ref = static_cast<ObjProperty<int32>*>(i);
-			Properties->AddIntEntry(i->Name, Ref->Value, [Object, Ref] {
+			Properties->AddIntEntry(i->Name, Ref->Value, [Object, Ref, OldValue = Ref->Value] {
+				int32 v = OldValue;
+				std::swap(Ref->Value, v);
 				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = v;
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 			});
@@ -134,8 +143,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::Float:
 		{
 			auto* Ref = static_cast<ObjProperty<float>*>(i);
-			Properties->AddFloatEntry(i->Name, Ref->Value, [Object, Ref] {
+			Properties->AddFloatEntry(i->Name, Ref->Value, [Object, Ref, OldValue = Ref->Value] {
+				float v = OldValue;
+				std::swap(Ref->Value, v);
 				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = v;
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 			});
@@ -144,8 +156,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::Bool:
 		{
 			auto* Ref = static_cast<ObjProperty<bool>*>(i);
-			Properties->AddBooleanEntry(Ref->Name, Ref->Value, [Object, Ref]() {
+			Properties->AddBooleanEntry(Ref->Name, Ref->Value, [Object, Ref, OldValue = Ref->Value]() {
+				bool v = OldValue;
+				std::swap(Ref->Value, v);
 				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = v;
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 
@@ -155,8 +170,11 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		case PropertyType::Vector3:
 		{
 			auto* Ref = static_cast<ObjProperty<Vector3>*>(i);
-			Properties->AddVecEntry(Ref->Name, Ref->Value, [Object, Ref]() {
+			Properties->AddVecEntry(Ref->Name, Ref->Value, [Object, Ref, OldValue = Ref->Value]() {
+				Vector3 v = OldValue;
+				std::swap(Ref->Value, v);
 				Viewport::Current->OnObjectChanged(Object);
+				Ref->Value = v;
 				if (Ref->OnChanged)
 					Ref->OnChanged();
 

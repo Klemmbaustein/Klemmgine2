@@ -43,8 +43,11 @@ void engine::graphics::Model::Draw(GraphicsScene* In, const Transform& At, graph
 		if (!Used->Unlit && In)
 		{
 			In->Lights.ApplyToShader(Used, Bounds);
-			With->UsedEnvironment->ApplyTo(Used);
 			In->Shadows.BindUniforms(Used);
+		}
+		if (In)
+		{
+			With->UsedEnvironment->ApplyTo(Used);
 		}
 
 		if (!In)

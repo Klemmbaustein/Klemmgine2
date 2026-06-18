@@ -35,11 +35,14 @@ void engine::graphics::Material::Load(AssetRef File)
 		else
 		{
 			IBinaryStream* BinaryFile = resource::GetBinaryFile(File.FilePath);
-			FileData = BinarySerializer::FromStream(BinaryFile, "kbm");
-			delete BinaryFile;
+			if (BinaryFile)
+			{
+				FileData = BinarySerializer::FromStream(BinaryFile, "kbm");
+				delete BinaryFile;
+			}
 		}
 
-		if (!FileData.GetObject().empty())
+		if (!FileData.IsNull() && !FileData.GetObject().empty())
 		{
 			DeSerialize(&FileData);
 			return;

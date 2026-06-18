@@ -1,4 +1,4 @@
-﻿#include "ScriptEditorProvider.h"
+#include "ScriptEditorProvider.h"
 #include <kui/UI/UITextEditor.h>
 #include <ds/service/languageService.hpp>
 #include <Editor/UI/DropdownMenu.h>
@@ -347,7 +347,10 @@ std::optional<ScriptEditorProvider::HoverSymbolData> engine::editor::ScriptEdito
 				+ " at line " + std::to_string(Fn->definition->at.position.line + 1)
 				: "Defined in native code");
 
-			string Module = Fn->name.substr(0, Fn->name.find_last_of(':') - 1);
+
+			auto FoundColon = Fn->name.find_last_of(':');
+
+			string Module = FoundColon != string::npos ? Fn->name.substr(0, FoundColon - 1) : "";
 
 			if (Module.empty())
 			{
