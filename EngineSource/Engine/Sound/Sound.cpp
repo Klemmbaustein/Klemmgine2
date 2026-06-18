@@ -320,7 +320,6 @@ void engine::sound::SoundContext::PlaySound(string Path)
 
 		if (FoundItem != CachedEffects.end())
 		{
-			Log::Info("Erase");
 			CachedEffects.erase(FoundItem);
 		}
 		else
