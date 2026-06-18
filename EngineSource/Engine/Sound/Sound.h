@@ -77,6 +77,19 @@ namespace engine::sound
 		std::shared_ptr<ReverbVolume_Private> VolumeData;
 	};
 
+	struct SoundEffectCache
+	{
+		float LastUsed = 0;
+		uint32 UseCount = 0;
+		SoundBuffer* Buffer = nullptr;
+	};
+
+	struct PlayedSound
+	{
+		SoundSource* Source = nullptr;
+		SoundBuffer* Buffer = nullptr;
+	};
+
 	class SoundContext
 	{
 	public:
@@ -93,6 +106,8 @@ namespace engine::sound
 		void SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity);
 		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
+
+		void PlaySound(string Path);
 
 		void Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug);
 
@@ -118,8 +133,12 @@ namespace engine::sound
 		bool ShowDebugBoundsInEditor = true;
 		void MarkReverbDirty();
 
+		uint32 EffectCacheSize = 1;
+
 	private:
 		void MakeCurrent() const;
+		void PlayBuffer(SoundEffectCache* Cache);
+		void OnSoundStopped(PlayedSound& Sound);
 
 		std::list<SoundReverbVolume> ReverbVolumes;
 		ReverbData CurrentReverb;
@@ -147,5 +166,10 @@ namespace engine::sound
 
 		SoundDevice* Device = nullptr;
 		std::vector<SoundFileSource*> Sources;
+
+		// Cached sounds might be over this size if more than this amount of sounds are actively playing via PlaySoundDirect
+		std::map<string, SoundEffectCache> CachedEffects;
+
+		std::vector<PlayedSound> PlayingSounds;
 	};
 }

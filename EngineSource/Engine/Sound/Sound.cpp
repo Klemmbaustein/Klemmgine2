@@ -8,6 +8,7 @@
 #include "Sources/WavSoundFileSource.h"
 #include "Sources/FlacSoundFileSource.h"
 #include <Engine/Engine.h>
+#include <Engine/Stats.h>
 
 // TODO: fully implement
 
@@ -241,11 +242,100 @@ void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, boo
 	}
 }
 
+void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache)
+{
+	auto Source = CreateSoundSource(Cache->Buffer);
+	Source->CacheRef = Cache;
+
+	PlaySource(Source, false, false);
+
+	PlayingSounds.push_back(PlayedSound{
+		.Source = Source,
+		.Buffer = Cache->Buffer,
+		});
+}
+
+void engine::sound::SoundContext::OnSoundStopped(PlayedSound& Sound)
+{
+	if (Sound.Source->CacheRef)
+	{
+		Sound.Source->CacheRef->UseCount--;
+	}
+
+	FreeSoundSource(Sound.Source);
+}
+
 void engine::sound::SoundContext::StopSource(SoundSource* Source)
 {
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSourceStop(Source->ALSource);
+}
+
+void engine::sound::SoundContext::PlaySound(string Path)
+{
+	auto Found = CachedEffects.find(Path);
+
+	if (Found != CachedEffects.end())
+	{
+		Found->second.LastUsed = stats::Time;
+		Found->second.UseCount++;
+
+		PlayBuffer(&Found->second);
+
+		return;
+	}
+
+	auto Buffer = LoadSoundEffect(Path);
+
+	if (!Buffer)
+	{
+		Log::Warn(str::Format("Could not play sound %s because it's buffer could not be loaded", Path.c_str()));
+		return;
+	}
+
+	while (CachedEffects.size() >= EffectCacheSize)
+	{
+		decltype(CachedEffects)::iterator FoundItem = CachedEffects.end();
+
+		for (auto it = CachedEffects.begin(); it != CachedEffects.end(); it++)
+		{
+			if (it->second.UseCount > 0)
+			{
+				continue;
+			}
+
+			if (FoundItem != CachedEffects.end())
+			{
+				if (FoundItem->second.LastUsed > it->second.LastUsed)
+				{
+					FoundItem = it;
+				}
+			}
+			else
+			{
+				FoundItem = it;
+			}
+		}
+
+		if (FoundItem != CachedEffects.end())
+		{
+			Log::Info("Erase");
+			CachedEffects.erase(FoundItem);
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	auto [Inserted, _] = CachedEffects.insert({ Path, SoundEffectCache{
+		.LastUsed = stats::Time,
+		.UseCount = 1,
+		.Buffer = Buffer,
+		} });
+
+	PlayBuffer(&Inserted->second);
 }
 
 void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug)
@@ -275,6 +365,19 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::De
 		UpdateReverb(Pos);
 		UpdateReverbVolumeTree();
 	});
+
+	for (auto it = PlayingSounds.begin(); it < PlayingSounds.end(); it++)
+	{
+		ALint SourceState = 0;
+		alGetSourcei(it->Source->ALSource, AL_SOURCE_STATE, &SourceState);
+
+		if (SourceState == AL_STOPPED)
+		{
+			OnSoundStopped(*it);
+			PlayingSounds.erase(it);
+			break;
+		}
+	}
 }
 
 void engine::sound::SoundContext::FreeSoundSource(SoundSource* Source)
