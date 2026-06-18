@@ -1,9 +1,13 @@
+#pragma once
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/efx.h>
+#include <atomic>
 
 namespace engine::sound
 {
+	struct SoundEffectCache;
+
 	struct SoundContext_Private
 	{
 		ALCcontext* Context = nullptr;
@@ -62,8 +66,10 @@ namespace engine::sound
 		ALuint ALBuffer = 0;
 		std::atomic<size_t> References = 1;
 	};
+
 	struct SoundSource
 	{
 		ALuint ALSource = 0;
+		SoundEffectCache* CacheRef = nullptr;
 	};
 }
