@@ -8,6 +8,33 @@ void engine::MeshObject::LoadMesh(AssetRef File)
 	{
 		Collider->Load(File);
 	}
+
+	if (!Mesh->DrawnModel)
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < std::min(Mesh->Materials.size(), Materials.Values.size()); i++)
+	{
+		auto Item = Materials.GetValue(i);
+		if (Item && Item->Value.IsValid())
+		{
+			Mesh->LoadMaterial(i, Item->Value);
+		}
+	}
+	Materials.Values.resize(Mesh->Materials.size());
+
+	size_t idx = 0;
+	for (auto& i : Materials.Values)
+	{
+		if (!i)
+		{
+			i = std::make_shared<ObjProperty<AssetRef>>("", AssetRef::EmptyAsset("kmt"), nullptr);
+		}
+		i->OnChanged = Materials.OnChanged;
+		i->Name = "Slot " + std::to_string(idx++);
+		i->Hints = PropertyHint::AssetEmptyIsDefault;
+	}
 }
 
 void engine::MeshObject::LoadData(GraphicsModel* Data)
@@ -36,6 +63,8 @@ void engine::MeshObject::Begin()
 	CastShadow.OnChanged = [this]() {
 		Mesh->CastShadow = this->CastShadow.Value;
 	};
+
+	Materials.OnChanged = ModelName.OnChanged;
 }
 
 void engine::MeshObject::OnDestroyed()
