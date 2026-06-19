@@ -219,6 +219,20 @@ void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3
 	alSource3f(Source->ALSource, AL_POSITION, NewPosition.X, NewPosition.Y, NewPosition.Z);
 }
 
+void engine::sound::SoundContext::SetSourceVolume(SoundSource* Source, float Volume)
+{
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	MakeCurrent();
+	alSourcef(Source->ALSource, AL_GAIN, Volume);
+}
+
+void engine::sound::SoundContext::SetSourcePitch(SoundSource* Source, float Pitch)
+{
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	MakeCurrent();
+	alSourcef(Source->ALSource, AL_PITCH, Pitch);
+}
+
 void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
 {
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
@@ -242,11 +256,13 @@ void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, boo
 	}
 }
 
-void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache)
+void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache, float Volume, float Pitch)
 {
 	auto Source = CreateSoundSource(Cache->Buffer);
 	Source->CacheRef = Cache;
 
+	SetSourceVolume(Source, Volume);
+	SetSourcePitch(Source, Pitch);
 	PlaySource(Source, false, false);
 
 	PlayingSounds.push_back(PlayedSound{
@@ -272,7 +288,7 @@ void engine::sound::SoundContext::StopSource(SoundSource* Source)
 	alSourceStop(Source->ALSource);
 }
 
-void engine::sound::SoundContext::PlaySound(string Path)
+void engine::sound::SoundContext::PlaySound(string Path, float Volume, float Pitch)
 {
 	auto Found = CachedEffects.find(Path);
 
@@ -281,7 +297,7 @@ void engine::sound::SoundContext::PlaySound(string Path)
 		Found->second.LastUsed = stats::Time;
 		Found->second.UseCount++;
 
-		PlayBuffer(&Found->second);
+		PlayBuffer(&Found->second, Volume, Pitch);
 
 		return;
 	}
@@ -334,7 +350,7 @@ void engine::sound::SoundContext::PlaySound(string Path)
 		.Buffer = Buffer,
 		} });
 
-	PlayBuffer(&Inserted->second);
+	PlayBuffer(&Inserted->second, Volume, Pitch);
 }
 
 void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug)
