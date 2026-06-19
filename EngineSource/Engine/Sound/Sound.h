@@ -102,12 +102,14 @@ namespace engine::sound
 		SoundSource* CreateSoundSource(SoundBuffer* With);
 
 		void SetSourcePosition(SoundSource* Source, Vector3 NewPosition);
+		void SetSourceVolume(SoundSource* Source, float Volume);
+		void SetSourcePitch(SoundSource* Source, float Pitch);
 
 		void SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity);
 		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
 
-		void PlaySound(string Path);
+		void PlaySound(string Path, float Volume, float Pitch);
 
 		void Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug);
 
@@ -133,11 +135,12 @@ namespace engine::sound
 		bool ShowDebugBoundsInEditor = true;
 		void MarkReverbDirty();
 
-		uint32 EffectCacheSize = 1;
+		// Cached sounds might be over this size if more than this amount of sounds are actively playing via PlaySound
+		uint32 EffectCacheSize = 16;
 
 	private:
 		void MakeCurrent() const;
-		void PlayBuffer(SoundEffectCache* Cache);
+		void PlayBuffer(SoundEffectCache* Cache, float Volume, float Pitch);
 		void OnSoundStopped(PlayedSound& Sound);
 
 		std::list<SoundReverbVolume> ReverbVolumes;
@@ -163,11 +166,9 @@ namespace engine::sound
 		void UpdateReverbVolumeTree();
 		void UpdateReverb(Vector3 AtPosition);
 
-
 		SoundDevice* Device = nullptr;
 		std::vector<SoundFileSource*> Sources;
 
-		// Cached sounds might be over this size if more than this amount of sounds are actively playing via PlaySoundDirect
 		std::map<string, SoundEffectCache> CachedEffects;
 
 		std::vector<PlayedSound> PlayingSounds;
