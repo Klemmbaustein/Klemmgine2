@@ -28,6 +28,8 @@ namespace engine
 
 		~MeshComponent() override;
 
+		void LoadMaterial(size_t MaterialIndex, AssetRef MaterialFile);
+
 		bool UpdateTransform(bool IsDirty) override;
 
 		void ClearModel(bool RemoveDrawnComponent);

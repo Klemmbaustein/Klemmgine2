@@ -18,6 +18,7 @@ namespace engine
 
 		ObjProperty<bool> CastShadow = ObjProperty<bool>("Shadow", true, this);
 		ObjProperty<bool> LoadCollision = ObjProperty<bool>("Collision", true, this);
+		ObjPropertyArray<AssetRef> Materials = ObjPropertyArray<AssetRef>("Materials", this);
 
 		void LoadMesh(AssetRef File);
 		void LoadData(GraphicsModel* Data);

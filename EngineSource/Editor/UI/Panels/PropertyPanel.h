@@ -21,6 +21,9 @@ namespace engine::editor
 		SceneObject* SelectedObj = nullptr;
 
 	private:
+
+		void AddEntry(ObjPropertyBase* Entry, SceneObject* Object);
+
 		PropertyMenu* Properties = nullptr;
 		Transform OldObjectTransform;
 		kui::Timer UpdateTimer;

@@ -38,6 +38,17 @@ void engine::MeshComponent::DrawTransparent(graphics::Camera* From, graphics::Gr
 	}
 }
 
+void engine::MeshComponent::LoadMaterial(size_t MaterialIndex, AssetRef MaterialFile)
+{
+	auto Previous = this->Materials[MaterialIndex];
+	if (Previous)
+	{
+		delete Previous;
+	}
+
+	this->Materials[MaterialIndex] = new graphics::Material(MaterialFile);
+}
+
 void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
 {
 	if (DrawnModel && (RootObject || ParentObject))
@@ -63,6 +74,10 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 	if (DrawnModel)
 	{
 		auto UpdateMaterials = [this] {
+			for (auto& i : this->Materials)
+			{
+				delete i;
+			}
 			Materials.clear();
 			for (auto& m : DrawnModel->Data->Meshes)
 			{

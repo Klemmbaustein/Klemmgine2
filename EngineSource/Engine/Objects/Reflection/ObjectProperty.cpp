@@ -114,5 +114,8 @@ void engine::ObjProperty<AssetRef>::DeSerialize(SerializedValue* From)
 
 void engine::ObjPropertyBase::RegisterSelf(SceneObject* Parent)
 {
-	Parent->Properties.push_back(this);
+	if (Parent)
+	{
+		Parent->Properties.push_back(this);
+	}
 }
