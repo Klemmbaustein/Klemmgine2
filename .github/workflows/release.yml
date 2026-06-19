@@ -126,8 +126,8 @@ jobs:
         rm ${{ github.workspace }}/out/editor/KlemmUI*
         rm ${{ github.workspace }}/out/release/KlemmUI*
         if [[ ${{ matrix.target-os }} == 'ubuntu-latest' ]]; do
-          rm ${{ github.workspace }}/out/editor/*.so.*
-          rm ${{ github.workspace }}/out/release/*.so.*
+          rm ${{ github.workspace }}/out/editor/*.so
+          rm ${{ github.workspace }}/out/release/*.so
         fi
 
     - name: Copy editor assets into build
