@@ -16,6 +16,9 @@ void engine::SoundObject::Begin()
 	SoundFile.OnChanged = [this] {
 		Component->Load(SoundFile.Value);
 		Component->Play(Loop.Value, Is3D.Value);
+		Component->SetRange(Range.Value);
+		Component->SetVolume(Volume.Value);
+		Component->SetPitch(Pitch.Value);
 	};
 
 	Loop.OnChanged = [this] {
@@ -38,11 +41,17 @@ void engine::SoundObject::Begin()
 
 	Component->Load(SoundFile.Value);
 	Component->SetRange(Range.Value);
-	Component->SetRange(Volume.Value);
-	Component->SetRange(Pitch.Value);
+	Component->SetVolume(Volume.Value);
+	Component->SetPitch(Pitch.Value);
 	Component->Play(Loop.Value, Is3D.Value);
 }
 
 void engine::SoundObject::OnDestroyed()
 {
+}
+
+void engine::SoundObject::LoadFile(AssetRef File)
+{
+	SoundFile.Value = File;
+	SoundFile.OnChanged();
 }

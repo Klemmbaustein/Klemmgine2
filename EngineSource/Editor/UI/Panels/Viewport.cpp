@@ -1,4 +1,4 @@
-﻿#include "Viewport.h"
+#include "Viewport.h"
 #include <Editor/UI/EditorUI.h>
 #include <Editor/UI/Effects/Outline.h>
 #include <Editor/UI/Elements/DroppableBox.h>
@@ -13,6 +13,7 @@
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <kui/UI/UISpinner.h>
 #include <sstream>
+#include <Engine/Objects/SoundObject.h>
 using namespace engine::subsystem;
 using namespace kui;
 using namespace engine;
@@ -606,19 +607,33 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 
 	AssetRef Dropped = AssetRef::FromPath(Item.Path);
 
-	if (Dropped.Extension != "kmdl")
+	SceneObject* NewObject = nullptr;
+
+	if (Dropped.Extension == "kmdl")
+	{
+		auto obj = Scene::GetMain()->CreateObject<MeshObject>(EndPosition);
+		obj->Name = Dropped.DisplayName();
+		obj->LoadMesh(Dropped);
+		OnObjectCreated(obj);
+		NewObject = obj;
+	}
+	else if (Dropped.Extension == "wav")
+	{
+		auto obj = Scene::GetMain()->CreateObject<SoundObject>(EndPosition);
+		obj->Name = Dropped.DisplayName();
+		obj->LoadFile(Dropped);
+		OnObjectCreated(obj);
+		NewObject = obj;
+	}
+	else
 	{
 		EditorUI::SetStatusMessage("Cannot add an item of type '" + Dropped.Extension + "' into the scene",
 			EditorUI::StatusType::Error);
 		return;
 	}
-
-	auto obj = Scene::GetMain()->CreateObject<MeshObject>(EndPosition);
-	obj->Name = Dropped.DisplayName();
-	obj->LoadMesh(Dropped);
-	OnObjectCreated(obj);
 	SelectedObjects.clear();
-	SelectedObjects.insert(obj);
+	SelectedObjects.insert(NewObject);
+
 }
 
 void engine::editor::Viewport::Run()

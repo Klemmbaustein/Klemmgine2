@@ -16,6 +16,8 @@ namespace engine
 		void Begin() override;
 		void OnDestroyed() override;
 
+		void LoadFile(AssetRef File);
+
 		ObjProperty<AssetRef> SoundFile = ObjProperty<AssetRef>("Sound file", AssetRef::EmptyAsset("wav"), this);
 		ObjProperty<bool> Loop = ObjProperty<bool>("Loop", true, this);
 		ObjProperty<bool> Is3D = ObjProperty<bool>("Is 3D", true, this);

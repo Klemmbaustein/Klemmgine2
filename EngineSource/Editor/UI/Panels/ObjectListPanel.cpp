@@ -6,6 +6,7 @@
 #include <Editor/UI/Elements/DroppableBox.h>
 #include <Editor/UI/EditorUI.h>
 #include <Engine/Objects/MeshObject.h>
+#include <Engine/Objects/SoundObject.h>
 using namespace kui;
 
 engine::editor::ObjectListPanel::ObjectListPanel()
@@ -37,19 +38,32 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 
 		AssetRef Dropped = AssetRef::FromPath(Item.Path);
 
-		if (Dropped.Extension != "kmdl")
+		SceneObject* NewObject = nullptr;
+
+		if (Dropped.Extension == "kmdl")
+		{
+			auto obj = Scene::GetMain()->CreateObject<MeshObject>(0);
+			obj->Name = Dropped.DisplayName();
+			obj->LoadMesh(Dropped);
+			Viewport::Current->OnObjectCreated(obj);
+			NewObject = obj;
+		}
+		else if (Dropped.Extension == "wav")
+		{
+			auto obj = Scene::GetMain()->CreateObject<SoundObject>(0);
+			obj->Name = Dropped.DisplayName();
+			obj->LoadFile(Dropped);
+			Viewport::Current->OnObjectCreated(obj);
+			NewObject = obj;
+		}
+		else
 		{
 			EditorUI::SetStatusMessage("Cannot add an item of type '" + Dropped.Extension + "' into the scene",
 				EditorUI::StatusType::Error);
 			return;
 		}
-
-		auto obj = Scene::GetMain()->CreateObject<MeshObject>(0);
-		obj->Name = Dropped.DisplayName();
-		obj->LoadMesh(Dropped);
-		Viewport::Current->OnObjectCreated(obj);
 		Viewport::Current->SelectedObjects.clear();
-		Viewport::Current->SelectedObjects.insert(obj);
+		Viewport::Current->SelectedObjects.insert(NewObject);
 
 	}))
 		->SetSize(UISize::Parent(1))
