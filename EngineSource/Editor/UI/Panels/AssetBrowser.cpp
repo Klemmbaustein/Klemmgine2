@@ -75,7 +75,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 			}
 			});
 		}
-		else
+		else if (Selected.size() > 1)
 		{
 			new MessageWindow(str::Format("Really delete %i items?", Selected.size()), "Delete file", {
 			IDialogWindow::Option{
