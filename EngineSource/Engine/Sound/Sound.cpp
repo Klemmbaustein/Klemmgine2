@@ -215,8 +215,11 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3 NewPosition)
 {
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
-	MakeCurrent();
-	alSource3f(Source->ALSource, AL_POSITION, NewPosition.X, NewPosition.Y, NewPosition.Z);
+	if (Source->Is3D)
+	{
+		MakeCurrent();
+		alSource3f(Source->ALSource, AL_POSITION, NewPosition.X, NewPosition.Y, NewPosition.Z);
+	}
 }
 
 void engine::sound::SoundContext::SetSourceVolume(SoundSource* Source, float Volume)
@@ -233,6 +236,14 @@ void engine::sound::SoundContext::SetSourcePitch(SoundSource* Source, float Pitc
 	alSourcef(Source->ALSource, AL_PITCH, Pitch);
 }
 
+void engine::sound::SoundContext::SetSourceRange(SoundSource* Source, float Falloff)
+{
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	MakeCurrent();
+	float Factor = 10.0f / Falloff;
+	alSourcef(Source->ALSource, AL_ROLLOFF_FACTOR, Factor);
+}
+
 void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
 {
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
@@ -246,24 +257,35 @@ void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, boo
 	MakeCurrent();
 	alSourcei(Source->ALSource, AL_LOOPING, Loop);
 	alSourcePlay(Source->ALSource);
+	Source->Is3D = Is3D;
 
 	if (Is3D)
 	{
 		alSourcei(Source->ALSource, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE_CLAMPED);
-		float Factor = 100.0f / 200.0f;
 		alSourcef(Source->ALSource, AL_REFERENCE_DISTANCE, 1.0f);
-		alSourcef(Source->ALSource, AL_ROLLOFF_FACTOR, Factor);
+		alSourcei(Source->ALSource, AL_SOURCE_RELATIVE, 0);
+	}
+	else
+	{
+		alSourcei(Source->ALSource, AL_DISTANCE_MODEL, AL_NONE);
+		alSourcei(Source->ALSource, AL_SOURCE_RELATIVE, 1);
+		alSource3f(Source->ALSource, AL_POSITION, 0, 0, 0);
 	}
 }
 
-void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache, float Volume, float Pitch)
+void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache, float Volume, float Pitch, Vector3 Position, float Falloff)
 {
 	auto Source = CreateSoundSource(Cache->Buffer);
 	Source->CacheRef = Cache;
 
 	SetSourceVolume(Source, Volume);
 	SetSourcePitch(Source, Pitch);
-	PlaySource(Source, false, false);
+
+	if (Falloff != -1)
+	{
+		SetSourcePosition(Source, Position);
+	}
+	PlaySource(Source, false, Falloff != -1);
 
 	PlayingSounds.push_back(PlayedSound{
 		.Source = Source,
@@ -290,6 +312,11 @@ void engine::sound::SoundContext::StopSource(SoundSource* Source)
 
 void engine::sound::SoundContext::PlaySound(string Path, float Volume, float Pitch)
 {
+	PlaySoundAt(Path, Volume, Pitch, 0, -1);
+}
+
+void engine::sound::SoundContext::PlaySoundAt(string Path, float Volume, float Pitch, Vector3 Position, float Falloff)
+{
 	auto Found = CachedEffects.find(Path);
 
 	if (Found != CachedEffects.end())
@@ -297,7 +324,7 @@ void engine::sound::SoundContext::PlaySound(string Path, float Volume, float Pit
 		Found->second.LastUsed = stats::Time;
 		Found->second.UseCount++;
 
-		PlayBuffer(&Found->second, Volume, Pitch);
+		PlayBuffer(&Found->second, Volume, Pitch, Position, Falloff);
 
 		return;
 	}
@@ -350,7 +377,7 @@ void engine::sound::SoundContext::PlaySound(string Path, float Volume, float Pit
 		.Buffer = Buffer,
 		} });
 
-	PlayBuffer(&Inserted->second, Volume, Pitch);
+	PlayBuffer(&Inserted->second, Volume, Pitch, Position, Falloff);
 }
 
 void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug)
@@ -362,7 +389,7 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::De
 	}
 
 	Vector3 Pos = FromCamera->GetPosition();
-	alListenerf(AL_GAIN, 10);
+	alListenerf(AL_GAIN, 1);
 
 	Vector3 Directions[2] = {
 		FromCamera->GetForward(),

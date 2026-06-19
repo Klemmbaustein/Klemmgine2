@@ -15,6 +15,10 @@ namespace engine
 		void Play(bool Loop, bool Is3D);
 		void Stop();
 
+		void SetRange(float Range);
+		void SetVolume(float Volume);
+		void SetPitch(float Pitch);
+
 		void Update() override;
 
 		sound::SoundBuffer* Buffer = nullptr;

@@ -20,6 +20,10 @@ namespace engine
 		ObjProperty<bool> Loop = ObjProperty<bool>("Loop", true, this);
 		ObjProperty<bool> Is3D = ObjProperty<bool>("Is 3D", true, this);
 
+		PROPERTY(float, Range, =, 100);
+		PROPERTY(float, Volume, =, 1);
+		PROPERTY(float, Pitch, =, 1);
+
 		SoundComponent* Component = nullptr;
 	};
 }
