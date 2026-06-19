@@ -104,12 +104,14 @@ namespace engine::sound
 		void SetSourcePosition(SoundSource* Source, Vector3 NewPosition);
 		void SetSourceVolume(SoundSource* Source, float Volume);
 		void SetSourcePitch(SoundSource* Source, float Pitch);
+		void SetSourceRange(SoundSource* Source, float Falloff);
 
 		void SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity);
 		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
 
 		void PlaySound(string Path, float Volume, float Pitch);
+		void PlaySoundAt(string Path, float Volume, float Pitch, Vector3 Position, float Falloff);
 
 		void Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug);
 
@@ -140,7 +142,7 @@ namespace engine::sound
 
 	private:
 		void MakeCurrent() const;
-		void PlayBuffer(SoundEffectCache* Cache, float Volume, float Pitch);
+		void PlayBuffer(SoundEffectCache* Cache, float Volume, float Pitch, Vector3 Position, float Falloff);
 		void OnSoundStopped(PlayedSound& Sound);
 
 		std::list<SoundReverbVolume> ReverbVolumes;

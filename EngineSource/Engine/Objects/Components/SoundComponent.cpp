@@ -55,6 +55,30 @@ void engine::SoundComponent::Stop()
 	}
 }
 
+void engine::SoundComponent::SetRange(float Range)
+{
+	if (Context && Source)
+	{
+		Context->SetSourceRange(Source, Range);
+	}
+}
+
+void engine::SoundComponent::SetVolume(float Volume)
+{
+	if (Context && Source)
+	{
+		Context->SetSourceVolume(Source, Volume);
+	}
+}
+
+void engine::SoundComponent::SetPitch(float Pitch)
+{
+	if (Context && Source)
+	{
+		Context->SetSourcePitch(Source, Pitch);
+	}
+}
+
 void engine::SoundComponent::Update()
 {
 	if (Source && Context)

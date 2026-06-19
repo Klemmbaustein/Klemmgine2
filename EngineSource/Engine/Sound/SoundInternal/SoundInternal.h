@@ -71,5 +71,6 @@ namespace engine::sound
 	{
 		ALuint ALSource = 0;
 		SoundEffectCache* CacheRef = nullptr;
+		bool Is3D = true;
 	};
 }

@@ -24,7 +24,22 @@ void engine::SoundObject::Begin()
 
 	Is3D.OnChanged = Loop.OnChanged;
 
+	Range.OnChanged = [this] {
+		Component->SetRange(Range.Value);
+	};
+
+	Volume.OnChanged = [this] {
+		Component->SetVolume(Volume.Value);
+	};
+
+	Pitch.OnChanged = [this] {
+		Component->SetPitch(Pitch.Value);
+	};
+
 	Component->Load(SoundFile.Value);
+	Component->SetRange(Range.Value);
+	Component->SetRange(Volume.Value);
+	Component->SetRange(Pitch.Value);
 	Component->Play(Loop.Value, Is3D.Value);
 }
 
