@@ -125,7 +125,7 @@ jobs:
       run: |
         rm ${{ github.workspace }}/out/editor/KlemmUI*
         rm ${{ github.workspace }}/out/release/KlemmUI*
-        if [[ ${{ matrix.target-os }} == 'ubuntu-latest' ]]; do
+        if [[ ${{ matrix.target-os }} == 'ubuntu-latest' ]]; then
           rm ${{ github.workspace }}/out/editor/*.so
           rm ${{ github.workspace }}/out/release/*.so
         fi
