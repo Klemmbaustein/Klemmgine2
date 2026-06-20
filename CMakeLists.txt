@@ -93,7 +93,7 @@ if(MSVC)
 		/natvis:${CMAKE_CURRENT_LIST_DIR}/EngineSource/Natvis/Engine.natvis
 	)
 else()
-	target_compile_options(Klemmgine PUBLIC "-Wl,-rpath,$ORIGIN")
+	target_link_options(Klemmgine PUBLIC "-Wl,-rpath,\$ORIGIN")
 endif()
 
 target_compile_definitions(KlemmgineLib PRIVATE "ENGINE_COMPILER_ID=${CMAKE_CXX_COMPILER_ID} ${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}")
