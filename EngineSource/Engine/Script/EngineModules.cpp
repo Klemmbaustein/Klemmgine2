@@ -282,6 +282,15 @@ static void SceneObject_getName(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
 }
 
+static void ObjectComponent_new(InterpretContext* context)
+{
+	// TODO: Add a vtable that frees this component if it has not been attached to anything.
+
+	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new ObjectComponent();
+	context->pushValue(Component);
+}
+
 static void ObjectComponent_GetWorldPosition(InterpretContext* context)
 {
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
@@ -731,6 +740,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.type = Math.Vec3
 		});
 
+	EngineModule.addClassConstructor(ComponentType,
+		NativeFunction({ }, nullptr,
+			"ObjectComponent.new", &ObjectComponent_new));
+
 	EngineModule.addClassMethod(ComponentType,
 		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
 			"attach", &ObjectComponent_attach));
@@ -776,6 +789,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.type = Math.Transform
 		});
 
+	ObjectType->allowDirectConstructorCall = false;
 	ObjectType->makePointerClass();
 	ManagerType->makePointerClass();
 
@@ -959,6 +973,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.offset = DS_OFFSETOF(MoveComponent, CanMoveUpSlopes),
 		.type = BoolInst
 		});
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "jumpHeight",
+		.offset = DS_OFFSETOF(MoveComponent, JumpHeight),
+		.type = FloatInst
+		});
 
 	MeshComponentType->makePointerClass();
 	PhysicsComponentType->makePointerClass();
@@ -977,6 +996,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(CameraComponentType,
 		NativeFunction({ FunctionArgument(FloatInst, "fov") },
 			nullptr, "setFOV", &CameraComponent_setFOV));
+
+	EngineModule.addClassMethod(CameraComponentType,
+		NativeFunction({ FunctionArgument(Math.Vec2, "screen") },
+			Math.Vec3, "screenToWorldDirection", &CameraComponent_screenToWorldDirection));
 
 	EngineModule.addFunction(
 		NativeFunction({ },
