@@ -11,11 +11,9 @@
 	"types": {
 		"SerializedValue": {
 			"description": "A basic serialized value, base class for representing a serialized data hierarchy.",
-
 			"methods": {
 				"toJsonString": {
 					"description": "Converts this value to a string containing JSON data.\nThe JSON format does not support vectors. This function will fail if this value contains or is a vector.",
-
 					"arguments": {
 						"prettyPrint": "If false, the JSON will be written in a compact format. If true, it will be indented and each value will be put on a separate line."
 					},
@@ -23,9 +21,15 @@
 				}
 			}
 		},
+
 		"SerializedInt": {
 			"description": "A serialized integer value.",
-			"inherits": "SerializedValue"
+			"super": "engine::serialize::SerializedValue",
+			"members": {
+				"value": {
+					"description": "The integer value."
+				}
+			}
 		}
 	}
 }

@@ -1,0 +1,46 @@
+{
+	"type": "bindings",
+	"module": "engine::input",
+
+	"functions": {
+		"isKeyDown": {
+			"description": "Returns true if the given key was pressed this frame."
+		},
+		"isKeyHeld": {
+			"descriptino": "Returns true if the given key is being pressed currently."
+		},
+		"isKeyUp": {
+			"description": "Returns true if the given key was released this frame."
+		},
+		"isLMBDown": {
+			"description": "Returns true if the left mouse button is being held down."
+		},
+		"isLMBClicked": {
+			"description": "Returns true if the left mouse button was pressed this frame."
+		},
+		"isRMBDown": {
+			"description": "Returns true if the right mouse button is being held down."
+		},
+		"isRMBClicked": {
+			"description": "Returns true if the right mouse button was pressed this frame."
+		},
+		"getMouseMovement": {
+			"description": "Returns the amount the mouse has been moved by, if the mouse is not shown."
+		},
+		"getMousePosition": {
+			"description": "Returns the current position of the mouse cursor on the screen in a scale from -1 to 1, if the mouse is visible."
+		},
+		"setShowMouseCursor": {
+			"description": "Controls the visiblity of the mouse cursor.",
+			"arguments": {
+				"newValue": "If the new value is true, the mouse cursor is shown. If it is false, the mouse cursor is invisible"
+			}
+		}
+	},
+
+	"enums": {
+		"Key": {
+			"description": "A key on a keyboard"
+		}
+	}
+}

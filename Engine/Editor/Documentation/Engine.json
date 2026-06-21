@@ -6,7 +6,13 @@
 		"info": {
 			"description": "Prints an info message to the log.",
 			"arguments": {
-				"message": "The message to print"
+				"message": "The message to print."
+			}
+		},
+		"warn": {
+			"description": "Prints a warning message to the log.",
+			"arguments": {
+				"message": "The message to print."
 			}
 		},
 		"getMainScene": {
@@ -19,19 +25,87 @@
 			"description": "Returns the time that has passed since the last frame in seconds."
 		},
 		"wait": {
-			"description": "Creates a task object that waits for a specified amount of time",
+			"description": "Creates a task object that waits for a specified amount of time.",
 
 			"arguments": {
-				"timeInSeconds": "The time to wait, in seconds"
+				"timeInSeconds": "The time to wait, in seconds."
 			}
 		}
 	},
 
 	"types": {
+		"Vector3": {
+			"description": "A struct for defining a position in 3D space.",
+
+			"methods": {
+				"length": {
+					"description": "Returns the length of this vector, calculated as sqrt(X^2 + Y^2 + Z^2)."
+				},
+				"dot": {
+					"description": "Calculates the dot product between this vector and another vector."
+				},
+				"cross": {
+					"description": "Calculates the cross product between this vector and another vector."
+				},
+				"normalized": {
+					"description": "Returns the normalized version of this vector, which always has a length of 1, or X=0, Y=0, Z=0 if the vector already has a length of 0"
+				},
+				"toString": {
+					"description": "Converts this vector to a string, following the format \"{X} {Y} {Z}\""
+				},
+				"projectToPlane": {
+					"description": "Projects this vector onto an infinite 2D plane.",
+					"arguments": {
+						"planeOrigin": "The origin point of the plane.",
+						"planeNormal": "The normal vector of the plane."
+					}
+				}
+			}
+		},
+
+		"Rotation3": {
+			"description": "A struct containing an euler rotation.",
+			"methods": {
+				"forward": {
+					"description": "Returns a vector pointing in the direction that is forward from this rotation."
+				},
+				"right": {
+					"description": "Returns a vector pointing in the direction that is right from this rotation."
+				},
+				"up": {
+					"description": "Returns a vector pointing in the direction that is up from this rotation."
+				}
+			},
+			"members": {
+				"p": {
+					"description": "Pitch value"
+				},
+				"y": {
+					"description": "Yaw value"
+				},
+				"r": {
+					"description": "Roll value"
+				}
+			}
+		},
+
+		"members": {
+			"x": {
+				"description": "Vector X coordinate, usually left/right."
+			},
+			"y": {
+				"description": "Vector Y coordinate, usually down/up."
+			},
+			"z": {
+				"description": "Vector Z coordinate, usually forward/backward."
+			}
+		},
+
 		"Scene": {
+			"description": "A collection of objects, rendering, collision and sound information, forming a kind of \"World\".",
 			"methods": {
 				"getName": {
-					"description": "Returns the name of this scene. If this scene was loaded from a file, this is usually the filename"
+					"description": "Returns the name of this scene. If this scene was loaded from a file, this is usually the filename."
 				},
 				"getManager": {
 					"description": "Gets the current manager of this scene or null if none is set.\nThe manager is an instance of the engine::SceneManager class which is accessible to every other object in the scene and should control global scene logic.\nTo check if the scene manager has a given type, use the is and as operators."
@@ -42,7 +116,7 @@
 				"getObjectByName": {
 					"description": "Searches for an object in this scene that has the given type and the given name.\nIf multiple objects match the criteria, a warning will be logged and only one of them will be returned.",
 					"arguments": {
-						"name": "The name of the object to search for"
+						"name": "The name of the object to search for."
 					},
 					"return": "The found object or null if no such object exists in this scene."
 				},
@@ -51,36 +125,228 @@
 				}
 			}
 		},
+
+		"AssetRef": {
+			"description": "A reference to a project asset. Contains a type (extension) and file path.",
+			"methods": {
+				"new": {
+					"description": "Creates a new asset reference from the given name or path",
+					"arguments": {
+						"path": "The path or name of the asset file to reference, including the extension. If a only a name is given, the loaded assets are searched for a matching file."
+					}
+				}
+			}
+		},
+
 		"SceneObject": {
+			"description": "An object in a scene, made up of a tree of ObjectComponents.\nAn object can have a number of properties, marked with the [Export] attribute, that are saved in the scene file.",
+
 			"methods": {
 				"attach": {
 					"description": "Attaches a component to this object.",
 					"arguments": {
-						"component": "The component to attach to the object"
+						"component": "The component to attach to the object."
 					}
 				},
 				"onBegin": {
 					"description": "Called when the object is created or when the object is loaded with a scene."
 				},
 				"destroy": {
-					"description": "Destroys this object, calling it's onDestroy() function and removing it and it's components from the scene."
+					"description": "Marks this object as to be destroyed. At the next end of an object tick phase it will be removed from the scene and all its components will be destroyed.\nOnce an object has been destroyed, all further calls to any object functions will fail."
 				},
 				"getScene": {
 					"description": "Gets the scene that this object is in."
+				},
+				"getName": {
+					"description": "Gets the name of this object. Multiple objects can share the same name, and objects can be queried by name using Scene.getObjectByName()"
 				}
 			},
 			"members": {
 				"position": {
-					"description": "The position of this object and it's components in the scene."
+					"description": "The position of this object and its components in the scene."
 				},
 				"rotation": {
-					"description": "The rotation of this object and it's components in the scene."
+					"description": "The rotation of this object and its components in the scene."
 				},
 				"scale": {
-					"description": "The scale of this object and it's components in the scene."
+					"description": "The scale of this object and its components in the scene."
 				},
 				"objectTransform": {
 					"description": "The transform of this object in the scene. It is derived from this object's position, rotation and scale members. All components attached to this object will be transformed by this value."
+				}
+			}
+		},
+
+		"ObjectComponent": {
+			"description": "A component of a SceneObject. It can be attached to a SceneObject either by calling SceneObject.attach() or by attaching the component to another component that has been attached to a SceneObject. The component will inherit the transform of the parent component or object.",
+			"methods": {
+				"attach": {
+					"description": "Attaches a component to this component. It will inherit this component's transform.",
+					"arguments": {
+						"component": "The component to attach to this component."
+					}
+				},
+				"getWorldPosition": {
+					"description": "Gets this component's position in world coordinates of the scene."
+				},
+				"new": {
+					"description": "Creates a new empty object component."
+				}
+			},
+			"members": {
+				"position": {
+					"description": "The position of this component relative to its parent."
+				},
+				"rotation": {
+					"description": "The rotation of this component relative to its parent."
+				},
+				"scale": {
+					"description": "The scale of this component relative to its parent."
+				}
+			}
+		},
+
+		"MeshComponent": {
+			"description": "An object component that displays a 3D model.",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"load": {
+					"description": "Loads and applies a 3D model (.kmdl file) to this component."
+				},
+				"getModel": {
+					"description": "Returns the currently loaded model data.",
+					"return": "The model data or null if no object is loaded."
+				},
+				"new": {
+					"description": "Creates a new mesh component."
+				}
+			}
+		},
+
+		"CameraComponent": {
+			"description": "A camera through which the scene is rendered.",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"setFOV": {
+					"description": "Sets the vertical field-of-view of this camera in degrees."
+				},
+				"use": {
+					"description": "Uses this camera to be the scene's currently active camera."
+				},
+				"screenToWorldDirection": {
+					"description": "Converts screen coordinates (X and Y from -1 to 1 for left/right and up/down) to a vector pointing in that direction from the camera."
+				},
+				"new": {
+					"description": "Creates a new camera component."
+				}
+			}
+		},
+
+		"MoveComponent": {
+			"description": "A component implementing a simple movement controller using the collide and slide algorithm",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"addInput": {
+					"description": "Adds an input in this direction, telling movement to move in that direction. Each frame, each input is combined together (with their length clamped) to control the movement velocity."
+				},
+				"jump": {
+					"description": "Makes the movement do a jump, setting the velocity Y value to the jump height."
+				},
+				"isOnGround": {
+					"description": "Returns true if the controller is currently \"standing\" on any ground."
+				},
+				"getVelocity": {
+					"description": "Gets the current velocity"
+				},
+				"setVelocity": {
+					"description": "Sets the current velocity"
+				}
+			},
+			"members": {
+				"acceleration": {
+					"description": "The acceleration in units per second squared that is applied by addInput"
+				},
+				"gravity": {
+					"description": "Force applied downwards (-Y) in units per second"
+				},
+				"maxSpeed": {
+					"description": "Max speed the movement can accelerate to in units per second."
+				},
+				"deceleration": {
+					"description": "The acceleration in units per second squared that is applied when no input is given."
+				},
+				"active": {
+					"description": "If false, the movement will not update the object's position in any way."
+				},
+				"canMoveUpSlopes": {
+					"description": "If true, the movement can move up slopes > 45 degrees."
+				},
+				"jumpHeight": {
+					"description": "The speed in units per second applied when jump() is called."
+				}
+			}
+		},
+
+		"CollisionComponent": {
+			"description": "A collider using a 3D model.",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"load": {
+					"description": "Loads a 3D model (.kmdl file) this component for collision."
+				},
+				"setIsCollisionEnabled": {
+					"description": "Enables or disables the collision of this component against other queries."
+				},
+				"new": {
+					"description": "Creates a new collision component."
+				}
+			}
+		},
+
+		"PhysicsComponent": {
+			"description": "A collider using simple geometric shapes than can simulate physics. This component's transform will not be relative to the position/rotation/scale members after physics have been enabled, instead the component will follow the position of the simulated body. Any components attached to this component will follow this component.",
+			"super": "engine::ObjectComponent",
+
+			"methods": {
+				"createBox": {
+					"description": "Loads a box collider for this component.",
+					"arguments": {
+						"motionType": "The motion type of the collider. If static, the collider will only move according to this component's position value. If kinematic, it will move via velocity but is not physics simualted. If dynamic, it is fully physics simulated.",
+						"layer": "The layer this component is on.",
+						"scale": "The scale of the collider, independent of this component's scale, so it wont affect the scale of any child components."
+					}
+				},
+				"createSphere": {
+					"description": "Loads a sphere collider for this component.",
+					"arguments": {
+						"motionType": "The motion type of the collider. If static, the collider will only move according to this component's position value. If kinematic, it will move via velocity but is not physics simualted. If dynamic, it is fully physics simulated.",
+						"layer": "The layer this component is on.",
+						"scale": "The scale of the collider, independent of this component's scale, so it wont affect the scale of any child components."
+					}
+				},
+				"shapeCast": {
+					"description": "Casts this shape in a line from its current position to the given position. This will always return collision results, even if the component does not have collision enabled.",
+					"arguments": {
+						"targetPosition": "The position the cast should end at.",
+						"layer": "The layer the shape cast should query.",
+						"ignoredObjects": "A set of objects whose colliders should be skipped in the query."
+					},
+					"return": "An array of hits containing the earliest hit in the shape cast, or multiple if multiple hits occured at once."
+				},
+				"setIsActive": {
+					"description": "Sets the activeness of this component. If it is active, its physics are updated. (On kinematic components it updates the positions according to velocity) This has no effect on static components.",
+					"arguments": {
+						"isActive": "If this is true, the component becomes active."
+					}
+				},
+				"setIsCollisionEnabled": {
+					"description": "Enables or disables the collision of this component against other queries."
+				},
+				"collisionTest": {
+					"description": "Does a collision test, checking for any overlapping colliders at this component's position, rotation and scale.",
+					"arguments": {
+						"layer": "The layer to query."
+					}
 				}
 			}
 		}
