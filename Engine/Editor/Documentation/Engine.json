@@ -60,6 +60,17 @@
 						"planeNormal": "The normal vector of the plane."
 					}
 				}
+			},
+			"members": {
+				"x": {
+					"description": "Vector X coordinate, usually left/right."
+				},
+				"y": {
+					"description": "Vector Y coordinate, usually down/up."
+				},
+				"z": {
+					"description": "Vector Z coordinate, usually forward/backward."
+				}
 			}
 		},
 
@@ -86,18 +97,6 @@
 				"r": {
 					"description": "Roll value"
 				}
-			}
-		},
-
-		"members": {
-			"x": {
-				"description": "Vector X coordinate, usually left/right."
-			},
-			"y": {
-				"description": "Vector Y coordinate, usually down/up."
-			},
-			"z": {
-				"description": "Vector Z coordinate, usually forward/backward."
 			}
 		},
 
