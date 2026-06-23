@@ -195,8 +195,7 @@ engine::editor::Viewport::Viewport()
 		EditorUI::FocusedPanel = nullptr;
 		UpdateFocusState();
 		Engine::GameHasFocus = false;
-		LastCursorVisible = input::ShowMouseCursor;
-		input::ShowMouseCursor = true;
+		OnEditorFocus();
 	}, ShortcutOptions::AllowInText);
 
 	AddShortcut(Key::F5, {}, [this] {
@@ -373,9 +372,13 @@ void engine::editor::Viewport::Update()
 		{
 			HasFocus = false;
 		}
+		if (Engine::GameHasFocus && !HasFocus)
+		{
+			OnEditorFocus();
+		}
 		if (!Engine::GameHasFocus && HasFocus)
 		{
-			input::ShowMouseCursor = LastCursorVisible;
+			OnGameFocus();
 		}
 		Engine::GameHasFocus = HasFocus;
 		Translate->SetVisible(false);
@@ -488,6 +491,29 @@ void engine::editor::Viewport::UpdateSceneControls(Scene* Current, kui::Window* 
 	Win->Input.PollForText = false;
 	Current->Graphics.SceneCamera->Rotation = Current->Graphics.SceneCamera->Rotation
 		- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
+}
+
+void engine::editor::Viewport::OnGameFocus()
+{
+	auto Scn = Scene::GetMain();
+	if (Scn)
+	{
+		Scn->Sound->SetVolume(this->LastVolume);
+	}
+	input::ShowMouseCursor = LastCursorVisible;
+}
+
+void engine::editor::Viewport::OnEditorFocus()
+{
+	auto Scn = Scene::GetMain();
+	if (Scn)
+	{
+		this->LastVolume = Scn->Sound->GetVolume();
+		Scn->Sound->SetVolume(0);
+	}
+
+	LastCursorVisible = input::ShowMouseCursor;
+	input::ShowMouseCursor = true;
 }
 
 void engine::editor::Viewport::OnThemeChanged()

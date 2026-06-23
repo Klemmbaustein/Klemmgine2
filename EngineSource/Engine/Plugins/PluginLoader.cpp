@@ -180,6 +180,7 @@ void engine::plugin::TryLoadPlugin(string Path, subsystem::PluginSubsystem* Syst
 		if (!Library)
 		{
 			System->Print(str::Format("Failed to load shared library file: %s/%s", PluginPath.c_str(), PluginFileName.c_str()), LogType::Warning);
+			PluginLoadTime.Cancel();
 			return;
 		}
 

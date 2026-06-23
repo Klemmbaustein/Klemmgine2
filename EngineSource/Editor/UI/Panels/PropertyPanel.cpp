@@ -192,9 +192,9 @@ void engine::editor::PropertyPanel::AddEntry(ObjPropertyBase* i, SceneObject* Ob
 		auto* Ref = static_cast<ObjPropertyArrayBase*>(i);
 
 		Properties->CreateNewHeading(Ref->Name);
-		for (auto& i : Ref->Values)
+		for (auto& Item : Ref->Values)
 		{
-			AddEntry(i.get(), Object);
+			AddEntry(Item.get(), Object);
 		}
 		break;
 	}

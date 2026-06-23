@@ -7,6 +7,7 @@
 #include <Engine/Debug/DebugDraw.h>
 #include <memory>
 #include <mutex>
+#include <atomic>
 
 namespace engine::sound
 {
@@ -93,8 +94,9 @@ namespace engine::sound
 	class SoundContext
 	{
 	public:
-
 		SoundContext(SoundDevice* Device);
+
+		void Restart();
 
 		~SoundContext();
 
@@ -110,10 +112,13 @@ namespace engine::sound
 		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
 
+		void SetVolume(float NewVolume);
+		float GetVolume();
+
 		void PlaySound(string Path, float Volume, float Pitch);
 		void PlaySoundAt(string Path, float Volume, float Pitch, Vector3 Position, float Falloff);
 
-		void Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug);
+		void Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug, bool Async = true);
 
 		void FreeSoundSource(SoundSource* Source);
 		void FreeSoundEffect(SoundBuffer* Buffer);
@@ -135,6 +140,7 @@ namespace engine::sound
 			return ShowDebugBounds;
 		}
 		bool ShowDebugBoundsInEditor = true;
+		bool Initialized = false;
 		void MarkReverbDirty();
 
 		// Cached sounds might be over this size if more than this amount of sounds are actively playing via PlaySound

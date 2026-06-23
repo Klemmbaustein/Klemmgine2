@@ -13,3 +13,8 @@ engine::sound::SoundSubsystem::~SoundSubsystem()
 	delete MainContext;
 	delete MainDevice;
 }
+
+void engine::sound::SoundSubsystem::Update()
+{
+	MainContext->Update(nullptr, nullptr);
+}

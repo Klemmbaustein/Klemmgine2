@@ -24,3 +24,8 @@ void engine::debug::TimeLogger::End()
 	Log::Note(str::Format("%s (in %ims)", Measured.c_str(), int(DifferenceSeconds * 1000.0)), Prefixes);
 	Ended = true;
 }
+
+void engine::debug::TimeLogger::Cancel()
+{
+	Ended = true;
+}

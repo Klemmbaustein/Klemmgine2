@@ -11,6 +11,8 @@ namespace engine::sound
 
 		~SoundSubsystem();
 
+		void Update();
+
 		SoundDevice* MainDevice = nullptr;
 		SoundContext* MainContext = nullptr;
 	};

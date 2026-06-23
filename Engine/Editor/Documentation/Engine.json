@@ -30,6 +30,12 @@
 			"arguments": {
 				"timeInSeconds": "The time to wait, in seconds."
 			}
+		},
+		"emptyAsset": {
+			"description": "Creates an empty asset reference with the given type.",
+			"arguments": {
+				"extension": "The file extension of the file type that is referenced."
+			}
 		}
 	},
 

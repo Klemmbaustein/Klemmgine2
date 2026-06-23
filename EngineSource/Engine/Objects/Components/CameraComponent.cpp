@@ -46,6 +46,8 @@ void engine::CameraComponent::Use()
 	}
 
 	GetRootObject()->GetScene()->Graphics.UsedCamera = &ComponentCamera;
+
+	Update();
 }
 
 void engine::CameraComponent::SetFov(float NewFov)
