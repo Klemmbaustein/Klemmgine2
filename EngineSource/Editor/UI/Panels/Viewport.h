@@ -77,6 +77,10 @@ namespace engine::editor
 		void OnItemDropped(EditorUI::DraggedItem Item);
 		bool ShowUI = false;
 		bool LastCursorVisible = false;
+		float LastVolume = 1.0f;
+
+		void OnGameFocus();
+		void OnEditorFocus();
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
 		void HighlightComponents(ObjectComponent* Target, bool Highlighted);

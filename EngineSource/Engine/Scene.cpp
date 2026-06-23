@@ -259,6 +259,9 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 			i->BeginCalled = true;
 		}
 	}
+
+	Sound->Restart();
+
 	plugin::OnNewSceneLoaded(this);
 }
 

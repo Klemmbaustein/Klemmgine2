@@ -123,6 +123,7 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 
 	Device->DeviceData->alGenAuxiliaryEffectSlots(1, &this->SoundData->Effects);
 	Device->DeviceData->alAuxiliaryEffectSlotf(this->SoundData->Effects, AL_EFFECTSLOT_GAIN, 0);
+	alListenerf(AL_GAIN, 0.0f);
 
 	auto Error = alGetError();
 
@@ -131,6 +132,13 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 		auto str = alGetString(Error);
 		Log::Error(str);
 	}
+}
+
+void engine::sound::SoundContext::Restart()
+{
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	alListenerf(AL_GAIN, 0.0f);
+	Initialized = false;
 }
 
 engine::sound::SoundContext::~SoundContext()
@@ -287,6 +295,7 @@ void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache, float Volu
 	}
 	PlaySource(Source, false, Falloff != -1);
 
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	PlayingSounds.push_back(PlayedSound{
 		.Source = Source,
 		.Buffer = Cache->Buffer,
@@ -300,7 +309,9 @@ void engine::sound::SoundContext::OnSoundStopped(PlayedSound& Sound)
 		Sound.Source->CacheRef->UseCount--;
 	}
 
-	FreeSoundSource(Sound.Source);
+	MakeCurrent();
+	alDeleteSources(1, &Sound.Source->ALSource);
+	delete Sound.Source;
 }
 
 void engine::sound::SoundContext::StopSource(SoundSource* Source)
@@ -308,6 +319,31 @@ void engine::sound::SoundContext::StopSource(SoundSource* Source)
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSourceStop(Source->ALSource);
+}
+
+void engine::sound::SoundContext::SetVolume(float NewVolume)
+{
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	MakeCurrent();
+	alListenerf(AL_GAIN, NewVolume);
+	auto Error = alGetError();
+
+	if (Error != AL_NO_ERROR)
+	{
+		auto str = alGetString(Error);
+		Log::Error(str);
+	}
+
+	Initialized = true;
+}
+
+float engine::sound::SoundContext::GetVolume()
+{
+	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	MakeCurrent();
+	ALfloat Volume = 0;
+	alGetListenerf(AL_GAIN, &Volume);
+	return Volume;
 }
 
 void engine::sound::SoundContext::PlaySound(string Path, float Volume, float Pitch)
@@ -363,6 +399,7 @@ void engine::sound::SoundContext::PlaySoundAt(string Path, float Volume, float P
 
 		if (FoundItem != CachedEffects.end())
 		{
+			FreeSoundEffect(FoundItem->second.Buffer);
 			CachedEffects.erase(FoundItem);
 		}
 		else
@@ -371,30 +408,39 @@ void engine::sound::SoundContext::PlaySoundAt(string Path, float Volume, float P
 		}
 	}
 
-	auto [Inserted, _] = CachedEffects.insert({ Path, SoundEffectCache{
+	auto c = SoundEffectCache{
 		.LastUsed = stats::Time,
 		.UseCount = 1,
 		.Buffer = Buffer,
-		} });
+	};
+
+	auto [Inserted, _] = CachedEffects.insert({ Path, c });
 
 	PlayBuffer(&Inserted->second, Volume, Pitch, Position, Falloff);
 }
 
-void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug)
+void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::DebugDraw* Debug, bool Async)
 {
-	if (BoundsModified)
+	if (Debug && BoundsModified)
 	{
 		Debug_ShowReverbAreas(Debug);
 		BoundsModified = false;
 	}
+	Vector3 Directions[2];
+	Vector3 Pos;
+	if (FromCamera)
+	{
+		Pos = FromCamera->GetPosition();
+		//alListenerf(AL_GAIN, 1);
 
-	Vector3 Pos = FromCamera->GetPosition();
-	alListenerf(AL_GAIN, 1);
-
-	Vector3 Directions[2] = {
-		FromCamera->GetForward(),
-		FromCamera->GetUp(),
-	};
+		Directions[0] = FromCamera->GetForward();
+		Directions[1] = FromCamera->GetUp();
+	}
+	else
+	{
+		Directions[0] = Vector3(0, 0, -1);
+		Directions[0] = Vector3(0, 1, 0);
+	}
 
 	ThreadPool::Main()->AddJob([this, Pos, Directions] {
 		std::lock_guard g{ ThreadData->SoundUpdateMutex };
@@ -404,22 +450,27 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::De
 
 		alListenerfv(AL_ORIENTATION, &Directions[0].X);
 
+		if (!Initialized)
+		{
+			alListenerf(AL_GAIN, 1.0f);
+			Initialized = true;
+		}
+
 		UpdateReverb(Pos);
 		UpdateReverbVolumeTree();
-	});
-
-	for (auto it = PlayingSounds.begin(); it < PlayingSounds.end(); it++)
-	{
-		ALint SourceState = 0;
-		alGetSourcei(it->Source->ALSource, AL_SOURCE_STATE, &SourceState);
-
-		if (SourceState == AL_STOPPED)
+		for (auto it = PlayingSounds.begin(); it < PlayingSounds.end(); it++)
 		{
-			OnSoundStopped(*it);
-			PlayingSounds.erase(it);
-			break;
+			ALint SourceState = 0;
+			alGetSourcei(it->Source->ALSource, AL_SOURCE_STATE, &SourceState);
+
+			if (SourceState == AL_STOPPED)
+			{
+				OnSoundStopped(*it);
+				PlayingSounds.erase(it);
+				break;
+			}
 		}
-	}
+	});
 }
 
 void engine::sound::SoundContext::FreeSoundSource(SoundSource* Source)
@@ -575,7 +626,10 @@ void engine::sound::SoundContext::SetShowDebugBounds(bool NewShowDebugBounds)
 
 void engine::sound::SoundContext::MakeCurrent() const
 {
-	alcMakeContextCurrent(SoundData->Context);
+	if (alcGetCurrentContext() != SoundData->Context)
+	{
+		alcMakeContextCurrent(SoundData->Context);
+	}
 }
 
 void engine::sound::SoundContext::UpdateReverbVolumeTree()

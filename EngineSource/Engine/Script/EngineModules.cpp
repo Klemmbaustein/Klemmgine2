@@ -30,6 +30,7 @@
 #include "Bindings/SerializeBindings.h"
 #include "Bindings/PhysicsBindings.h"
 #include "Bindings/AssetBindings.h"
+#include "Bindings/SoundBindings.h"
 #include "UI/UIBindings.h"
 
 #ifdef EDITOR
@@ -194,6 +195,20 @@ static void Scene_getManager(InterpretContext* context)
 	if (TargetScene.getValue()->Manager)
 	{
 		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject(TargetScene.getValue()->Manager));
+	}
+	else
+	{
+		context->pushValue(nullptr);
+	}
+}
+
+static void Scene_getSoundContext(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	if (TargetScene.getValue()->Sound)
+	{
+		context->pushValue(NativeModule::makePointerClass(TargetScene.getValue()->Sound));
 	}
 	else
 	{
@@ -689,6 +704,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	SerializeBindings Serialize = AddSerializeModule(EngineModule, ToContext);
 	ui::UIBindings UI = ui::AddUIModule(EngineUIModule, EngineModule, ToContext);
 	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
+	SoundBindings Sound = AddSoundModule(EngineModule, ToContext);
 
 	EngineModule.addClassConstructor(SceneType,
 		NativeFunction({}, nullptr, "Scene.new", &Scene_new));
@@ -701,6 +717,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({ FunctionArgument(StrType, "newName") }, nullptr, "setName", &Scene_setName));
+
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({ }, Sound.SoundContext, "getSoundContext", &Scene_getSoundContext));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({ }, nullptr, "setAsMain", &Scene_setAsMain));

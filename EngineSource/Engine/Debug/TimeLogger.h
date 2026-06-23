@@ -9,6 +9,8 @@ namespace engine::debug
 		~TimeLogger();
 
 		void End();
+		void Cancel();
+
 	private:
 		string Measured;
 		std::vector<Log::LogPrefix> Prefixes;
