@@ -4,6 +4,7 @@
 #include <sstream>
 #include <Core/File/TextSerializer.h>
 #include <Core/File/JsonSerializer.h>
+#include <Core/File/BinarySerializer.h>
 #include <ds/parser/types/arrayType.hpp>
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
@@ -58,6 +59,30 @@ static void SerializedObject_delete(InterpretContext* context)
 	auto Value = context->popPtr<ScriptSerializedObject>();
 
 	context->destruct(Value->KeyValueArray);
+}
+
+static void SerializedObject_at(InterpretContext* context)
+{
+	ClassRef<ScriptSerializedObject> Value = context->popValue<RuntimeClass*>();
+	RuntimeStr Name = context->popRuntimeString();
+
+	ClassRef<modules::system::ArrayData> Array = Value->KeyValueArray;
+
+	for (Size i = 0; i < Array->length; i++)
+	{
+		ClassRef<ScriptSerializedKeyValue> Val = Array->at<RuntimeClass*>(i);
+
+		RuntimeStrRef Str = Val->NameString;
+
+		if (strcmp(Str.ptr(), Name.ptr()) == 0)
+		{
+			Val->Value->addRef();
+			context->pushValue(Val->Value);
+			return;
+		}
+	}
+
+	context->pushValue(nullptr);
 }
 
 static void SerializedString_delete(InterpretContext* context)
@@ -217,9 +242,64 @@ static void Serialize_parseJsonAsset(InterpretContext* context)
 	}
 }
 
-static void Serialize_writeJsonFile(InterpretContext* context)
+static void Serialize_parseTextAsset(InterpretContext* context)
 {
-	auto value = context->popPtr<ScriptSerializedValue>();
+	auto ref = context->popPtr<AssetRef*>();
+
+	std::stringstream Stream;
+
+	Stream << resource::GetTextFile((*ref)->FilePath);
+
+	try
+	{
+		SerializedValue Value = TextSerializer::FromStream(Stream);
+		context->pushValue(MarshalSerializedValue(Value));
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(e.what());
+		context->pushValue(nullptr);
+	}
+}
+
+static void Serialize_parseBinaryAsset(InterpretContext* context)
+{
+	auto fmt = context->popRuntimeString();
+	auto ref = context->popPtr<AssetRef*>();
+	auto Stream = resource::GetBinaryFile((*ref)->FilePath);
+
+	try
+	{
+		SerializedValue Value = BinarySerializer::FromStream(Stream, fmt.ptr());
+		context->pushValue(MarshalSerializedValue(Value));
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(e.what());
+		context->pushValue(nullptr);
+	}
+}
+
+static void SerializedValue_writeBinaryFile(InterpretContext* context)
+{
+	auto Value = context->popValue<RuntimeClass*>();
+	auto fmt = context->popRuntimeString();
+	auto file = context->popRuntimeString();
+
+	try
+	{
+		BinarySerializer::ToFile(UnMarshalSerializedValue(Value).GetObject(), file.ptr(), fmt.ptr());
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(e.what());
+	}
+}
+
+static void SerializedValue_writeJsonFile(InterpretContext* context)
+{
+	ClassRef<ScriptSerializedValue> value = context->popValue<RuntimeClass*>();
+	auto PrettyPrint = context->popValue<Bool>();
 	auto fileName = context->popRuntimeString();
 
 	try
@@ -230,7 +310,7 @@ static void Serialize_writeJsonFile(InterpretContext* context)
 
 		try
 		{
-			JsonSerializer::ToStream(UnMarshalSerializedValue(value.classPtr), OutStream);
+			JsonSerializer::ToStream(UnMarshalSerializedValue(value.classPtr), OutStream, JsonSerializer::WriteOptions(PrettyPrint));
 		}
 		catch (SerializeException& e)
 		{
@@ -283,6 +363,48 @@ static void SerializedValue_toSerializedString(InterpretContext* context)
 	}
 }
 
+static void SerializedValue_asInt(InterpretContext* context)
+{
+	auto Value = context->popValue<RuntimeClass*>();
+	switch (Value->type)
+	{
+	case ScriptSerializedInt::ID: {
+		ClassRef<ScriptSerializedInt> IntValue = Value;
+		context->pushValue(IntValue->IntValue);
+		break;
+	}
+	case ScriptSerializedFloat::ID: {
+		ClassRef<ScriptSerializedFloat> FloatValue = Value;
+		context->pushValue<Int>(FloatValue->FloatValue);
+		break;
+	}
+	default:
+		context->runtimePanic("Failed to convert serialized value to int using asInt()");
+		break;
+	}
+}
+
+static void SerializedValue_asFloat(InterpretContext* context)
+{
+	auto Value = context->popValue<RuntimeClass*>();
+	switch (Value->type)
+	{
+	case ScriptSerializedInt::ID: {
+		ClassRef<ScriptSerializedInt> IntValue = Value;
+		context->pushValue<Float>(IntValue->IntValue);
+		break;
+	}
+	case ScriptSerializedFloat::ID: {
+		ClassRef<ScriptSerializedFloat> FloatValue = Value;
+		context->pushValue(FloatValue->FloatValue);
+		break;
+	}
+	default:
+		context->runtimePanic("Failed to convert serialized value to int using asFloat()");
+		break;
+	}
+}
+
 SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::LanguageContext* ToContext)
 {
 	auto StrType = ToContext->registry->getEntry<StringType>();
@@ -305,11 +427,25 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addClassMethod(out.SerializedValue, NativeFunction({},
 		StrType->nullable, "toSerializedString", &SerializedValue_toSerializedString));
 
+	Serialize.addClassMethod(out.SerializedValue, NativeFunction({},
+		IntInst, "asInt", &SerializedValue_asInt));
+
+	Serialize.addClassMethod(out.SerializedValue, NativeFunction({},
+		FloatInst, "asFloat", &SerializedValue_asFloat));
+
+	Serialize.addClassMethod(out.SerializedValue, NativeFunction({ FunctionArgument(StrType, "fileName"), FunctionArgument(StrType, "formatIdentifier") },
+		nullptr, "writeBinaryFile", &SerializedValue_writeBinaryFile));
+
+	Serialize.addClassMethod(out.SerializedValue, NativeFunction(
+		{ FunctionArgument(StrType, "filePath"), FunctionArgument(BoolInst, "prettyPrint") },
+		nullptr, "writeJsonFile", &SerializedValue_writeJsonFile));
+
 	auto ObjectValue = Serialize.createClass<ScriptSerializedObject>("SerializedObject", out.SerializedValue);
 	auto ArrayValue = Serialize.createClass<ScriptSerializedArray>("SerializedArray", out.SerializedValue);
 	auto IntValue = Serialize.createClass<ScriptSerializedInt>("SerializedInt", out.SerializedValue);
 	auto FloatValue = Serialize.createClass<ScriptSerializedFloat>("SerializedFloat", out.SerializedValue);
 	auto StringValue = Serialize.createClass<ScriptSerializedString>("SerializedString", out.SerializedValue);
+	auto BoolValue = Serialize.createClass<ScriptSerializedString>("SerializedBool", out.SerializedValue);
 	out.SerializedKeyValue = Serialize.createClass<ScriptSerializedKeyValue>("SerializedKeyValue");
 
 	auto KeyValueArrayType = ToContext->registry->getArray(out.SerializedKeyValue);
@@ -374,6 +510,12 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 		.type = StrType,
 		});
 
+	BoolValue->members.push_back(ClassMember{
+		.name = "value",
+		.offset = DS_OFFSETOF(ScriptSerializedBool, BoolValue),
+		.type = BoolInst,
+		});
+
 	out.SerializedKeyValue->members.push_back(ClassMember{
 		.name = "name",
 		.offset = DS_OFFSETOF(ScriptSerializedKeyValue, NameString),
@@ -385,6 +527,9 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 		.offset = DS_OFFSETOF(ScriptSerializedKeyValue, Value),
 		.type = out.SerializedValue,
 		});
+
+	Serialize.addClassMethod(ObjectValue, NativeFunction({ FunctionArgument(StrType, "name") },
+		out.SerializedValue->nullable, "at", &SerializedObject_at));
 
 	Serialize.addFunction(NativeFunction({ FunctionArgument(StrType, "serializedString") },
 		ObjectValue->nullable, "parseSerializedString", &Serialize_parseSerializedString));
@@ -398,10 +543,11 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset") },
 		out.SerializedValue->nullable, "parseJsonAsset", &Serialize_parseJsonAsset));
 
-	Serialize.addFunction(NativeFunction(
-		{ FunctionArgument(StrType, "filePath"), FunctionArgument(out.SerializedValue, "data") },
-		nullptr, "writeJsonFile", &Serialize_writeJsonFile));
+	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset") },
+		ObjectValue->nullable, "parseTextAsset", &Serialize_parseTextAsset));
 
+	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset"), FunctionArgument(StrType, "formatIdentifier") },
+		out.SerializedValue->nullable, "parseBinaryAsset", &Serialize_parseBinaryAsset));
 
 	ToContext->addNativeModule(Serialize);
 
@@ -428,7 +574,6 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 	{
 	case SerializedData::DataType::Object:
 	{
-
 		std::vector<ds::RuntimeClass*> Items;
 
 		for (auto& i : Value.GetObject())
@@ -447,7 +592,6 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 	}
 	case SerializedData::DataType::Array:
 	{
-
 		std::vector<ds::RuntimeClass*> Items;
 
 		for (auto& i : Value.GetArray())
@@ -466,7 +610,6 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 	}
 	case SerializedData::DataType::String:
 	{
-
 		auto str = RuntimeStrRef(Value.GetString().c_str(), Value.GetString().size());
 
 		auto NewObj = NativeModule::makeClass<ScriptSerializedString>({
@@ -478,7 +621,6 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 	}
 	case SerializedData::DataType::Int32:
 	{
-
 		auto NewObj = NativeModule::makeClass<ScriptSerializedInt>({
 			Value.GetType(),
 			Value.GetInt(),
@@ -488,7 +630,6 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 	}
 	case SerializedData::DataType::Float:
 	{
-
 		auto NewObj = NativeModule::makeClass<ScriptSerializedFloat>({
 			Value.GetType(),
 			Value.GetFloat(),
@@ -496,9 +637,17 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 
 		return NewObj;
 	}
+	case SerializedData::DataType::Boolean:
+	{
+		auto NewObj = NativeModule::makeClass<ScriptSerializedBool>({
+			Value.GetType(),
+			Value.GetBool(),
+			}, ScriptSerializedBool::ID);
+
+		return NewObj;
+	}
 	case SerializedData::DataType::Vector3:
 	{
-
 		auto NewObj = NativeModule::makeClass<ScriptSerializedVector3>({
 			Value.GetType(),
 			Value.GetVector3(),
@@ -508,7 +657,6 @@ ds::RuntimeClass* engine::script::MarshalSerializedValue(SerializedValue& Value)
 	}
 	case SerializedData::DataType::Vector2:
 	{
-
 		auto NewObj = NativeModule::makeClass<ScriptSerializedVector2>({
 			Value.GetType(),
 			Value.GetVector2(),

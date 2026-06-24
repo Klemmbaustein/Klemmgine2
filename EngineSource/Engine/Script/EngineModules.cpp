@@ -38,6 +38,8 @@
 #include <Editor/UI/Panels/Viewport.h>
 #endif
 #include <Engine/Objects/Components/SoundComponent.h>
+#include <Engine/Objects/Components/BillboardComponent.h>
+#include <Engine/Objects/Components/LightComponent.h>
 
 #define CHECK_OBJ(obj) if (!obj.getValue()) { \
 	context->runtimePanic(str::Format("Got null object: %s", __FUNCTION__).c_str()); \
@@ -557,12 +559,89 @@ static void SoundComponent_play(InterpretContext* context)
 	Component.getValue()->Play(Loop, Is3D);
 }
 
+static void SoundComponent_stop(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Component.getValue()->Stop();
+}
+
 static void SoundComponent_setVolume(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
 	Float Volume = context->popValue<Float>();
 
 	Component.getValue()->SetVolume(Volume);
+}
+
+static void SoundComponent_setPitch(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	Float Pitch = context->popValue<Float>();
+
+	Component.getValue()->SetPitch(Pitch);
+}
+
+static void SoundComponent_setRange(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	Float Range = context->popValue<Float>();
+
+	Component.getValue()->SetRange(Range);
+}
+
+static void BillboardComponent_new(InterpretContext* context)
+{
+	ClassRef<BillboardComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new BillboardComponent();
+	context->pushValue(Component);
+}
+
+static void BillboardComponent_load(InterpretContext* context)
+{
+	ClassRef<BillboardComponent*> Component = context->popValue<RuntimeClass*>();
+	ClassPtr<AssetRef*> Image = context->popPtr<AssetRef*>();
+
+	Component.getValue()->LoadImage(**Image);
+}
+
+static void BillboardComponent_setColor(InterpretContext* context)
+{
+	ClassRef<BillboardComponent*> Component = context->popValue<RuntimeClass*>();
+	Vector3 Color = context->popValue<Vector3>();
+
+	Component.getValue()->SetColor(Color);
+}
+
+static void LightComponent_new(InterpretContext* context)
+{
+	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new LightComponent();
+	context->pushValue(Component);
+}
+
+static void LightComponent_setColor(InterpretContext* context)
+{
+	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	Vector3 Color = context->popValue<Vector3>();
+
+	Component.getValue()->SetColor(Color);
+}
+
+static void LightComponent_setIntensity(InterpretContext* context)
+{
+	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	Float Intensity = context->popValue<Float>();
+
+	Component.getValue()->SetIntensity(Intensity);
+}
+
+static void LightComponent_setRange(InterpretContext* context)
+{
+	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	Float Intensity = context->popValue<Float>();
+
+	Component.getValue()->SetRange(Intensity);
 }
 
 static void CameraComponent_new(InterpretContext* context)
@@ -591,6 +670,14 @@ static void CameraComponent_screenToWorldDirection(InterpretContext* context)
 
 	Vector2 Screen = context->popValue<Vector2>();
 	context->pushValue(Component.getValue()->ScreenToWorld(Screen));
+}
+
+static void CameraComponent_worldPositionToScreen(InterpretContext* context)
+{
+	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Vector3 World = context->popValue<Vector3>();
+	context->pushValue(Component.getValue()->WorldToScreen(World));
 }
 
 #pragma endregion
@@ -996,11 +1083,45 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(BoolInst, "loop"), FunctionArgument(BoolInst, "is3D") },
 		nullptr, "play", &SoundComponent_play));
 
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ },
+		nullptr, "stop", &SoundComponent_stop));
+
 	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(FloatInst, "newVolume") },
 		nullptr, "setVolume", &SoundComponent_setVolume));
 
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(FloatInst, "newPitch") },
+		nullptr, "setPitch", &SoundComponent_setPitch));
+
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(FloatInst, "newRange") },
+		nullptr, "setRange", &SoundComponent_setRange));
+
 	EngineModule.addClassConstructor(SoundComponentType, NativeFunction({},
 		nullptr, "SoundComponent.new", &SoundComponent_new));
+
+	auto BillboardComponentType = EngineModule.createClass<BillboardComponent*>("BillboardComponent", ComponentType);
+
+	EngineModule.addClassMethod(BillboardComponentType, NativeFunction({ FunctionArgument(Assets.AssetRef, "image") },
+		nullptr, "load", &BillboardComponent_load));
+
+	EngineModule.addClassMethod(BillboardComponentType, NativeFunction({ FunctionArgument(Math.Vec3, "newColor") },
+		nullptr, "setColor", &BillboardComponent_setColor));
+
+	EngineModule.addClassConstructor(BillboardComponentType, NativeFunction({},
+		nullptr, "BillboardComponent.new", &BillboardComponent_new));
+
+	auto LightComponentType = EngineModule.createClass<LightComponent*>("LightComponent", ComponentType);
+
+	EngineModule.addClassMethod(LightComponentType, NativeFunction({ FunctionArgument(FloatInst, "newIntensity") },
+		nullptr, "setIntensity", &LightComponent_setIntensity));
+
+	EngineModule.addClassMethod(LightComponentType, NativeFunction({ FunctionArgument(FloatInst, "newRange") },
+		nullptr, "setRange", &LightComponent_setRange));
+
+	EngineModule.addClassMethod(LightComponentType, NativeFunction({ FunctionArgument(Math.Vec3, "newColor") },
+		nullptr, "setColor", &LightComponent_setColor));
+
+	EngineModule.addClassConstructor(LightComponentType, NativeFunction({},
+		nullptr, "LightComponent.new", &LightComponent_new));
 
 #ifdef EDITOR
 	EngineModule.addConstant<Bool>("WITH_EDITOR", BoolInst, true);
@@ -1066,6 +1187,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(CameraComponentType,
 		NativeFunction({ FunctionArgument(Math.Vec2, "screen") },
 			Math.Vec3, "screenToWorldDirection", &CameraComponent_screenToWorldDirection));
+
+	EngineModule.addClassMethod(CameraComponentType,
+		NativeFunction({ FunctionArgument(Math.Vec3, "worldPosition") },
+			Math.Vec3, "worldPositionToScreen", &CameraComponent_worldPositionToScreen));
 
 	EngineModule.addFunction(
 		NativeFunction({ },

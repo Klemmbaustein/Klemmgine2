@@ -69,3 +69,9 @@ Vector3 engine::graphics::Camera::ScreenToWorld(Vector2 Screen) const
 
 	return Vector3(Translated.x, Translated.y, Translated.z);
 }
+
+Vector3 engine::graphics::Camera::WorldToScreen(Vector3 World) const
+{
+	auto Translated = Projection * View * glm::vec4(World.X, World.Y, World.Z, 1.0f);
+	return Vector3(Translated.x, Translated.y, Translated.z);
+}

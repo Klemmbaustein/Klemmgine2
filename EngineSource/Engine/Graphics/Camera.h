@@ -16,6 +16,7 @@ namespace engine::graphics
 		Vector3 GetPosition() const;
 		void Update();
 		Vector3 ScreenToWorld(Vector2 Screen) const;
+		Vector3 WorldToScreen(Vector3 World) const;
 
 		float Aspect = 16.0f / 9.0f;
 		float FOV = 90.0f;

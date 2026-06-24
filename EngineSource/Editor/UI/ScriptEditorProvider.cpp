@@ -193,8 +193,21 @@ void engine::editor::ScriptEditorProvider::Update()
 		{
 			if (NewHoveredError.Error)
 			{
-				CreateHoverBox((new UIText(12_px, EditorUI::Theme.Text, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
-					->SetPadding(5_px), NewHoveredError.At);
+				if (NewHoveredSymbol.Symbol)
+				{
+					UIBox* b = new UIBox(false);
+					b->AddChild((new UIText(12_px, EditorUI::Theme.Text, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
+						->SetPadding(5_px));
+
+					b->AddChild(NewHoveredSymbol.GetHoverData());
+
+					CreateHoverBox(b, NewHoveredError.At);
+				}
+				else
+				{
+					CreateHoverBox((new UIText(12_px, EditorUI::Theme.Text, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
+						->SetPadding(5_px), NewHoveredError.At);
+				}
 			}
 			else
 			{
