@@ -79,6 +79,42 @@ Material* engine::graphics::Material::MakeDefault()
 	return Result;
 }
 
+Material* engine::graphics::Material::MakeBillboard(string BillboardIcon)
+{
+	auto* Result = new Material();
+
+	Result->VertexShader = "res:shader/basic.vert";
+	Result->FragmentShader = "res:shader/billboard.frag";
+
+	Field UseTextureField;
+
+	UseTextureField.Name = "u_sprite";
+	UseTextureField.FieldType = Field::Type::Texture;
+	TextureOptions Options;
+	Options.MipMaps = false;
+	Options.TextureBorders = TextureOptions::Border;
+
+	UseTextureField.TextureValue.Name = new MatTexture(BillboardIcon, Options);
+	UseTextureField.TextureValue.Value = nullptr;
+
+	Field ColorField;
+
+	ColorField.Name = "u_color";
+	ColorField.FieldType = Field::Type::Vec3;
+	ColorField.Vec3 = 1;
+
+	Result->Fields = {
+		UseTextureField,
+		ColorField,
+	};
+
+	Result->IsTransparent = true;
+	Result->VerifyUniforms();
+	Result->UpdateShader();
+
+	return Result;
+}
+
 engine::graphics::Material::Material()
 {
 }

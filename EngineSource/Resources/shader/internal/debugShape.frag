@@ -6,6 +6,7 @@ uniform vec3 u_color = vec3(1, 0, 0);
 
 vec3 fragment()
 {
-    opacity = 0.25;
-    return u_color;
+	opacity = 0.25;
+	affectAO = false;
+	return applyFog(u_color);
 }

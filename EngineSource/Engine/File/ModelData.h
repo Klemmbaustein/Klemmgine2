@@ -71,6 +71,7 @@ namespace engine
 
 		static GraphicsModel* UnitCube();
 		static GraphicsModel* UnitPlane();
+		static GraphicsModel* Billboard();
 
 		static void ClearAll();
 

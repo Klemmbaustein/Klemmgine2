@@ -47,9 +47,7 @@ Engine* engine::Engine::Init(std::function<void(Engine*)> LoadSystems)
 	Instance->LoadSubsystem(new PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
-#ifdef ENGINE_ENABLE_SOUND
 	Instance->LoadSubsystem(new sound::SoundSubsystem());
-#endif
 	Instance->LoadSubsystem(new script::ScriptSubsystem());
 	Instance->LoadSubsystem(new SceneSubsystem());
 

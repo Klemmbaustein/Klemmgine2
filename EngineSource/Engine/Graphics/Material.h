@@ -12,6 +12,7 @@ namespace engine::graphics
 		Material(AssetRef File);
 
 		static Material* MakeDefault();
+		static Material* MakeBillboard(string BillboardIcon);
 
 		Material();
 		Material(const Material&) = delete;

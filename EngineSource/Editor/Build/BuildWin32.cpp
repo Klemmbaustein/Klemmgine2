@@ -70,7 +70,7 @@ void engine::editor::BuildProjectWinX64(BuildOptions Options)
 
 	string Path = editor::GetEditorPath() + "/..";
 
-	if (!BuildProjectExecuteCommand("cmake -S " + Path + " -B " + OutPath + "/out/win-x64/ -Wno-deprecated -DENGINE_ENABLE_SOUND=ON " + ConfigureArgs(Options), Options, BuildStage::Configure))
+	if (!BuildProjectExecuteCommand("cmake -S " + Path + " -B " + OutPath + "/out/win-x64/ -Wno-deprecated " + ConfigureArgs(Options), Options, BuildStage::Configure))
 	{
 		return;
 	}

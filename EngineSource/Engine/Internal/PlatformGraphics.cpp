@@ -53,6 +53,11 @@ void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 	}
 }
 
+static COLORREF ConvertWindowsColor(kui::Vec3f InColor)
+{
+	return RGB(std::round(InColor.X * 255), std::round(InColor.Y * 255), std::round(InColor.Z * 255));
+}
+
 void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
 	kui::Vec3f BorderColor, bool RoundCorners, kui::Window* Window)
 {
@@ -61,7 +66,7 @@ void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
 	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(w->SDLWindow),
 		SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 
-	auto CaptionRgb = RGB(Color.X * 255, Color.Y * 255, Color.Z * 255);
+	auto CaptionRgb = ConvertWindowsColor(Color);
 
 	DwmSetWindowAttribute(
 		hwnd, DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR,
@@ -69,7 +74,7 @@ void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
 
 	if (!w->IsMain)
 	{
-		auto BorderRgb = RGB(BorderColor.X * 255, BorderColor.Y * 255, BorderColor.Z * 255);
+		auto BorderRgb = ConvertWindowsColor(BorderColor);
 
 		DwmSetWindowAttribute(
 			hwnd, DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR,

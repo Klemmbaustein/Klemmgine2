@@ -142,7 +142,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 	std::map<string, ListObject> ObjectTree;
 
 	auto& SceneMap = ObjectTree.insert(
-		{ Name, ListObject{.Name = Name} }
+		{ Name, ListObject{.Name = Name, .FromScene = Current} }
 	).first->second;
 
 
@@ -198,9 +198,25 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		}
 		LastWasSelected = Obj.Selected;
 
-		Elem->SetIcon(!Obj.From ? EditorUI::Asset("Folder.png") : EditorUI::Instance->ObjectIcons.GetObjectIcon(Obj.From->TypeID));
+		if (!Obj.FromScene)
+		{
+			Elem->SetIcon(!Obj.From ? EditorUI::Asset("Folder.png") : EditorUI::Instance->ObjectIcons.GetObjectIcon(Obj.From->TypeID));
+		}
+		else
+		{
+			SceneManager* Manager = Obj.FromScene->Manager;
 
-		bool HasChildren = Obj.Children.size();
+			if (Manager)
+			{
+				Elem->SetIcon(EditorUI::Instance->ObjectIcons.GetObjectIcon(Manager->TypeID));
+			}
+			else
+			{
+				Elem->SetIcon(EditorUI::Asset("Scene.png"));
+			}
+		}
+
+		bool HasChildren = Obj.Children.size() && !Obj.FromScene;
 		bool IsCollapsed = false;
 
 		if (HasChildren)
@@ -208,9 +224,10 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 			IsCollapsed = Collapsed.contains(Obj.Name);
 			Elem->SetArrowImage(IsCollapsed ? EditorUI::Asset("RightArrow.png") : EditorUI::Asset("DownArrow.png"));
 		}
-
-		if (Obj.Children.empty())
+		else
+		{
 			delete Elem->arrow;
+		}
 
 		Elem->button->OnClicked = [this, Obj]() {
 			if (!input::IsKeyHeld(input::Key::SHIFT))
@@ -218,7 +235,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 
 			if (Obj.From)
 				Viewport::Current->SelectedObjects.insert(Obj.From);
-			else
+			else if (!Obj.FromScene)
 			{
 				if (Collapsed.contains(Obj.Name))
 				{
@@ -233,7 +250,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 		};
 		Heading->listBox->AddChild(Elem);
 
-		if (HasChildren && !IsCollapsed)
+		if ((HasChildren && !IsCollapsed) || Obj.FromScene)
 		{
 			AddListObjects(Obj.Children, Depth + 1, LastWasSelected);
 		}

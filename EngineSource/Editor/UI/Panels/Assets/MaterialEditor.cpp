@@ -148,7 +148,8 @@ void engine::editor::MaterialEditor::LoadUI()
 	MaterialSettings->CreateNewHeading("Material properties");
 	MaterialSettings->AddAssetRefEntry("Vertex shader", VertexShader, OnShaderChanged, true);
 	MaterialSettings->AddAssetRefEntry("Fragment shader", FragmentShader, OnShaderChanged, true);
-
+	MaterialSettings->AddBooleanEntry("Transparent", LoadedMaterial->IsTransparent, OnShaderChanged);
+	MaterialSettings->AddBooleanEntry("Two-sided", LoadedMaterial->IsTwoSided, OnShaderChanged);
 
 	Background->UpdateElement();
 

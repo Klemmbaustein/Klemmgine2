@@ -26,6 +26,7 @@ namespace engine::editor
 			string Name;
 			SceneObject* From = nullptr;
 			bool Selected = false;
+			Scene* FromScene = nullptr;
 			std::map<string, ListObject> Children;
 		};
 
