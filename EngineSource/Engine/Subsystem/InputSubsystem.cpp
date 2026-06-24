@@ -9,11 +9,7 @@ engine::subsystem::InputSubsystem::InputSubsystem()
 	: Subsystem("Input", Log::LogColor::Magenta)
 {
 	THIS_SUBSYSTEM_DEPENDS_ON(VideoSubsystem);
-#if !EDITOR
 	input::ShowMouseCursor = false;
-#else
-	input::ShowMouseCursor = true;
-#endif
 }
 
 void engine::subsystem::InputSubsystem::NextInputUpdate()

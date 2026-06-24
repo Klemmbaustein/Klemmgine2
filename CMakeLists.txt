@@ -122,9 +122,11 @@ set(CMAKE_BUILD_TYPE "Release")
 set(ALSOFT_ENABLE_MODULES OFF)
 add_subdirectory("Dependencies/openal-soft" EXCLUDE_FROM_ALL)
 
-# OpenAL soft uses deprecated GSL functions.
-target_compile_options(OpenAL PRIVATE "/wd4875")
-target_compile_options(alsoft.common PRIVATE "/wd4875")
+if(MSVC)
+	# OpenAL soft uses deprecated GSL functions.
+	target_compile_options(OpenAL PRIVATE "/wd4875")
+	target_compile_options(alsoft.common PRIVATE "/wd4875")
+endif()
 
 set(CMAKE_BUILD_TYPE "${OLD_BUILD_TYPE}")
 set(BUILD_SHARED_LIBS OFF)

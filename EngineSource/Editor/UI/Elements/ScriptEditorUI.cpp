@@ -48,21 +48,21 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 		return {
 			DropdownMenu::Option{
 				.Name = "Trim whitespace on save",
-				.Icon = TrimWhitespace ? EditorUI::Asset("Dot.png") : "",
+				.Icon = TrimWhitespace ? EditorUI::Asset("Check.png") : "",
 				.OnClicked = [TrimWhitespace]() {
 					Settings::GetInstance()->Script.SetSetting("trimWhitespace", !TrimWhitespace);
 				},
 			},
 			DropdownMenu::Option{
 				.Name = "Use vertical document tab list",
-				.Icon = UseVerticalTabs ? EditorUI::Asset("Dot.png") : "",
+				.Icon = UseVerticalTabs ? EditorUI::Asset("Check.png") : "",
 				.OnClicked = [UseVerticalTabs]() {
 					Settings::GetInstance()->Script.SetSetting("useVerticalTabs", !UseVerticalTabs);
 				},
 			},
 			DropdownMenu::Option{
 				.Name = "Show editor MiniMap",
-				.Icon = ShowMiniMap ? EditorUI::Asset("Dot.png") : "",
+				.Icon = ShowMiniMap ? EditorUI::Asset("Check.png") : "",
 				.OnClicked = [ShowMiniMap]() {
 					Settings::GetInstance()->Script.SetSetting("miniMap", !ShowMiniMap);
 				},

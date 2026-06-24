@@ -311,7 +311,7 @@ engine::editor::EditorUI::EditorUI()
 
 	AddMenuBarItem("Scene",
 		{
-			DropdownMenu::Option("Save", "Alt+S", Asset("Save.png")),
+			DropdownMenu::Option("Save", "Ctrl+Alt+S", Asset("Save.png")),
 			DropdownMenu::Option("Open", "", Asset("Open.png")),
 			DropdownMenu::Option("Run", "F5", Asset("Run.png"), []() {
 				Viewport::Current->Run();
@@ -323,8 +323,8 @@ engine::editor::EditorUI::EditorUI()
 		});
 	AddMenuBarItem("Window",
 		{
-			DropdownMenu::Option("Save layout"),
-			DropdownMenu::Option("Load layout"),
+			//DropdownMenu::Option("Save layout"),
+			//DropdownMenu::Option("Load layout"),
 			DropdownMenu::Option{
 				.Name = "Panels",
 				.SubMenu = GetPanelMenuOptions()
@@ -552,8 +552,7 @@ void engine::editor::EditorUI::AddMenuBarItem(string Name, std::vector<DropdownM
 	auto* btn = new MenuBarButton();
 	btn->SetName(Name);
 
-	btn->button->OnClicked = [btn, Options]()
-	{
+	btn->button->OnClicked = [btn, Options]() {
 		new DropdownMenu(Options, btn->GetPosition());
 	};
 	MenuBar->AddChild(btn);

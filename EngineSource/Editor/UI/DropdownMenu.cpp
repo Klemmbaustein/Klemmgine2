@@ -97,7 +97,7 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 
 			if (!i->Shortcut.empty())
 			{
-				Box->AddChild((new UIText(10_px, EditorUI::Theme.DarkText, i->Shortcut, EditorUI::EditorFont))
+				Box->AddChild((new UIText(UISize::Pixels(9.5f), EditorUI::Theme.DarkText, i->Shortcut, EditorUI::EditorFont))
 					->SetWrapEnabled(true, 50_px));
 			}
 			else if (!i->SubMenu.empty())

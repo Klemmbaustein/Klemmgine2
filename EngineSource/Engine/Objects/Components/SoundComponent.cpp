@@ -21,6 +21,7 @@ void engine::SoundComponent::Load(AssetRef Sound)
 
 	if (!RootObject)
 	{
+		Log::Warn(str::Format("Tried to play sound %s but the component is not attached to anything so there is no scene to play sound in.", Sound.FilePath.c_str()));
 		return;
 	}
 
@@ -35,6 +36,10 @@ void engine::SoundComponent::Load(AssetRef Sound)
 	if (Buffer)
 	{
 		Source = Context->CreateSoundSource(Buffer);
+	}
+	else
+	{
+		Log::Warn("Failed to load sound effect: " + Sound.FilePath);
 	}
 }
 

@@ -21,6 +21,7 @@
 #include <Editor/UI/Panels/PropertyPanel.h>
 #include <Editor/UI/EditorUI.h>
 #endif
+#include <Engine/ProjectFile.h>
 
 using namespace ds;
 using namespace ds::modules::system::async;

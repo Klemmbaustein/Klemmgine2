@@ -44,7 +44,7 @@ engine::editor::ModelEditor::ModelEditor(AssetRef ModelFile)
 		[this]() -> std::vector<DropdownMenu::Option> {
 		return {
 			DropdownMenu::Option("Show bounding box", "",
-				this->ShouldShowBounds ? EditorUI::Asset("Dot.png") : "", [this] {
+				this->ShouldShowBounds ? EditorUI::Asset("Check.png") : "", [this] {
 				this->ShouldShowBounds = !this->ShouldShowBounds;
 				this->ShowBounds();
 				OnModelChanged();
