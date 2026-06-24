@@ -68,3 +68,8 @@ Vector3 engine::CameraComponent::ScreenToWorld(Vector2 Screen) const
 {
 	return ComponentCamera.ScreenToWorld(Screen);
 }
+
+Vector3 engine::CameraComponent::WorldToScreen(Vector3 World) const
+{
+	return ComponentCamera.WorldToScreen(World);
+}

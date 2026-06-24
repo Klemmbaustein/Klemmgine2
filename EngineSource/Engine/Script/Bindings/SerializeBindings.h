@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <ds/native/nativeModule.hpp>
 #include <Core/File/SerializedData.h>
 
@@ -23,6 +23,12 @@ namespace engine::script
 	{
 		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedFloat");
 		ds::Float FloatValue;
+	};
+
+	struct ScriptSerializedBool : ScriptSerializedValue
+	{
+		SCRIPT_SERIALIZED_VALUE_ID("engine::serialize::SerializedBool");
+		ds::Bool BoolValue;
 	};
 
 	struct ScriptSerializedString : ScriptSerializedValue

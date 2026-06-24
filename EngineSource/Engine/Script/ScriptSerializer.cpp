@@ -1,4 +1,4 @@
-﻿#include "ScriptSerializer.h"
+#include "ScriptSerializer.h"
 #include <Engine/Script/UI/UISerializer.h>
 #include <Core/File/BinarySerializer.h>
 using namespace ds;
@@ -30,9 +30,18 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 
 		for (auto& m : i.second.members)
 		{
+			std::vector<SerializedValue> AttributeInfo;
+
+			for (auto& p : m.parameterData)
+			{
+				AttributeInfo.push_back(SerializedValue(p));
+			}
+
 			Members.Append(SerializedData(m.name, SerializedValue({
 				SerializedData("offset", int32(m.offset)),
-				SerializedData("type", int32(m.type))
+				SerializedData("type", int32(m.type)),
+				SerializedData("attrType", int32(m.attributeType)),
+				SerializedData("attrData", AttributeInfo)
 				})));
 		}
 
@@ -178,9 +187,21 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 
 		for (auto& m : Members)
 		{
+			std::vector<string> AttributeData;
+
+			if (m.Value.Contains("attrInfo"))
+			{
+				for (auto& p : m.At("attrInfo").GetArray())
+				{
+					AttributeData.push_back(p.GetString());
+				}
+			}
+
 			NewType.members.push_back(TypeMember{
 				.type = TypeId(m.Value.At("type").GetInt()),
+				.attributeType = m.Value.Contains("attrType") ? TypeId(m.Value.At("attrType").GetInt()) : 0,
 				.name = m.Name,
+				.parameterData = AttributeData,
 				.offset = BytecodeOffset(m.Value.At("offset").GetInt()),
 				});
 		}

@@ -241,6 +241,9 @@
 				"screenToWorldDirection": {
 					"description": "Converts screen coordinates (X and Y from -1 to 1 for left/right and up/down) to a vector pointing in that direction from the camera."
 				},
+				"worldPositionToScreen": {
+					"description": "Projects 3D coordinates to the screen. Returns a 3D vector, where X and Y are 2D screen coordinates and Z is depth."
+				},
 				"new": {
 					"description": "Creates a new camera component."
 				}
@@ -304,6 +307,67 @@
 				},
 				"new": {
 					"description": "Creates a new collision component."
+				}
+			}
+		},
+
+		"BillboardComponent": {
+			"description": "A component rendering a plane 3D model always facing the camera, imitating a 2D space, but appearing in the 3D world.",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"load": {
+					"description": "Loads a new billboard image from the given image file."
+				},
+				"new": {
+					"description": "Creates a new billboard component"
+				}
+			}
+		},
+
+		"LightComponent": {
+			"description": "A component emitting a light in the scene from it's origin point.",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"setColor": {
+					"description": "Sets the color the light should shine in, in an RGB format from 0-1."
+				},
+				"setIntensity": {
+					"description": "Sets the intensity of the light, where a higher value means elements close to the light will be illuminated more."
+				},
+				"setRange": {
+					"description": "Sets the range of the light in units, where a higher value means the light will shine for a larger distance. The light will stop shining entirely once the cutoff point has been reached for performance reasons, even though this might not always look right."
+				},
+				"new": {
+					"description": "Creates a new light component"
+				}
+			}
+		},
+
+		"SoundComponent": {
+			"description": "A component emitting a sound from it's origin point. The sound can be looped or positioned in 3D space.",
+			"super": "engine::ObjectComponent",
+			"methods": {
+				"load": {
+					"description": "Loads a sound file (.wav) into this component."
+				},
+				"play": {
+					"description": "Starts playback of the sound. Calling this function while the sound is already playing will reset the sound.",
+					"arguments": {
+						"loop": "True if the sound should loop.",
+						"is3D": "True if the sound should be panned/attenuated as if it was in 3D space. If false, the sound will always sound the same, no matter where the listener is."
+					}
+				},
+				"stop": {
+					"description": "Stops playback of the currently playing sound."
+				},
+				"setVolume": {
+					"description": "Sets the volume of the sound source. A volume of 1 means the sound is as loud as it was defined in the sound file."
+				},
+				"setRange": {
+					"description": "Sets the range of the sound in units. Sounds have a distance model of 1/distance, so they never become fully unhearable, but past this point they become practically inaudible."
+				},
+				"new": {
+					"description": "Creates a new sound component"
 				}
 			}
 		},
