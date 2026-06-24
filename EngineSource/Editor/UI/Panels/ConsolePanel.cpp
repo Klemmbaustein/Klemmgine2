@@ -70,11 +70,11 @@ engine::editor::ConsolePanel::ConsolePanel()
 		new DropdownMenu(
 			{
 				DropdownMenu::Option("Clear log now", "", EditorUI::Asset("Reload.png"), &Log::Clear, {}, true),
-				DropdownMenu::Option("Clear log when game starts", "", ClearConsole ? EditorUI::Asset("Dot.png") : "",
+				DropdownMenu::Option("Clear log when game starts", "", ClearConsole ? EditorUI::Asset("Check.png") : "",
 					[ClearConsole] {
 					Settings::GetInstance()->Console.SetSetting("clearLogWhenGameStarts", !ClearConsole);
 				}),
-				DropdownMenu::Option("Verbose log messages", "", VerboseLog ? EditorUI::Asset("Dot.png") : "",
+				DropdownMenu::Option("Verbose log messages", "", VerboseLog ? EditorUI::Asset("Check.png") : "",
 					[VerboseLog] {
 					Settings::GetInstance()->Console.SetSetting("verboseLog", !VerboseLog);
 				}),

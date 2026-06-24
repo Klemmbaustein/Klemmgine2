@@ -5,6 +5,7 @@
 #include <Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Engine.h>
 #include <Engine/Graphics/Effects/PostProcess.h>
+#include <Core/Platform/Platform.h>
 #include <Engine/Input.h>
 #include <Core/File/TextSerializer.h>
 #include <Engine/Objects/MeshObject.h>
@@ -14,6 +15,7 @@
 #include <kui/UI/UISpinner.h>
 #include <sstream>
 #include <Engine/Objects/SoundObject.h>
+#include <Engine/File/Resource.h>
 using namespace engine::subsystem;
 using namespace kui;
 using namespace engine;
@@ -53,7 +55,14 @@ engine::editor::Viewport::Viewport()
 	ViewportToolbar->AddDropdown("View", EditorUI::Asset("Options.png"), std::bind(&Viewport::GetViewDropdown, this));
 
 	ViewportToolbar->AddButton("Run", EditorUI::Asset("Run.png"),
-		std::bind(&Viewport::Run, this));
+		std::bind(&Viewport::Run, this), [this] {
+		return std::vector<DropdownMenu::Option>{
+			DropdownMenu::Option("Launch in separate process (WIP)", "", LaunchSeparateProcess ? EditorUI::Asset("Check.png") : "",
+				[this] {
+				LaunchSeparateProcess = !LaunchSeparateProcess;
+			})
+		};
+	});
 
 	ViewportStatusText = new UIText(UISize::Pixels(11), EditorUI::Theme.Text, "", EditorUI::EditorFont);
 	ViewportStatusText
@@ -229,14 +238,14 @@ std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 	std::vector Result = {
 		DropdownMenu::Option{
 			.Name = "Show Game UI",
-			.Icon = this->ShowUI ? EditorUI::Asset("Dot.png") : "",
+			.Icon = this->ShowUI ? EditorUI::Asset("Check.png") : "",
 			.OnClicked = [this] {
 				this->ShowUI = !this->ShowUI;
 			},
 		},
 		DropdownMenu::Option{
 			.Name = "Show Grid",
-			.Icon = this->ShowGrid ? EditorUI::Asset("Dot.png") : "",
+			.Icon = this->ShowGrid ? EditorUI::Asset("Check.png") : "",
 			.OnClicked = [this] {
 				this->ShowGrid = !this->ShowGrid;
 			},
@@ -249,7 +258,7 @@ std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 
 		Result.push_back(DropdownMenu::Option{
 			.Name = "Show Sound Volumes",
-			.Icon = SoundBoundsVisible ? EditorUI::Asset("Dot.png") : "",
+			.Icon = SoundBoundsVisible ? EditorUI::Asset("Check.png") : "",
 			.OnClicked = [this] {
 				auto Current = Scene::GetMain();
 				if (Current)
@@ -664,6 +673,12 @@ void engine::editor::Viewport::OnItemDropped(EditorUI::DraggedItem Item)
 
 void engine::editor::Viewport::Run()
 {
+	if (LaunchSeparateProcess && resource::AllowLocalFiles)
+	{
+		platform::Execute("\"" + platform::GetExecutablePath() + "\" -noEditor");
+		return;
+	}
+
 	if (Engine::IsPlaying)
 	{
 		Engine::GetSubsystem<EditorSubsystem>()->StopProject();

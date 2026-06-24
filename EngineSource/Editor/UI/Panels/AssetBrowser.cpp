@@ -105,7 +105,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 
 	AddShortcut(kui::Key::d, CtrlMod, [this] {
-		EditorUI::CreateDirectory(GetPathDisplayName() + "Folder");
+		AssetBrowser::RenameFile(EditorUI::CreateDirectory(GetPathDisplayName() + "Folder"), true);
 	});
 
 	AddShortcut(kui::Key::n, CtrlMod, [this] {
@@ -578,7 +578,7 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 		.OnClicked = [this, WorkDir, OnAddCallback]() {
 			if (OnAddCallback)
 				OnAddCallback();
-			AssetBrowser::RenameFile(EditorUI::CreateDirectory(WorkDir + "/Folder"));
+			AssetBrowser::RenameFile(EditorUI::CreateDirectory(WorkDir + "/Folder"), true);
 		},
 		.Separator = true,
 		});

@@ -37,6 +37,7 @@
 #include <Editor/Editor.h>
 #include <Editor/UI/Panels/Viewport.h>
 #endif
+#include <Engine/Objects/Components/SoundComponent.h>
 
 #define CHECK_OBJ(obj) if (!obj.getValue()) { \
 	context->runtimePanic(str::Format("Got null object: %s", __FUNCTION__).c_str()); \
@@ -532,6 +533,38 @@ static void MoveComponent_getVelocity(InterpretContext* context)
 	context->pushValue(Component.getValue()->GetVelocity());
 }
 
+static void SoundComponent_new(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new SoundComponent();
+	context->pushValue(Component);
+}
+
+static void SoundComponent_load(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	ClassPtr<AssetRef*> Sound = context->popPtr<AssetRef*>();
+
+	Component.getValue()->Load(**Sound);
+}
+
+static void SoundComponent_play(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	Bool Is3D = context->popValue<Bool>();
+	Bool Loop = context->popValue<Bool>();
+
+	Component.getValue()->Play(Loop, Is3D);
+}
+
+static void SoundComponent_setVolume(InterpretContext* context)
+{
+	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	Float Volume = context->popValue<Float>();
+
+	Component.getValue()->SetVolume(Volume);
+}
+
 static void CameraComponent_new(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
@@ -954,6 +987,20 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(MoveComponentType,
 		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") },
 			nullptr, "setVelocity", &MoveComponent_setVelocity));
+
+	auto SoundComponentType = EngineModule.createClass<SoundComponent*>("SoundComponent", ComponentType);
+
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(Assets.AssetRef, "soundFile") },
+		nullptr, "load", &SoundComponent_load));
+
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(BoolInst, "loop"), FunctionArgument(BoolInst, "is3D") },
+		nullptr, "play", &SoundComponent_play));
+
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(FloatInst, "newVolume") },
+		nullptr, "setVolume", &SoundComponent_setVolume));
+
+	EngineModule.addClassConstructor(SoundComponentType, NativeFunction({},
+		nullptr, "SoundComponent.new", &SoundComponent_new));
 
 #ifdef EDITOR
 	EngineModule.addConstant<Bool>("WITH_EDITOR", BoolInst, true);

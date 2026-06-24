@@ -66,6 +66,7 @@ namespace engine::editor
 
 		bool GetShowUI();
 		bool ShowGrid = true;
+		bool LaunchSeparateProcess = false;
 
 		std::vector<DropdownMenu::Option> GetViewDropdown();
 		MeshComponent* Grid = nullptr;

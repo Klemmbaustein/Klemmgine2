@@ -55,7 +55,10 @@ Engine* engine::Engine::Init(std::function<void(Engine*)> LoadSystems)
 		LoadSystems(Instance);
 
 #ifdef EDITOR
-	Instance->LoadSubsystem(new editor::EditorSubsystem());
+	if (!launchArgs::GetArg("noEditor"))
+	{
+		Instance->LoadSubsystem(new editor::EditorSubsystem());
+	}
 #endif
 
 	return Instance;
