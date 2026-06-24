@@ -1,5 +1,6 @@
 #include "ScenePanel.h"
 #include <Editor/UI/Panels/Viewport.h>
+#include <Engine/Objects/Scene/SceneManager.h>
 
 engine::editor::ScenePanel::ScenePanel()
 	: EditorPanel("Scene", "ScenePanel")
@@ -26,6 +27,7 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 {
 	Properties->SetMinSize(this->Size);
 	Properties->SetMaxSize(this->Size);
+	Properties->SetPadding(2_px);
 	CurrentScene = Target;
 	Properties->Clear();
 
@@ -56,7 +58,9 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 
 	Id = Target->Manager ? Target->Manager->TypeID : 0;
 
-	Properties->AddClassEntry("Manager class", Id, str::Hash("Engine/Scene/SceneManager"), [this, Target, OnChanged] {
+	Properties->CreateNewHeading("Logic");
+
+	Properties->AddClassEntry("Manager class", Id, SceneManager::ObjectType, [this, Target, OnChanged] {
 		Target->LoadManagerFromID(Id);
 		OnChanged();
 	}, true);

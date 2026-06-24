@@ -20,7 +20,6 @@ option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF)
 option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripting only)" OFF)
 option(ENGINE_BUILD_ID "Build identifier" "")
-option(ENGINE_ENABLE_SOUND "Enable sound" ON)
 
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
@@ -123,11 +122,9 @@ set(CMAKE_BUILD_TYPE "Release")
 set(ALSOFT_ENABLE_MODULES OFF)
 add_subdirectory("Dependencies/openal-soft" EXCLUDE_FROM_ALL)
 
-if(MSVC AND ENGINE_ENABLE_SOUND)
-	# OpenAL soft uses deprecated GSL functions.
-	target_compile_options(OpenAL PRIVATE "/wd4875")
-	target_compile_options(alsoft.common PRIVATE "/wd4875")
-endif()
+# OpenAL soft uses deprecated GSL functions.
+target_compile_options(OpenAL PRIVATE "/wd4875")
+target_compile_options(alsoft.common PRIVATE "/wd4875")
 
 set(CMAKE_BUILD_TYPE "${OLD_BUILD_TYPE}")
 set(BUILD_SHARED_LIBS OFF)
@@ -166,10 +163,6 @@ endif()
 
 if(USE_ENGINEMAIN)
 	target_compile_definitions(KlemmgineLib PRIVATE USE_ENGINEMAIN)
-endif()
-
-if(ENGINE_ENABLE_SOUND)
-	target_compile_definitions(KlemmgineLib PRIVATE ENGINE_ENABLE_SOUND)
 endif()
 
 if(ENGINE_SERVER)

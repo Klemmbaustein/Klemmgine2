@@ -25,6 +25,9 @@
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
 #include <Engine/Objects/MeshObject.h>
+#include <Engine/Objects/SoundObject.h>
+#include <Engine/Objects/LightObject.h>
+#include <Engine/Objects/Scene/SceneManager.h>
 #include <filesystem>
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
@@ -64,6 +67,7 @@ static std::map<string, string> FileNameIcons =
 	{ "vert", "VertexShader.png" },
 	{ "frag", "FragmentShader.png" },
 	{ "ds", "Script.png" },
+	{ "wav", "Sound.png" },
 	{ "kui", "UIScript.png" },
 	{ "dir/", "Folder.png" },
 };
@@ -186,6 +190,9 @@ engine::editor::EditorUI::EditorUI()
 	InitTheme();
 
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("Sound.png"), SoundObject::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("Light.png"), LightObject::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("Scene.png"), SceneManager::ObjectType);
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	VideoSystem->OnResizedCallbacks.insert({ this, [this](Vec2ui NewSize) {

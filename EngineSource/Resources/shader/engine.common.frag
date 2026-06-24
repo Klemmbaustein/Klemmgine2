@@ -45,10 +45,6 @@ uniform int u_shadowCascadeCount = 4;
 uniform sampler2DArray u_shadowMaps;
 uniform float u_shadowBiasModifier = 0;
 
-uniform vec3 u_sceneFogColor = vec3(0.0);
-uniform float u_sceneFogRange = 0.0;
-uniform float u_sceneFogStart = 0.0;
-
 #define PCF_SIZE 5
 #define PCF_HALF_SIZE 3
 
@@ -153,7 +149,7 @@ float getShadowStrength()
 	}
 
 	float bias = (1 - (abs(dot(v_normal, u_lightDirection)))) / 75 + 0.01;
-	bias *= max((abs(u_shadowBiasModifier * 1.25)), 0.5) / 10.0;
+	bias *= max((abs(u_shadowBiasModifier)), 0.8) / 10.0;
 	if (u_shadowBiasModifier < -0.95)
 		bias *= 1.5;
 	bias *= 0.12;
@@ -194,14 +190,6 @@ float getShadowStrength()
 float getLightStrength()
 {
 	return getShadowStrength() * max(dot(v_normal, u_lightDirection), 0.0);
-}
-
-#export //!
-vec3 applyFog(vec3 color)
-{
-	return u_sceneFogRange > 0
-		? mix(color, u_sceneFogColor, pow(clamp((length(v_screenPosition) - u_sceneFogStart) / u_sceneFogRange, 0.0, 1.0), 1.25))
-		: color;
 }
 
 #export //!

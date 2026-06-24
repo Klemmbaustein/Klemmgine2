@@ -60,6 +60,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	Properties = new PropertyMenu();
 	Properties->SetMinSize(UISize::Parent(1));
 	Properties->SetMaxSize(UISize::Parent(1));
+	Properties->SetPadding(2_px);
 	Background->AddChild(Properties);
 	Properties->Clear();
 

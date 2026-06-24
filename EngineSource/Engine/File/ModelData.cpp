@@ -449,6 +449,7 @@ static void AddPlane(Vector3 Dir, Vector3 Offset, Vector3 Up, Vector3 Right, Mod
 
 static GraphicsModel* Cube = nullptr;
 static GraphicsModel* Plane = nullptr;
+static GraphicsModel* BillboardModel = nullptr;
 
 engine::GraphicsModel* engine::GraphicsModel::UnitCube()
 {
@@ -505,10 +506,36 @@ GraphicsModel* engine::GraphicsModel::UnitPlane()
 	}
 	else if (thread::IsMainThread && !Plane->Drawable)
 	{
-		Plane->Drawable = new graphics::Model(Cube->Data);
+		Plane->Drawable = new graphics::Model(Plane->Data);
 	}
 
 	return Plane;
+}
+
+GraphicsModel* engine::GraphicsModel::Billboard()
+{
+	if (!BillboardModel)
+	{
+		BillboardModel = new GraphicsModel();
+		BillboardModel->Data = new ModelData();
+
+		auto& m = BillboardModel->Data->Meshes.emplace_back(false);
+
+		AddPlane(Vector3(0, 0, 1), 0, Vector3(0, 1, 0), Vector3(1, 0, 0), m);
+
+		BillboardModel->Data->Bounds = BoundingBox(0, Vector3(1, 0, 1));
+
+		if (thread::IsMainThread)
+		{
+			BillboardModel->Drawable = new graphics::Model(BillboardModel->Data);
+		}
+	}
+	else if (thread::IsMainThread && !BillboardModel->Drawable)
+	{
+		BillboardModel->Drawable = new graphics::Model(BillboardModel->Data);
+	}
+
+	return BillboardModel;
 }
 
 void engine::GraphicsModel::ClearAll()
@@ -517,4 +544,6 @@ void engine::GraphicsModel::ClearAll()
 	Cube = nullptr;
 	delete Plane;
 	Plane = nullptr;
+	delete BillboardModel;
+	BillboardModel = nullptr;
 }
