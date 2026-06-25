@@ -50,6 +50,7 @@ void engine::editor::EngineTextEditorProvider::Update()
 void engine::editor::EngineTextEditorProvider::SetLine(size_t Index, const std::vector<kui::TextSegment>& NewLine)
 {
 	FileEditorProvider::SetLine(Index, NewLine);
+	IsChanged = true;
 	if (Index == ParentEditor->SelectionEnd.Line)
 	{
 		auto& Input = Window::GetActiveWindow()->Input;

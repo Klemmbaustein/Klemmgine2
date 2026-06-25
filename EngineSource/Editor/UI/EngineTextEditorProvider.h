@@ -43,6 +43,8 @@ namespace engine::editor
 		void TrimWhitespace(size_t IgnoreLine);
 		void ClearHovered();
 
+		bool IsChanged = false;
+
 	protected:
 
 		void UpdateAutoComplete();
