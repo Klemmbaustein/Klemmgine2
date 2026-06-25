@@ -1,0 +1,49 @@
+{
+	"type": "bindings",
+	"module": "engine::physics",
+
+	"functions": {
+		"combineHits": {
+			"description": "Combines an array of HitResults into a single HitResult with a single position and normal on which the hit occurred."
+		}
+	},
+
+	"types": {
+		"HitResult": {
+			"description": "Contains data about a hit returned by a collision query.",
+			"members": {
+				"depth": "For collisions checking for overlaps, this how much the hit overlapped.",
+				"distance": "The distance in units before a hit occurred.",
+				"impactPoint": "The point in 3D space where the hit occurred",
+				"normal": "The normal of the point that was hit, pointing away from the hit surface."
+			},
+			"methods": {
+				"getHitObject": {
+					"description": "Returns the object that was hit."
+				}
+			}
+		},
+
+		"PhysicsManager": {
+			"description": "A physics context that represents the collision of a 3D scene.",
+			"members": {
+				"isActive": {
+					"description": "True if the physics manager is active and updating. When false, collision and physics are disabled for this scene."
+				}
+			},
+
+			"methods": {
+				"rayCast": {
+					"description": "Does a ray collision check from the start point to the end point and returns the first hit that occurred.",
+					"arguments": {
+						"start": "The start position of the ray.",
+						"end": "The end position of the ray.",
+						"layer": "THe layer on which the collision check occurs.",
+						"ignoredObjects": "Objects that should be ignored when casting the ray."
+					},
+					"return": "Returns a HitResult describing the hit that occurred, or null if no collider was hit."
+				}
+			}
+		}
+	}
+}
