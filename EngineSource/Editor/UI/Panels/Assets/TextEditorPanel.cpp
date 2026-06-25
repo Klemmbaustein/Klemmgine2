@@ -80,9 +80,11 @@ void engine::editor::TextEditorPanel::OnResized()
 
 void engine::editor::TextEditorPanel::Save()
 {
+	AssetEditor::Save();
 	std::ofstream out = std::ofstream(this->EditedAsset.FilePath);
 
 	out << this->Provider->GetContent();
+	Provider->IsChanged = false;
 }
 
 void engine::editor::TextEditorPanel::OnThemeChanged()
@@ -91,4 +93,12 @@ void engine::editor::TextEditorPanel::OnThemeChanged()
 	Editor->SelectionColor = EditorUI::Theme.SelectedText;
 	Editor->CursorColor = EditorUI::Theme.Text;
 	Editor->FullRefresh();
+}
+
+void engine::editor::TextEditorPanel::Update()
+{
+	if (Provider->IsChanged)
+	{
+		OnChanged();
+	}
 }

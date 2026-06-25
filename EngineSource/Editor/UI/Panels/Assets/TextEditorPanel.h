@@ -15,6 +15,7 @@ namespace engine::editor
 		virtual void Save() override;
 
 		void OnThemeChanged() override;
+		void Update() override;
 
 	private:
 
