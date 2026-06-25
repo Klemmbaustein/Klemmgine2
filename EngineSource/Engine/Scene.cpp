@@ -208,6 +208,7 @@ engine::SceneObject* engine::Scene::CreateObjectFromID(int32 ID, Vector3 Positio
 void engine::Scene::ReloadObjects(SerializedValue* FromState)
 {
 	UICanvas::ClearAll();
+	Sound->Restart();
 
 	if (FromState)
 	{
@@ -259,8 +260,6 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 			i->BeginCalled = true;
 		}
 	}
-
-	Sound->Restart();
 
 	plugin::OnNewSceneLoaded(this);
 }

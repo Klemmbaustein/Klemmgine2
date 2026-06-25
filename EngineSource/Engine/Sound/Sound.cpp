@@ -136,6 +136,7 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 
 void engine::sound::SoundContext::Restart()
 {
+	StopAll();
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	alListenerf(AL_GAIN, 0.0f);
 	Initialized = false;
@@ -319,6 +320,15 @@ void engine::sound::SoundContext::StopSource(SoundSource* Source)
 	std::lock_guard g{ ThreadData->SoundUpdateMutex };
 	MakeCurrent();
 	alSourceStop(Source->ALSource);
+}
+
+void engine::sound::SoundContext::StopAll()
+{
+	for (auto& i : PlayingSounds)
+	{
+		OnSoundStopped(i);
+	}
+	PlayingSounds.clear();
 }
 
 void engine::sound::SoundContext::SetVolume(float NewVolume)

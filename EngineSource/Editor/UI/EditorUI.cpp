@@ -55,6 +55,7 @@ static std::map<engine::string, Vec3f> FileNameColors =
 	{ "kmdl", Vec3f(0.3f, 0.4f, 0.7f) },
 	{ "dir/", Vec3f(0.7f, 0.5f, 0) },
 	{ "ds", Vec3f(0.4f, 0.1f, 0.7f) },
+	{ "wav", Vec3f(0.1f, 0.2f, 0.4f) },
 	{ "kui", Vec3f(0.4f, 0.1f, 0.7f)},
 };
 static std::map<string, string> FileNameIcons =

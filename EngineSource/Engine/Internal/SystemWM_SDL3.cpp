@@ -13,6 +13,7 @@
 #include <kui/StringReplace.h>
 
 using namespace kui;
+using namespace kui::systemWM;
 using namespace engine::subsystem;
 using namespace engine;
 
@@ -28,7 +29,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 static std::mutex WindowCreateMutex;
 
-static std::vector<kui::systemWM::SysWindow*> ActiveWindows;
+static std::vector<SysWindow*> ActiveWindows;
 
 // SDL kind of breaks when managing multiple windows on multiple threads :(
 // This should be okay for a game engine though, since we usually only have a single window anyways.
@@ -48,6 +49,22 @@ static void MainThreadBlocking(std::function<void()> fn)
 		}, HeapFunction, true);
 	}
 }
+
+static bool EventWatch(void* userdata, SDL_Event* event)
+{
+	auto win = (SysWindow*)userdata;
+	if (event->window.windowID != SDL_GetWindowID(win->SDLWindow))
+	{
+		return true;
+	}
+	if (event->type == SDL_EVENT_WINDOW_RESIZED)
+	{
+		win->Parent->OnResized();
+		win->Parent->RedrawInternal();
+		engine::VideoSubsystem::Current->RenderUpdate();
+	}
+	return true;
+};
 
 kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 	Window* Parent, Vec2ui Size, Vec2ui Pos, std::string Title, Window::WindowFlag Flags)
@@ -129,22 +146,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 
 	if (OutWindow->IsMain && engine::Engine::Instance)
 	{
-		auto eventWatch = [](void* userdata, SDL_Event* event) -> bool {
-			auto win = (SysWindow*)userdata;
-			if (event->window.windowID != SDL_GetWindowID(win->SDLWindow))
-			{
-				return true;
-			}
-			if (event->type == SDL_EVENT_WINDOW_RESIZED)
-			{
-				win->Parent->OnResized();
-				win->Parent->RedrawInternal();
-				engine::VideoSubsystem::Current->RenderUpdate();
-			}
-			return true;
-		};
-
-		SDL_AddEventWatch(eventWatch, OutWindow);
+		SDL_AddEventWatch(EventWatch, OutWindow);
 	}
 
 #endif
@@ -235,6 +237,7 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 	SDL_GL_DestroyContext(Target->GLContext);
 
 	MainThreadBlocking([=]() {
+		SDL_RemoveEventWatch(EventWatch, Target);
 
 		for (auto i = ActiveWindows.begin(); i < ActiveWindows.end(); i++)
 		{
@@ -272,7 +275,6 @@ void kui::systemWM::DestroyWindow(SysWindow* Target)
 		{
 			SDL_DestroyCursor(Cursor);
 		}
-
 		SDL_DestroyWindow(Target->SDLWindow);
 		delete Target;
 	});

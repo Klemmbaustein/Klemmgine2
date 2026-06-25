@@ -112,6 +112,8 @@ namespace engine::sound
 		void PlaySource(SoundSource* Source, bool Loop, bool Is3D);
 		void StopSource(SoundSource* Source);
 
+		void StopAll();
+
 		void SetVolume(float NewVolume);
 		float GetVolume();
 
