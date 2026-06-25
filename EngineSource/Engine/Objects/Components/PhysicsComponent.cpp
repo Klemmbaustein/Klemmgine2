@@ -203,7 +203,7 @@ bool engine::PhysicsComponent::GetActive() const
 
 void engine::PhysicsComponent::Update()
 {
-	if (!Body->IsActive || !Body || !Body->IsCollisionEnabled)
+	if (!Body || !Body->IsActive || !Body->IsCollisionEnabled)
 	{
 		return;
 	}
