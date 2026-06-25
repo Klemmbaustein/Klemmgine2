@@ -14,6 +14,7 @@ namespace engine::script::ui
 	{
 		kui::markup::ParseResult UIData;
 		std::map<ds::TypeId, string> ClassIdMappings;
+		std::vector<string> SubFiles;
 
 	};
 

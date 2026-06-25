@@ -110,6 +110,7 @@ UIParseData engine::script::ui::UIFileParser::Parse(ds::ParseContext* Parser)
 		}
 
 		auto File = Element.FilePath + "/" + Element.FromToken.Text;
+		Result.SubFiles.push_back(File);
 
 		if (Parser->service)
 		{

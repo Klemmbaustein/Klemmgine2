@@ -238,11 +238,19 @@ RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(ReflectionObje
 
 void engine::script::ScriptSubsystem::RegisterClassForObject(ReflectionObject* Object, ds::RuntimeClass* Class)
 {
+	if (!Class)
+	{
+		return;
+	}
+
 	ScriptObjectMappings.insert({ Object, Class });
 	Object->OnDestroyedEvent.Add(this, [this, Object, Class]() {
-		*(void**)Class->getBody() = nullptr;
-		Runtime->baseContext->destruct(Class);
-		ScriptObjectMappings.erase(Object);
+		if (Class)
+		{
+			*(void**)Class->getBody() = nullptr;
+			Runtime->baseContext->destruct(Class);
+			ScriptObjectMappings.erase(Object);
+		}
 		Object->OnDestroyedEvent.Remove(this);
 	});
 }

@@ -1,4 +1,4 @@
-﻿#include "DocumentationDatabase.h"
+#include "DocumentationDatabase.h"
 #include <Core/File/JsonSerializer.h>
 #include <Core/Log.h>
 #include <filesystem>

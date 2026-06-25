@@ -12,10 +12,18 @@
 		"HitResult": {
 			"description": "Contains data about a hit returned by a collision query.",
 			"members": {
-				"depth": "For collisions checking for overlaps, this how much the hit overlapped.",
-				"distance": "The distance in units before a hit occurred.",
-				"impactPoint": "The point in 3D space where the hit occurred",
-				"normal": "The normal of the point that was hit, pointing away from the hit surface."
+				"depth": {
+					"description": "For collisions checking for overlaps, this how much the hit overlapped."
+				},
+				"distance": {
+					"description": "The distance in units before a hit occurred."
+				},
+				"impactPoint": {
+					"description": "The point in 3D space where the hit occurred."
+				},
+				"normal": {
+					"description": "The normal of the point that was hit, pointing away from the hit surface."
+				}
 			},
 			"methods": {
 				"getHitObject": {

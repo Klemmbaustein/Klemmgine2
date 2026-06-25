@@ -93,6 +93,11 @@ void engine::script::ScriptSceneObject::InitializePropertyFlags(ObjPropertyBase*
 
 void engine::script::ScriptSceneObject::LoadProperties()
 {
+	if (!this->ScriptData)
+	{
+		return;
+	}
+
 	std::map<string, ObjPropertyBase*> OldProperties;
 
 	for (auto& i : this->Properties)

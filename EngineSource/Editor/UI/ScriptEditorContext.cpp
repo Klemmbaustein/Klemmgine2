@@ -44,6 +44,13 @@ engine::editor::ScriptEditorContext::~ScriptEditorContext()
 
 void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Content, std::string Name, bool Update)
 {
+	auto& Old = ParsedUI[Name];
+
+	for (auto& i : Old.SubFiles)
+	{
+		ScriptService->removeFile(i);
+	}
+
 	script::ui::UIFileParser UIFiles;
 	UIFiles.CompileScript = [this, Update](Token className, Token derivedName, string moduleName,
 		ds::TokenStream& stream, string fileName) {
