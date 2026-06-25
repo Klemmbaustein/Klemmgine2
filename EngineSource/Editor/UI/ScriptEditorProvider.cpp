@@ -618,15 +618,10 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 		return;
 	}
 
-	std::sort(found->second.begin(), found->second.end(), []
-	(const ScriptSyntaxHighlight& a, const ScriptSyntaxHighlight& b) {
-		return a.Start < b.Start;
-	});
-
 	size_t LastStart = 0;
 	std::vector<EditorColorizeSegment> Segments;
 
-	for (ScriptSyntaxHighlight& i : found->second)
+	for (const ScriptSyntaxHighlight& i : found->second)
 	{
 		if (i.Start <= LastStart)
 		{
@@ -652,17 +647,9 @@ void engine::editor::ScriptEditorProvider::UpdateFileContent()
 
 void engine::editor::ScriptEditorProvider::UpdateFileData(const std::set<size_t> Lines)
 {
-	std::map<size_t, std::vector<ScriptSyntaxHighlight>> OldHighlights = Highlights;
+	std::map<size_t, std::set<ScriptSyntaxHighlight>> OldHighlights = Highlights;
 
 	UpdateSyntaxHighlight();
-
-	for (size_t i : Lines)
-	{
-		std::vector<TextSegment> Segments;
-		FileEditorProvider::GetLine(i, Segments);
-		UpdateLine(i, Segments);
-		Changed.insert(i);
-	}
 
 	for (size_t i = 0; i < this->Lines.size(); i++)
 	{
@@ -715,7 +702,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 			ActualStart += Colon + 1;
 		}
 
-		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
+		Highlights[i.at.position.line].insert(ScriptSyntaxHighlight{
 			.Start = ActualStart,
 			.Length = i.at.position.endPos - ActualStart,
 			.Color = FunctionColor,
@@ -733,7 +720,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 			ActualStart += Colon + 1;
 		}
 
-		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
+		Highlights[i.at.position.line].insert(ScriptSyntaxHighlight{
 			.Start = ActualStart,
 			.Length = i.at.position.endPos - ActualStart,
 			.Color = TypeColor,
@@ -742,7 +729,7 @@ void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 
 	for (auto& i : f.variables)
 	{
-		Highlights[i.at.position.line].push_back(ScriptSyntaxHighlight{
+		Highlights[i.at.position.line].insert(ScriptSyntaxHighlight{
 			.Start = i.at.position.startPos,
 			.Length = i.at.position.endPos - i.at.position.startPos,
 			.Color = i.isThis ? KeywordColor : VariableColor,
