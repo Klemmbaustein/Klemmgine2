@@ -40,15 +40,21 @@ namespace engine::script
 			{
 				auto copy = Interpreter->createCopy();
 				this->ScriptData = Class.create(copy);
-				ds::ClassRef<T> ScriptDataRef = this->ScriptData;
-				ScriptDataRef.getValue() = Value;
-				delete copy;
+				if (ScriptData)
+				{
+					ds::ClassRef<T> ScriptDataRef = this->ScriptData;
+					ScriptDataRef.getValue() = Value;
+					delete copy;
+				}
 			}
 			else
 			{
 				this->ScriptData = Class.create(Interpreter);
-				ds::ClassRef<T> ScriptDataRef = this->ScriptData;
-				ScriptDataRef.getValue() = Value;
+				if (ScriptData)
+				{
+					ds::ClassRef<T> ScriptDataRef = this->ScriptData;
+					ScriptDataRef.getValue() = Value;
+				}
 			}
 		}
 	};
