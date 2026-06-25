@@ -21,7 +21,7 @@ engine::editor::ScriptEditorProvider::ScriptEditorProvider(std::string ScriptFil
 
 	Context->OnReady.Add(this, [this]() {
 		ParentEditor->FullRefresh();
-		UpdateFileData();
+		UpdateFileData({});
 	});
 }
 
@@ -98,7 +98,7 @@ void engine::editor::ScriptEditorProvider::Commit()
 void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vector<TextSegment>& NewLine)
 {
 	EngineTextEditorProvider::SetLine(Index, NewLine);
-	Changed.push_back(Index);
+	Changed.insert(Index);
 
 	if (Connection)
 	{
@@ -615,9 +615,6 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 
 	if (found == Highlights.end())
 	{
-		std::vector<TextSegment> Segments;
-		EngineTextEditorProvider::GetLine(Line, Segments);
-		UpdateLine(Line, Segments);
 		return;
 	}
 
@@ -644,7 +641,7 @@ void engine::editor::ScriptEditorProvider::UpdateLineColorization(size_t Line)
 		LastStart = i.Start + i.Length;
 	}
 
-	ParentEditor->ColorizeLineLocking(Line, Segments);
+	ParentEditor->ColorizeLine(Line, Segments);
 }
 
 void engine::editor::ScriptEditorProvider::UpdateFileContent()
@@ -653,21 +650,46 @@ void engine::editor::ScriptEditorProvider::UpdateFileContent()
 	ScanFile();
 }
 
-void engine::editor::ScriptEditorProvider::UpdateFileData()
+void engine::editor::ScriptEditorProvider::UpdateFileData(const std::set<size_t> Lines)
 {
+	std::map<size_t, std::vector<ScriptSyntaxHighlight>> OldHighlights = Highlights;
+
 	UpdateSyntaxHighlight();
 
-	for (size_t i = 0; i < Lines.size(); i++)
+	for (size_t i : Lines)
 	{
-		UpdateLineColorization(i);
+		std::vector<TextSegment> Segments;
+		FileEditorProvider::GetLine(i, Segments);
+		UpdateLine(i, Segments);
+		Changed.insert(i);
+	}
+
+	for (size_t i = 0; i < this->Lines.size(); i++)
+	{
+		if (!ParentEditor->IsLineLoaded(i))
+		{
+			continue;
+		}
+		bool OldContains = OldHighlights.contains(i);
+		bool NewContains = Highlights.contains(i);
+
+		if (Lines.contains(i)
+			|| OldContains != NewContains
+			|| (OldContains && NewContains && OldHighlights[i] != Highlights[i]))
+		{
+			std::vector<TextSegment> Segments;
+			EngineTextEditorProvider::GetLine(i, Segments);
+			UpdateLine(i, Segments);
+			UpdateLineColorization(i);
+		}
 	}
 	ParentEditor->RefreshHighlights();
 }
 
 void engine::editor::ScriptEditorProvider::ScanFile()
 {
-	Context->Commit([this] {
-		UpdateFileData();
+	Context->Commit([this, Changed = Changed] {
+		UpdateFileData(Changed);
 	}, Queue);
 }
 
