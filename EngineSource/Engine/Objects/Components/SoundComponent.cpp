@@ -1,5 +1,6 @@
 #include "SoundComponent.h"
 #include <Engine/Scene.h>
+#include <Engine/Engine.h>
 
 engine::SoundComponent::SoundComponent()
 {
@@ -45,7 +46,7 @@ void engine::SoundComponent::Load(AssetRef Sound)
 
 void engine::SoundComponent::Play(bool Loop, bool Is3D)
 {
-	if (Context && Source)
+	if (Context && Source && Engine::IsPlaying)
 	{
 		Update();
 		Context->PlaySource(Source, Loop, Is3D);

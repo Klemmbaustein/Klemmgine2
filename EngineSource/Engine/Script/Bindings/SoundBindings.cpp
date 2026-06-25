@@ -57,6 +57,7 @@ SoundBindings engine::script::AddSoundModule(ds::NativeModule& To, ds::LanguageC
 	SoundBindings Sound;
 
 	Sound.SoundContext = Module.createClass<SoundContext*>("SoundContext");
+	Sound.SoundContext->allowDirectConstructorCall = false;
 
 	Module.addClassMethod(Sound.SoundContext, NativeFunction({ FunctionArgument(AssetType, "sound"),
 		FunctionArgument(FloatInst, "volume"), FunctionArgument(FloatInst, "pitch") },
@@ -64,7 +65,7 @@ SoundBindings engine::script::AddSoundModule(ds::NativeModule& To, ds::LanguageC
 
 	Module.addClassMethod(Sound.SoundContext, NativeFunction({ FunctionArgument(AssetType, "sound"),
 		FunctionArgument(FloatInst, "volume"), FunctionArgument(FloatInst, "pitch"),
-		FunctionArgument(VecType, "position"), FunctionArgument(FloatInst, "falloff") },
+		FunctionArgument(VecType, "position"), FunctionArgument(FloatInst, "range") },
 		nullptr, "playSoundAt", &SoundContext_playSoundAt));
 
 	Module.addFunction(NativeFunction({},
