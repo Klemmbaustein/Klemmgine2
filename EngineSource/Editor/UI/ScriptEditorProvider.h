@@ -15,9 +15,10 @@ namespace engine::editor
 		size_t Length = 0;
 		kui::Vec3f Color;
 
-		bool operator==(const ScriptSyntaxHighlight& b) const
+		bool operator==(const ScriptSyntaxHighlight&) const = default;
+		bool operator<(const ScriptSyntaxHighlight& b) const
 		{
-			return Start == b.Start && Length == b.Length && Color == b.Color;
+			return Start < b.Start;
 		}
 	};
 
@@ -99,7 +100,7 @@ namespace engine::editor
 		void* HoveredData = nullptr;
 		kui::Vec2f LastCursorPosition;
 
-		std::map<size_t, std::vector<ScriptSyntaxHighlight>> Highlights;
+		std::map<size_t, std::set<ScriptSyntaxHighlight>> Highlights;
 		void UpdateLineColorization(size_t Line);
 
 		void UpdateFileContent();
