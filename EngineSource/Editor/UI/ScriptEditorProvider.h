@@ -5,6 +5,7 @@
 #include "EngineTextEditorProvider.h"
 #include "ScriptEditorContext.h"
 #include <Core/ThreadMessages.h>
+#include <set>
 
 namespace engine::editor
 {
@@ -13,6 +14,11 @@ namespace engine::editor
 		size_t Start = 0;
 		size_t Length = 0;
 		kui::Vec3f Color;
+
+		bool operator==(const ScriptSyntaxHighlight& b) const
+		{
+			return Start == b.Start && Length == b.Length && Color == b.Color;
+		}
 	};
 
 	struct SymbolDefinition
@@ -85,7 +91,7 @@ namespace engine::editor
 
 	private:
 		thread::ThreadMessagesRef Queue;
-		std::vector<size_t> Changed;
+		std::set<size_t> Changed;
 		size_t CompletionUsingLine = 0;
 
 		kui::Timer HoverTime;
@@ -97,7 +103,7 @@ namespace engine::editor
 		void UpdateLineColorization(size_t Line);
 
 		void UpdateFileContent();
-		void UpdateFileData();
+		void UpdateFileData(const std::set<size_t> Lines);
 		void UpdateSyntaxHighlight();
 
 		std::optional<HoverSymbolData> GetHoveredFunction(kui::EditorPosition Position, ds::ScannedFile& File);
