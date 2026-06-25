@@ -60,7 +60,8 @@ static void UIScriptCanvas_getChild(InterpretContext* context)
 
 	if (!found)
 	{
-		ENGINE_ASSERT_MESSAGE(false, text.ptr());
+		context->runtimePanic("UIScriptCanvas.getChild() failed.");
+		return;
 	}
 
 	context->pushValue(NativeModule::makePointerClass<UIBox>(found));
@@ -94,10 +95,51 @@ static void UIScriptElement_getChild(InterpretContext* context)
 
 	if (!found)
 	{
-		ENGINE_ASSERT_MESSAGE(false, text.ptr());
+		context->runtimePanic("UIScriptElement.getChild() failed.");
+		return;
 	}
 
 	context->pushValue(NativeModule::makePointerClass<UIBox>(found));
+}
+
+static void UIScriptElement_setString(InterpretContext* context)
+{
+	ClassRef<ScriptUIElement*> cls = context->popValue<RuntimeClass*>();
+
+	auto text = context->popRuntimeString();
+	auto name = context->popRuntimeString();
+
+	cls.getValue()->SetVariable(name.ptr(), AnyContainer(text.ptr()));
+}
+
+static void UIScriptElement_setVec3(InterpretContext* context)
+{
+	ClassRef<ScriptUIElement*> cls = context->popValue<RuntimeClass*>();
+
+	kui::Vec3f vec3 = context->popValue<kui::Vec3f>();
+	auto name = context->popRuntimeString();
+
+	cls.getValue()->SetVariable(name.ptr(), AnyContainer(vec3));
+}
+
+static void UIScriptElement_setSizeVec(InterpretContext* context)
+{
+	ClassRef<ScriptUIElement*> cls = context->popValue<RuntimeClass*>();
+
+	SizeVec size = context->popValue<SizeVec>();
+	auto name = context->popRuntimeString();
+
+	cls.getValue()->SetVariable(name.ptr(), AnyContainer(size));
+}
+
+static void UIScriptElement_setSize(InterpretContext* context)
+{
+	ClassRef<ScriptUIElement*> cls = context->popValue<RuntimeClass*>();
+
+	UISize size = context->popValue<UISize>();
+	auto name = context->popRuntimeString();
+
+	cls.getValue()->SetVariable(name.ptr(), AnyContainer(size));
 }
 
 static void UIBox_new(InterpretContext* context)
@@ -604,6 +646,22 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassMethod(ElementType,
 		NativeGenericFunction({ FunctionArgument(StrType, "name") }, { GenericArgument("T", UIBoxType) },
 			GenericArgumentType::getInstance(0, true), "getChild", &UIScriptElement_getChild));
+
+	To.addClassMethod(ElementType,
+		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(StrType, "value") },
+			nullptr, "setString", &UIScriptElement_setString));
+
+	To.addClassMethod(ElementType,
+		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(Vec3Type, "value") },
+			nullptr, "setVec3", & UIScriptElement_setVec3));
+
+	To.addClassMethod(ElementType,
+		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(SizeVecType, "value") },
+			nullptr, "setSizeVec", &UIScriptElement_setSizeVec));
+
+	To.addClassMethod(ElementType,
+		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(SizeType, "value") },
+			nullptr, "setSize", &UIScriptElement_setSizeVec));
 
 	To.addFunction(NativeFunction({ FunctionArgument(FloatInst, "pixelValue") }, SizeType, "pixels", UI_pixels));
 

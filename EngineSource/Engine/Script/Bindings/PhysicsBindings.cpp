@@ -32,6 +32,7 @@ static void Physics_rayCast(InterpretContext* context)
 	context->pushValue(hit.Hit ? NativeModule::makeClass(hit) : nullptr);
 }
 
+// TODO: Add getHitComponent
 static void HitResult_getHitObject(InterpretContext* context)
 {
 	ClassRef<physics::HitResult> Hit = context->popValue<RuntimeClass*>();
