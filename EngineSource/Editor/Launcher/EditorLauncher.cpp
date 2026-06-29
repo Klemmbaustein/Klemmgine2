@@ -56,7 +56,6 @@ What is mostly ready:
 - UI and game logic scripting with an in editor IDE.
 
 What isn't:
-- No audio output or features yet.
 - Some scripting language features (like enums, structs, generics) are only available to native code.
 
 Existing features and APIs might change.)",
