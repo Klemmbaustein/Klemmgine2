@@ -22,8 +22,8 @@ static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
 	kui::Vec2f ViewportSize = editor::Viewport::Current->ViewportBackground->GetUsedSize().GetScreen();
 
 	return kui::Vec2i(
-		int64(FromSize.X * ViewportSize.X) >> 1,
-		int64(FromSize.Y * ViewportSize.Y) >> 1
+		int64(std::round(FromSize.X * ViewportSize.X / 2.0f)),
+		int64(std::round(FromSize.Y * ViewportSize.Y / 2.0f))
 	);
 }
 #endif
