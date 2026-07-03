@@ -200,7 +200,7 @@ void engine::script::ui::UIFileParser::RegisterChildren(UIElement* Element,
 			std::vector<ds::Token>({
 			"this",
 			".",
-			"getChild",
+			".getChild",
 			"<",
 			TypeName,
 			">",

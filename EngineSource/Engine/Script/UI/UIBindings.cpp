@@ -630,7 +630,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	To.addClassMethod(CanvasType,
 		NativeGenericFunction({ FunctionArgument(StrType, "name") }, { GenericArgument("T", UIBoxType) },
-			GenericArgumentType::getInstance(0, true), "getChild", &UIScriptCanvas_getChild));
+			GenericArgumentType::getInstance(0, true), ".getChild", &UIScriptCanvas_getChild));
 
 	To.addClassMethod(CanvasType,
 		NativeFunction({ },
@@ -645,7 +645,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	To.addClassMethod(ElementType,
 		NativeGenericFunction({ FunctionArgument(StrType, "name") }, { GenericArgument("T", UIBoxType) },
-			GenericArgumentType::getInstance(0, true), "getChild", &UIScriptElement_getChild));
+			GenericArgumentType::getInstance(0, true), ".getChild", &UIScriptElement_getChild));
 
 	To.addClassMethod(ElementType,
 		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(StrType, "value") },
