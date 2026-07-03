@@ -41,5 +41,5 @@ bool engine::input::IsKeyReleased(Key k)
 
 	auto sys = Engine::GetSubsystem<subsystem::InputSubsystem>();
 
-	return sys && sys->IsKeyPressed(k);
+	return sys && sys->IsKeyReleased(k);
 }

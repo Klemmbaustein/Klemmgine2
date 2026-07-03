@@ -55,6 +55,11 @@ bool engine::subsystem::InputSubsystem::IsKeyReleased(input::Key Key)
 
 void engine::subsystem::InputSubsystem::SetKeyDown(input::Key Key, bool Value)
 {
+	if (PressedKeys[Key].IsPressed == Value)
+	{
+		return;
+	}
+
 	PressedKeys[Key] = KeyData{
 		.IsPressed = Value,
 		.ChangedFrame = InputFrame,
