@@ -2,9 +2,7 @@
 #include <sstream>
 #include <array>
 #include <Core/Log.h>
-#include <Engine/Graphics/ShaderObject.h>
 #include <Engine/File/Resource.h>
-#include <Engine/Internal/OpenGL.h>
 #include <Engine/Graphics/OpenGL.h>
 using namespace engine::graphics;
 
@@ -176,7 +174,7 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 				ParsedModule.Dependencies.push_back(i);
 			}
 
-			ParsedModule.Dependencies.push_back(Found.ModuleObject);
+			ParsedModule.Dependencies.push_back(Found.Object);
 
 			OutStream << "\n#line " << Line + 1 << std::endl;
 
@@ -205,8 +203,9 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 	};
 }
 
-void engine::graphics::ShaderModuleLoader::ScanModules()
+void engine::graphics::ShaderModuleLoader::ScanModules(Renderer* Render)
 {
+	this->Render = Render;
 	FreeModules();
 
 	static std::array<string, 3> EngineDefaultModules =
@@ -233,7 +232,8 @@ void engine::graphics::ShaderModuleLoader::FreeModules()
 {
 	for (auto& [name, mod] : LoadedModules)
 	{
-		glDeleteShader(mod.ModuleObject);
+		delete mod.Object;
+		//glDeleteShader(mod.ModuleObject);
 	}
 	LoadedModules.clear();
 }
@@ -291,9 +291,5 @@ void engine::graphics::ShaderModuleLoader::LoadModule(const string& Source, Shad
 {
 	bool IsVertex = Info.Type == ShaderModule::ShaderType::Vertex;
 
-	Info.ModuleObject = glCreateShader(IsVertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
-	const char* SourcePointer = Source.c_str();
-	glShaderSource(Info.ModuleObject, 1, &SourcePointer, nullptr);
-	glCompileShader(Info.ModuleObject);
-	ShaderObject::CheckCompileErrors(Info.ModuleObject, IsVertex ? "VERTEX" : "FRAGMENT");
+	Info.Object = Render->CreateShaderProgramObject(Source, IsVertex ? ShaderProgramType::Vertex : ShaderProgramType::Fragment);
 }

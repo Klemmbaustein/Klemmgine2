@@ -4,7 +4,6 @@
 #include <Engine/File/Resource.h>
 #include <Core/File/TextSerializer.h>
 #include <Core/File/BinarySerializer.h>
-#include <Engine/Internal/OpenGL.h>
 #include <Engine/MainThread.h>
 #include <sstream>
 
@@ -339,21 +338,12 @@ void Material::Clear()
 	UseTexture = false;
 }
 
-void engine::graphics::Material::Apply()
+void engine::graphics::Material::Apply(graphics::DrawCommand* Pass)
 {
 	if (!Shader)
 		return;
-	Shader->Bind();
-	uint8 TextureSlot = 4;
-
-	if (IsTwoSided)
-	{
-		glDisable(GL_CULL_FACE);
-	}
-	else
-	{
-		glEnable(GL_CULL_FACE);
-	}
+	Pass->UseShader(Shader);
+	Pass->SetFaceCullEnabled(!IsTwoSided);
 
 	for (auto& i : Fields)
 	{
@@ -383,17 +373,7 @@ void engine::graphics::Material::Apply()
 		{
 			if (!i.TextureValue.Value)
 				LoadTexture(i);
-			glActiveTexture(GL_TEXTURE1 + TextureSlot);
-			if (i.TextureValue.Value)
-			{
-				glBindTexture(GL_TEXTURE_2D, i.TextureValue.Value->TextureObject);
-			}
-			else
-			{
-				glBindTexture(GL_TEXTURE_2D, 0);
-			}
-			Shader->SetInt(i.UniformLocation, TextureSlot + 1);
-			TextureSlot++;
+			Pass->BindTexture(i.UniformLocation, i.TextureValue.Value ? i.TextureValue.Value->RenderTexture : nullptr);
 			break;
 		}
 		case Field::Type::None:
@@ -403,8 +383,9 @@ void engine::graphics::Material::Apply()
 	}
 }
 
-void engine::graphics::Material::ApplySimple(graphics::ShaderObject* With)
+void engine::graphics::Material::ApplySimple(graphics::DrawCommand* Pass, graphics::ShaderObject* With)
 {
+	Pass->UseShader(With);
 	With->SetInt(With->GetUniformLocation("u_useTexture"), UseTexture && TextureField != SIZE_MAX);
 
 	if (TextureField != SIZE_MAX && UseTexture)
@@ -416,16 +397,8 @@ void engine::graphics::Material::ApplySimple(graphics::ShaderObject* With)
 
 		if (!tx.TextureValue.Value)
 			LoadTexture(tx);
-		glActiveTexture(GL_TEXTURE1);
-		if (tx.TextureValue.Value)
-		{
-			glBindTexture(GL_TEXTURE_2D, tx.TextureValue.Value->TextureObject);
-		}
-		else
-		{
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
-		With->SetInt(With->GetUniformLocation("u_texture"), 1);
+
+		Pass->BindTexture("u_texture", tx.TextureValue.Value ? tx.TextureValue.Value->RenderTexture : nullptr);
 	}
 }
 

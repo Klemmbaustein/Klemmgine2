@@ -4,14 +4,14 @@
 #include "PostProcess.h"
 #include "PostProcessEffect.h"
 #include <algorithm>
-#include <Engine/Internal/OpenGL.h>
+#include <Engine/Graphics/VideoSubsystem.h>
+
+using namespace engine::graphics;
 
 engine::graphics::PostProcess::PostProcess()
 {
-	PostProcessBuffers[0] = 0;
-	PostProcessBuffers[1] = 0;
-	PostProcessTextures[0] = 0;
-	PostProcessTextures[1] = 0;
+	PostProcessBuffers[0] = nullptr;
+	PostProcessBuffers[1] = nullptr;
 }
 
 engine::graphics::PostProcess::~PostProcess()
@@ -21,8 +21,10 @@ engine::graphics::PostProcess::~PostProcess()
 		delete Effect;
 	}
 
-	glDeleteFramebuffers(GLsizei(PostProcessBuffers.size()), PostProcessBuffers.data());
-	glDeleteTextures(GLsizei(PostProcessTextures.size()), PostProcessTextures.data());
+	for (auto& i : PostProcessBuffers)
+	{
+		delete i;
+	}
 }
 
 void engine::graphics::PostProcess::Init(uint32 Width, uint32 Height)
@@ -40,8 +42,12 @@ void engine::graphics::PostProcess::OnBufferResized(uint32 Width, uint32 Height)
 {
 	this->Width = Width;
 	this->Height = Height;
-	glDeleteFramebuffers(GLsizei(PostProcessBuffers.size()), PostProcessBuffers.data());
-	glDeleteTextures(GLsizei(PostProcessTextures.size()), PostProcessTextures.data());
+
+	for (auto& i : PostProcessBuffers)
+	{
+		delete i;
+	}
+
 	GenerateBuffers();
 
 	for (PostProcessEffect* Effect : this->ActiveEffects)
@@ -70,9 +76,9 @@ void engine::graphics::PostProcess::RemoveEffect(PostProcessEffect* TargetEffect
 	}
 }
 
-uint32 engine::graphics::PostProcess::Draw(Framebuffer* Buffer, Camera* Cam)
+RendererTexture* engine::graphics::PostProcess::Draw(Framebuffer* Buffer, Camera* Cam)
 {
-	uint32 CurrentBuffer = Buffer->Textures[0];
+	RendererTexture* CurrentBuffer = Buffer->Buffer->GetTexture(0);
 
 	for (PostProcessEffect* Effect : this->ActiveEffects)
 	{
@@ -82,50 +88,25 @@ uint32 engine::graphics::PostProcess::Draw(Framebuffer* Buffer, Camera* Cam)
 	return CurrentBuffer;
 }
 
-std::pair<uint32, uint32> engine::graphics::PostProcess::NextBuffer()
+RendererDrawTarget* engine::graphics::PostProcess::NextBuffer()
 {
-	uint32 Buffer = PostProcessBuffers[IsFirstBuffer],
-		Texture = PostProcessTextures[IsFirstBuffer];
-
 	IsFirstBuffer = !IsFirstBuffer;
-	return std::pair{ Buffer, Texture };
+	return PostProcessBuffers[IsFirstBuffer];
 }
 
 void engine::graphics::PostProcess::SortEffectsByPriority()
 {
 	std::sort(this->ActiveEffects.begin(), this->ActiveEffects.end(),
-		[](graphics::PostProcessEffect* a, graphics::PostProcessEffect* b)
-		{
-			return a->DrawOrder < b->DrawOrder;
-		});
+		[](graphics::PostProcessEffect* a, graphics::PostProcessEffect* b) {
+		return a->DrawOrder < b->DrawOrder;
+	});
 }
 
 void engine::graphics::PostProcess::GenerateBuffers()
 {
-	glGenFramebuffers(2, PostProcessBuffers.data());
-	glGenTextures(2, PostProcessTextures.data());
-
-	for (size_t i = 0; i < 2; i++)
+	for (auto& i : this->PostProcessBuffers)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, PostProcessBuffers[i]);
-		glBindTexture(GL_TEXTURE_2D, PostProcessTextures[i]);
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			GL_RGBA16F,
-			Width,
-			Height,
-			0,
-			GL_RGBA,
-			GL_FLOAT,
-			NULL
-		);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostProcessTextures[i], 0
-		);
+		i = VideoSubsystem::Current->Renderer->CreateDrawTarget(Width, Height, {
+			DrawTargetBuffer{} });
 	}
 }

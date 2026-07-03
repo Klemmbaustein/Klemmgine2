@@ -1,6 +1,7 @@
 #pragma once
 #include <Core/Types.h>
 #include <Engine/Graphics/Camera.h>
+#include <Engine/Graphics/Backend/Renderer.h>
 
 namespace engine::graphics
 {
@@ -15,17 +16,20 @@ namespace engine::graphics
 
 		// Might as well make it 64 bits because of struct padding.
 		int64 DrawOrder = 0;
+		Renderer* Render = nullptr;
 
 		virtual void OnBufferResized(uint32 Width, uint32 Height);
-		virtual uint32 Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) = 0;
+		virtual RendererTexture* Draw(RendererTexture* Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) = 0;
+
 
 	protected:
 
-		// Framebuffer utility functions
-		uint64 CreateNewBuffer(uint32 Width, uint32 Height, bool FilterNearest);
+		DrawCommand* StartRenderPass();
 
-		uint32 DrawBuffer(uint64 Buffer, uint32 Width, uint32 Height);
-		void FreeBuffer(uint64 Buffer);
+		// Framebuffer utility functions
+		RendererDrawTarget* CreateNewBuffer(uint32 Width, uint32 Height, bool FilterNearest);
+
+		RendererTexture* DrawBuffer(DrawCommand* Pass, RendererDrawTarget* Target, uint32 Width, uint32 Height);
 
 	};
 }

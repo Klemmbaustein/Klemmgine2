@@ -1,5 +1,5 @@
 #pragma once
-#include <Engine/Graphics/VertexBuffer.h>
+#include <Engine/Graphics/Backend/Renderer.h>
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/Graphics/Camera.h>
 #include <Engine/Graphics/Material.h>
@@ -23,9 +23,9 @@ namespace engine::graphics
 
 		std::vector<VertexBuffer*> ModelVertexBuffers;
 
-		virtual void Draw(GraphicsScene* In, const Transform& At, Camera* With,
+		void Draw(Renderer* Render, GraphicsScene* In, const Transform& At, Camera* With,
 			std::vector<Material*>& UsedMaterials, const BoundingBox& Bounds, bool Stencil, bool IsTransparent);
-		virtual void SimpleDraw(const Transform& At, ShaderObject* Shader,
+		void SimpleDraw(Renderer* Render, const Transform& At, ShaderObject* Shader,
 			std::vector<Material*>& UsedMaterials);
 	};
 }

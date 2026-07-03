@@ -14,16 +14,14 @@ namespace engine::graphics
 
 		CascadedShadows();
 
-		void Init();
+		void Init(Renderer* Render);
 		void Update(Camera* From);
-		uint32 Draw(GraphicsScene* With);
-		void BindUniforms(ShaderObject* Target) const;
+		void Draw(GraphicsScene* With);
+		void BindUniforms(DrawCommand* Pass, ShaderObject* Target) const;
 
 		static void UnloadShadows();
 
 		Vector3 LightDirection = Vector3(1, 2, 1).Normalize();
-
-		static uint32 LightDepthMaps;
 
 		bool Enabled = false;
 
@@ -38,9 +36,9 @@ namespace engine::graphics
 		}
 
 		float BiasModifier = 0;
-		static graphics::ShaderObject* ShadowShader;
-		static uint32 MatricesBuffer;
-		static uint32 LightFBO;
+		static ShaderObject* ShadowShader;
+		static DrawUniformBuffer* ShadowMatrices;
+		static RendererDrawTarget* ShadowBuffer;
 
 		struct MatrixEntry
 		{

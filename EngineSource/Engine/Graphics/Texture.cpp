@@ -1,7 +1,5 @@
 #include "Texture.h"
-#include <Core/Log.h>
 #include <Engine/File/Resource.h>
-#include <Engine/Internal/OpenGL.h>
 #include <mutex>
 #include <stb_image.hpp>
 using namespace engine;
@@ -33,9 +31,9 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureOptions Load
 		{
 			Texture& tx = LoadedTextures[Name];
 
-			if (tx.Pixels && !tx.TextureObject)
+			if (tx.Pixels && !tx.RenderTexture)
 			{
-				tx.TextureObject = CreateGLTexture(tx.Pixels, tx.Width, tx.Height, tx.Options);
+				tx.RenderTexture = CreateRendererTexture(tx.Pixels, tx.Width, tx.Height, tx.Options);
 				stbi_image_free(const_cast<uByte*>(tx.Pixels));
 				tx.Pixels = nullptr;
 			}
@@ -74,14 +72,14 @@ const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t B
 
 const Texture* TextureLoader::LoadTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo)
 {
-	uint32 TextureID = CreateGLTexture(Pixels, Width, Height, LoadInfo);
+	RendererTexture* TextureID = CreateRendererTexture(Pixels, Width, Height, LoadInfo);
 	{
 		std::lock_guard g{ TextureLoadMutex };
 
 		return &(*LoadedTextures.insert({ LoadInfo.Name, Texture{
 			.Options = LoadInfo,
 			.Pixels = TextureID ? nullptr : Pixels,
-			.TextureObject = TextureID,
+			.RenderTexture = TextureID,
 			.References = 1,
 			} }).first).second;
 	}
@@ -121,7 +119,7 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 	const Texture* New = &(*LoadedTextures.insert({ Name, Texture{
 		.Options = LoadInfo,
 		.Pixels = Pixels,
-		.TextureObject = 0,
+		.RenderTexture = nullptr,
 		.References = 1,
 		.Width = uint32(w),
 		.Height = uint32(h),
@@ -165,9 +163,9 @@ void engine::graphics::TextureLoader::FreeTextureData(const Texture* Tex)
 		stbi_image_free(const_cast<uByte*>(Tex->Pixels));
 	}
 
-	if (Tex->TextureObject)
+	if (Tex->RenderTexture)
 	{
-		glDeleteTextures(1, &Tex->TextureObject);
+		delete Tex->RenderTexture;
 	}
 }
 
@@ -176,40 +174,9 @@ string engine::graphics::TextureLoader::MakeTextureID(const AssetRef& Ref, const
 	return Ref.FilePath + std::to_string(LoadInfo.Filter) + std::to_string(LoadInfo.TextureBorders);
 }
 
-uint32 engine::graphics::TextureLoader::CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height,
-	TextureOptions LoadInfo)
+RendererTexture* engine::graphics::TextureLoader::CreateRendererTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo)
 {
-	uint32 TextureID = 0;
-	glGenTextures(1, &TextureID);
-	glBindTexture(GL_TEXTURE_2D, TextureID);
-
-
-	GLint WrapMode = GL_CLAMP_TO_BORDER;
-
-	switch (LoadInfo.TextureBorders)
-	{
-	case TextureOptions::Border:
-		WrapMode = GL_CLAMP_TO_BORDER;
-		break;
-	case TextureOptions::Repeat:
-		WrapMode = GL_REPEAT;
-		break;
-	case TextureOptions::Clamp:
-		WrapMode = GL_CLAMP_TO_EDGE;
-		break;
-	default:
-		break;
-	}
-	GLint Filter = LoadInfo.Filter == TextureOptions::Linear ? GL_LINEAR : GL_NEAREST;
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, LoadInfo.MipMaps ? GL_LINEAR_MIPMAP_LINEAR : Filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WrapMode);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WrapMode);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei)Width, (GLsizei)Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	return TextureID;
+	return this->UsedRenderer->CreateTexture(Pixels, Width, Height, LoadInfo);
 }
 
 void engine::graphics::TextureLoader::DeleteTexture(const Texture* Tex)

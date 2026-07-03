@@ -187,12 +187,30 @@ void engine::PhysicsComponent::SetActive(bool NewActive)
 	{
 		if (NewActive)
 		{
+			if (ParentObject)
+			{
+				ParentObject->CheckTransform();
+				UpdateTransform(true);
+				Vector3 LastPosition, LastScale;
+				Rotation3 LastRotation;
+				LastTransform.Decompose(LastPosition, LastRotation, LastScale);
+
+				Vector3 Position, Scale;
+				Rotation3 Rotation;
+				WorldTransform.Decompose(Position, Rotation, Scale);
+				Body->SetPositionAndRotation(Position, Rotation);
+				if (LastScale != Scale)
+				{
+					Body->Scale((Scale / LastScale).Max(0.0000001f));
+				}
+			}
 			Body->Activate();
 		}
 		else
 		{
 			Body->Deactivate();
 		}
+		LastTransform = WorldTransform;
 	}
 }
 
@@ -231,7 +249,7 @@ void engine::PhysicsComponent::Update()
 
 bool engine::PhysicsComponent::UpdateTransform(bool IsDirty)
 {
-	if (IsPhysicsSimulated && Engine::Instance->IsPlaying)
+	if (IsPhysicsSimulated && Engine::Instance->IsPlaying && GetActive())
 	{
 		if (Body)
 		{

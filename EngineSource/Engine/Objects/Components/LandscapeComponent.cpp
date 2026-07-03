@@ -1,9 +1,8 @@
 #include "LandscapeComponent.h"
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
-#include <Engine/Internal/OpenGL.h>
 #include <Engine/Physics/Physics.h>
-#include <Core/Log.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 
 using namespace engine::graphics;
 
@@ -150,7 +149,7 @@ void engine::LandscapeComponent::OnAttached()
 		v.Normal = v.Normal.Normalize();
 	}
 
-	LandscapeMesh = new VertexBuffer(Vertices, Indices);
+	LandscapeMesh = VideoSubsystem::Current->Renderer->CreateVertexBuffer(Vertices, Indices);
 
 	Collider = new physics::HeightMapBody(Samples, SIZE, WorldTransform,
 		physics::MotionType::Static, physics::Layer::Static, this);
@@ -165,14 +164,15 @@ void engine::LandscapeComponent::OnDetached()
 	GetRootObject()->GetScene()->Graphics.RemoveDrawnComponent(this);
 }
 
-void engine::LandscapeComponent::Draw(graphics::Camera* From, graphics::GraphicsScene* In)
+void engine::LandscapeComponent::Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
 {
+	auto Pass = Render->StartRender();
 	auto Root = GetRootObject();
 	auto Scene = Root ? Root->GetScene() : nullptr;
 
 	//for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
-		LandscapeMaterial->Apply();
+		LandscapeMaterial->Apply(Pass);
 		ShaderObject* Used = LandscapeMaterial->Shader;
 		if (!Used)
 		{
@@ -182,26 +182,25 @@ void engine::LandscapeComponent::Draw(graphics::Camera* From, graphics::Graphics
 		if (!Used->Unlit)
 		{
 			In->Lights.ApplyToShader(Used, DrawBoundingBox);
-			From->UsedEnvironment->ApplyTo(Used);
-			In->Shadows.BindUniforms(Used);
+			In->Shadows.BindUniforms(Pass, Used);
 		}
-		if (Scene)
-			Scene->Graphics.Shadows.BindUniforms(Used);
+		From->UsedEnvironment->ApplyTo(Used);
 
-		glUniformMatrix4fv(Used->ModelUniform, 1, false, &WorldTransform.Matrix[0][0]);
-		glUniformMatrix4fv(Used->GetUniformLocation("u_view"), 1, false, &From->View[0][0]);
-		glUniformMatrix4fv(Used->GetUniformLocation("u_projection"), 1, false, &From->Projection[0][0]);
+		Used->SetMatrix(Used->ModelUniform, WorldTransform.Matrix);
+		Used->SetMatrix(Used->GetUniformLocation("u_view"), From->View);
+		Used->SetMatrix(Used->GetUniformLocation("u_projection"), From->Projection);
 		Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), From->GetPosition());
-
-		LandscapeMesh->Draw();
+		Pass->SetStencilValue(DrawStencil, 1);
+		Pass->DrawVertexBuffer(LandscapeMesh);
 	}
 }
 
-void engine::LandscapeComponent::SimpleDraw(graphics::ShaderObject* With)
+void engine::LandscapeComponent::SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With)
 {
-	this->LandscapeMaterial->ApplySimple(With);
-	glUniformMatrix4fv(With->ModelUniform, 1, false, &WorldTransform.Matrix[0][0]);
-	LandscapeMesh->Draw();
+	auto Pass = Render->StartRender();
+	this->LandscapeMaterial->ApplySimple(Pass, With);
+	With->SetMatrix(With->ModelUniform, WorldTransform.Matrix);
+	Pass->DrawVertexBuffer(LandscapeMesh);
 }
 
 bool engine::LandscapeComponent::UpdateTransform(bool Dirty)

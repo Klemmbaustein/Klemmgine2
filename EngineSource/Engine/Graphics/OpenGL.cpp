@@ -1,5 +1,5 @@
 #include "OpenGL.h"
-#include <Engine/Internal/OpenGL.h>
+#include <Engine/Graphics/Backend/OpenGL.h>
 
 using namespace engine::openGL;
 

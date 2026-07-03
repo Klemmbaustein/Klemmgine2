@@ -1,5 +1,6 @@
 #include "ShaderLoader.h"
 #include <Engine/File/Resource.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 using namespace engine::graphics;
 
 ShaderLoader* ShaderLoader::Current = nullptr;
@@ -38,7 +39,7 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 
 void engine::graphics::ShaderLoader::ReloadAll()
 {
-	Modules.ScanModules();
+	Modules.ScanModules(VideoSubsystem::Current->Renderer);
 	for (auto& [_, i] : Loaded)
 	{
 		i.Object->ReCompile(resource::GetTextFile(i.VertexSource), resource::GetTextFile(i.FragmentSource));

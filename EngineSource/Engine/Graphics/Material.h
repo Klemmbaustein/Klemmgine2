@@ -75,8 +75,8 @@ namespace engine::graphics
 		void LoadTexture(Field& From);
 
 		void Clear();
-		void Apply();
-		void ApplySimple(graphics::ShaderObject* With);
+		void Apply(graphics::DrawCommand* Pass);
+		void ApplySimple(graphics::DrawCommand* Pass, graphics::ShaderObject* With);
 		void VerifyUniforms();
 		void UpdateShader();
 

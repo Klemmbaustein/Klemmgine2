@@ -220,10 +220,10 @@ vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize
 		vec2 result = lightStrength(u_lights[i].position, u_lights[i].rangeFalloffIntensity.x,
 			u_lights[i].rangeFalloffIntensity.y, u_lights[i].rangeFalloffIntensity.z, viewDir, specularSize);
 
-		lightValue += vec3(result.x + result.y * specularStength) * u_lights[i].color;
+		lightValue += (vec3(result.y * specularStength) + vec3(result.x) * color) * u_lights[i].color;
 	}
 
-	return applyFog((color * u_sunColor * u_sunIntensity + spec_color) * shadows + ambient + lightValue * color);
+	return applyFog((color * u_sunColor * u_sunIntensity + spec_color) * shadows + ambient + lightValue);
 }
 
 #export //!

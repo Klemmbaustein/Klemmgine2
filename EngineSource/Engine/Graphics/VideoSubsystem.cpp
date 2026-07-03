@@ -4,8 +4,6 @@
 #include <kui/App.h>
 #include <SDL3/SDL.h>
 #include <Engine/Internal/WMOptions.h>
-#include <Engine/Internal/OpenGL.h>
-#include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Engine.h>
 #include <Engine/Input.h>
 #include <Engine/Stats.h>
@@ -16,33 +14,11 @@
 #include <stdexcept>
 #include <kui/Rendering/OpenGLBackend.h>
 #include <Engine/File/Resource.h>
-
-#ifdef EDITOR
-#include <Editor/EditorSubsystem.h>
-#include <Editor/UI/Panels/Viewport.h>
-#include <Editor/Editor.h>
-#endif
+#include <Engine/Graphics/Backend/OpenGLGraphicsBackend.h>
 
 using namespace kui;
 using namespace engine;
 using namespace engine::subsystem;
-
-static void GLAPIENTRY MessageCallback(
-	GLenum source, GLenum type, GLuint id, GLenum severity,
-	GLsizei length, const GLchar* message, const void* userParam)
-{
-	if (type == GL_DEBUG_TYPE_ERROR
-		|| type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR
-		|| type == GL_DEBUG_TYPE_PORTABILITY)
-	{
-		((VideoSubsystem*)userParam)->Print(message, Subsystem::LogType::Error);
-	}
-}
-
-static systemWM::SysWindow* GetSysWindow(kui::Window* From)
-{
-	return static_cast<systemWM::SysWindow*>(From->GetSysWindow());
-}
 
 engine::string VideoSubsystem::DefaultFontName = "res:DefaultFont.ttf";
 VideoSubsystem* VideoSubsystem::Current = nullptr;
@@ -53,8 +29,7 @@ engine::VideoSubsystem::VideoSubsystem()
 	: Subsystem("Video", Log::LogColor::Cyan)
 {
 	Current = this;
-	app::error::SetErrorCallback([this](string Message, bool Fatal)
-	{
+	app::error::SetErrorCallback([this](string Message, bool Fatal) {
 		app::MessageBox("kui error: " + Message, "Error",
 			Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
 		Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
@@ -67,43 +42,14 @@ engine::VideoSubsystem::VideoSubsystem()
 
 	render::OpenGLBackend::UseAlphaBuffer = true;
 
-	auto VersionArg = launchArgs::GetArg("gl");
-
-	if (VersionArg.has_value() && VersionArg->size() == 1)
-	{
-		string VersionString = VersionArg->at(0).AsString();
-
-		if (VersionString == "4.3")
-		{
-			openGL::VersionOverride = openGL::Version::GL430;
-		}
-		else if (VersionString == "3.3")
-		{
-			openGL::VersionOverride = openGL::Version::GL330;
-		}
-		else
-		{
-			Print(str::Format("Unknown OpenGL version '%s' will be interpreted as default",
-				VersionString.c_str()));
-		}
-
-		Print(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
-	}
-
-	MainWindow = new Window(GetWindowTitle(), Window::WindowFlag::Resizable
+	MainWindow = new Window("", Window::WindowFlag::Resizable
 		| EngineWindowFlag::EngineWindow, Window::POSITION_CENTERED, GetWindowSize());
 	MainWindow->SetMinSize(Vec2ui(600, 400));
 
-	if (openGL::GetGLVersion() < openGL::Version::GL430)
-	{
-		Print("Using OpenGL 3.3 instead of 4.3. Some graphics effects might not work.", LogType::Warning);
-		OpenGLMode = "OpenGL 3.3";
-	}
-	else
-	{
-		Print("Using OpenGL 4.3", LogType::Note);
-		OpenGLMode = "OpenGL 4.3+";
-	}
+	Backend = new graphics::OpenGLGraphicsBackend();
+	Renderer = Backend->CreateRenderer();
+	Textures.UsedRenderer = Renderer;
+	Print(str::Format("Using graphics backend: %s", Backend->GetBackendIdentifier().c_str()), LogType::Note);
 
 	MainWindow->SetTitle(GetWindowTitle().c_str());
 
@@ -113,10 +59,8 @@ engine::VideoSubsystem::VideoSubsystem()
 
 	static_cast<render::OpenGLBackend*>(MainWindow->UI.Render)->CanDrawToWindow = false;
 
-	InitGLErrors();
-
 	debug::TimeLogger ModulesTime{ "Compiled shader modules", GetLogPrefixes() };
-	Shaders.Modules.ScanModules();
+	Shaders.Modules.ScanModules(Renderer);
 	ModulesTime.End();
 
 	MainWindow->Input.RegisterOnKeyDownCallback(Key::F11, [](Window* w) {
@@ -141,7 +85,7 @@ engine::string engine::VideoSubsystem::GetWindowTitle()
 {
 #define STR_INNER(x) # x
 #define STR(x) STR_INNER(x)
-	string Title = str::Format("Klemmgine 2 (%s, %s)", STR(ENGINE_COMPILER_ID), OpenGLMode.c_str());
+	string Title = str::Format("Klemmgine 2 (%s, %s)", STR(ENGINE_COMPILER_ID), Backend->GetBackendIdentifier().c_str());
 
 #ifdef EDITOR
 	Title.append(" Editor");
@@ -245,6 +189,8 @@ engine::VideoSubsystem::~VideoSubsystem()
 	Current = nullptr;
 	GraphicsModel::ClearAll();
 	graphics::CascadedShadows::UnloadShadows();
+	delete Renderer;
+	delete Backend;
 
 	delete MainWindow;
 }
@@ -274,63 +220,16 @@ void engine::VideoSubsystem::RenderUpdate()
 
 	if (SceneSystem)
 	{
-		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
-		glClearColor(0, 0, 0, 1);
 		for (Scene* scn : SceneSystem->LoadedScenes)
 		{
-			scn->Graphics.Draw();
+			scn->Graphics.Draw(Renderer);
 		}
-		glViewport(0, 0, GLsizei(MainWindow->GetSize().X), GLsizei(MainWindow->GetSize().Y));
-		glEnable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
 	}
 
-	auto PostProcess = MainWindow->Shaders.LoadShader("shader/internal/postProcess.vert",
-		"shader/internal/drawToWindow.frag", "engineToWindow");
+	graphics::RendererTexture* Texture = SceneSystem && SceneSystem->Main
+		? SceneSystem->Main->Graphics.GetDrawBuffer() : nullptr;
 
-	uint32 Texture = 0;
-
-	if (SceneSystem && SceneSystem->Main)
-	{
-		Texture = SceneSystem->Main->Graphics.GetDrawBuffer();
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	PostProcess->Bind();
-	glActiveTexture(GL_TEXTURE0);
-
-	glBindTexture(GL_TEXTURE_2D, Texture);
-
-	auto GlRender = static_cast<render::OpenGLBackend*>(MainWindow->UI.Render);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, GlRender->UITextures[0]);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, GlRender->UITextures[1]);
-
-	PostProcess->SetInt("u_texture", 0);
-	PostProcess->SetInt("u_ui", 1);
-	PostProcess->SetInt("u_alpha", 2);
-
-#if EDITOR
-	if (editor::EditorSubsystem::Active)
-	{
-		editor::Viewport* View = editor::Viewport::Current;
-
-		PostProcess->SetVec2("u_pos", View->ViewportBackground->GetScreenPosition() / 2 + 0.5);
-		PostProcess->SetVec2("u_size", View->ViewportBackground->GetUsedSize().GetScreen() / 2);
-	}
-	else
-#endif
-	{
-		PostProcess->SetVec2("u_pos", 0);
-		PostProcess->SetVec2("u_size", 1);
-	}
-
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	SDL_GL_SetSwapInterval(this->VSyncEnabled ? 1 : 0);
-	SDL_GL_SwapWindow(GetSysWindow(MainWindow)->SDLWindow);
+	Renderer->RenderScreen(MainWindow, Texture, VSyncEnabled);
 }
 
 void engine::VideoSubsystem::OnResized()
@@ -339,10 +238,4 @@ void engine::VideoSubsystem::OnResized()
 	{
 		Callback(MainWindow->GetSize());
 	}
-}
-
-void engine::VideoSubsystem::InitGLErrors()
-{
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(MessageCallback, this);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Types.h"
+#include <Engine/Graphics/Backend/Renderer.h>
 
 namespace engine::graphics
 {
@@ -13,11 +14,9 @@ namespace engine::graphics
 		static constexpr size_t TEXTURE_POSITION = 2;
 		static constexpr size_t TEXTURE_NORMAL = 3;
 
-		uint32 Buffer = 0;
-		uint32 Textures[NUM_TEXTURES];
-		int64 Width = 0, Height = 0;
+		RendererDrawTarget* Buffer = nullptr;
 
-		static const uint32 DRAW_ATTACHMENTS[3];
+		int64 Width = 0, Height = 0;
 
 		Framebuffer(int64 Width, int64 Height);
 		~Framebuffer();
@@ -25,6 +24,5 @@ namespace engine::graphics
 		void Resize(int64 NewWidth, int64 NewHeight);
 
 		void Bind() const;
-		void Unbind() const;
 	};
 }

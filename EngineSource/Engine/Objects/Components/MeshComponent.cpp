@@ -5,13 +5,15 @@
 #include <Engine/Engine.h>
 #endif
 
+using namespace engine::graphics;
+
 void engine::MeshComponent::Update()
 {
 	if (DrawnModel && DrawnModel->Data)
 		DrawnModel->Data->CastShadow = CastShadow;
 }
 
-void engine::MeshComponent::Draw(graphics::Camera* From, graphics::GraphicsScene* In)
+void engine::MeshComponent::Draw(Renderer* Render, Camera* From, GraphicsScene* In)
 {
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
@@ -24,16 +26,16 @@ void engine::MeshComponent::Draw(graphics::Camera* From, graphics::GraphicsScene
 			}
 		}
 
-		DrawnModel->Drawable->Draw(DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
+		DrawnModel->Drawable->Draw(Render, DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
 			From, Materials, DrawBoundingBox, DrawStencil, false);
 	}
 }
 
-void engine::MeshComponent::DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In)
+void engine::MeshComponent::DrawTransparent(Renderer* Render, Camera* From, ::GraphicsScene* In)
 {
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
-		DrawnModel->Drawable->Draw(DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
+		DrawnModel->Drawable->Draw(Render, DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
 			From, Materials, DrawBoundingBox, DrawStencil, true);
 	}
 }
@@ -46,14 +48,14 @@ void engine::MeshComponent::LoadMaterial(size_t MaterialIndex, AssetRef Material
 		delete Previous;
 	}
 
-	this->Materials[MaterialIndex] = new graphics::Material(MaterialFile);
+	this->Materials[MaterialIndex] = new Material(MaterialFile);
 }
 
-void engine::MeshComponent::SimpleDraw(graphics::ShaderObject* With)
+void engine::MeshComponent::SimpleDraw(graphics::Renderer* Render, ShaderObject* With)
 {
 	if (DrawnModel && (RootObject || ParentObject))
 	{
-		DrawnModel->Drawable->SimpleDraw(WorldTransform, With, Materials);
+		DrawnModel->Drawable->SimpleDraw(Render, WorldTransform, With, Materials);
 	}
 }
 

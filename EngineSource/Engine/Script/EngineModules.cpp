@@ -309,11 +309,18 @@ static void ObjectComponent_new(InterpretContext* context)
 	context->pushValue(Component);
 }
 
-static void ObjectComponent_GetWorldPosition(InterpretContext* context)
+static void ObjectComponent_getWorldPosition(InterpretContext* context)
 {
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
 
 	context->pushValue(Component.getValue()->GetWorldTransform().ApplyTo(0));
+}
+
+static void ObjectComponent_getWorldTransform(InterpretContext* context)
+{
+	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
+
+	context->pushValue(Component.getValue()->GetWorldTransform());
 }
 
 static void ObjectComponent_attach(InterpretContext* context)
@@ -965,9 +972,26 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			FloatInst, "getDelta", &Stats_getDelta));
 
 	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Vec3, "getWorldPosition",
-		&ObjectComponent_GetWorldPosition));
+		&ObjectComponent_getWorldPosition));
 
-	auto MeshComponentType = EngineModule.createClass<MeshComponent*>("MeshComponent", ComponentType);
+	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Transform, "getWorldTransform",
+		&ObjectComponent_getWorldTransform));
+
+	auto DrawableComponentType = EngineModule.createClass<DrawableComponent*>("DrawableComponent", ComponentType);
+
+	DrawableComponentType->members.push_back(ClassMember{
+		.name = "isVisible",
+		.offset = DS_OFFSETOF(DrawableComponent, IsVisible),
+		.type = BoolInst,
+		});
+
+	DrawableComponentType->members.push_back(ClassMember{
+		.name = "castShadow",
+		.offset = DS_OFFSETOF(DrawableComponent, CastShadow),
+		.type = BoolInst,
+		});
+
+	auto MeshComponentType = EngineModule.createClass<MeshComponent*>("MeshComponent", DrawableComponentType);
 
 	EngineModule.addClassConstructor(MeshComponentType,
 		NativeFunction({ },
@@ -1098,7 +1122,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassConstructor(SoundComponentType, NativeFunction({},
 		nullptr, "SoundComponent.new", &SoundComponent_new));
 
-	auto BillboardComponentType = EngineModule.createClass<BillboardComponent*>("BillboardComponent", ComponentType);
+	auto BillboardComponentType = EngineModule.createClass<BillboardComponent*>("BillboardComponent", DrawableComponentType);
 
 	EngineModule.addClassMethod(BillboardComponentType, NativeFunction({ FunctionArgument(Assets.AssetRef, "image") },
 		nullptr, "load", &BillboardComponent_load));
@@ -1169,6 +1193,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	MeshComponentType->makePointerClass();
 	PhysicsComponentType->makePointerClass();
 	MoveComponentType->makePointerClass();
+	DrawableComponentType->makePointerClass();
 
 	auto CameraComponentType = EngineModule.createClass<MoveComponent*>("CameraComponent", ComponentType);
 

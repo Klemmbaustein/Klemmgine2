@@ -18,8 +18,8 @@ namespace engine
 		void SetColor(Vector3 NewColor);
 
 		// Inherited via DrawableComponent
-		void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
-		void DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In) override;
+		void Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) override;
+		void DrawTransparent(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) override;
 
 	private:
 		GraphicsModel* Model = nullptr;

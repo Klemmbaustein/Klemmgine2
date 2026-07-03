@@ -3,6 +3,7 @@
 #include <kui/Window.h>
 #include <Engine/Graphics/ShaderLoader.h>
 #include <Engine/Graphics/Texture.h>
+#include <Engine/Graphics/Backend/GraphicsBackend.h>
 #include <map>
 
 namespace engine
@@ -22,6 +23,8 @@ namespace engine
 		kui::Font* DefaultFont = nullptr;
 		graphics::ShaderLoader Shaders;
 		graphics::TextureLoader Textures;
+		graphics::GraphicsBackend* Backend = nullptr;
+		graphics::Renderer* Renderer = nullptr;
 
 		bool VSyncEnabled = true;
 		bool DrawShadows = true;
@@ -31,11 +34,7 @@ namespace engine
 		static string DefaultFontName;
 		static VideoSubsystem* Current;
 
-		string OpenGLMode;
-
 		void OnResized();
-
-		void InitGLErrors();
 
 	private:
 		string GetWindowTitle();

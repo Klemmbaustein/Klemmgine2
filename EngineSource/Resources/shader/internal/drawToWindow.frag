@@ -10,7 +10,7 @@ uniform vec2 u_size;
 
 void main()
 {
-	vec2 viewportTexCoords = (v_texcoords - u_pos) / u_size;
+	vec2 viewportTexCoords = (v_texcoords / u_size - u_pos / u_size);
 
 	if (viewportTexCoords.x >= 0.0 && viewportTexCoords.y >= 0.0
 		&& viewportTexCoords.x <= 1.0 && viewportTexCoords.y <= 1.0)

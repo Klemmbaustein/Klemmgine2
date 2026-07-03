@@ -5,6 +5,7 @@
 #include <Engine/Graphics/Light/LightBvh.h>
 #include <Engine/Graphics/Scene/BoundsHirarchy.h>
 #include <Engine/Graphics/Framebuffer.h>
+#include <Engine/Graphics/Backend/Renderer.h>
 #include <set>
 #include <memory>
 #include <mutex>
@@ -44,12 +45,12 @@ namespace engine::graphics
 		*/
 		void RemoveDrawnComponent(DrawableComponent* Removed);
 
-		uint32 GetDrawBuffer()
+		RendererTexture* GetDrawBuffer()
 		{
 			return SceneTexture;
 		}
 
-		void Draw();
+		void Draw(Renderer* With);
 
 		Framebuffer* Buffer = nullptr;
 		debug::DebugDraw Debug;
@@ -117,6 +118,8 @@ namespace engine::graphics
 		std::set<uint64> RemovedDrawableIds;
 		std::vector<DrawableData> NewDrawables;
 
+		Renderer* Render = nullptr;
+
 		// Inherited via ISerializable
 		SerializedValue Serialize() override;
 
@@ -124,7 +127,7 @@ namespace engine::graphics
 
 	private:
 
-		uint32 SceneTexture = 0;
+		RendererTexture* SceneTexture = nullptr;
 
 		struct SortingInfo
 		{

@@ -1,7 +1,8 @@
 #include "Bloom.h"
 #include <Engine/Graphics/ShaderLoader.h>
-#include <Engine/Internal/OpenGL.h>
 #include "PostProcess.h"
+
+using namespace engine::graphics;
 
 engine::graphics::Bloom::Bloom()
 {
@@ -17,16 +18,16 @@ engine::graphics::Bloom::Bloom()
 
 engine::graphics::Bloom::~Bloom()
 {
-	FreeBuffer(BloomBuffers[0]);
-	FreeBuffer(BloomBuffers[1]);
+	delete BloomBuffers[0];
+	delete BloomBuffers[1];
 }
 
 void engine::graphics::Bloom::OnBufferResized(uint32 Width, uint32 Height)
 {
 	if (BloomBuffers[0])
 	{
-		FreeBuffer(BloomBuffers[0]);
-		FreeBuffer(BloomBuffers[1]);
+		delete BloomBuffers[0];
+		delete BloomBuffers[1];
 	}
 	BloomWidth = uint32(float(Width) * 0.2f);
 	BloomHeight = uint32(float(Height) * 0.2f);
@@ -36,49 +37,50 @@ void engine::graphics::Bloom::OnBufferResized(uint32 Width, uint32 Height)
 	BloomBuffers[1] = CreateNewBuffer(BloomWidth, BloomHeight, false);
 }
 
-uint32 engine::graphics::Bloom::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
+RendererTexture* engine::graphics::Bloom::Draw(RendererTexture* Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
 {
-	if (!Cam->UsedEnvironment->RenderSettings.Bloom)
+	if (!Cam->UsedEnvironment->Render.Bloom)
 	{
 		return Texture;
 	}
 
-	auto& Render = Cam->UsedEnvironment->RenderSettings;
+	auto& Settings = Cam->UsedEnvironment->Render;
+	auto Pass = StartRenderPass();
 
-	BloomShader->Bind();
-	BloomShader->SetInt(BloomTextureLocation, 0);
+	Pass->SetResolution(BloomWidth, BloomHeight);
+
+	Pass->UseShader(BloomShader);
 	BloomShader->SetVec2(TextureSizeLocation, Vector2(1.0f) / Vector2(float(BloomWidth), float(BloomHeight)));
 
-	size_t BloomAmount = Cam->UsedEnvironment->RenderSettings.BloomSamples;
+	size_t BloomAmount = Cam->UsedEnvironment->Render.BloomSamples;
 	bool Horizontal = false;
 
-	uint32 IterationTexture = Texture;
-	glActiveTexture(GL_TEXTURE0);
-
+	RendererTexture* IterationTexture = Texture;
 	auto HorizontalLocation = BloomShader->GetUniformLocation("horizontal");
-
 	for (size_t i = 0; i < BloomAmount; i++)
 	{
-		BloomShader->SetInt(HorizontalLocation, (i % Render.BloomShape));
-		glBindTexture(GL_TEXTURE_2D, IterationTexture);
-		IterationTexture = DrawBuffer(BloomBuffers[Horizontal], BloomWidth, BloomHeight);
+		BloomBuffers[Horizontal]->Activate();
+		BloomShader->SetInt(HorizontalLocation, (i % Settings.BloomShape));
+		Pass->ResetTextures();
+		Pass->BindTexture("u_texture", IterationTexture);
+		Pass->DrawVertices(3);
+		IterationTexture = BloomBuffers[Horizontal]->GetTexture(0);
 		Horizontal = !Horizontal;
 	}
 
 	auto ResultBuffer = With->NextBuffer();
-	glViewport(0, 0, Width, Height);
-	glBindTexture(GL_TEXTURE_2D, IterationTexture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, Texture);
+	Pass->SetResolution(Width, Height);
 
-	BloomMergeShader->Bind();
-	BloomMergeShader->SetInt(BloomMergeShader->GetUniformLocation("u_mainTexture"), 1);
-	BloomMergeShader->SetInt(BloomMergeShader->GetUniformLocation("u_bloomTexture"), 0);
-	BloomMergeShader->SetFloat(BloomMergeShader->GetUniformLocation("u_bloomStrength"), Render.BloomStrength);
-	BloomMergeShader->SetFloat(BloomMergeShader->GetUniformLocation("u_bloomThreshold"), Render.BloomThreshold);
+	Pass->ResetTextures();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, ResultBuffer.first);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	Pass->UseShader(BloomMergeShader);
+	Pass->BindTexture("u_mainTexture", Texture);
+	Pass->BindTexture("u_bloomTexture", IterationTexture);
+	BloomMergeShader->SetFloat(BloomMergeShader->GetUniformLocation("u_bloomStrength"), Settings.BloomStrength);
+	BloomMergeShader->SetFloat(BloomMergeShader->GetUniformLocation("u_bloomThreshold"), Settings.BloomThreshold);
 
-	return ResultBuffer.second;
+	ResultBuffer->Activate();
+	Pass->DrawVertices(3);
+
+	return ResultBuffer->GetTexture(0);
 }

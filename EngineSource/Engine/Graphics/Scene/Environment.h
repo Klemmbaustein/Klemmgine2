@@ -7,7 +7,7 @@ namespace engine::graphics
 {
 	class ShaderObject;
 
-	struct Render
+	struct RenderSettings
 	{
 		bool SunShadows = true;
 		bool AmbientOcclusion = true;
@@ -33,7 +33,7 @@ namespace engine::graphics
 		float FogStart = 0.0f;
 		Vector3 FogColor = Vector3(1);
 
-		Render RenderSettings;
+		RenderSettings Render;
 
 		void ApplyTo(ShaderObject* TargetShader) const;
 

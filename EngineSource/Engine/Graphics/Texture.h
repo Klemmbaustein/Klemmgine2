@@ -1,43 +1,15 @@
 #pragma once
 #include <Engine/File/AssetRef.h>
+#include <Engine/Graphics/Backend/Renderer.h>
 #include <unordered_map>
 
 namespace engine::graphics
 {
-	struct TextureOptions
-	{
-		enum Filtering : uint8
-		{
-			/// Filter to the color value of the nearest value, creating a "pixelated" appearance.
-			Nearest,
-			/// Filter linearly between the nearest color values, creating a blurry appearance.
-			Linear,
-		};
-		enum BorderType : uint8
-		{
-			/// Add a black border around the texture for UVs < 0 or > 1
-			Border,
-			/// Clamp UVs between 0 and 1
-			Clamp,
-			/// Repeat the texture for UVs < 0 or > 1
-			Repeat,
-		};
-
-		Filtering Filter = Linear;
-		BorderType TextureBorders = Repeat;
-
-		// Use mipmapping on the texture.
-		bool MipMaps = true;
-	private:
-		string Name;
-		friend class TextureLoader;
-	};
-
 	struct Texture
 	{
 		TextureOptions Options;
 		const uByte* Pixels = nullptr;
-		uint32 TextureObject = 0;
+		RendererTexture* RenderTexture = nullptr;
 		mutable uint32 References = 0;
 		uint32 Width = 0, Height = 0;
 	};
@@ -83,13 +55,15 @@ namespace engine::graphics
 		 */
 		static TextureLoader* Instance;
 
+		Renderer* UsedRenderer = nullptr;
+
 	private:
 
 		static void FreeTextureData(const Texture* Tex);
 
 		static string MakeTextureID(const AssetRef& Ref, const TextureOptions& LoadInfo);
 
-		uint32 CreateGLTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo);
+		RendererTexture* CreateRendererTexture(const uByte* Pixels, uint64 Width, uint64 Height, TextureOptions LoadInfo);
 		void DeleteTexture(const Texture* Tex);
 		std::unordered_map<string, Texture> LoadedTextures;
 	};

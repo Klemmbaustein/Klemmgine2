@@ -10,13 +10,13 @@ namespace engine::graphics
 	public:
 		AmbientOcclusion();
 
-		uint32 Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) override;
+		RendererTexture* Draw(RendererTexture* Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) override;
 		void OnBufferResized(uint32 Width, uint32 Height) override;
 		static constexpr int64 AO_DRAW_ORDER = 5;
 
 	private:
 
-		uint64 AoBuffer = 0;
+		RendererDrawTarget* AoBuffer = 0;
 
 		uint32 AoWidth = 0, AoHeight = 0;
 		uint32 Width = 0, Height = 0;
@@ -24,6 +24,6 @@ namespace engine::graphics
 		std::vector<Vector3> AoKernel;
 		ShaderObject* AoShader = nullptr;
 		ShaderObject* AoMergeShader = nullptr;
-		uint32 NoiseTexture = 0;
+		RendererTexture* NoiseTexture = nullptr;
 	};
 }

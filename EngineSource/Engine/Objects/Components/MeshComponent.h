@@ -17,9 +17,9 @@ namespace engine
 
 		virtual void Update() override;
 
-		virtual void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
-		virtual void DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In) override;
-		virtual void SimpleDraw(graphics::ShaderObject* With) override;
+		virtual void Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) override;
+		virtual void DrawTransparent(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) override;
+		virtual void SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With) override;
 
 		void Load(AssetRef From, bool LoadMaterials = true);
 		void Load(GraphicsModel* From);

@@ -14,7 +14,8 @@ namespace engine::editor
 
 		static constexpr int64 OUTLINE_DRAW_ORDER = 50;
 
-		uint32 Draw(uint32 Texture, graphics::PostProcess* With, graphics::Framebuffer* Buffer, graphics::Camera* Cam) override;
+		graphics::RendererTexture* Draw(graphics::RendererTexture* Texture, graphics::PostProcess* With,
+			graphics::Framebuffer* Buffer, graphics::Camera* Cam) override;
 		graphics::ShaderObject* OutlineShader = nullptr;
 		void OnBufferResized(uint32 Width, uint32 Height) override;
 

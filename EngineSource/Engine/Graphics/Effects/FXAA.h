@@ -14,7 +14,7 @@ namespace engine::graphics
 
 		static constexpr int64 AA_DRAW_ORDER = 100;
 
-		uint32 Draw(uint32 Texture, graphics::PostProcess* With, graphics::Framebuffer* Buffer, graphics::Camera* Cam) override;
+		RendererTexture* Draw(RendererTexture* Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) override;
 		ShaderObject* EffectShader = nullptr;
 		void OnBufferResized(uint32 Width, uint32 Height) override;
 
