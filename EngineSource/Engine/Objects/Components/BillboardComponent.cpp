@@ -51,11 +51,11 @@ void engine::BillboardComponent::SetColor(Vector3 NewColor)
 	this->Materials[0]->SetVec3("u_color", NewColor);
 }
 
-void engine::BillboardComponent::Draw(graphics::Camera* From, graphics::GraphicsScene* In)
+void engine::BillboardComponent::Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
 {
 }
 
-void engine::BillboardComponent::DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In)
+void engine::BillboardComponent::DrawTransparent(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
 {
 	Vector3 Position, Scale;
 	Rotation3 Rotation;
@@ -63,6 +63,6 @@ void engine::BillboardComponent::DrawTransparent(graphics::Camera* From, graphic
 
 	Transform AtTransform = Transform(Position, 0, Scale * 0.25f).Combine(Transform(From->View).Rotation().Inverse());
 
-	this->Model->Drawable->Draw(&GetRootObject()->GetScene()->Graphics, AtTransform,
-		From, this->Materials, this->DrawBoundingBox, false, true);
+	this->Model->Drawable->Draw(Render, &GetRootObject()->GetScene()->Graphics, AtTransform,
+		From, this->Materials, this->DrawBoundingBox, this->DrawStencil, true);
 }

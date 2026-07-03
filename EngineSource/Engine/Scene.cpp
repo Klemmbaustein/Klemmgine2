@@ -21,23 +21,6 @@ using namespace engine;
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
 
-#if EDITOR
-
-static kui::Vec2i GetEditorSize(kui::Vec2ui FromSize)
-{
-	if (!editor::Viewport::Current)
-		return FromSize;
-
-	kui::Vec2f ViewportSize = editor::Viewport::Current->ViewportBackground->GetUsedSize().GetScreen();
-
-	return kui::Vec2i(
-		int64(FromSize.X * ViewportSize.X) >> 1,
-		int64(FromSize.Y * ViewportSize.Y) >> 1
-	);
-}
-#endif
-
-
 engine::Scene::Scene(bool DoLoadAsync)
 {
 	auto System = Engine::GetSubsystem<sound::SoundSubsystem>();

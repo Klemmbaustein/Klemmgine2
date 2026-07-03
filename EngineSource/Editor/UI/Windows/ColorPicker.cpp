@@ -133,7 +133,6 @@ engine::editor::ColorPicker::ColorPicker(Vector3 RgbColorValue, std::function<vo
 void engine::editor::ColorPicker::Begin()
 {
 	IDialogWindow::Begin();
-	VideoSubsystem::Current->InitGLErrors();
 
 	PickerShader = new Shader(
 		resource::GetStringFile("res:shaders/uishader.vert"),

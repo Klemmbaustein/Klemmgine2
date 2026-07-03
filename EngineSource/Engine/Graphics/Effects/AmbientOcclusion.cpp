@@ -2,8 +2,9 @@
 #include "PostProcess.h"
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Graphics/ShaderLoader.h>
-#include <Engine/Internal/OpenGL.h>
 #include <random>
+
+using namespace engine::graphics;
 
 const size_t AO_SAMPLES = 32;
 
@@ -41,20 +42,27 @@ engine::graphics::AmbientOcclusion::AmbientOcclusion()
 		AoNoise.push_back(Noise);
 	}
 
-	glGenTextures(1, &NoiseTexture);
-	glBindTexture(GL_TEXTURE_2D, NoiseTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4, 4, 0, GL_RGB, GL_FLOAT, AoNoise.data());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	TextureOptions Options;
+	Options.HasAlphaChannel = false;
+	Options.Filter = TextureOptions::Nearest;
+	Options.TextureBorders = TextureOptions::Repeat;
+	Options.IsFloatTexture = true;
+	NoiseTexture = Render->CreateTexture((uByte*)AoNoise.data(), 4, 4, Options);
+
+	//glGenTextures(1, &NoiseTexture);
+	//glBindTexture(GL_TEXTURE_2D, NoiseTexture);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4, 4, 0, GL_RGB, GL_FLOAT, AoNoise.data());
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	AoShader = ShaderLoader::Current->Get("res:shader/internal/postProcess.vert",
 		"res:shader/effects/ssao.frag");
 	AoShader->Bind();
 	for (size_t i = 0; i < AO_SAMPLES; i++)
 	{
-		glUniform3fv(AoShader->GetUniformLocation("samples[" + std::to_string(i) + "]"), 1, &AoKernel[i].X);
+		AoShader->SetVec3(AoShader->GetUniformLocation("samples[" + std::to_string(i) + "]"), AoKernel[i]);
 	}
 
 	AoMergeShader = ShaderLoader::Current->Get("res:shader/internal/postProcess.vert",
@@ -70,52 +78,43 @@ void engine::graphics::AmbientOcclusion::OnBufferResized(uint32 Width, uint32 He
 
 	if (AoBuffer)
 	{
-		FreeBuffer(AoBuffer);
+		delete AoBuffer;
 	}
 
 	AoBuffer = CreateNewBuffer(AoWidth, AoHeight, false);
 }
 
-uint32 engine::graphics::AmbientOcclusion::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
+RendererTexture* engine::graphics::AmbientOcclusion::Draw(RendererTexture* Texture, PostProcess* With,
+	Framebuffer* Buffer, Camera* Cam)
 {
-	if (!Cam->UsedEnvironment->RenderSettings.AmbientOcclusion
+	if (!Cam->UsedEnvironment->Render.AmbientOcclusion
 		|| !VideoSubsystem::Current->DrawAmbientOcclusion)
 	{
 		return Texture;
 	}
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, Buffer->Textures[2]);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, Buffer->Textures[3]);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, NoiseTexture);
+	auto Pass = StartRenderPass();
+	Pass->UseShader(AoShader);
+	Pass->BindTexture("gPosition", Buffer->Buffer->GetTexture(Framebuffer::TEXTURE_POSITION));
+	Pass->BindTexture("gNormal", Buffer->Buffer->GetTexture(Framebuffer::TEXTURE_NORMAL));
+	Pass->BindTexture("texNoise", NoiseTexture);
 
-	AoShader->Bind();
-	AoShader->SetInt(AoShader->GetUniformLocation("gPosition"), 0);
-	AoShader->SetInt(AoShader->GetUniformLocation("gNormal"), 1);
-	AoShader->SetInt(AoShader->GetUniformLocation("texNoise"), 2);
 	AoShader->SetVec2(AoShader->GetUniformLocation("noiseScale"), Vector2(float(AoWidth), float(AoHeight)) / 4.0f);
-	glUniformMatrix4fv(AoShader->GetUniformLocation("projection"), 1, false, &Cam->Projection[0][0]);
+	AoShader->SetMatrix(AoShader->GetUniformLocation("projection"), Cam->Projection);
 
-	uint32 AoTexture = DrawBuffer(AoBuffer, this->AoWidth, this->AoHeight);
+	auto AoTexture = DrawBuffer(Pass, AoBuffer, this->AoWidth, this->AoHeight);
 
 	auto ResultBuffer = With->NextBuffer();
+	ResultBuffer->Activate();
 
-	glViewport(0, 0, Width, Height);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, Texture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, AoTexture);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, Buffer->Textures[2]);
-	AoMergeShader->Bind();
-	AoMergeShader->SetInt(AoMergeShader->GetUniformLocation("u_mainTexture"), 0);
-	AoMergeShader->SetInt(AoMergeShader->GetUniformLocation("u_aoTexture"), 1);
-	AoMergeShader->SetInt(AoMergeShader->GetUniformLocation("u_position"), 2);
+	Pass->SetResolution(Width, Height);
+	Pass->ResetTextures();
+	Pass->UseShader(AoMergeShader);
+	Pass->BindTexture("u_mainTexture", Texture);
+	Pass->BindTexture("u_aoTexture", AoTexture);
+	Pass->BindTexture("u_position", Buffer->Buffer->GetTexture(Framebuffer::TEXTURE_POSITION));
 
-	glBindFramebuffer(GL_FRAMEBUFFER, ResultBuffer.first);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	Pass->DrawVertices(3);
 
-	return ResultBuffer.second;
+	return ResultBuffer->GetTexture(0);
 }

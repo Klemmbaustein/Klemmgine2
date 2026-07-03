@@ -63,6 +63,7 @@ engine::debug::DebugBox::DebugBox(Transform WithTransform, Vector3 Color)
 	CubeMaterial->VertexShader = "res:shader/basic.vert";
 	CubeMaterial->FragmentShader = "res:shader/internal/debugShape.frag";
 	CubeMaterial->IsTwoSided = true;
+	CubeMaterial->IsTransparent = true;
 	CubeMaterial->UpdateShader();
 	CubeMaterial->VerifyUniforms();
 	SetColor(Color);
@@ -81,8 +82,8 @@ void engine::debug::DebugBox::Draw(GraphicsScene* With)
 
 	CubeMaterial->IsTwoSided = Pos.X < 1.0f && Pos.Y < 1.0f && Pos.Z < 1.0f;
 
-	this->CubeModel->Draw(With, CubeTransform, With->UsedCamera, Materials, BoundingBox(), false,
-		false);
+	this->CubeModel->Draw(With->Render, With, CubeTransform, With->UsedCamera, Materials, BoundingBox(), false,
+		true);
 }
 
 void engine::debug::DebugBox::SetColor(Vector3 NewColor)

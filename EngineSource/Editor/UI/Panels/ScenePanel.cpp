@@ -40,7 +40,14 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 		Viewport::Current->SceneChanged();
 	};
 
-	Properties->CreateNewHeading("Scene - " + Target->Name);
+	Properties->CreateNewHeading("Scene - " + Target->Name, EditorUI::Asset("Scene.png"));
+
+	Properties->CreateNewHeading("Logic");
+
+	Properties->AddClassEntry("Manager class", Id, SceneManager::ObjectType, [this, Target, OnChanged] {
+		Target->LoadManagerFromID(Id);
+		OnChanged();
+	}, true);
 
 	Properties->CreateNewHeading("Lighting");
 	Properties->AddVecEntry("Sun color", Target->Graphics.SceneEnvironment.SunColor, OnChanged, true);
@@ -49,6 +56,7 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	Properties->AddVecEntry("Sky color", Target->Graphics.SceneEnvironment.SkyColor, OnChanged, true);
 	Properties->AddVecEntry("Ground color", Target->Graphics.SceneEnvironment.GroundColor, OnChanged, true);
 	Properties->AddFloatEntry("Ambient intensity", Target->Graphics.SceneEnvironment.AmbientIntensity, OnChanged);
+	Properties->AddBooleanEntry("Sun shadows", Target->Graphics.SceneEnvironment.Render.SunShadows, OnChanged);
 
 	Properties->CreateNewHeading("Atmosphere");
 
@@ -56,14 +64,13 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	Properties->AddFloatEntry("Fog range", Target->Graphics.SceneEnvironment.FogRange, OnChanged);
 	Properties->AddFloatEntry("Fog start", Target->Graphics.SceneEnvironment.FogStart, OnChanged);
 
+	Properties->CreateNewHeading("Bloom");
+	Properties->AddBooleanEntry("Bloom enabled", Target->Graphics.SceneEnvironment.Render.Bloom, OnChanged);
+	Properties->AddFloatEntry("Bloom strength", Target->Graphics.SceneEnvironment.Render.BloomStrength, OnChanged);
+	Properties->AddFloatEntry("Bloom threshold", Target->Graphics.SceneEnvironment.Render.BloomThreshold, OnChanged);
+
+
 	Id = Target->Manager ? Target->Manager->TypeID : 0;
-
-	Properties->CreateNewHeading("Logic");
-
-	Properties->AddClassEntry("Manager class", Id, SceneManager::ObjectType, [this, Target, OnChanged] {
-		Target->LoadManagerFromID(Id);
-		OnChanged();
-	}, true);
 }
 
 void engine::editor::ScenePanel::OnThemeChanged()

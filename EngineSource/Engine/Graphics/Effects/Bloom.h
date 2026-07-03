@@ -12,7 +12,7 @@ namespace engine::graphics
 
 		static constexpr int64 BLOOM_DRAW_ORDER = 20;
 
-		uint32 Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) override;
+		RendererTexture* Draw(RendererTexture* Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam) override;
 		void OnBufferResized(uint32 Width, uint32 Height) override;
 
 	private:
@@ -25,6 +25,6 @@ namespace engine::graphics
 		uint32 Width = 0;
 		uint32 Height = 0;
 		uint32 BloomTextureLocation = 0, TextureSizeLocation = 0;
-		uint64 BloomBuffers[2];
+		RendererDrawTarget* BloomBuffers[2];
 	};
 }

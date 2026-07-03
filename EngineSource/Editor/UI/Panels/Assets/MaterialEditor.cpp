@@ -109,8 +109,13 @@ engine::editor::MaterialEditor::~MaterialEditor()
 void engine::editor::MaterialEditor::Update()
 {
 	AssetEditor::Update();
-	PreviewImage->SetUseImage(true, PreviewScene->Graphics.GetDrawBuffer());
 
+	auto Texture = PreviewScene->Graphics.GetDrawBuffer();
+
+	if (Texture)
+	{
+		PreviewImage->SetUseImage(true, Texture->GetUITexture());
+	}
 	if (RedrawNextFrame)
 	{
 		PreviewImage->RedrawElement();
@@ -336,8 +341,9 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 	};
 
 	LoadedMaterial->LoadTexture(Field);
+
 	TexElement->texturePreview->SetUseTexture(Field.TextureValue.Value, Field.TextureValue.Value
-		? Field.TextureValue.Value->TextureObject : 0);
+		? Field.TextureValue.Value->RenderTexture->GetUITexture() : 0);
 	Selector->SelectedAsset.Extension = "png";
 
 	TexElement->controlsBox->AddChild(Selector);

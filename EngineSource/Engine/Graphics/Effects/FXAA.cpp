@@ -1,7 +1,6 @@
 #include "FXAA.h"
 #include <Engine/Graphics/Effects/PostProcess.h>
 #include <Engine/Graphics/ShaderLoader.h>
-#include <Engine/Internal/OpenGL.h>
 
 using namespace engine::graphics;
 using namespace engine;
@@ -23,28 +22,22 @@ void engine::graphics::FXAA::OnBufferResized(uint32 Width, uint32 Height)
 {
 }
 
-uint32 engine::graphics::FXAA::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
+RendererTexture* engine::graphics::FXAA::Draw(RendererTexture* Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
 {
-	if (!Cam->UsedEnvironment->RenderSettings.AntiAlias)
+	if (!Cam->UsedEnvironment->Render.AntiAlias)
 	{
 		return Texture;
 	}
 
-	std::pair<uint32, uint32> OutlineBuffer = With->NextBuffer();
+	auto Pass = StartRenderPass();
+	auto PassBuffer = With->NextBuffer();
 
-	EffectShader->Bind();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, Texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	Pass->UseShader(EffectShader);
+	Texture->SetFilterMode(TextureOptions::Linear, 0);
+	Pass->BindTexture("u_texture", Texture);
 
-	EffectShader->SetInt(EffectShader->GetUniformLocation("u_texture"), 0);
+	auto Result = DrawBuffer(Pass, PassBuffer, Buffer->Width, Buffer->Height);
+	Texture->SetFilterMode(TextureOptions::Nearest, 0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, OutlineBuffer.first);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	return OutlineBuffer.second;
+	return Result;
 }

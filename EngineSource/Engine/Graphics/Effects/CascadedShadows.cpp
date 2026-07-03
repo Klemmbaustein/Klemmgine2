@@ -3,7 +3,6 @@
 #include <Core/StringUtil.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/OpenGL.h>
-#include <Engine/Internal/OpenGL.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/vec4.hpp>
@@ -15,18 +14,17 @@ constexpr uint32 ShadowResolution = 1000;
 constexpr float CAMERA_FAR_PLANE = 200.0f;
 std::vector<float> ShadowCascadeLevels = { CAMERA_FAR_PLANE / 30.0f, CAMERA_FAR_PLANE / 8.0f, CAMERA_FAR_PLANE / 2.0f };
 
-uint32 CascadedShadows::LightFBO = 0;
-uint32 CascadedShadows::LightDepthMaps = 0;
-uint32 CascadedShadows::MatricesBuffer = 0;
+RendererDrawTarget* CascadedShadows::ShadowBuffer = 0;
 graphics::ShaderObject* CascadedShadows::ShadowShader = nullptr;
+DrawUniformBuffer* CascadedShadows::ShadowMatrices = nullptr;
 
 CascadedShadows::CascadedShadows()
 {
 	Enabled = openGL::GetGLVersion() >= openGL::Version::GL430
-		|| glewIsSupported("GL_ARB_uniform_buffer_object");
+		/*|| glewIsSupported("GL_ARB_uniform_buffer_object")*/;
 }
 
-void CascadedShadows::Init()
+void CascadedShadows::Init(Renderer* Render)
 {
 	if (!Enabled)
 		return;
@@ -40,61 +38,20 @@ void CascadedShadows::Init()
 		resource::GetTextFile("res:shader/internal/shadow.geom")
 	);
 
-	glGenFramebuffers(1, &LightFBO);
-
-	glGenTextures(1, &LightDepthMaps);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, LightDepthMaps);
-	glTexImage3D(
-		GL_TEXTURE_2D_ARRAY,
-		0,
-		GL_DEPTH_COMPONENT32F,
-		ShadowResolution,
-		ShadowResolution,
-		GLsizei(ShadowCascadeLevels.size()),
-		0,
-		GL_DEPTH_COMPONENT,
-		GL_FLOAT,
-		nullptr);
-
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-	constexpr float BorderColor[] = { 1.0f, 0, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, BorderColor);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, LightFBO);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, LightDepthMaps, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-
-	int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-	{
-		Log::Error("Failed to create the shadow framebuffer!");
-		return;
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glGenBuffers(1, &MatricesBuffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, MatricesBuffer);
+	ShadowBuffer = Render->CreateShadowMaps(ShadowResolution, ShadowResolution, ShadowCascadeLevels.size());
+	ShadowMatrices = Render->CreateUniformBuffer(sizeof(glm::mat4) * 16);
 	ShadowShader->Bind();
 	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 
-	uint32 UniformBlock = glGetUniformBlockIndex(ShadowShader->ShaderID, "LightSpaceMatrices");
+	//uint32 UniformBlock = glGetUniformBlockIndex(ShadowShader->ShaderID, "LightSpaceMatrices");
 
-	glUniformBlockBinding(ShadowShader->ShaderID, UniformBlock, 0);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	//glUniformBlockBinding(ShadowShader->ShaderID, UniformBlock, 0);
 }
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
 {
 	LastShaders.clear();
-	EnvironmentHasShadows = From->UsedEnvironment->RenderSettings.SunShadows;
+	EnvironmentHasShadows = From->UsedEnvironment->Render.SunShadows;
 	this->LightDirection = Vector3::Forward(From->UsedEnvironment->SunRotation.EulerVector());
 	if (!ShouldRender())
 		return;
@@ -108,25 +65,20 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 		CascadeBounds[i] = NewMatrices[i].Bounds;
 	}
 
-	glBindBuffer(GL_UNIFORM_BUFFER, MatricesBuffer);
 	for (size_t i = 0; i < Matrices.size(); ++i)
 	{
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4), sizeof(glm::mat4), &Matrices[i]);
+		ShadowMatrices->Write(i * sizeof(glm::mat4), &Matrices[i], sizeof(glm::mat4));
 	}
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	BiasModifier = Vector3::Dot(Vector3::Forward(From->Rotation), LightDirection);
 }
 
-uint32 CascadedShadows::Draw(GraphicsScene* With)
+void CascadedShadows::Draw(GraphicsScene* With)
 {
 	if (!ShouldRender())
-		return 0;
-
-	glBindFramebuffer(GL_FRAMEBUFFER, LightFBO);
-	ShadowShader->Bind();
-	glViewport(0, 0, ShadowResolution, ShadowResolution);
-	glClear(GL_DEPTH_BUFFER_BIT);
+		return;
+	ShadowBuffer->Activate();
+	ShadowBuffer->Clear(false, true, 0);
 	std::lock_guard g{ *With->HierarchyMutex };
 
 	std::vector<GraphicsScene::DrawableData> Components = With->NewDrawables;
@@ -143,13 +95,11 @@ uint32 CascadedShadows::Draw(GraphicsScene* With)
 		}
 
 		if (i.Component->CastShadow)
-			i.Component->SimpleDraw(ShadowShader);
+			i.Component->SimpleDraw(With->Render, ShadowShader);
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	return LightDepthMaps;
 }
 
-void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Target) const
+void engine::graphics::CascadedShadows::BindUniforms(DrawCommand* Pass, ShaderObject* Target) const
 {
 	if (!Target)
 		return;
@@ -180,9 +130,8 @@ void engine::graphics::CascadedShadows::BindUniforms(graphics::ShaderObject* Tar
 			ShadowCascadeLevels[i]);
 	}
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, graphics::CascadedShadows::LightDepthMaps);
-	Target->SetInt(Target->GetUniformLocation("u_shadowMaps"), 0);
+	Pass->BindUniformBlock("LightSpaceMatrices", ShadowMatrices);
+	Pass->BindTexture("u_shadowMaps", ShadowBuffer->GetTexture(0));
 	Target->SetFloat(Target->GetUniformLocation("u_shadowBiasModifier"), BiasModifier);
 	Target->SetInt(Target->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
 }
@@ -193,6 +142,18 @@ void engine::graphics::CascadedShadows::UnloadShadows()
 	{
 		ShadowShader = nullptr;
 		delete ShadowShader;
+	}
+
+	if (ShadowMatrices)
+	{
+		ShadowMatrices = nullptr;
+		delete ShadowMatrices;
+	}
+
+	if (ShadowBuffer)
+	{
+		ShadowBuffer = nullptr;
+		delete ShadowBuffer;
 	}
 }
 

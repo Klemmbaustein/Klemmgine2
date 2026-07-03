@@ -1,6 +1,6 @@
 #pragma once
 #include "DrawableComponent.h"
-#include <Engine/Graphics/VertexBuffer.h>
+#include <Engine/Graphics/Backend/Renderer.h>
 #include <Engine/Graphics/Material.h>
 #include <Engine/Physics/Physics.h>
 
@@ -15,8 +15,8 @@ namespace engine
 		void OnAttached() override;
 		void OnDetached() override;
 
-		void Draw(graphics::Camera* From, graphics::GraphicsScene* In) override;
-		void SimpleDraw(graphics::ShaderObject* With) override;
+		void Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) override;
+		void SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With) override;
 
 		bool UpdateTransform(bool Dirty) override;
 

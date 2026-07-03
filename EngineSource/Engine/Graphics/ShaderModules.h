@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include "Material.h"
+#include <Engine/Graphics/Backend/Renderer.h>
 
 namespace engine::graphics
 {
@@ -10,9 +11,9 @@ namespace engine::graphics
 	{
 	public:
 		string Name;
-		uint32 ModuleObject = 0;
+		ShaderProgramObject* Object = nullptr;
 
-		std::vector<uint32> Dependencies;
+		std::vector<ShaderProgramObject*> Dependencies;
 
 		std::vector<string> Exported;
 		enum class ShaderType
@@ -52,11 +53,12 @@ namespace engine::graphics
 		[[nodiscard]]
 		Result ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type);
 
-		void ScanModules();
+		void ScanModules(Renderer* Render);
 	private:
 		void FreeModules();
 		ShaderUniform ReadUniformDefinition(string DefinitionSource);
 		void LoadModule(const string& Source, ShaderModule& Info);
 		std::map<string, ShaderModule> LoadedModules;
+		Renderer* Render = nullptr;
 	};
 }

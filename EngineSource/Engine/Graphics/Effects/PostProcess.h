@@ -17,11 +17,11 @@ namespace engine::graphics
 		void AddEffect(PostProcessEffect* NewEffect);
 		void RemoveEffect(PostProcessEffect* TargetEffect);
 
-		uint32 Draw(Framebuffer* Buffer, Camera* Cam);
+		RendererTexture* Draw(Framebuffer* Buffer, Camera* Cam);
 		void OnBufferResized(uint32 Width, uint32 Height);
 
 		// Returns post process framebuffer and texture objects.
-		std::pair<uint32, uint32> NextBuffer();
+		RendererDrawTarget* NextBuffer();
 
 		template<typename T>
 		T* GetEffect()
@@ -44,8 +44,7 @@ namespace engine::graphics
 		uint32 Width = 0, Height = 0;
 
 		std::vector<PostProcessEffect*> ActiveEffects;
-		std::array<uint32, 2> PostProcessBuffers;
-		std::array<uint32, 2> PostProcessTextures;
+		std::array<RendererDrawTarget*, 2> PostProcessBuffers;
 		bool IsFirstBuffer = true;
 	};
 }

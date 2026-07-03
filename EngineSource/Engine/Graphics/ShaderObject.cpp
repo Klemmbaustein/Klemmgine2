@@ -1,42 +1,6 @@
 #include "ShaderObject.h"
-#include "ShaderObject.h"
-#include <kui/Resource.h>
 #include "ShaderLoader.h"
-#include <Engine/Internal/OpenGL.h>
-#include <Core/Log.h>
-
-bool engine::graphics::ShaderObject::CheckCompileErrors(uint32 ShaderID, string Type)
-{
-	GLint success;
-	GLchar infoLog[1024];
-	if (Type != "PROGRAM")
-	{
-		glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &success);
-		if (!success)
-		{
-			glGetShaderInfoLog(ShaderID, 1024, NULL, infoLog);
-			Log::Error("Shader compilation error of type: "
-				+ Type
-				+ "\n"
-				+ std::string(infoLog));
-			return true;
-		}
-	}
-	else
-	{
-		glGetProgramiv(ShaderID, GL_LINK_STATUS, &success);
-		if (!success)
-		{
-			glGetProgramInfoLog(ShaderID, 1024, NULL, infoLog);
-			Log::Error("Shader linking error of type: "
-				+ Type
-				+ "\n"
-				+ std::string(infoLog));
-			return true;
-		}
-	}
-	return false;
-}
+#include <Engine/Graphics/VideoSubsystem.h>
 
 engine::graphics::ShaderObject::ShaderObject(string VertexFile, string FragmentFile, string GeometryFile)
 {
@@ -60,18 +24,16 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	this->VertexFile = VertexFile;
 	this->FragmentFile = FragmentFile;
 	this->GeometryFile = GeometryFile;
-	std::vector<uint32> VertexModules;
-	std::vector<uint32> FragmentModules;
-	std::vector<uint32> GeometryModules;
+	std::vector<ShaderProgramObject*> ResultModules;
 
 	auto VertexResult = ShaderLoader::Current->Modules.ParseShader(VertexFile, ShaderModule::ShaderType::Vertex);
 	VertexFile = VertexResult.ResultSource;
 	for (auto& mod : VertexResult.DependencyModules)
 	{
-		VertexModules.push_back(mod.ModuleObject);
+		ResultModules.push_back(mod.Object);
 		for (auto& dep : mod.Dependencies)
 		{
-			VertexModules.push_back(dep);
+			ResultModules.push_back(dep);
 		}
 	}
 
@@ -80,26 +42,23 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	FragmentFile = FragmentResult.ResultSource;
 	for (auto& mod : FragmentResult.DependencyModules)
 	{
-		FragmentModules.push_back(mod.ModuleObject);
+		ResultModules.push_back(mod.Object);
 		for (auto& dep : mod.Dependencies)
 		{
-			VertexModules.push_back(dep);
+			ResultModules.push_back(dep);
 		}
 	}
 
-	Valid = true;
-	unsigned int vertex = 0, fragment = 0, geometry = 0;
-	const char* VertexCString = VertexFile.c_str();
-	const char* FragmentCString = FragmentFile.c_str();
+	auto Render = VideoSubsystem::Current->Renderer;
 
-	vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, GLsizei(1), &VertexCString, nullptr);
-	glCompileShader(vertex);
-	if (CheckCompileErrors(vertex, "VERTEX"))
-	{
-		Valid = false;
-		return;
-	}
+	Valid = true;
+
+	ShaderProgramObject* Vertex = Render->CreateShaderProgramObject(VertexFile, ShaderProgramType::Vertex);
+	ShaderProgramObject* Fragment = Render->CreateShaderProgramObject(FragmentFile, ShaderProgramType::Fragment);
+	ShaderProgramObject* Geometry = nullptr;
+
+	ResultModules.push_back(Vertex);
+	ResultModules.push_back(Fragment);
 
 	if (!GeometryFile.empty())
 	{
@@ -108,73 +67,61 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 		const char* GeometryCString = GeometryFile.c_str();
 		for (auto& mod : GeometryResult.DependencyModules)
 		{
-			GeometryModules.push_back(mod.ModuleObject);
+			ResultModules.push_back(mod.Object);
 			for (auto& dep : mod.Dependencies)
 			{
-				VertexModules.push_back(dep);
+				ResultModules.push_back(dep);
 			}
 		}
 
-		geometry = glCreateShader(GL_GEOMETRY_SHADER);
-		glShaderSource(geometry, GLsizei(1), &GeometryCString, nullptr);
-		glCompileShader(geometry);
-		if (CheckCompileErrors(geometry, "GEOMETRY"))
+		Geometry = Render->CreateShaderProgramObject(GeometryFile, ShaderProgramType::Geometry);
+		ResultModules.push_back(Geometry);
+	}
+
+	for (auto& i : ResultModules)
+	{
+		if (!i)
 		{
 			Valid = false;
 			return;
 		}
 	}
 
-	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, GLsizei(1), &FragmentCString, nullptr);
-	glCompileShader(fragment);
-	if (CheckCompileErrors(fragment, "FRAGMENT"))
+	Program = Render->LinkShaderProgram(ResultModules);
+
+	if (!Program)
 	{
 		Valid = false;
 		return;
 	}
 
-	ShaderID = glCreateProgram();
-	glAttachShader(ShaderID, vertex);
-	glAttachShader(ShaderID, fragment);
-	if (!GeometryFile.empty())
-	{
-		glAttachShader(ShaderID, geometry);
-	}
-	for (uint32 mod : FragmentModules)
-	{
-		glAttachShader(ShaderID, mod);
-	}
-	for (uint32 mod : VertexModules)
-	{
-		glAttachShader(ShaderID, mod);
-	}
-	for (uint32 mod : GeometryModules)
-	{
-		glAttachShader(ShaderID, mod);
-	}
-
-	glLinkProgram(ShaderID);
-	if (CheckCompileErrors(ShaderID, "PROGRAM"))
-	{
-		Valid = false;
-		return;
-	}
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
-	if (!GeometryFile.empty())
-	{
-		glDeleteShader(geometry);
-	}
-
-	ModelUniform = glGetUniformLocation(ShaderID, "u_model");
+	ModelUniform = GetUniformLocation("u_model");
 	Uniforms.clear();
+
+	delete Vertex;
+	delete Fragment;
+	if (Geometry)
+	{
+		delete Geometry;
+	}
 }
 
 void engine::graphics::ShaderObject::Bind()
 {
-	if (Valid)
-		glUseProgram(ShaderID);
+	Program->Activate();
+}
+
+uint32 engine::graphics::ShaderObject::GetUniformBlockLocation(const string& Name)
+{
+	auto Found = UniformBlocks.find(Name);
+	if (Found != UniformBlocks.end())
+		return Found->second;
+
+	uint32 Location = Program->GetUniformBlockLocation(Name.c_str());
+
+	UniformBlocks.insert({ Name, Location });
+
+	return Location;
 }
 
 uint32 engine::graphics::ShaderObject::GetUniformLocation(size_t NameHash, const char* Name) const
@@ -183,40 +130,14 @@ uint32 engine::graphics::ShaderObject::GetUniformLocation(size_t NameHash, const
 	if (Found != Uniforms.end())
 		return Found->second;
 
-	uint32 Location = glGetUniformLocation(ShaderID, Name);
+	uint32 Location = Program->GetUniformLocation(Name);
 
 	Uniforms.insert({ NameHash, Location });
 
 	return Location;
 }
 
-void engine::graphics::ShaderObject::SetInt(uint32 UniformLocation, int32 Value)
-{
-	glUniform1i(UniformLocation, Value);
-}
-
-void engine::graphics::ShaderObject::SetFloat(uint32 UniformLocation, float Value)
-{
-	glUniform1f(UniformLocation, Value);
-}
-
-void engine::graphics::ShaderObject::SetVec3(uint32 UniformLocation, Vector3 Value)
-{
-	glUniform3f(UniformLocation, Value.X, Value.Y, Value.Z);
-}
-
-void engine::graphics::ShaderObject::SetVec2(uint32 UniformLocation, Vector2 Value)
-{
-	glUniform2f(UniformLocation, Value.X, Value.Y);
-}
-
-void engine::graphics::ShaderObject::SetTransform(uint32 UniformLocation, const Transform& Value)
-{
-	glUniformMatrix4fv(UniformLocation, 1, false, &Value.Matrix[0][0]);
-}
-
 void engine::graphics::ShaderObject::Clear()
 {
-	glDeleteProgram(ShaderID);
-	ShaderID = 0;
+	delete Program;
 }

@@ -234,7 +234,13 @@ void engine::editor::ModelEditor::Update()
 		OnModelLoaded();
 	}
 	if (EditorUI::FocusedPanel == this)
-		SceneBackground->SetUseImage(true, EditorScene->Graphics.GetDrawBuffer());
+	{
+		auto Buffer = EditorScene->Graphics.GetDrawBuffer();
+		if (Buffer)
+		{
+			SceneBackground->SetUseImage(true, Buffer->GetUITexture());
+		}
+	}
 }
 
 void engine::editor::ModelEditor::Save()

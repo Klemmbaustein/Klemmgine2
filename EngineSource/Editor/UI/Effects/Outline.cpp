@@ -1,7 +1,6 @@
 #include "Outline.h"
 #include <Engine/Graphics/Effects/PostProcess.h>
 #include <Engine/Graphics/ShaderLoader.h>
-#include <Engine/Internal/OpenGL.h>
 
 using namespace engine::graphics;
 using namespace engine::editor;
@@ -24,23 +23,15 @@ void engine::editor::EditorOutline::OnBufferResized(uint32 Width, uint32 Height)
 {
 }
 
-uint32 engine::editor::EditorOutline::Draw(uint32 Texture, PostProcess* With, Framebuffer* Buffer, Camera* Cam)
+RendererTexture* engine::editor::EditorOutline::Draw(RendererTexture* Texture, PostProcess* With,
+	Framebuffer* Buffer, Camera* Cam)
 {
-	std::pair<uint32, uint32> OutlineBuffer = With->NextBuffer();
+	auto Pass = StartRenderPass();
+	auto PassBuffer = With->NextBuffer();
 
-	OutlineShader->Bind();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, Texture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, Buffer->Textures[Framebuffer::TEXTURE_DEPTH_STENCIL]);
-	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_STENCIL_INDEX);
+	Pass->UseShader(OutlineShader);
+	Pass->BindTexture("u_texture", Texture);
+	Pass->BindTexture("u_depthStencil", Buffer->Buffer->GetStencilTexture());
 
-	OutlineShader->SetInt(OutlineShader->GetUniformLocation("u_texture"), 0);
-	OutlineShader->SetInt(OutlineShader->GetUniformLocation("u_depthStencil"), 1);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, OutlineBuffer.first);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
-
-	return OutlineBuffer.second;
+	return DrawBuffer(Pass, PassBuffer, Buffer->Width, Buffer->Height);
 }

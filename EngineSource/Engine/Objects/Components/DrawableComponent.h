@@ -2,6 +2,7 @@
 #include "ObjectComponent.h"
 #include <Core/BoundingBox.h>
 #include <Engine/Graphics/Camera.h>
+#include <Engine/Graphics/Backend/Renderer.h>
 #include <Engine/Graphics/ShaderObject.h>
 
 namespace engine::graphics
@@ -20,12 +21,12 @@ namespace engine
 		bool CastShadow = true;
 		bool IsOpaque = true;
 		bool IsTransparent = false;
-		virtual void Draw(graphics::Camera* From, graphics::GraphicsScene* In) = 0;
-		virtual void DrawTransparent(graphics::Camera* From, graphics::GraphicsScene* In)
+		virtual void Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) = 0;
+		virtual void DrawTransparent(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
 		{
 
 		}
-		virtual void SimpleDraw(graphics::ShaderObject* With) {};
+		virtual void SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With) {};
 
 	private:
 		static inline uint64 IdCounter = 0;

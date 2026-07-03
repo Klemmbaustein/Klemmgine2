@@ -1,6 +1,5 @@
 #include "GraphicsScene.h"
 #include <Engine/Graphics/VideoSubsystem.h>
-#include <Engine/Internal/OpenGL.h>
 #include <algorithm>
 #include <Core/ThreadPool.h>
 
@@ -80,6 +79,7 @@ void engine::graphics::GraphicsScene::Init()
 
 	if (VideoSystem)
 	{
+		this->Render = VideoSystem->Renderer;
 		kui::Vec2ui BufferSize = VideoSystem->MainWindow->GetSize();
 #if EDITOR
 		if (editor::EditorSubsystem::Active)
@@ -108,7 +108,7 @@ void engine::graphics::GraphicsScene::Init()
 #endif
 
 		Post.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
-		Shadows.Init();
+		Shadows.Init(Render);
 		Lights.UpdateBounds(this);
 		BuildBoundingVolume();
 	}
@@ -129,7 +129,7 @@ void engine::graphics::GraphicsScene::RemoveDrawnComponent(DrawableComponent* Re
 	RemovedDrawableIds.insert(Removed->UniqueId);
 }
 
-void engine::graphics::GraphicsScene::Draw()
+void engine::graphics::GraphicsScene::Draw(Renderer* With)
 {
 	if (!AlwaysRedraw && !RedrawNextFrame)
 		return;
@@ -209,18 +209,10 @@ void engine::graphics::GraphicsScene::ShadowDrawPass()
 void engine::graphics::GraphicsScene::MainDrawPass()
 {
 	Buffer->Bind();
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_STENCIL_TEST);
-	glViewport(0, 0, GLsizei(Buffer->Width), GLsizei(Buffer->Height));
-	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-	glClearColor(0, 0, 0, 1);
-	glStencilMask(0xFF);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glStencilMask(0);
-	glStencilFunc(GL_GEQUAL, 1, 0xFF);
+
+	Buffer->Buffer->Clear(true, true, 0xff);
 
 	bool LastIsTransparent = false;
-	bool LastDrawStencil = false;
 
 	std::vector<DrawableData> ToDraw;
 	{
@@ -256,60 +248,22 @@ void engine::graphics::GraphicsScene::MainDrawPass()
 		return a.first.Position.X < b.first.Position.X;
 	});
 
-	glDisable(GL_BLEND);
-	bool FoundTransparent = false;
 	for (auto& [_, i] : SortedComponents)
 	{
-		if (i->DrawStencil && !LastDrawStencil)
-		{
-			glStencilMask(1);
-			LastDrawStencil = true;
-		}
-		else if (!i->DrawStencil && LastDrawStencil)
-		{
-			glStencilMask(0);
-			LastDrawStencil = false;
-		}
-		if (i->IsTransparent)
-		{
-			FoundTransparent = true;
-		}
 		if (i->IsOpaque)
 		{
-			i->Draw(UsedCamera, this);
+			i->Draw(Render, UsedCamera, this);
 		}
 	}
 
-	if (FoundTransparent)
+	for (auto i = SortedComponents.rbegin(); i != SortedComponents.rend(); i++)
 	{
-		glEnable(GL_BLEND);
-		for (auto i = SortedComponents.rbegin(); i != SortedComponents.rend(); i++)
+		if (i->second->IsTransparent)
 		{
-			if (i->second->DrawStencil && !LastDrawStencil)
-			{
-				glStencilMask(1);
-				LastDrawStencil = true;
-			}
-			else if (!i->second->DrawStencil && LastDrawStencil)
-			{
-				glStencilMask(0);
-				LastDrawStencil = false;
-			}
-			if (i->second->IsTransparent)
-			{
-				i->second->DrawTransparent(UsedCamera, this);
-			}
+			i->second->DrawTransparent(Render, UsedCamera, this);
 		}
 	}
-	else
-	{
-		glEnable(GL_BLEND);
-	}
-	glDisable(GL_STENCIL_TEST);
 	Debug.Draw(this);
-	glDisable(GL_BLEND);
-	Buffer->Unbind();
-	glDisable(GL_CULL_FACE);
 }
 
 void engine::graphics::GraphicsScene::BuildBoundingVolume()
@@ -373,6 +327,7 @@ SerializedValue engine::graphics::GraphicsScene::Serialize()
 {
 	return std::vector{
 		SerializedData("sunColor", SceneEnvironment.SunColor),
+		SerializedData("sunShadows", SceneEnvironment.Render.SunShadows),
 		SerializedData("sunRotation", SceneEnvironment.SunRotation.EulerVector()),
 		SerializedData("skyColor", SceneEnvironment.SkyColor),
 		SerializedData("groundColor", SceneEnvironment.GroundColor),
@@ -381,6 +336,9 @@ SerializedValue engine::graphics::GraphicsScene::Serialize()
 		SerializedData("fogColor", SceneEnvironment.FogColor),
 		SerializedData("fogRange", SceneEnvironment.FogRange),
 		SerializedData("fogStart", SceneEnvironment.FogStart),
+		SerializedData("bloomEnabled", SceneEnvironment.Render.Bloom),
+		SerializedData("bloomStrength", SceneEnvironment.Render.BloomStrength),
+		SerializedData("bloomThreshold", SceneEnvironment.Render.BloomThreshold),
 	};
 }
 
@@ -415,6 +373,10 @@ void engine::graphics::GraphicsScene::DeSerialize(SerializedValue* From)
 	{
 		SceneEnvironment.SunIntensity = SceneInfo.At("sunIntensity").GetFloat();
 	}
+	if (SceneInfo.Contains("sunShadows"))
+	{
+		SceneEnvironment.Render.SunShadows = SceneInfo.At("sunShadows").GetBool();
+	}
 	if (SceneInfo.Contains("ambientIntensity"))
 	{
 		SceneEnvironment.AmbientIntensity = SceneInfo.At("ambientIntensity").GetFloat();
@@ -430,6 +392,18 @@ void engine::graphics::GraphicsScene::DeSerialize(SerializedValue* From)
 	if (SceneInfo.Contains("fogStart"))
 	{
 		SceneEnvironment.FogStart = SceneInfo.At("fogStart").GetFloat();
+	}
+	if (SceneInfo.Contains("bloomEnabled"))
+	{
+		SceneEnvironment.Render.Bloom = SceneInfo.At("bloomEnabled").GetBool();
+	}
+	if (SceneInfo.Contains("bloomStrength"))
+	{
+		SceneEnvironment.Render.BloomStrength = SceneInfo.At("bloomStrength").GetFloat();
+	}
+	if (SceneInfo.Contains("bloomThreshold"))
+	{
+		SceneEnvironment.Render.BloomThreshold = SceneInfo.At("bloomThreshold").GetFloat();
 	}
 
 }
