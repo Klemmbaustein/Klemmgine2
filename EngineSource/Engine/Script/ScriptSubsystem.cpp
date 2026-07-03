@@ -264,7 +264,13 @@ void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
 	for (auto& i : this->UIData.ClassIdMappings)
 	{
 		this->UIContext.CreateSpecialMarkupBox[i.second] =
-			[this, cls = i.first](kui::markup::DynamicMarkupContext* c) -> kui::markup::UIDynMarkupBox* {
+			[this, cls = Runtime->reflect->types.at(i.first)]
+			(kui::markup::DynamicMarkupContext* c, bool HasName) -> kui::markup::UIDynMarkupBox* {
+			if (!HasName)
+			{
+				return nullptr;
+			}
+
 			auto found = UIObjectMappings.find(c);
 
 			if (found != UIObjectMappings.end())
@@ -273,7 +279,7 @@ void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
 				return Element.getValue();
 			}
 
-			auto Class = Runtime->reflect->types[cls].create(Runtime->baseContext);
+			auto Class = cls.create(Runtime->baseContext);
 
 			ClassRef<ui::ScriptUIElement*> Element = Class;
 
