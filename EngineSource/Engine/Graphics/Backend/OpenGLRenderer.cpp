@@ -694,6 +694,12 @@ engine::graphics::RendererShadowDrawTarget::RendererShadowDrawTarget(uint32 Widt
 	}
 }
 
+engine::graphics::RendererShadowDrawTarget::~RendererShadowDrawTarget()
+{
+	glDeleteFramebuffers(1, &LightFBO);
+	glDeleteTextures(1, &TextureObject);
+}
+
 RendererTexture* engine::graphics::RendererShadowDrawTarget::GetTexture(size_t Index)
 {
 	return this;
@@ -745,6 +751,11 @@ engine::graphics::OpenGLDrawUniformBuffer::OpenGLDrawUniformBuffer(size_t Size, 
 	glBindBuffer(GL_UNIFORM_BUFFER, BufferObject);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, BufferId, BufferObject);
+}
+
+engine::graphics::OpenGLDrawUniformBuffer::~OpenGLDrawUniformBuffer()
+{
+	glDeleteBuffers(1, &BufferObject);
 }
 
 void engine::graphics::OpenGLDrawUniformBuffer::Write(size_t Offset, void* Data, size_t DataSize)

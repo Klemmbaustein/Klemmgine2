@@ -75,6 +75,7 @@ namespace engine::graphics
 	public:
 
 		OpenGLDrawUniformBuffer(size_t Size, OpenGLRenderer* Render);
+		~OpenGLDrawUniformBuffer();
 
 		// Inherited via DrawUniformBuffer
 		void Write(size_t Offset, void* Data, size_t DataSize) override;
@@ -144,6 +145,7 @@ namespace engine::graphics
 	public:
 
 		RendererShadowDrawTarget(uint32 Width, uint32 Height, uint32 Count, OpenGLRenderer* Render);
+		~RendererShadowDrawTarget();
 
 		// Inherited via RendererDrawTarget
 		RendererTexture* GetTexture(size_t Index) override;
