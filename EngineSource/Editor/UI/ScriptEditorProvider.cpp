@@ -243,9 +243,12 @@ void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition Positi
 }
 
 void engine::editor::ScriptEditorProvider::NavigateTo(kui::EditorPosition StartPosition,
-	kui::EditorPosition EndPosition)
+	kui::EditorPosition EndPosition, bool Edit)
 {
-	ParentEditor->Edit();
+	if (Edit)
+	{
+		ParentEditor->Edit();
+	}
 	ParentEditor->SetCursorPosition(StartPosition,
 		EditorPosition(EndPosition));
 	ParentEditor->ScrollTo(ParentEditor->SelectionStart);

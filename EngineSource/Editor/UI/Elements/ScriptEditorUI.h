@@ -1,7 +1,9 @@
 #pragma once
 #include <kui/UI/UITextEditor.h>
+#include <kui/UI/UITextField.h>
 #include <Editor/UI/ScriptEditorProvider.h>
 #include <Editor/UI/ScriptMiniMap.h>
+#include <TextEditor.kui.hpp>
 #include <Editor/UI/KeyboardShortcut.h>
 #include <Core/ThreadMessages.h>
 #include "Toolbar.h"
@@ -51,7 +53,6 @@ namespace engine::editor
 		kui::Font* TextFont = nullptr;
 		kui::Font* ScriptFont = nullptr;
 
-
 		kui::Vec2f Size;
 		void UpdateTabSize(ScriptEditorTab* Tab);
 
@@ -62,6 +63,10 @@ namespace engine::editor
 		kui::UIScrollBox* VerticalTabBox = nullptr;
 		kui::UIScrollBox* HorizontalTabBox = nullptr;
 		kui::UIBackground* VerticalTabBackground = nullptr;
+		TextEditorSearchElement* SearchUI = nullptr;
+		SearchContext* CurrentSearch = nullptr;
+
+		bool SearchMatchCase = false;
 
 		kui::UIText* StatusText = nullptr;
 
@@ -71,6 +76,9 @@ namespace engine::editor
 		ScriptEditorTab* GetSelectedTab();
 
 		void CloseTab(size_t Index);
+
+		void CloseSearch();
+		void RunSearch();
 
 		void InitializeSettings();
 

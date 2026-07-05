@@ -6,7 +6,7 @@
 #include <Editor/UI/Panels/ClassBrowser.h>
 #include <Engine/Engine.h>
 #include <Engine/Script/ScriptSubsystem.h>
-#include <fstream>
+#include <Editor/UI/Elements/Checkbox.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Editor/UI/CodeEditorTheme.h>
@@ -156,6 +156,64 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 		}
 	}, ShortcutOptions::AllowInText);
 
+	AddShortcut(Key::ESCAPE, {}, [this]() {
+		CloseSearch();
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::f, ShortcutModifiers{ .Ctrl = true }, [this]() {
+		if (SearchUI)
+		{
+			delete SearchUI;
+		}
+
+		if (!GetSelectedTab())
+		{
+			return;
+		}
+
+		SearchUI = new TextEditorSearchElement();
+		SearchUI->SetHorizontalAlign(UIBox::Align::Reverse);
+
+		auto Tab = GetSelectedTab();
+
+		auto Size = EditorBox->GetUsedSize().GetScreen();
+
+		if (Tab->Editor->EditorScrollBox->GetScrollBarBackground()->IsVisible)
+		{
+			Size = Size - SizeVec(UISize::Pixels(GetSelectedTab()->Editor->EditorScrollBox->ScrollBarWidth + 5), 0).GetScreen();
+		}
+
+		SearchUI->SetMinWidth(Size.X);
+		SearchUI->SetMinHeight(Size.Y);
+		SearchUI->SetMaxWidth(Size.X);
+		SearchUI->SetMaxHeight(Size.Y);
+		SearchUI->SetPosition(EditorBox->GetScreenPosition());
+		SearchUI->options->AddChild(new UICheckbox(SearchMatchCase, [this] {
+			SearchMatchCase = !SearchMatchCase;
+		}));
+
+		SearchUI->close->OnClicked = std::bind(&ScriptEditorUI::CloseSearch, this);
+
+		SearchUI->search->OnChanged = [this] {
+			auto& Input = Window::GetActiveWindow()->Input;
+
+			if (Input.IsKeyDown(Key::ESCAPE))
+			{
+				CloseSearch();
+			}
+			else if (Input.IsKeyDown(Key::RETURN))
+			{
+				RunSearch();
+			}
+		};
+
+		SearchUI->find->btn->OnClicked = std::bind(&ScriptEditorUI::RunSearch, this);
+
+		GetSelectedTab()->Editor->StopEdit();
+
+		SearchUI->search->Edit();
+	}, ShortcutOptions::AllowInText);
+
 	auto LastOpened = GetLastOpenedFiles();
 	for (auto& i : LastOpened)
 	{
@@ -175,6 +233,15 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 	Settings::GetInstance()->Script.RemoveListener(this);
 
 	Quit = true;
+
+	if (SearchUI)
+	{
+		delete SearchUI;
+	}
+	if (CurrentSearch)
+	{
+		delete CurrentSearch;
+	}
 
 	for (auto& i : Tabs)
 	{
@@ -247,6 +314,43 @@ void engine::editor::ScriptEditorUI::CloseTab(size_t Index)
 	delete Tabs[Index].Provider;
 	Tabs.erase(Tabs.begin() + Index);
 	UpdateEditorTabs();
+}
+
+void engine::editor::ScriptEditorUI::CloseSearch()
+{
+	if (SearchUI)
+	{
+		delete SearchUI;
+		SearchUI = nullptr;
+		GetSelectedTab()->Editor->KeepSelection = true;
+		GetSelectedTab()->Editor->Edit();
+	}
+}
+
+void engine::editor::ScriptEditorUI::RunSearch()
+{
+	auto Tab = GetSelectedTab();
+
+	if (this->CurrentSearch && (this->CurrentSearch->Query != SearchUI->search->GetText()
+		|| SearchMatchCase != CurrentSearch->MatchCase))
+	{
+		delete this->CurrentSearch;
+		this->CurrentSearch = nullptr;
+	}
+
+	if (!this->CurrentSearch)
+	{
+		this->CurrentSearch = Tab->Provider->StartSearch(SearchUI->search->GetText(), SearchMatchCase);
+	}
+
+	auto Next = CurrentSearch->Next();
+
+	if (Next)
+	{
+		Tab->Provider->NavigateTo(*Next, EditorPosition(Next->Column + CurrentSearch->Query.size(), Next->Line), false);
+	}
+	SearchUI->search->Edit();
+
 }
 
 void engine::editor::ScriptEditorUI::InitializeSettings()
@@ -387,6 +491,10 @@ void engine::editor::ScriptEditorUI::UpdateEditorTabs()
 		string Name = file::FileName(t.Provider->EditedFile);
 
 		t.TabName = new UIText(12_px, EditorUI::Theme.Text, Name, TextFont);
+		if (!Tabs[i].IsSaved)
+		{
+			t.TabName->SetText(file::FileName(Name) + "*");
+		}
 
 		if (UseVerticalTabs)
 		{

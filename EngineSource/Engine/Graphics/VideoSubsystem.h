@@ -5,6 +5,7 @@
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Graphics/Backend/GraphicsBackend.h>
 #include <map>
+#include <Core/Event.h>
 
 namespace engine
 {
@@ -30,7 +31,7 @@ namespace engine
 		bool DrawShadows = true;
 		bool DrawAmbientOcclusion = true;
 
-		std::map<void*, std::function<void(kui::Vec2ui NewSize)>> OnResizedCallbacks;
+		Event<kui::Vec2f> OnResizedCallbacks;
 		static string DefaultFontName;
 		static VideoSubsystem* Current;
 

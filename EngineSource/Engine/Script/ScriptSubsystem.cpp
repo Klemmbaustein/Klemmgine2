@@ -230,7 +230,7 @@ RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(ReflectionObje
 		return found->second;
 	}
 
-	RuntimeClass* NewObj = NativeModule::makePointerClass<ReflectionObject>(Object);
+	RuntimeClass* NewObj = CreateSceneObject(Object);
 	NewObj->addRef();
 	RegisterClassForObject(Object, NewObj);
 	return NewObj;

@@ -230,6 +230,8 @@ static std::map<int, kui::Key> Keys =
 	{ SDLK_X, Key::x },
 	{ SDLK_Y, Key::y },
 	{ SDLK_Z, Key::z },
+	{ SDLK_PAGEUP, Key::PAGEUP },
+	{ SDLK_PAGEDOWN, Key::PAGEDOWN },
 };
 
 void kui::systemWM::DestroyWindow(SysWindow* Target)
