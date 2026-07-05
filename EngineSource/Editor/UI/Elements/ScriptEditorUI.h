@@ -1,6 +1,5 @@
 #pragma once
 #include <kui/UI/UITextEditor.h>
-#include <kui/UI/UITextField.h>
 #include <Editor/UI/ScriptEditorProvider.h>
 #include <Editor/UI/ScriptMiniMap.h>
 #include <TextEditor.kui.hpp>
@@ -64,9 +63,12 @@ namespace engine::editor
 		kui::UIScrollBox* HorizontalTabBox = nullptr;
 		kui::UIBackground* VerticalTabBackground = nullptr;
 		TextEditorSearchElement* SearchUI = nullptr;
+		TabSwitcher* Switcher = nullptr;
 		SearchContext* CurrentSearch = nullptr;
+		std::vector<TabSwitcherItem*> SwitchItems;
 
 		bool SearchMatchCase = false;
+		bool SearchGotAnyResults = false;
 
 		kui::UIText* StatusText = nullptr;
 
@@ -79,6 +81,11 @@ namespace engine::editor
 
 		void CloseSearch();
 		void RunSearch();
+		void UpdateSearchPosition();
+
+		void OpenTabSwitcher();
+		void CloseTabSwitcher();
+		void SwitchToTab(size_t NewTabIndex);
 
 		void InitializeSettings();
 

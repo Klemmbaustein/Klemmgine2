@@ -1,5 +1,24 @@
 # Engine changelog
 
+## Klemmgine 2.0.0-dev2
+
+### Graphics
+
+- Reworked graphics code to no longer call OpenGL directly.
+- Optimized OpenGL API calls for a slight performance increase.
+
+### Editor
+
+- Script editor improvements:
+	- Added file search, using Ctrl+F.
+	- Added keyboard tab switcher, accessed using Ctrl+Tab, which can be navigated using arrow keys.
+	- Improved the controls of auto complete results.
+	- Added a shortcut to close the selected tab, Ctrl+W.
+
+### Fixes
+
+- Fixed a crash when calling the virtual functions of native SceneObjects (such as update()) directly from a script.
+
 ## Klemmgine 2.0.0-dev1
 
 ### General
