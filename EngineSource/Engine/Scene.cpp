@@ -86,12 +86,7 @@ engine::Scene::~Scene()
 		Manager = nullptr;
 	}
 
-	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	UICanvas::ClearAll();
-
 	delete Sound;
-
-	VideoSystem->OnResizedCallbacks.erase(this);
 }
 
 engine::Scene::Scene(const char* FilePath)

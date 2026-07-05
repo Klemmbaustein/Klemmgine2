@@ -8,6 +8,8 @@
 
 namespace engine::editor
 {
+	class SearchContext;
+
 	/**
 	 * @brief
 	 * A text editor provider that contains common engine functionality (right click menu, hover, auto complete)
@@ -39,9 +41,12 @@ namespace engine::editor
 			CompletionSource Source);
 
 		virtual void SetLine(size_t Index, const std::vector<kui::TextSegment>& NewLine) override;
+		virtual void OnCursorMove(int64& Column, int64& Line, bool IsPages) override;
 
 		void TrimWhitespace(size_t IgnoreLine);
 		void ClearHovered();
+
+		SearchContext* StartSearch(string Text, bool MatchCase);
 
 		bool IsChanged = false;
 
@@ -77,9 +82,26 @@ namespace engine::editor
 		kui::UIBox* HoverBox = nullptr;
 		kui::EditorPosition CompletePosition;
 
+		size_t SelectedCompletionItem = 0;
+
 		kui::UIScrollBox* AutoCompleteBox = nullptr;
 		std::vector<ds::AutoCompleteResult> Completions;
 		std::vector<kui::UIButton*> CompletionButtons;
 		bool IsAutoCompleteActive = false;
+	};
+
+	class SearchContext
+	{
+	public:
+
+		SearchContext(EngineTextEditorProvider* Provider, string Query, bool MatchCase);
+
+		std::optional<kui::EditorPosition> Next();
+
+		kui::EditorPosition LastPosition;
+
+		EngineTextEditorProvider* Provider;
+		bool MatchCase = false;
+		string Query;
 	};
 }

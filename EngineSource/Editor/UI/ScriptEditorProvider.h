@@ -77,7 +77,7 @@ namespace engine::editor
 		HoverSymbolData GetHoveredSymbol(kui::Vec2f ScreenPosition);
 
 		void NavigateTo(kui::EditorPosition Position);
-		void NavigateTo(kui::EditorPosition StartPosition, kui::EditorPosition EndPosition);
+		void NavigateTo(kui::EditorPosition StartPosition, kui::EditorPosition EndPosition, bool Edit = true);
 
 		std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At) override;
 		void OnRightClick() override;

@@ -11,6 +11,57 @@ using namespace ds;
 using namespace kui;
 using namespace engine::editor;
 
+SearchContext* engine::editor::EngineTextEditorProvider::StartSearch(string Text, bool MatchCase)
+{
+	return new SearchContext(this, Text, MatchCase);
+}
+
+engine::editor::SearchContext::SearchContext(EngineTextEditorProvider* Provider, string Query, bool MatchCase)
+{
+	this->Provider = Provider;
+	if (MatchCase)
+	{
+		this->Query = Query;
+	}
+	else
+	{
+		this->Query = str::Lower(Query);
+	}
+	this->MatchCase = MatchCase;
+}
+
+std::optional<kui::EditorPosition> engine::editor::SearchContext::Next()
+{
+	std::vector<TextSegment> Ln;
+	string LineString;
+
+	while (Provider->GetLineCount() > LastPosition.Line)
+	{
+		Ln.clear();
+		Provider->GetLine(this->LastPosition.Line, Ln);
+		LineString = TextSegment::CombineToString(Ln);
+
+		if (!MatchCase)
+		{
+			LineString = str::Lower(LineString);
+		}
+
+		size_t FoundPosition = LineString.find(this->Query, this->LastPosition.Column);
+
+		if (FoundPosition == string::npos)
+		{
+			LastPosition.Column = 0;
+			LastPosition.Line++;
+		}
+		else
+		{
+			LastPosition.Column = FoundPosition + Query.size();
+			return EditorPosition(FoundPosition, LastPosition.Line);
+		}
+	}
+	return std::nullopt;
+}
+
 engine::editor::EngineTextEditorProvider::EngineTextEditorProvider(std::string File)
 {
 	this->EditedFile = File;
@@ -68,7 +119,7 @@ void engine::editor::EngineTextEditorProvider::SetLine(size_t Index, const std::
 		}
 		else if (IsAutoCompleteActive && LastWord.size())
 		{
-			UpdateAutoCompleteEntries(LastWord);
+			UpdateAutoCompleteEntries(str::Lower(LastWord));
 		}
 		else if (IsAutoCompleteActive && (Input.Text.size() > 1 || !std::isalpha(Input.Text[0])))
 		{
@@ -79,14 +130,13 @@ void engine::editor::EngineTextEditorProvider::SetLine(size_t Index, const std::
 			ShowAutoComplete(CompletionSource::WordCompletion, LastWord);
 		}
 	}
-
 }
 
 std::string engine::editor::EngineTextEditorProvider::ProcessInput(std::string Text)
 {
 	if (IsAutoCompleteActive && CompletionButtons.size() && Text == "\t")
 	{
-		CompletionButtons[0]->OnButtonClicked();
+		CompletionButtons[SelectedCompletionItem]->OnButtonClicked();
 		return "";
 	}
 	return Text;
@@ -96,6 +146,69 @@ std::vector<ds::AutoCompleteResult> engine::editor::EngineTextEditorProvider::Ge
 	kui::EditorPosition At, CompletionSource Source)
 {
 	return {};
+}
+
+void engine::editor::EngineTextEditorProvider::OnCursorMove(int64& Column, int64& Line, bool IsPages)
+{
+	if (Line != 0 && IsAutoCompleteActive && CompletionButtons.size())
+	{
+		if (IsPages)
+		{
+			Line = Line * 8;
+			if (int64(SelectedCompletionItem) < -Line)
+			{
+				Line = -SelectedCompletionItem;
+			}
+			if (int64(SelectedCompletionItem + Line) >= int64(CompletionButtons.size()))
+			{
+				Line = CompletionButtons.size() - SelectedCompletionItem - 1;
+			}
+		}
+		if (SelectedCompletionItem + Line < 0)
+		{
+			Line = 0;
+			return;
+		}
+		if (SelectedCompletionItem + Line >= CompletionButtons.size())
+		{
+			Line = 0;
+			return;
+		}
+
+		auto OldButton = CompletionButtons[SelectedCompletionItem];
+
+		OldButton->SetColor(EditorUI::Theme.LightBackground);
+		OldButton->OnlyDrawWhenHovered = true;
+		OldButton->SetBorder(0, 0);
+		OldButton->SetCorner(0);
+
+		SelectedCompletionItem += Line;
+
+		auto NewButton = CompletionButtons[SelectedCompletionItem];
+
+		NewButton->SetColor(EditorUI::Theme.HighlightDark);
+		NewButton->OnlyDrawWhenHovered = false;
+		NewButton->SetBorder(1_px, EditorUI::Theme.Highlight1);
+		NewButton->SetCorner(EditorUI::Theme.CornerSize);
+
+		float Difference = NewButton->GetScreenPosition().Y - AutoCompleteBox->GetScreenPosition().Y;
+
+		if (Difference < 0)
+		{
+			AutoCompleteBox->GetScrollObject()->Scrolled.Y -= Difference;
+			AutoCompleteBox->RedrawElement();
+		}
+		float Size = AutoCompleteBox->GetUsedSize().GetScreen().Y - NewButton->GetUsedSize().GetScreen().Y;
+
+		if (Difference > Size)
+		{
+			AutoCompleteBox->GetScrollObject()->Scrolled.Y -= Difference - Size;
+			AutoCompleteBox->RedrawElement();
+		}
+
+		Line = 0;
+		return;
+	}
 }
 
 void engine::editor::EngineTextEditorProvider::UpdateAutoComplete()
@@ -189,13 +302,14 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 	AutoCompleteBox->DeleteChildren();
 	CompletionButtons.clear();
 	HoverBox->IsVisible = false;
+	size_t it = 0;
 	for (auto& i : Completions)
 	{
 		size_t Found = string::npos;
 
 		if (!Filter.empty())
 		{
-			Found = i.name.find(Filter);
+			Found = str::Lower(i.name).find(Filter);
 			if (Found == string::npos)
 			{
 				continue;
@@ -208,7 +322,9 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 		HoverBox->IsVisible = true;
 
-		auto btn = new UIButton(true, 0, EditorUI::Theme.LightBackground, [this, i = i]() {
+		bool Selected = it++ == 0;
+
+		auto btn = new UIButton(true, 0, Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background, [this, i = i]() {
 			ParentEditor->Edit();
 			InsertCompletion(i);
 			CloseAutoComplete();
@@ -216,7 +332,12 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 		CompletionButtons.push_back(btn);
 
-		btn->OnlyDrawWhenHovered = true;
+		btn->OnlyDrawWhenHovered = !Selected;
+		if (Selected)
+		{
+			btn->SetBorder(1_px, EditorUI::Theme.Highlight1);
+			btn->SetCorner(EditorUI::Theme.CornerSize);
+		}
 
 		std::vector<TextSegment> Segments;
 
@@ -273,6 +394,7 @@ void engine::editor::EngineTextEditorProvider::CloseAutoComplete()
 void engine::editor::EngineTextEditorProvider::ShowAutoComplete(CompletionSource Source, std::string Filter)
 {
 	CompletePosition = ParentEditor->SelectionStart;
+	SelectedCompletionItem = 0;
 
 	Completions = GetCompletionsAt(CompletePosition, Source);
 

@@ -1,6 +1,8 @@
 #include "GraphicsScene.h"
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <algorithm>
+#include <Engine/Engine.h>
+#include <Engine/UI/UICanvas.h>
 #include <Core/ThreadPool.h>
 
 #if EDITOR
@@ -36,6 +38,10 @@ engine::graphics::GraphicsScene::~GraphicsScene()
 	*this->StopAsyncProcesses = true;
 	delete Buffer;
 	delete SceneCamera;
+
+	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+	UICanvas::ClearAll();
+	VideoSystem->OnResizedCallbacks.Remove(this);
 }
 
 void engine::graphics::GraphicsScene::OnResized(kui::Vec2ui NewSize)

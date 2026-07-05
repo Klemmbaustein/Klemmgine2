@@ -196,11 +196,11 @@ engine::editor::EditorUI::EditorUI()
 	ObjectIcons.AddObjectIcon(Asset("Scene.png"), SceneManager::ObjectType);
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
-	VideoSystem->OnResizedCallbacks.insert({ this, [this](Vec2ui NewSize) {
+	VideoSystem->OnResizedCallbacks.Add(this, [this](Vec2ui NewSize) {
 		UpdateBackgrounds();
 		RootPanel->ShouldUpdate = true;
 		RootPanel->UpdatePanel();
-	} });
+	});
 
 	Documentation.Initialize(GetEditorPath());
 
@@ -376,7 +376,7 @@ engine::editor::EditorUI::~EditorUI()
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 
-	VideoSystem->OnResizedCallbacks.erase(this);
+	VideoSystem->OnResizedCallbacks.Remove(this);
 	delete RootPanel;
 	delete MainBackground->GetAbsoluteParent();
 

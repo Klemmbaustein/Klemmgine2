@@ -1,0 +1,67 @@
+element TextEditorSearchElement
+{
+	horizontalAlign = reverse
+
+	child UIBackground
+	{
+		color = Color_Background
+		border = 1px
+		borderColor = Color_BackgroundHighlight
+		corners = Theme_CornerSize
+
+		hasMouseCollision = true
+
+		orientation = vertical
+
+		child UIBox
+		{
+			height = 32px
+			verticalAlign = centered
+			child UITextField search
+			{
+				hintText = "Search"
+				textSize = 12px
+				color = Color_DarkBackground
+				textColor = Color_Text
+				width = 200px
+				padding = 6px
+				downPadding = 0
+				corners = Theme_CornerSize
+				border = 1px
+				borderColor = Color_DarkBackgroundHighlight
+			}
+
+			child UIButton close
+			{
+				size = 14px
+				color = Color_Text
+				padding = 6px
+				leftPadding = 0
+				downPadding = 0
+				image = $"X.png"
+			}
+		}
+
+		child UIBox options
+		{
+			width = 100%
+			leftPadding = 5px
+			verticalAlign = centered
+			horizontalAlign = reverse
+
+			child EditorButton find
+			{
+				Text = "Find"
+			}
+
+			child UIText
+			{
+				size = 11px
+				color = Color_Text
+				text = "Match case"
+				leftPadding = 5px
+				rightPadding = 10px
+			}
+		}
+	}
+}

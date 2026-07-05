@@ -23,7 +23,7 @@ namespace engine::script
 
 	EngineModuleData RegisterEngineModules(ds::LanguageContext* ToContext);
 
-	ds::RuntimeClass* CreateSceneObject(SceneObject* From);
+	ds::RuntimeClass* CreateSceneObject(ReflectionObject* From);
 
 	void UpdateWaitTasks();
 }

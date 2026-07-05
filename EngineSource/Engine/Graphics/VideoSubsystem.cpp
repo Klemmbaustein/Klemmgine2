@@ -234,8 +234,5 @@ void engine::VideoSubsystem::RenderUpdate()
 
 void engine::VideoSubsystem::OnResized()
 {
-	for (auto& [_, Callback] : OnResizedCallbacks)
-	{
-		Callback(MainWindow->GetSize());
-	}
+	OnResizedCallbacks.Invoke(MainWindow->GetSize());
 }

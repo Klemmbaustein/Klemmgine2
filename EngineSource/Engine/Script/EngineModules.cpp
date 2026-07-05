@@ -249,6 +249,14 @@ static void Object_empty(InterpretContext* context)
 	context->popValue<RuntimeClass*>();
 }
 
+static RuntimeFunction SceneObject_vTable[] = {
+	{},
+	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{.nativeFn = &Object_empty},
+};
+
 static void SceneObject_destroy(InterpretContext* context)
 {
 	ClassRef<SceneObject*> obj = context->popValue<RuntimeClass*>();
@@ -1307,9 +1315,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	return OutData;
 }
 
-ds::RuntimeClass* engine::script::CreateSceneObject(SceneObject* From)
+ds::RuntimeClass* engine::script::CreateSceneObject(ReflectionObject* From)
 {
-	ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(SceneObject*), 0, nullptr);
+	ClassRef<ReflectionObject*> NewObject = RuntimeClass::allocateClass(sizeof(ReflectionObject*),
+		0, SceneObject_vTable);
 	NewObject.getValue() = From;
 	return NewObject.classPtr;
 }
