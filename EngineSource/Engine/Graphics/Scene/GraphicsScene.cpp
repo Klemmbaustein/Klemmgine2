@@ -105,12 +105,12 @@ void engine::graphics::GraphicsScene::Init()
 
 		// Editor controls resizing of scenes otherwise
 #if !EDITOR
-		VideoSystem->OnResizedCallbacks.insert({ this,
+		VideoSystem->OnResizedCallbacks.Add(this,
 			[this](kui::Vec2ui NewSize)
 			{
 				if (Resizable)
 					OnResized(NewSize);
-			} });
+			});
 #endif
 
 		Post.Init(uint32(BufferSize.X), uint32(BufferSize.Y));
