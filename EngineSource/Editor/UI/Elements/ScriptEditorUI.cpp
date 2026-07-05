@@ -628,6 +628,7 @@ void engine::editor::ScriptEditorUI::OpenTab(size_t Tab)
 	if (auto Previous = GetSelectedTab())
 	{
 		Previous->Provider->ClearHovered();
+		Previous->Editor->StopEdit();
 	}
 
 	CloseSearch();
