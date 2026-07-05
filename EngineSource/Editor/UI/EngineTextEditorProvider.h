@@ -49,6 +49,7 @@ namespace engine::editor
 		SearchContext* StartSearch(string Text, bool MatchCase);
 
 		bool IsChanged = false;
+		bool AllowArrowKeys = true;
 
 	protected:
 

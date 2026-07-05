@@ -206,12 +206,45 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 	AddShortcut(Key::TAB, ShortcutModifiers{ .Ctrl = true }, [this] {
 		if (!Switcher)
 		{
-			OpenTab(SelectedTab + 1);
+			if (SelectedTab >= this->Tabs.size() - 1)
+			{
+				OpenTab(0);
+			}
+			else
+			{
+				OpenTab(SelectedTab + 1);
+			}
 			OpenTabSwitcher();
 		}
 		else
 		{
-			SwitchToTab(SelectedTab + 1);
+			if (SelectedTab >= this->Tabs.size() - 1)
+			{
+				SwitchToTab(0);
+			}
+			else
+			{
+				SwitchToTab(SelectedTab + 1);
+			}
+		}
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::TAB, ShortcutModifiers{ .Shift = true, .Ctrl = true, }, [this] {
+		if (!Switcher)
+		{
+			if (SelectedTab == 0)
+			{
+				OpenTab(Tabs.size() - 1);
+			}
+			else
+			{
+				OpenTab(SelectedTab - 1);
+			}
+			OpenTabSwitcher();
+		}
+		else
+		{
+			SwitchToTab(SelectedTab > 0 ? SelectedTab - 1 : Tabs.size());
 		}
 	}, ShortcutOptions::AllowInText);
 
@@ -281,6 +314,10 @@ void engine::editor::ScriptEditorUI::Update()
 	if (Switcher && !Window::GetActiveWindow()->Input.IsKeyDown(Key::CTRL))
 	{
 		CloseTabSwitcher();
+		if (GetSelectedTab())
+		{
+			GetSelectedTab()->Editor->Edit();
+		}
 	}
 
 	auto Selected = GetSelectedTab();
@@ -291,6 +328,7 @@ void engine::editor::ScriptEditorUI::Update()
 		Tab.Editor->SetMaxWidth(EditorBox->GetUsedSize().X);
 		Tab.Editor->SetMaxHeight(EditorBox->GetUsedSize().Y);
 		Tab.Editor->SetPosition(EditorBox->GetScreenPosition());
+		Tab.Provider->AllowArrowKeys = !Switcher;
 		if (&Tab != Selected || !this->IsVisible)
 		{
 			Tab.Provider->ClearHovered();

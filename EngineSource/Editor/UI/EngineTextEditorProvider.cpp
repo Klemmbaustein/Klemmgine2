@@ -150,6 +150,13 @@ std::vector<ds::AutoCompleteResult> engine::editor::EngineTextEditorProvider::Ge
 
 void engine::editor::EngineTextEditorProvider::OnCursorMove(int64& Column, int64& Line, bool IsPages)
 {
+	if (!AllowArrowKeys)
+	{
+		Column = 0;
+		Line = 0;
+		return;
+	}
+
 	if (Line != 0 && IsAutoCompleteActive && CompletionButtons.size())
 	{
 		if (IsPages)
