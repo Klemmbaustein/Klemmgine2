@@ -311,6 +311,11 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 
 void engine::editor::ScriptEditorUI::Update()
 {
+	if (Switcher)
+	{
+		Window::GetActiveWindow()->UI.KeyboardFocusBox = Switcher;
+	}
+
 	if (Switcher && !Window::GetActiveWindow()->Input.IsKeyDown(Key::CTRL))
 	{
 		CloseTabSwitcher();
@@ -503,6 +508,7 @@ void engine::editor::ScriptEditorUI::CloseTabSwitcher()
 		delete Switcher;
 		Switcher = nullptr;
 		SwitchItems.clear();
+		Window::GetActiveWindow()->UI.KeyboardFocusBox = nullptr;
 	}
 }
 
