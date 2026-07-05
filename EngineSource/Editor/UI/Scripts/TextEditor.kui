@@ -65,3 +65,58 @@ element TextEditorSearchElement
 		}
 	}
 }
+
+element TabSwitcherItem
+{
+	var Name = "Test.ds"
+	var Background = 0
+	var Border = 0px
+
+	padding = 3px
+
+	child UIButton btn
+	{
+		width = 150px
+		color = Background
+		corners = Theme_CornerSize
+		border = Border
+		borderColor = Color_Highlight1
+
+		child UIText
+		{
+			text = Name
+			size = 11px
+			wrap = 150px
+			maxWraps = 1
+			padding = 2px
+		}
+	}
+}
+
+element TabSwitcher
+{
+	position = -1
+	size = 100%
+	allAlign = centered
+
+	child UIBackground
+	{
+		opacity = 1
+		color = Color_Background
+		border = 1px
+		borderColor = Color_Highlight1
+		corners = Theme_CornerSize
+		orientation = vertical;
+
+		child UIText
+		{
+			padding = 5px
+			size = 11px
+			text = "Active Tabs"
+		}
+
+		child UIBox items
+		{
+		}
+	}
+}

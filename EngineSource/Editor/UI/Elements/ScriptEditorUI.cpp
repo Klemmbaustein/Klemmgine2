@@ -11,6 +11,7 @@
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Editor/UI/CodeEditorTheme.h>
 #include <Engine/MainThread.h>
+#include <kui/App.h>
 
 using namespace kui;
 using namespace engine;
@@ -174,20 +175,8 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 		SearchUI = new TextEditorSearchElement();
 		SearchUI->SetHorizontalAlign(UIBox::Align::Reverse);
 
-		auto Tab = GetSelectedTab();
+		UpdateSearchPosition();
 
-		auto Size = EditorBox->GetUsedSize().GetScreen();
-
-		if (Tab->Editor->EditorScrollBox->GetScrollBarBackground()->IsVisible)
-		{
-			Size = Size - SizeVec(UISize::Pixels(GetSelectedTab()->Editor->EditorScrollBox->ScrollBarWidth + 5), 0).GetScreen();
-		}
-
-		SearchUI->SetMinWidth(Size.X);
-		SearchUI->SetMinHeight(Size.Y);
-		SearchUI->SetMaxWidth(Size.X);
-		SearchUI->SetMaxHeight(Size.Y);
-		SearchUI->SetPosition(EditorBox->GetScreenPosition());
 		SearchUI->options->AddChild(new UICheckbox(SearchMatchCase, [this] {
 			SearchMatchCase = !SearchMatchCase;
 		}));
@@ -212,6 +201,41 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 		GetSelectedTab()->Editor->StopEdit();
 
 		SearchUI->search->Edit();
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::TAB, ShortcutModifiers{ .Ctrl = true }, [this] {
+		if (!Switcher)
+		{
+			OpenTab(SelectedTab + 1);
+			OpenTabSwitcher();
+		}
+		else
+		{
+			SwitchToTab(SelectedTab + 1);
+		}
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::UP, ShortcutModifiers{ .Ctrl = true }, [this] {
+		SwitchToTab(SelectedTab > 1 ? SelectedTab - 1 : 0);
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::DOWN, ShortcutModifiers{ .Ctrl = true }, [this] {
+		SwitchToTab(SelectedTab + 1);
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::LEFT, ShortcutModifiers{ .Ctrl = true }, [this] {
+		SwitchToTab(SelectedTab > 8 ? SelectedTab - 8 : 0);
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::RIGHT, ShortcutModifiers{ .Ctrl = true }, [this] {
+		SwitchToTab(SelectedTab + 8);
+	}, ShortcutOptions::AllowInText);
+
+	AddShortcut(Key::w, ShortcutModifiers{ .Ctrl = true }, [this] {
+		if (GetSelectedTab())
+		{
+			CloseTab(SelectedTab);
+		}
 	}, ShortcutOptions::AllowInText);
 
 	auto LastOpened = GetLastOpenedFiles();
@@ -254,6 +278,11 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 
 void engine::editor::ScriptEditorUI::Update()
 {
+	if (Switcher && !Window::GetActiveWindow()->Input.IsKeyDown(Key::CTRL))
+	{
+		CloseTabSwitcher();
+	}
+
 	auto Selected = GetSelectedTab();
 	for (auto& Tab : Tabs)
 	{
@@ -341,16 +370,117 @@ void engine::editor::ScriptEditorUI::RunSearch()
 	if (!this->CurrentSearch)
 	{
 		this->CurrentSearch = Tab->Provider->StartSearch(SearchUI->search->GetText(), SearchMatchCase);
+		SearchGotAnyResults = false;
 	}
 
 	auto Next = CurrentSearch->Next();
 
 	if (Next)
 	{
+		SearchGotAnyResults = true;
 		Tab->Provider->NavigateTo(*Next, EditorPosition(Next->Column + CurrentSearch->Query.size(), Next->Line), false);
 	}
+	else
+	{
+		if (SearchGotAnyResults)
+		{
+			app::MessageBox(str::Format("No more search results for '%s'", CurrentSearch->Query.c_str()), "Search", app::MessageType::Warn);
+		}
+		else
+		{
+			app::MessageBox(str::Format("No matches found for '%s'", CurrentSearch->Query.c_str()), "Search", app::MessageType::Warn);
+		}
+		delete this->CurrentSearch;
+		this->CurrentSearch = nullptr;
+	}
 	SearchUI->search->Edit();
+}
 
+void engine::editor::ScriptEditorUI::UpdateSearchPosition()
+{
+	auto Tab = GetSelectedTab();
+	if (SearchUI && Tab)
+	{
+		auto Size = EditorBox->GetUsedSize().GetScreen();
+
+		if (Tab->Editor->EditorScrollBox->GetScrollBarBackground()->IsVisible)
+		{
+			Size = Size - SizeVec(UISize::Pixels(GetSelectedTab()->Editor->EditorScrollBox->ScrollBarWidth + 5), 0).GetScreen();
+		}
+
+		SearchUI->SetMinWidth(Size.X);
+		SearchUI->SetMinHeight(Size.Y);
+		SearchUI->SetMaxWidth(Size.X);
+		SearchUI->SetMaxHeight(Size.Y);
+		SearchUI->SetPosition(EditorBox->GetScreenPosition());
+	}
+}
+
+void engine::editor::ScriptEditorUI::OpenTabSwitcher()
+{
+	CloseTabSwitcher();
+	if (Tabs.empty())
+	{
+		return;
+	}
+
+	this->Switcher = new TabSwitcher();
+
+	UIBox* Column = nullptr;
+	size_t Count = 0;
+	for (size_t it = 0; it < Tabs.size(); it++)
+	{
+		auto& i = Tabs[it];
+
+		if (Count++ >= 8)
+		{
+			Column = nullptr;
+			Count = 0;
+		}
+
+		auto Item = new TabSwitcherItem();
+
+		bool Selected = SelectedTab == it;
+
+		Item->SetName(i.TabName->GetText());
+		Item->SetBorder(Selected ? 1_px : 0);
+		Item->SetBackground(Selected ? EditorUI::Theme.HighlightDark : EditorUI::Theme.Background);
+		SwitchItems.push_back(Item);
+
+		if (!Column)
+		{
+			Column = new UIBox(false);
+			Switcher->items->AddChild(Column);
+		}
+
+		Column->AddChild(Item);
+	}
+	Window::GetActiveWindow()->UI.RedrawUI();
+}
+
+void engine::editor::ScriptEditorUI::CloseTabSwitcher()
+{
+	if (Switcher)
+	{
+		delete Switcher;
+		Switcher = nullptr;
+		SwitchItems.clear();
+	}
+}
+
+void engine::editor::ScriptEditorUI::SwitchToTab(size_t NewTabIndex)
+{
+	NewTabIndex = std::min(NewTabIndex, this->Tabs.size() - 1);
+	if (!Switcher)
+	{
+		return;
+	}
+
+	SwitchItems[SelectedTab]->SetBackground(EditorUI::Theme.Background);
+	SwitchItems[SelectedTab]->SetBorder(0);
+	OpenTab(NewTabIndex);
+	SwitchItems[NewTabIndex]->SetBackground(EditorUI::Theme.HighlightDark);
+	SwitchItems[NewTabIndex]->SetBorder(1_px);
 }
 
 void engine::editor::ScriptEditorUI::InitializeSettings()
@@ -462,6 +592,7 @@ void engine::editor::ScriptEditorUI::OpenTab(size_t Tab)
 		Previous->Provider->ClearHovered();
 	}
 
+	CloseSearch();
 	SelectedTab = Tab;
 	GetSelectedTab()->Editor->UpdateHighlights = true;
 	UpdateEditorTabs();
@@ -699,6 +830,8 @@ void engine::editor::ScriptEditorUI::OnResized(Vec2f NewSize)
 	HorizontalTabBox->SetMaxWidth(this->Size.X - (2_px).GetScreen().X);
 	SeparatorBackgrounds[0]->IsVisible = UseVerticalTabs;
 	this->EditorBox->GetAbsoluteParent()->UpdateElement();
+
+	UpdateSearchPosition();
 	UpdateTabSize(GetSelectedTab());
 }
 
