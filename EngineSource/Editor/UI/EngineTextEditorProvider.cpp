@@ -390,6 +390,11 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 
 void engine::editor::EngineTextEditorProvider::CloseAutoComplete()
 {
+	if (!IsAutoCompleteActive)
+	{
+		return;
+	}
+
 	Completions.clear();
 	CompletionButtons.clear();
 	delete HoverBox;

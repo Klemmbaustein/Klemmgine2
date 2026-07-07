@@ -45,6 +45,7 @@ namespace engine::editor
 
 		void TrimWhitespace(size_t IgnoreLine);
 		void ClearHovered();
+		void CloseAutoComplete();
 
 		SearchContext* StartSearch(string Text, bool MatchCase);
 
@@ -54,7 +55,6 @@ namespace engine::editor
 	protected:
 
 		void UpdateAutoComplete();
-		void CloseAutoComplete();
 		void UpdateAutoCompleteEntries(string Filter);
 		void InsertCompletion(const ds::AutoCompleteResult& Result);
 
