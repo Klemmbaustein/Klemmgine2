@@ -198,6 +198,7 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 		SearchUI->find->btn->OnClicked = std::bind(&ScriptEditorUI::RunSearch, this);
 
+		GetSelectedTab()->Provider->CloseAutoComplete();
 		GetSelectedTab()->Editor->StopEdit();
 
 		SearchUI->search->Edit();
@@ -634,6 +635,7 @@ void engine::editor::ScriptEditorUI::OpenTab(size_t Tab)
 	if (auto Previous = GetSelectedTab())
 	{
 		Previous->Provider->ClearHovered();
+		Previous->Provider->CloseAutoComplete();
 		Previous->Editor->StopEdit();
 	}
 
