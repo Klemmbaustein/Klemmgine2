@@ -85,10 +85,10 @@ element TabSwitcherItem
 		child UIText
 		{
 			text = Name
-			size = 11px
+			size = 12px
 			wrap = 150px
 			maxWraps = 1
-			padding = 2px
+			padding = 4px
 		}
 	}
 }
@@ -111,8 +111,16 @@ element TabSwitcher
 		child UIText
 		{
 			padding = 5px
-			size = 11px
+			size = 12px
 			text = "Active Tabs"
+		}
+
+		child UIBackground
+		{
+			width = 100%
+			height = 1px
+			color = Color_BackgroundHighlight
+			padding = 4px
 		}
 
 		child UIBox items
