@@ -54,6 +54,16 @@ static void SerializedInt_new(InterpretContext* context)
 	context->pushValue(IntValue);
 }
 
+static void SerializedFloat_new(InterpretContext* context)
+{
+	ClassRef<ScriptSerializedFloat> FloatValue = context->popValue<RuntimeClass*>();
+
+	FloatValue->Type = SerializedData::DataType::Float;
+	FloatValue->FloatValue = context->popValue<Float>();
+
+	context->pushValue(FloatValue);
+}
+
 static void SerializedObject_delete(InterpretContext* context)
 {
 	auto Value = context->popPtr<ScriptSerializedObject>();
@@ -467,6 +477,10 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addClassConstructor(IntValue, NativeFunction(
 		{ FunctionArgument(IntInst, "value") },
 		nullptr, "SerializedInt.new", &SerializedInt_new));
+
+	Serialize.addClassConstructor(FloatValue, NativeFunction(
+		{ FunctionArgument(FloatInst, "value") },
+		nullptr, "SerializedFloat.new", &SerializedFloat_new));
 
 	Serialize.addClassConstructor(StringValue, NativeFunction(
 		{ FunctionArgument(StrType, "value") },

@@ -82,9 +82,9 @@ namespace engine
 		* @brief
 		* Reloads all objects in this scene.
 		*
-		* This is used to transition from the editor to the game when built with the KLEMMGINE_EDITOR argument.
+		* This is used to transition from the editor to the game when built with the ENGINE_EDITOR argument.
 		*/
-		void ReloadObjects(SerializedValue* FromState);
+		void ReloadObjects(SerializedValue* FromState, std::function<void()> OnReload = nullptr);
 
 		/// The number of async scene loading operations in progress.
 		static std::atomic<int32> AsyncLoads;

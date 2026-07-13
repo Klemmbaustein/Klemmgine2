@@ -94,7 +94,6 @@ void engine::editor::EditorSubsystem::StartProject()
 		return;
 	}
 
-	Engine::IsPlaying = true;
 	Engine::GameHasFocus = true;
 	//Unload();
 
@@ -108,20 +107,24 @@ void engine::editor::EditorSubsystem::StartProject()
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	LastSceneName = Scene::GetMain()->Name;
-	Scene::GetMain()->ReloadObjects(nullptr);
+	Scene::GetMain()->ReloadObjects(nullptr, [] {
+		Engine::IsPlaying = true;
+	});
 	EditorUI::SetStatusMessage("Running game", editor::EditorUI::StatusType::Info);
 }
 
 void engine::editor::EditorSubsystem::StopProject()
 {
-	Engine::IsPlaying = false;
 	if (LastScene.GetType() != SerializedData::DataType::Null)
 	{
 		if (Scene::GetMain()->Name != LastSceneName)
 		{
+			Engine::IsPlaying = false;
 			SceneSubsystem::Current->LoadSceneAsync(LastSceneName);
 		}
-		Scene::GetMain()->ReloadObjects(&LastScene);
+		Scene::GetMain()->ReloadObjects(&LastScene, [] {
+			Engine::IsPlaying = false;
+		});
 	}
 	EditorUI::SetStatusMessage("Stopped game", editor::EditorUI::StatusType::Info);
 }
