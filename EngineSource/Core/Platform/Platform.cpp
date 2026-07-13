@@ -80,10 +80,10 @@ engine::string engine::platform::GetLastErrorString()
 std::string engine::platform::WstrToStr(const std::wstring& wstr)
 {
 	std::string strTo;
-	char* szTo = new char[wstr.length() + 1];
-	szTo[wstr.size()] = '\0';
-	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
-	strTo = szTo;
+	int ResultLength = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.size(), nullptr, 0, 0, 0);
+	char* szTo = new char[ResultLength];
+	WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, szTo, ResultLength, NULL, NULL);
+	strTo = string(szTo, ResultLength);
 	delete[] szTo;
 	return strTo;
 }
