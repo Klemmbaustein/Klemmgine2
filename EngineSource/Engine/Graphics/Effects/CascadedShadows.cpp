@@ -111,6 +111,11 @@ void engine::graphics::CascadedShadows::BindUniforms(DrawCommand* Pass, ShaderOb
 
 	Target->SetVec3(Target->GetUniformLocation("u_lightDirection"), LightDirection);
 
+	if (Target->Unlit)
+	{
+		return;
+	}
+
 	if (!ShouldRender())
 	{
 		Target->SetInt(Target->GetUniformLocation("u_drawShadows"), 0);
