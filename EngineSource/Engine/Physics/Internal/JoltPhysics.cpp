@@ -118,6 +118,7 @@ public:
 	void FreeJob(Job* inJob)
 	{
 		Jobs.erase(inJob);
+		delete inJob;
 	}
 };
 

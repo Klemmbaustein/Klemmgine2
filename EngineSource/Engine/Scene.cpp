@@ -183,13 +183,16 @@ engine::SceneObject* engine::Scene::CreateObjectFromID(int32 ID, Vector3 Positio
 	return Object;
 }
 
-void engine::Scene::ReloadObjects(SerializedValue* FromState)
+void engine::Scene::ReloadObjects(SerializedValue* FromState, std::function<void()> OnReload)
 {
 	UICanvas::ClearAll();
 	Sound->Restart();
 
 	if (FromState)
 	{
+		delete this->Manager;
+		this->Manager = nullptr;
+
 		UpdateDestroyed();
 
 		for (SceneObject* i : Objects)
@@ -200,6 +203,11 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 			delete i;
 		}
 		Objects.clear();
+
+		if (OnReload)
+		{
+			OnReload();
+		}
 
 		std::vector<SceneAsset> OldReferenced = ReferencedAssets;
 		ReferencedAssets.clear();
@@ -213,9 +221,12 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 	}
 	else
 	{
+		ObjectTypeID OldManagerId = 0;
 		if (Manager)
 		{
-			LoadManagerFromID(Manager->TypeID);
+			OldManagerId = this->Manager->TypeID;
+			delete this->Manager;
+			this->Manager = nullptr;
 		}
 
 		UpdateDestroyed();
@@ -226,6 +237,16 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState)
 			Objects[i]->OnDestroyedEvent.Invoke();
 			Objects[i]->BeginCalled = false;
 			Objects[i]->ClearComponents();
+		}
+
+		if (OnReload)
+		{
+			OnReload();
+		}
+
+		if (OldManagerId)
+		{
+			LoadManagerFromID(OldManagerId);
 		}
 
 		// Begin() might create new objects in some cases, which would invalidate the iterator
