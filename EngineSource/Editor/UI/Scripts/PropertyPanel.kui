@@ -3,6 +3,7 @@ element PropertyEntryElement
 {
 	var PropertyName = "Value";
 	var CompactTextPadding = 5px;
+	var Width = 80px
 
 	orientation = horizontal;
 	verticalAlign = centered;
@@ -17,11 +18,11 @@ element PropertyEntryElement
 			text = PropertyName;
 			color = Color_Text;
 			size = 12px;
-			wrap = 80px;
+			wrap = Width;
+			widthOverride = Width
 			downPadding = CompactTextPadding;
 		}
-		minSize = (90, 0)px;
-		maxSize = (90, 200)px;
+		maxHeight = 200px
 		leftPadding = 5px;
 	}
 

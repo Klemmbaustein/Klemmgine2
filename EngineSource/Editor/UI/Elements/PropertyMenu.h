@@ -52,6 +52,8 @@ namespace engine::editor
 
 		void UpdateProperties();
 
+		kui::UISize NameSize = 80_px;
+
 	private:
 		kui::Font* MenuFont = nullptr;
 		std::vector<std::function<void()>> UpdatePropertiesCallback;

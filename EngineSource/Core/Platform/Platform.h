@@ -5,6 +5,7 @@
 namespace engine::platform
 {
 	void Execute(string Command);
+	void Execute(string File, string Arguments);
 	string GetCommandOutput(string Command);
 	void Open(string File);
 

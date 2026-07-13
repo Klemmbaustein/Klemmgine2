@@ -13,6 +13,7 @@
 #include <Engine/MainThread.h>
 #include <Core/File/FileUtil.h>
 #include <kui/Window.h>
+#include <kui/App.h>
 #include <filesystem>
 #include <SDL3/SDL.h>
 
@@ -208,6 +209,12 @@ void engine::editor::launcher::EditorLauncher::Run()
 	{
 	case engine::editor::launcher::LauncherResult::LaunchProject:
 	{
+		if (!std::filesystem::exists(ProjectPathToLaunch))
+		{
+			app::MessageBox("Failed to open project. Path does not exist.", "Open Project", app::MessageType::Error);
+			return;
+		}
+
 		auto OldPath = std::filesystem::current_path();
 		std::filesystem::current_path(ProjectPathToLaunch);
 

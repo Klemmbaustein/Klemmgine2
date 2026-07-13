@@ -50,6 +50,9 @@ namespace engine
 		[[nodiscard]]
 		string RemoveChar(string Target, char c);
 
+		[[nodiscard]]
+		string Replace(string Target, string Substr, string Replacement);
+
 		/**
 		* @brief
 		* Returns the given string where all characters have been converted to lower case.

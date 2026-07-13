@@ -1,6 +1,6 @@
 #pragma once
 #include "AssetListProvider.h"
-#include <Core/Event.h>
+#include <Core/Platform/FileWatcher.h>
 
 namespace engine::editor
 {
@@ -14,5 +14,10 @@ namespace engine::editor
 		void NewFile(string Path) override;
 		void NewDirectory(string Path) override;
 		IBinaryStream* GetFileSaveStream(string Path) override;
+
+		void Update() override;
+
+	private:
+		FileWatcher* Watcher = nullptr;
 	};
 }

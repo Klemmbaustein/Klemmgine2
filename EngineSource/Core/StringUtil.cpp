@@ -1,9 +1,9 @@
 #include "StringUtil.h"
-#include "StringUtil.h"
-#include <iostream>
 #include <cstdarg>
 #include <cmath>
 #include <algorithm>
+
+using namespace engine;
 
 std::vector<engine::string> engine::str::Split(string Target, const string& Delim)
 {
@@ -36,6 +36,27 @@ engine::string engine::str::ReplaceChar(string Target, char c, char With)
 			it = With;
 		}
 	}
+	return Target;
+}
+
+string engine::str::Replace(string Target, string Substr, string Replacement)
+{
+	size_t pos = 0;
+
+	while (true)
+	{
+		pos = Target.find(Substr, pos);
+
+		if (string::npos == pos)
+		{
+			break;
+		}
+
+		Target.erase(pos, Substr.size());
+		Target.insert(pos, Replacement);
+		pos += Replacement.size();
+	}
+
 	return Target;
 }
 
