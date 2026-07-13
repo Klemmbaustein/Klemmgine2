@@ -44,9 +44,10 @@ void engine::editor::SettingsWindow::Begin()
 	Sidebar->SetMinSize(SizeVec(160_px, UISize::Parent(1)));
 	Sidebar->SetMaxSize(SizeVec(160_px, UISize::Parent(1)));
 	SettingsMenu = new PropertyMenu(this->DefaultFont);
-	SettingsMenu->SetMinSize(SizeVec(380_px, UISize::Parent(1)));
-	SettingsMenu->SetMaxSize(SizeVec(380_px, UISize::Parent(1)));
-	SettingsMenu->SetLeftPadding(50_px);
+	SettingsMenu->NameSize = 110_px;
+	SettingsMenu->SetMinSize(SizeVec(400_px, UISize::Parent(1)));
+	SettingsMenu->SetMaxSize(SizeVec(400_px, UISize::Parent(1)));
+	SettingsMenu->SetLeftPadding(40_px);
 	this->Background->AddChild((new UIBox(true, 0))
 		->SetMinSize(UISize::Parent(1))
 		->AddChild(Sidebar)

@@ -86,7 +86,7 @@ element TabSwitcherItem
 		{
 			text = Name
 			size = 12px
-			wrap = 150px
+			wrap = 140px
 			maxWraps = 1
 			padding = 4px
 		}

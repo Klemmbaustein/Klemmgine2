@@ -17,6 +17,15 @@ std::vector<editor::AssetFile> editor::FileAssetListProvider::GetFiles(string Pa
 		return {};
 	}
 
+	Watcher = new FileWatcher("Assets/");
+	Watcher->OnFileChanged.Add(this, [this](FileChange Change) {
+		if (Change.Type != FileChangeType::Modified)
+		{
+			this->OnChanged.Invoke();
+		}
+		this->OnModified.Invoke(Change.FilePath);
+	});
+
 	std::vector<AssetFile> Files;
 
 	for (auto& i : std::filesystem::directory_iterator(Path))
@@ -35,6 +44,10 @@ void engine::editor::FileAssetListProvider::DeleteFile(string Path)
 	try
 	{
 		std::filesystem::remove_all(Path);
+		Watcher->OnFileChanged.Invoke(FileChange{
+			.Type = FileChangeType::Removed,
+			.FilePath = Path,
+			});
 	}
 	catch (std::filesystem::filesystem_error& e)
 	{
@@ -58,4 +71,12 @@ void engine::editor::FileAssetListProvider::NewDirectory(string Path)
 IBinaryStream* engine::editor::FileAssetListProvider::GetFileSaveStream(string Path)
 {
 	return new FileStream(Path, false);
+}
+
+void engine::editor::FileAssetListProvider::Update()
+{
+	if (Watcher)
+	{
+		Watcher->Update();
+	}
 }

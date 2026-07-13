@@ -11,6 +11,7 @@
 #include <Editor/UI/Windows/RenameWindow.h>
 #include <Editor/UI/Windows/MessageWindow.h>
 #include <Editor/UI/Windows/ScriptEditorWindow.h>
+#include <Editor/Settings/EditorSettings.h>
 #include <Core/File/FileUtil.h>
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
@@ -65,7 +66,6 @@ engine::editor::AssetBrowser::AssetBrowser()
 				.OnClicked = [this, i = Selected[0]]() {
 					EditorUI::Instance->AssetsProvider->DeleteFile(i.Path);
 					resource::ScanForAssets();
-					UpdateItems();
 				},
 				.IsAccept = true,
 			},
@@ -73,7 +73,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 				.Name = "No",
 				.IsClose = true,
 			}
-			});
+				});
 		}
 		else if (Selected.size() > 1)
 		{
@@ -86,7 +86,6 @@ engine::editor::AssetBrowser::AssetBrowser()
 						EditorUI::Instance->AssetsProvider->DeleteFile(i.Path);
 					}
 					resource::ScanForAssets();
-					UpdateItems();
 				},
 				.IsAccept = true,
 			},
@@ -94,7 +93,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 				.Name = "No",
 				.IsClose = true,
 			}
-			});
+				});
 		}
 	});
 
@@ -132,6 +131,41 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 }
 
+void engine::editor::AssetBrowser::OpenScript(string FilePath)
+{
+	auto Setting = Settings::GetInstance()->Script;
+
+	if (resource::AllowLocalFiles && Setting.GetSetting("useExternalEditor", false).GetBool())
+	{
+		if (Setting.GetSetting("useDefaultEditor", true).GetBool())
+		{
+			platform::Open(FilePath);
+		}
+		auto Name = Setting.GetSetting("externalEditorCommand", "").GetString();
+		auto Arguments = Setting.GetSetting("externalEditorArguments", "").GetString();
+
+		Arguments = str::Replace(Arguments, "{file}", std::filesystem::canonical(FilePath).string());
+		Arguments = str::Replace(Arguments, "{workspace}",
+			std::filesystem::canonical(std::filesystem::current_path()).string());
+
+		platform::Execute(Name, " " + Arguments);
+
+		return;
+	}
+	if (ScriptEditorWindow::Current)
+	{
+		ScriptEditorWindow::Current->Queue->Run([FilePath] {
+			ScriptEditorWindow::Current->UI->NavigateTo(FilePath, {});
+		});
+		return;
+	}
+
+	EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath](ScriptEditorPanel* p) {
+		p->UI.NavigateTo(FilePath, {});
+		p->SetFocused();
+	});
+}
+
 std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Path)
 {
 	std::vector<Item> Out;
@@ -165,20 +199,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		}
 		else if (Extension == "ds" || Extension == "kui")
 		{
-			OnClick = [this, FilePath]() {
-				if (ScriptEditorWindow::Current)
-				{
-					ScriptEditorWindow::Current->Queue->Run([FilePath] {
-						ScriptEditorWindow::Current->UI->NavigateTo(FilePath, {});
-					});
-					return;
-				}
-
-				EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath](ScriptEditorPanel* p) {
-					p->UI.NavigateTo(FilePath, {});
-					p->SetFocused();
-				});
-			};
+			OnClick = std::bind(&AssetBrowser::OpenScript, this, FilePath);
 		}
 		else if (Extension == "kmdl")
 		{
@@ -195,11 +216,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 		else if (Extension == "png")
 		{
 			OnClick = [this, FilePath]() {
-#if WINDOWS
-				platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
-#else
 				platform::Open(FilePath);
-#endif
 			};
 		}
 
@@ -225,6 +242,13 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 							Align::Tabs, true);
 					},
 					});
+				Options.push_back(DropdownMenu::Option{
+					.Name = "Open in external editor",
+					.Icon = EditorUI::Asset("Open.png"),
+					.OnClicked = [FilePath]() {
+						platform::Open(FilePath);
+					},
+					});
 			}
 			else if (this->Mode == DisplayMode::Tree)
 			{
@@ -243,11 +267,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 					.Name = "Open in file explorer",
 					.Icon = EditorUI::Asset("Open.png"),
 					.OnClicked = [this, FilePath]() {
-			#if WINDOWS
-						platform::Open(str::ReplaceChar(FilePath, '/', '\\'));
-			#else
 						platform::Open(FilePath);
-			#endif
 				}, });
 			}
 
@@ -312,7 +332,7 @@ void engine::editor::AssetBrowser::Back()
 }
 
 static std::vector<engine::string> ModelExtensions = { "glb", "gltf", "obj", "fbx", "ply",
-"blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
+	"blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
 
 static void ImportItem(engine::string File, engine::string CurrentPath)
 {
@@ -418,11 +438,7 @@ void engine::editor::AssetBrowser::OnBackgroundRightClick(kui::Vec2f Position)
 		.Name = "Open in file explorer",
 		.Icon = EditorUI::Asset("Open.png"),
 		.OnClicked = [this]() {
-#if WINDOWS
-			platform::Open(str::ReplaceChar(GetPathDisplayName(), '/', '\\'));
-#else
 			platform::Open(GetPathDisplayName());
-#endif
 	}, });
 
 	new DropdownMenu(Options, Position);
@@ -454,26 +470,32 @@ engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 
 void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
 {
-	if (std::filesystem::is_directory(FilePath))
+	if (resource::AllowLocalFiles)
 	{
-		std::filesystem::copy(FilePath, file::FilePath(FilePath) + " (Copy)");
+		if (std::filesystem::is_directory(FilePath))
+		{
+			std::filesystem::copy(FilePath, file::FilePath(FilePath) + " (Copy)");
+		}
+		else
+		{
+			std::filesystem::copy(FilePath, file::FilePath(FilePath) + "/" +
+				file::FileNameWithoutExt(FilePath) + " (Copy)." + file::Extension(FilePath));
+		}
+		resource::ScanForAssets();
+		UpdateItems();
 	}
-	else
-	{
-		std::filesystem::copy(FilePath, file::FilePath(FilePath) + "/" +
-			file::FileNameWithoutExt(FilePath) + " (Copy)." + file::Extension(FilePath));
-	}
-	resource::ScanForAssets();
-	UpdateItems();
 }
 
 void engine::editor::AssetBrowser::RenameFile(string FilePath, bool IsNew)
 {
-	new RenameWindow(FilePath, [this, FilePath](string NewPath) {
-		std::filesystem::rename(FilePath, NewPath);
-		resource::ScanForAssets();
-		UpdateItems();
-	}, IsNew);
+	if (resource::AllowLocalFiles)
+	{
+		new RenameWindow(FilePath, [this, FilePath](string NewPath) {
+			std::filesystem::rename(FilePath, NewPath);
+			resource::ScanForAssets();
+			UpdateItems();
+		}, IsNew);
+	}
 }
 
 std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(string WorkDir, std::function<void()> OnAddCallback)

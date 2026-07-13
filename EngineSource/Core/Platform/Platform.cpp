@@ -28,8 +28,28 @@ void engine::platform::Execute(string Command)
 	CloseHandle(ProcInfo.hThread);
 }
 
+void engine::platform::Execute(string File, string Arguments)
+{
+	STARTUPINFO Startup;
+	ZeroMemory(&Startup, sizeof(Startup));
+	Startup.cb = sizeof(Startup);
+
+	PROCESS_INFORMATION ProcInfo;
+	ZeroMemory(&ProcInfo, sizeof(ProcInfo));
+
+	if (!CreateProcess(File.data(), Arguments.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW,
+		NULL, NULL, &Startup, &ProcInfo))
+	{
+		return;
+	}
+	WaitForSingleObject(ProcInfo.hProcess, INFINITE);
+	CloseHandle(ProcInfo.hProcess);
+	CloseHandle(ProcInfo.hThread);
+}
+
 void engine::platform::Open(string File)
 {
+	File = str::ReplaceChar(File, '/', '\\');
 	if (size_t(ShellExecuteW(NULL, L"open", StrToWstr(File).c_str(), NULL, NULL, SW_SHOW)) <= 32)
 	{
 		Log::Error(GetLastErrorString());
@@ -237,6 +257,14 @@ void engine::platform::Execute(string Command)
 	system(Command.c_str());
 }
 
+void engine::platform::Execute(string File, string Arguments)
+{
+	File = str::Replace(File, "\\", "\\\\");
+	File = str::Replace(File, "$", "\\$");
+
+	Execute(File + " " + Arguments);
+}
+
 void engine::platform::Open(string File)
 {
 	pid_t NewPid = 0;
@@ -290,6 +318,13 @@ engine::string engine::platform::GetThreadName()
 	pthread_getname_np(pthread_self(), ThreadBuffer, sizeof(ThreadBuffer));
 	return ThreadBuffer;
 }
+
+
+engine::string engine::platform::GetLastErrorString()
+{
+	return strerror(errno);
+}
+
 engine::string engine::platform::GetExecutablePath()
 {
 	FILE* SelfLinkCommand = popen(("readlink /proc/" + std::to_string(getpid()) + "/exe").c_str(), "r");

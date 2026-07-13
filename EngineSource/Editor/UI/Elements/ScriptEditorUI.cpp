@@ -280,6 +280,11 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 	this->ScriptEditorContext::Initialize();
 
+	if (GetSelectedTab())
+	{
+		// Make the initially selected editor loaded
+		GetSelectedTab()->Editor->Reload();
+	}
 	InitializeSettings();
 
 	UpdateEditorTabs();
@@ -614,7 +619,7 @@ void engine::editor::ScriptEditorUI::AddTab(std::string File)
 	{
 		NewTab.Provider->ScanFile();
 	}
-	NewTab.Editor = new UITextEditor(NewTab.Provider, ScriptFont);
+	NewTab.Editor = new UITextEditor(NewTab.Provider, ScriptFont, false);
 
 	if (Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool())
 	{
@@ -637,11 +642,12 @@ void engine::editor::ScriptEditorUI::OpenTab(size_t Tab)
 		Previous->Provider->ClearHovered();
 		Previous->Provider->CloseAutoComplete();
 		Previous->Editor->StopEdit();
+		Previous->Editor->Unload();
 	}
 
 	CloseSearch();
 	SelectedTab = Tab;
-	GetSelectedTab()->Editor->UpdateHighlights = true;
+	GetSelectedTab()->Editor->Reload();
 	UpdateEditorTabs();
 	OnResized(Size);
 }
@@ -678,6 +684,9 @@ void engine::editor::ScriptEditorUI::UpdateEditorTabs()
 		{
 			t.TabName->SetTextWidthOverride(152_px);
 		}
+
+		t.TabName->SetWrapEnabled(true, 152_px);
+		t.TabName->SetMaxWraps(0);
 
 		auto btn = new UIButton(true, 0, BgColor, [this, i]() {
 			OpenTab(i);

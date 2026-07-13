@@ -96,10 +96,20 @@ namespace engine::editor
 			delete OutStream;
 		}
 
+		virtual void Update()
+		{
+		};
+
 		/**
 		 * @brief
 		 * Called when the files the provider has access to have changed.
 		 */
 		Event<> OnChanged;
+
+		/**
+		 * @brief
+		 * Called when the given file has changed it's contents.
+		 */
+		Event<string> OnModified;
 	};
 }

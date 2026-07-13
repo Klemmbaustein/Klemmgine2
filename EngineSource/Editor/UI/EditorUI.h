@@ -120,6 +120,8 @@ namespace engine::editor
 		EditorUI();
 		~EditorUI();
 
+		void LoadAssetProvider(AssetListProvider* Provider);
+
 		/**
 		 * @brief
 		 * Creates an asset at the given path and renames it if another conflicting
@@ -174,7 +176,7 @@ namespace engine::editor
 		 * The full path of the editor asset.
 		 */
 		static string Asset(const string& Path);
-		AssetListProvider* AssetsProvider = new FileAssetListProvider();
+		AssetListProvider* AssetsProvider = nullptr;
 
 		static string GetLayoutConfigPath();
 
@@ -198,6 +200,8 @@ namespace engine::editor
 
 		EditorPanel* RootPanel = nullptr;
 		StatusBarElement* StatsBarElement;
+
+		bool ScriptsChanged = false;
 
 		string CurrentStatus;
 		static void SetStatusMainThread(string NewMessage, StatusType Type);

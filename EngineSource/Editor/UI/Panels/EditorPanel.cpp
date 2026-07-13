@@ -533,6 +533,8 @@ void engine::editor::EditorPanel::HandleResizeDrag()
 		DraggedPanel = nullptr;
 		return;
 	}
+	Win->UI.HoveredBox = nullptr;
+	Win->UI.NewHoveredBox = nullptr;
 	Win->CurrentCursor = DraggingHorizontal ? Window::Cursor::ResizeLeftRight : Window::Cursor::ResizeUpDown;
 }
 

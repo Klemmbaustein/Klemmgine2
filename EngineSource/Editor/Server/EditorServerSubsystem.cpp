@@ -29,7 +29,7 @@ EditorServerSubsystem::EditorServerSubsystem(ServerConnection* Connection)
 	if (UI)
 	{
 		Event<> OldEvent = UI->AssetsProvider->OnChanged;
-		UI->AssetsProvider = new ServerAssetsProvider(Connection);
+		UI->LoadAssetProvider(new ServerAssetsProvider(Connection));
 		UI->AssetsProvider->OnChanged = OldEvent;
 	}
 	resource::AddResourceSource(new ServerResourceSource(Connection));

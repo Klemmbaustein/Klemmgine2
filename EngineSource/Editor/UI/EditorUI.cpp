@@ -32,6 +32,8 @@
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 #include <Editor/Launcher/EditorLauncher.h>
+#include <Core/File/FileUtil.h>
+#include <Engine/Script/ScriptSubsystem.h>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -186,6 +188,10 @@ void engine::editor::EditorUI::SaveEditorStateConfig()
 
 engine::editor::EditorUI::EditorUI()
 {
+	if (resource::AllowLocalFiles)
+	{
+		LoadAssetProvider(new FileAssetListProvider());
+	}
 	Instance = this;
 	RegisterDefaultPanels();
 	InitTheme();
@@ -291,9 +297,15 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("Build Project", "", Asset("Build.png"), []() {
 				new BuildWindow();
 			}),
+#ifdef WINDOWS
 			DropdownMenu::Option("Exit", "Alt+F4", Asset("X.png"), []() {
 				Engine::Instance->ShouldQuit = true;
 			}),
+#else
+			DropdownMenu::Option("Exit", "", Asset("X.png"), []() {
+				Engine::Instance->ShouldQuit = true;
+			}),
+#endif
 		});
 
 	AddMenuBarItem("Edit",
@@ -344,6 +356,22 @@ engine::editor::EditorUI::EditorUI()
 	);
 
 	Update();
+}
+
+void engine::editor::EditorUI::LoadAssetProvider(AssetListProvider* Provider)
+{
+	if (this->AssetsProvider)
+	{
+		this->AssetsProvider->OnModified.Remove(this);
+	}
+
+	this->AssetsProvider = Provider;
+	Provider->OnModified.Add(this, [this](string File) {
+		if (!Window::GetActiveWindow()->HasFocus() && file::Extension(File) == "ds")
+		{
+			ScriptsChanged = true;
+		}
+	});
 }
 
 std::vector<DropdownMenu::Option> engine::editor::EditorUI::GetPanelMenuOptions()
@@ -410,7 +438,7 @@ string engine::editor::EditorUI::GetLayoutConfigPath()
 	return editor::GetEditorPath() + "/Config/Layout/";
 }
 
-engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)
+engine::string engine::editor::EditorUI::CreateAsset (string Path, string Name, string Extension)
 {
 	if (*Path.rbegin() != '/')
 	{
@@ -532,10 +560,23 @@ void engine::editor::EditorUI::Update()
 		}
 	}
 
+	AssetsProvider->Update();
 	EditorPanel::UpdateAllPanels();
 	RootPanel->UpdatePanel();
 
 	DropdownMenu::UpdateDropdowns();
+
+	if (ScriptsChanged && Window::GetActiveWindow()->HasFocus())
+	{
+		Engine::Instance->GetSubsystem<script::ScriptSubsystem>()->Reload();
+
+		SetStatusMessage("Script files changed externally. Reloading scripts", StatusType::Info);
+
+		ForEachPanel<ClassBrowser>([](ClassBrowser* Browser) {
+			Browser->UpdateItems();
+		});
+		ScriptsChanged = false;
+	}
 }
 
 void engine::editor::EditorUI::UpdateBackgrounds()

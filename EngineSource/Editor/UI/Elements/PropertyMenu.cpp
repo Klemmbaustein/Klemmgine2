@@ -52,6 +52,7 @@ PropertyEntryElement* engine::editor::PropertyMenu::CreateNewEntry(string Name)
 {
 	auto* New = new PropertyEntryElement();
 	New->SetPropertyName(Name);
+	New->SetWidth(this->NameSize);
 
 	if (IsCompact)
 	{
@@ -314,5 +315,5 @@ void engine::editor::PropertyMenu::Update()
 	uint32 PixelSize = this->GetUsedSize().GetPixels().X;
 
 	this->IsCompact = PixelSize < 220;
-	ElementSize = UISize::Pixels(PixelSize - (IsCompact ? 10 : 110));
+	ElementSize = UISize::Pixels(PixelSize - (IsCompact ? 10 : this->NameSize.GetPixels().X + 40));
 }

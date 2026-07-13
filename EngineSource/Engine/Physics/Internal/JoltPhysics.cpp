@@ -412,7 +412,7 @@ engine::internal::JoltInstance::JoltInstance()
 	const uint32 cMaxBodies = 65536;
 
 	const uint32 cNumBodyMutexes = 0;
-	const uint32 cMaxBodyPairs = 10240;
+	const uint32 cMaxBodyPairs = 512;
 	const uint32 cMaxContactConstraints = 1024;
 
 	System = new JPH::PhysicsSystem();
