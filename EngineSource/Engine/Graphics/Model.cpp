@@ -38,9 +38,12 @@ void engine::graphics::Model::Draw(Renderer* Render, GraphicsScene* In, const Tr
 		if (Used == nullptr)
 			continue;
 
-		if (!Used->Unlit && In)
+		if (In)
 		{
-			In->Lights.ApplyToShader(Used, Bounds);
+			if (!Used->Unlit)
+			{
+				In->Lights.ApplyToShader(Used, Bounds);
+			}
 			In->Shadows.BindUniforms(Pass, Used);
 		}
 		if (In)
