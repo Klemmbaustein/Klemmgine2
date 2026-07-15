@@ -679,10 +679,13 @@ void kui::systemWM::SysWindow::UpdateEvents()
 
 	input::MouseMovement = 0;
 
-	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
-	if (InputSys)
+	if (thread::IsMainThread)
 	{
-		InputSys->NextInputUpdate();
+		InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
+		if (InputSys)
+		{
+			InputSys->NextInputUpdate();
+		}
 	}
 
 	for (auto& ev : EventsCopy)

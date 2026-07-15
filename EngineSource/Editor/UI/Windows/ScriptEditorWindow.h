@@ -17,6 +17,8 @@ namespace engine::editor
 
 		ScriptEditorUI* UI = nullptr;
 
+		bool HasFocus = false;
+
 		static ScriptEditorWindow* Current;
 
 	private:

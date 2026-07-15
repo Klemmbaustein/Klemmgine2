@@ -93,6 +93,11 @@ public:
 
 	JobHandle CreateJob(const char* inName, JPH::ColorArg inColor, const JobFunction& inJobFunction, uint32 inNumDependencies = 0) override
 	{
+		if (!inJobFunction)
+		{
+			return JobHandle();
+		}
+
 		auto j = new Job(inName, inColor, this, inJobFunction, inNumDependencies);
 		Jobs.emplace(j, inJobFunction);
 

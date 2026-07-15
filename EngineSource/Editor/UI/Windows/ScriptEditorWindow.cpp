@@ -44,6 +44,7 @@ void engine::editor::ScriptEditorWindow::Update()
 	DropdownMenu::UpdateDropdowns();
 	UI->Update();
 	Queue->Update();
+	HasFocus = Popup->HasFocus();
 }
 
 void engine::editor::ScriptEditorWindow::Destroy()
@@ -52,6 +53,10 @@ void engine::editor::ScriptEditorWindow::Destroy()
 	Settings::GetInstance()->Interface.RemoveListener(this);
 	delete MonospacedFont;
 	delete UI;
+	if (!EditorUI::Instance)
+	{
+		return;
+	}
 	EditorUI::Instance->ScriptEditorWindowOpen = false;
 
 	thread::ExecuteOnMainThread([] {
