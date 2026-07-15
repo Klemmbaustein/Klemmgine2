@@ -100,6 +100,7 @@ void engine::script::ScriptSubsystem::Update()
 
 bool engine::script::ScriptSubsystem::Reload()
 {
+	ClearTasks();
 	ThreadPool::Main()->AwaitJoin();
 	auto CurrentScene = Scene::GetMain();
 
@@ -218,6 +219,17 @@ bool engine::script::ScriptSubsystem::Reload()
 #endif
 
 	return true;
+}
+
+void engine::script::ScriptSubsystem::ClearTasks()
+{
+	for (auto& i : WaitTasks)
+	{
+		modules::system::async::abortTask(i.TaskObject, this->Runtime->baseContext);
+		this->Runtime->baseContext->destruct(i.TaskObject);
+	}
+
+	WaitTasks.clear();
 }
 
 RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(ReflectionObject* Object)

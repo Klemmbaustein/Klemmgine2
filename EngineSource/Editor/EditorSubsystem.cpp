@@ -6,6 +6,7 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Editor/Editor.h>
 #include <Engine/Input.h>
+#include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <filesystem>
@@ -104,6 +105,8 @@ void engine::editor::EditorSubsystem::StartProject()
 		Log::Clear();
 	}
 
+	script::ScriptSubsystem::Instance->ClearTasks();
+
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	LastSceneName = Scene::GetMain()->Name;
@@ -115,6 +118,7 @@ void engine::editor::EditorSubsystem::StartProject()
 
 void engine::editor::EditorSubsystem::StopProject()
 {
+	script::ScriptSubsystem::Instance->ClearTasks();
 	if (LastScene.GetType() != SerializedData::DataType::Null)
 	{
 		if (Scene::GetMain()->Name != LastSceneName)
