@@ -16,12 +16,13 @@ void engine::editor::CodeEditorTheme::ApplyToScript(ScriptEditorProvider* Provid
 
 void engine::editor::CodeEditorTheme::ApplyToFile(kui::FileEditorProvider* Provider) const
 {
-	Provider->TextColor = this->Text;
+	Provider->TextColor = Text;
 	Provider->KeywordColor = Keyword;
 	Provider->StringColor = String;
 	Provider->NumberColor = Number;
 	Provider->BacketAreaColor = BracketArea;
 	Provider->LineNumberColor = LineNumber;
+	Provider->CommentColor = Comment;
 }
 
 void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
@@ -46,6 +47,7 @@ void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
 			{"keyword", this->Keyword},
 			{"bracketArea", this->BracketArea},
 			{"lineNumber", this->LineNumber},
+			{"comment", this->Comment},
 		};
 
 		auto& ColorData = ThemeData.At("colors");
