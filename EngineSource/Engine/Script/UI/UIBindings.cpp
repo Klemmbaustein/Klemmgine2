@@ -164,6 +164,12 @@ static void UICanvasBox_new(InterpretContext* context)
 	context->pushValue(cls);
 }
 
+static void UIBox_deleteChildren(InterpretContext* context)
+{
+	ds::ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
+	cls.getValue()->DeleteChildren();
+}
+
 static void UIBox_getUsedSize(InterpretContext* context)
 {
 	ds::ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
@@ -540,6 +546,9 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(UIBoxType, "child") },
 		UIBoxType, "addChild", &UIBox_addChild));
+
+	To.addClassMethod(UIBoxType, NativeFunction({  },
+		nullptr, "deleteChildren", &UIBox_deleteChildren));
 
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMinSize", &UIBox_setMinSize));

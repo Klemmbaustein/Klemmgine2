@@ -16,6 +16,7 @@
 #include "Windows/SettingsWindow.h"
 #include <Core/File/JsonSerializer.h>
 #include <Editor/Editor.h>
+#include <Editor/UI/Windows/ScriptEditorWindow.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Engine/Engine.h>
 #include <Core/Platform/Platform.h>
@@ -369,6 +370,10 @@ void engine::editor::EditorUI::LoadAssetProvider(AssetListProvider* Provider)
 	Provider->OnModified.Add(this, [this](string File) {
 		if (!Window::GetActiveWindow()->HasFocus() && file::Extension(File) == "ds")
 		{
+			if (ScriptEditorWindowOpen && ScriptEditorWindow::Current->HasFocus)
+			{
+				return;
+			}
 			ScriptsChanged = true;
 		}
 	});
@@ -411,6 +416,10 @@ engine::editor::EditorUI::~EditorUI()
 	VideoSystem->OnResized();
 	Engine::GameHasFocus = true;
 	input::ShowMouseCursor = false;
+	if (ScriptEditorWindowOpen)
+	{
+		ScriptEditorWindow::Current->Close();
+	}
 
 	Instance = nullptr;
 
