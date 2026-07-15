@@ -10,5 +10,6 @@
 		"keyword": vec3 = <0.34, 0.61, 0.84>;
 		"lineNumber": vec3 = <0.54, 0.54, 0.54>;
 		"bracketArea": vec3 = <0.36, 0.36, 0.36>;
+		"comment": vec3 = <0.34, 0.65, 0.29>;
 	};
 }
