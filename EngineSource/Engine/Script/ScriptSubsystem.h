@@ -76,6 +76,8 @@ namespace engine::script
 		 */
 		bool Reload();
 
+		void ClearTasks();
+
 		ds::RuntimeClass* GetClassFromObject(ReflectionObject* Object);
 		void RegisterClassForObject(ReflectionObject* Object, ds::RuntimeClass* Class);
 
