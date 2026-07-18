@@ -61,10 +61,6 @@ void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
 				Vector3 ValueVector = ColorData.At(Name).GetVector3();
 				Value = kui::Vec3f(ValueVector.X, ValueVector.Y, ValueVector.Z);
 			}
-			else
-			{
-				Log::Note("Theme does not contain color - " + Name);
-			}
 		}
 	}
 	catch (SerializeReadException e)
