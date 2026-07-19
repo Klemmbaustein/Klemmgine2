@@ -1,0 +1,19 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: Check documentation spelling
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  spell-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install codespell
+      run: |
+        pip install codespell
+
+    - run: codespell Engine/Editor/Documentation/

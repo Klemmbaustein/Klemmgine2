@@ -31,7 +31,7 @@
 			"description": "Returns the current position of the mouse cursor on the screen in a scale from -1 to 1, if the mouse is visible."
 		},
 		"setShowMouseCursor": {
-			"description": "Controls the visiblity of the mouse cursor.",
+			"description": "Controls the visibility of the mouse cursor.",
 			"arguments": {
 				"newValue": "If the new value is true, the mouse cursor is shown. If it is false, the mouse cursor is invisible"
 			}

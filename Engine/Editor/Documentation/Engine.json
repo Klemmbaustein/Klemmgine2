@@ -380,17 +380,17 @@
 				"createBox": {
 					"description": "Loads a box collider for this component.",
 					"arguments": {
-						"motionType": "The motion type of the collider. If static, the collider will only move according to this component's position value. If kinematic, it will move via velocity but is not physics simualted. If dynamic, it is fully physics simulated.",
+						"motionType": "The motion type of the collider. If static, the collider will only move according to this component's position value. If kinematic, it will move via velocity but is not physics simulated. If dynamic, it is fully physics simulated.",
 						"layer": "The layer this component is on.",
-						"scale": "The scale of the collider, independent of this component's scale, so it wont affect the scale of any child components."
+						"scale": "The scale of the collider, independent of this component's scale, so it won't affect the scale of any child components."
 					}
 				},
 				"createSphere": {
 					"description": "Loads a sphere collider for this component.",
 					"arguments": {
-						"motionType": "The motion type of the collider. If static, the collider will only move according to this component's position value. If kinematic, it will move via velocity but is not physics simualted. If dynamic, it is fully physics simulated.",
+						"motionType": "The motion type of the collider. If static, the collider will only move according to this component's position value. If kinematic, it will move via velocity but is not physics simulated. If dynamic, it is fully physics simulated.",
 						"layer": "The layer this component is on.",
-						"scale": "The scale of the collider, independent of this component's scale, so it wont affect the scale of any child components."
+						"scale": "The scale of the collider, independent of this component's scale, so it won't affect the scale of any child components."
 					}
 				},
 				"shapeCast": {
@@ -400,7 +400,7 @@
 						"layer": "The layer the shape cast should query.",
 						"ignoredObjects": "A set of objects whose colliders should be skipped in the query."
 					},
-					"return": "An array of hits containing the earliest hit in the shape cast, or multiple if multiple hits occured at once."
+					"return": "An array of hits containing the earliest hit in the shape cast, or multiple if multiple hits occurred at once."
 				},
 				"setIsActive": {
 					"description": "Sets the activeness of this component. If it is active, its physics are updated. (On kinematic components it updates the positions according to velocity) This has no effect on static components.",
