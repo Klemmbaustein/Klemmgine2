@@ -22,7 +22,7 @@ using namespace engine;
 using namespace engine::plugin;
 using namespace engine::platform;
 
-// Incredibly cursed, but it means I wont have to write everything twice!
+// Incredibly cursed, but it means I won't have to write everything twice!
 
 #undef STRUCT_MEMBER
 #undef STRUCT_MEMBER_CALL_DIRECT

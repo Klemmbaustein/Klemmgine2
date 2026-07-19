@@ -55,12 +55,12 @@ namespace engine::launchArgs
 #endif
 		/**
 		* @brief
-		* Gets the value of this parameter as an int. Retruns 0 if it failed to parse.
+		* Gets the value of this parameter as an int. Returns 0 if it failed to parse.
 		*/
 		int32 AsInt() const;
 		/**
 		* @brief
-		* Gets the value of this parameter as a float. Retruns 0 if it failed to parse.
+		* Gets the value of this parameter as a float. Returns 0 if it failed to parse.
 		*/
 		float AsFloat() const;
 
