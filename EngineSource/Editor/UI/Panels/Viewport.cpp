@@ -375,6 +375,11 @@ void engine::editor::Viewport::Update()
 
 	if (Engine::IsPlaying)
 	{
+		if (Current)
+		{
+			Current->Graphics.AlwaysRedraw = this->Visible;
+		}
+
 		// Only give back focus if the 3d scene is clicked (avoid stuff like the View dropdown giving focus to the game)
 		if (!Engine::GameHasFocus && (Win->UI.HoveredBox != ViewportBackground
 			|| !(Win->Input.IsLMBClicked || Win->Input.IsRMBClicked)))

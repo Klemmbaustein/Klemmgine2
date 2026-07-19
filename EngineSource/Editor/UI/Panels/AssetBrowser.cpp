@@ -509,10 +509,10 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 	};
 
 	std::vector<FileType> Types = {
-		FileType("New scene", "Ctrl+N", "kts", "Scene"),
-		FileType("New material", "Ctrl+M", "kmt", "Material"),
-		FileType("New script", "Ctrl+K", "ds", "Script"),
-		FileType("New ui script", "Ctrl+E", "kui", "UIScript"),
+		FileType("New Scene", "Ctrl+N", "kts", "Scene"),
+		FileType("New Material", "Ctrl+M", "kmt", "Material"),
+		FileType("New Script", "Ctrl+K", "ds", "Script"),
+		FileType("New UI Script", "Ctrl+E", "kui", "UIScript"),
 	};
 
 	std::vector<DropdownMenu::Option> Options = {
@@ -594,7 +594,7 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 		});
 
 	Options.push_back(DropdownMenu::Option{
-		.Name = "New folder",
+		.Name = "New Folder",
 		.Shortcut = "Ctrl+D",
 		.Icon = EditorUI::GetExtIconAndColor("dir/").first,
 		.OnClicked = [this, WorkDir, OnAddCallback]() {

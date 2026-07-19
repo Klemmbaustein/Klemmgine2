@@ -107,6 +107,8 @@ void engine::editor::EditorSubsystem::StartProject()
 
 	script::ScriptSubsystem::Instance->ClearTasks();
 
+	kui::Window::GetActiveWindow()->Input.PollForText = false;
+
 	input::ShowMouseCursor = false;
 	LastScene = Scene::GetMain()->Serialize();
 	LastSceneName = Scene::GetMain()->Name;

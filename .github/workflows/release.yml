@@ -53,7 +53,7 @@ jobs:
           libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev
         sudo apt-get remove snapd
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -99,7 +99,7 @@ jobs:
       matrix:
         target-os: [windows-latest, ubuntu-latest]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup dirs
       shell: bash
