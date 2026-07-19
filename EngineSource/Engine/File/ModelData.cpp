@@ -368,7 +368,6 @@ void engine::GraphicsModel::ReferenceModel(GraphicsModel* Target)
 		i.second.References++;
 		return;
 	}
-	Log::Warn("Failed to reference model");
 }
 
 void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)

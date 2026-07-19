@@ -534,6 +534,8 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassConstructor(UIBoxType, NativeFunction({ FunctionArgument(BoolInst, "horizontal") },
 		nullptr, "UIBox.new", &UIBox_new));
 
+	UIBoxType->makePointerClass();
+
 	auto AddUIMethod = [&To](ClassType* type, NativeFunction fn) {
 		fn.isDiscardable = true;
 		fn.returnType = type;
@@ -600,7 +602,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color") },
 			nullptr, "UIBlurBackground.new", &UIBlurBackground_new));
 
-	// UICanvasBox
+	// UICanvasBoxr
 	auto UICanvasBoxType = To.createClass<UICanvasBox*>("UICanvasBox", UIBoxType);
 
 	To.addClassConstructor(UICanvasBoxType, NativeFunction(
