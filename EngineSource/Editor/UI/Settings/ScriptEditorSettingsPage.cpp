@@ -3,9 +3,13 @@
 #include <Editor/Settings/EditorSettings.h>
 #include <Editor/UI/Windows/SettingsWindow.h>
 #include <Engine/Internal/PlatformGraphics.h>
-#include <Core/Platform/Platform.h>
+#include <Engine/Debug/TimeLogger.h>
+#include <Core/Platform/Pipe.h>
+#include <Core/ThreadPool.h>
 
 using namespace kui;
+
+bool engine::editor::ScriptEditorSettingsPage::CheckedVsDir = false;
 
 engine::editor::ScriptEditorSettingsPage::ScriptEditorSettingsPage()
 {
@@ -18,11 +22,6 @@ engine::editor::ScriptEditorSettingsPage::ScriptEditorSettingsPage()
 	UseDefaultEditor = Settings::GetInstance()->Script.GetSetting("useDefaultEditor", true).GetBool();
 	ExternalEditorCommand = Settings::GetInstance()->Script.GetSetting("externalEditorCommand", "").GetString();
 	ExternalEditorArguments = Settings::GetInstance()->Script.GetSetting("externalEditorArguments", "").GetString();
-
-#if WINDOWS
-	VsDir = platform::GetCommandOutput("\"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -property productPath");
-	VsDir = str::Trim(str::RemoveChar(VsDir, '\n'));
-#endif
 }
 
 engine::editor::ScriptEditorSettingsPage::~ScriptEditorSettingsPage()
@@ -31,6 +30,7 @@ engine::editor::ScriptEditorSettingsPage::~ScriptEditorSettingsPage()
 
 void engine::editor::ScriptEditorSettingsPage::Generate(PropertyMenu* Target, SettingsWindow* TargetWindow)
 {
+	std::lock_guard g{ VsCheckMutex };
 	Target->CreateNewHeading("Script Editor");
 
 	std::vector Options = {
@@ -106,6 +106,41 @@ void engine::editor::ScriptEditorSettingsPage::GenerateExternalEditor(PropertyMe
 		return;
 	}
 
+#if WINDOWS
+	if (!CheckedVsDir)
+	{
+		CheckedVsDir = true;
+
+		auto Task = [this, TargetWindow] {
+			std::lock_guard g{ VsCheckMutex };
+			platform::Pipe p = { "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -property productPath" };
+
+			while (!p.Empty())
+			{
+				auto NewLines = p.GetNewLines();
+				for (auto& i : NewLines)
+				{
+					VsDir.append(i + "\n");
+				}
+			}
+
+			VsDir = str::Trim(str::RemoveChar(VsDir, '\n'));
+			TargetWindow->Queue->Run([this, TargetWindow] {
+				TargetWindow->ShowPage(this);
+			});
+		};
+
+		if (ThreadPool::Main())
+		{
+			ThreadPool::Main()->AddJob(Task);
+		}
+		else
+		{
+			std::thread(Task).detach();
+		}
+	}
+#endif
+
 	Target->AddBooleanEntry("Let OS select editor", UseDefaultEditor, [this, TargetWindow] {
 		Settings::GetInstance()->Script.SetSetting("useDefaultEditor", UseDefaultEditor);
 		TargetWindow->ShowPage(this);
@@ -151,7 +186,7 @@ void engine::editor::ScriptEditorSettingsPage::GenerateExternalEditor(PropertyMe
 			Settings::GetInstance()->Script.SetSetting("externalEditorCommand", ExternalEditorCommand);
 		});
 		Target->AddButtonEntry("", "Browse", [this, Target] {
-			auto result = platform::OpenFileDialog({ platform::FileDialogFilter{.Name = "Executable", .FileTypes = {"exe"}}});
+			auto result = platform::OpenFileDialog({ platform::FileDialogFilter{.Name = "Executable", .FileTypes = {"exe"}} });
 
 			if (result.empty())
 			{
