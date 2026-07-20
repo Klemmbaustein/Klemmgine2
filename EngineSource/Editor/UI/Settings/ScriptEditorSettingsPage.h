@@ -1,5 +1,6 @@
 #pragma once
 #include "SettingsPage.h"
+#include <mutex>
 
 namespace engine::editor
 {
@@ -19,9 +20,11 @@ namespace engine::editor
 		bool UseVerticalTabs = true;
 		bool UseExternalEditor = false;
 		bool UseDefaultEditor = false;
+		static bool CheckedVsDir;
 		string ExternalEditorCommand;
 		string ExternalEditorArguments;
 
 		string VsDir = "";
+		std::mutex VsCheckMutex;
 	};
 }
