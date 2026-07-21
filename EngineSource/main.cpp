@@ -1,9 +1,9 @@
 #include "Engine/Engine.h"
 #include <Engine/Subsystem/SceneSubsystem.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include "Core/Types.h"
 #include <Engine/ProjectFile.h>
 #include <filesystem>
-#include <Core/File/FileUtil.h>
 #include <Core/LaunchArgs.h>
 
 using namespace engine;
@@ -16,11 +16,13 @@ static inline int32 LaunchEngine(int argc, char** argv)
 	{
 		auto proj = ProjectFile("Assets/project.json");
 		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
+		Instance->GetSubsystem<VideoSubsystem>()->MainWindow->SetTitle(proj.Name);
 	}
 	if (std::filesystem::exists("project.json"))
 	{
 		auto proj = ProjectFile("project.json");
 		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
+		Instance->GetSubsystem<VideoSubsystem>()->MainWindow->SetTitle(proj.Name);
 	}
 
 	Instance->Run();

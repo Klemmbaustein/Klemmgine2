@@ -93,7 +93,7 @@
 			"binaryDir": "${sourceDir}/out/build/${presetName}",
 			"installDir": "${sourceDir}/out/install/${presetName}",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_BUILD_TYPE": "Release",
 				"ENGINE_EDITOR": "ON"
 			},
 			"environment": {
