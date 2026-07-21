@@ -421,6 +421,15 @@ static void PhysicsComponent_setIsActive(InterpretContext* context)
 	Component.getValue()->SetActive(Active);
 }
 
+static void PhysicsComponent_setVelocity(InterpretContext* context)
+{
+	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Vector3 Active = context->popValue<Vector3>();
+
+	Component.getValue()->SetVelocity(Active);
+}
+
 static void PhysicsComponent_setIsCollisionEnabled(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
@@ -1059,11 +1068,15 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			ToContext->registry->getArray(Physics.HitResultType), "collisionTest",
 			&PhysicsComponent_collisionTest));
 
+	// TODO: Properly implement overlap checks
+	//EngineModule.addClassMethod(PhysicsComponentType,
+	//	NativeFunction(
+	//		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped") },
+	//		nullptr, "onBeginOverlap",
+	//		&PhysicsComponent_onBeginOverlap));
+
 	EngineModule.addClassMethod(PhysicsComponentType,
-		NativeFunction(
-			{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onOverlapped") },
-			nullptr, "onBeginOverlap",
-			&PhysicsComponent_onBeginOverlap));
+		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") }, nullptr, "setVelocity", & PhysicsComponent_setVelocity));
 
 	auto CollisionComponentType = EngineModule.createClass<PhysicsComponent*>("CollisionComponent", ComponentType);
 

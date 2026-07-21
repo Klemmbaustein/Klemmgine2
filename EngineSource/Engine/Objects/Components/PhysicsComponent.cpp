@@ -247,6 +247,11 @@ void engine::PhysicsComponent::Update()
 	}
 }
 
+void engine::PhysicsComponent::SetVelocity(Vector3 NewVelocity)
+{
+	Body->SetVelocity(NewVelocity);
+}
+
 bool engine::PhysicsComponent::UpdateTransform(bool IsDirty)
 {
 	if (IsPhysicsSimulated && Engine::Instance->IsPlaying && GetActive())

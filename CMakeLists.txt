@@ -30,8 +30,8 @@ else()
 endif()
 
 if(MSVC)
-	# Allow multi processor compilation with MSVC
-	if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 17 2022")
+	# Allow multi processor compilation with msbuild
+	if(${CMAKE_GENERATOR} STREQUAL "Visual Studio 17 2022" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 18 2026")
 		add_compile_options("/MP")
 	endif()
 	add_compile_options("/FS")

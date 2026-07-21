@@ -11,14 +11,14 @@ CODE_ANALYSIS_END_EXTERNAL_HEADER
 
 namespace engine::internal
 {
-	class EngineContactListenerImpl : JPH::ContactListener
+	class EngineContactListenerImpl : public JPH::ContactListener
 	{
 	public:
 		virtual void OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2,
 			const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
 		{
 			auto HitBody1 = reinterpret_cast<physics::PhysicsBody*>(inBody1.GetUserData());
-			auto HitBody2 = reinterpret_cast<physics::PhysicsBody*>(inBody1.GetUserData());
+			auto HitBody2 = reinterpret_cast<physics::PhysicsBody*>(inBody2.GetUserData());
 
 			Log::Info(str::Format("Collision - %s, %s", HitBody1->Parent->GetRootObject()->Name.c_str(), HitBody2->Parent->GetRootObject()->Name.c_str()));
 		}

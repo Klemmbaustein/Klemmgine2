@@ -48,6 +48,7 @@ namespace engine::internal
 		std::pair<Vector3, Rotation3> GetBodyPositionAndRotation(physics::PhysicsBody* Body) const;
 		void SetBodyRotation(physics::PhysicsBody* Body, Vector3 NewRotation);
 		void SetBodyPositionAndRotation(physics::PhysicsBody* Body, Vector3 NewPosition, Rotation3 NewRotation);
+		void SetBodyVelocity(physics::PhysicsBody* Body, Vector3 NewVelocity);
 		void ScaleBody(physics::PhysicsBody* Body, Vector3 ScaleFactor) const;
 		void SetBodyActive(physics::PhysicsBody* Body, bool IsActive);
 		void SetBodyCollisionEnabled(physics::PhysicsBody* Body, bool IsCollisionEnabled);
@@ -68,7 +69,7 @@ namespace engine::internal
 		JPH::BodyInterface* JoltBodyInterface = nullptr;
 
 	private:
-		JPH::ContactListener ContactListener;
+		EngineContactListenerImpl ContactListener;
 
 		JPH::MeshShape* CreateNewMeshShape(GraphicsModel* From, bool ExtraReference = true);
 
