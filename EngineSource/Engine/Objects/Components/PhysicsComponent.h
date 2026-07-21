@@ -29,6 +29,8 @@ namespace engine
 		bool GetActive() const;
 		void Update() override;
 
+		void SetVelocity(Vector3 NewVelocity);
+
 		bool UpdateTransform(bool IsDirty) override;
 
 		std::function<void()> OnBeginOverlap;

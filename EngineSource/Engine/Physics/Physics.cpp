@@ -187,6 +187,12 @@ HeightMapBody::HeightMapBody(const std::vector<float>& Samples, uint32 Size, Tra
 	this->Samples = Samples;
 	this->Size = Size;
 }
+
+void engine::physics::PhysicsBody::SetVelocity(Vector3 NewVelocity)
+{
+	Manager->PhysicsSystem->SetBodyVelocity(this, NewVelocity);
+}
+
 std::vector<HitResult> engine::physics::PhysicsBody::CollisionTest(Transform At,
 	Layer Layers, std::set<SceneObject*> ObjectsToIgnore)
 {

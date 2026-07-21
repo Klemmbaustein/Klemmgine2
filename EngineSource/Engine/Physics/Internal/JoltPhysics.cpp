@@ -430,7 +430,7 @@ engine::internal::JoltInstance::JoltInstance()
 		ObjectVsBroadPhaseFilter,
 		ObjectVsObjectFilter);
 
-	System->SetContactListener(&ContactListener);
+	//System->SetContactListener(&ContactListener);
 	PhysicsSystemCount++;
 
 	JoltBodyInterface = &System->GetBodyInterface();
@@ -496,7 +496,7 @@ void engine::internal::JoltInstance::AddBody(PhysicsBody* Body, bool StartActive
 	}
 
 	Body->PhysicsSystemBody = &Bodies.emplace(info.ID, info).first->second;
-	JoltBodyInterface->SetUserData(info.ID, reinterpret_cast<uint64>(Body->PhysicsSystemBody));
+	JoltBodyInterface->SetUserData(info.ID, reinterpret_cast<uint64>(info.Body));
 	Body->IsActive = StartActive;
 	Body->IsCollisionEnabled = StartCollisionEnabled;
 }
@@ -594,6 +594,17 @@ void engine::internal::JoltInstance::SetBodyPositionAndRotation(engine::physics:
 	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
 	JoltBodyInterface->SetPositionAndRotation(Info->ID, ToJPHVec3(NewPosition),
 		ToJPHQuat(NewRotation), JPH::EActivation::Activate);
+}
+
+void engine::internal::JoltInstance::SetBodyVelocity(physics::PhysicsBody* Body, Vector3 NewVelocity)
+{
+	if (!Body->PhysicsSystemBody)
+	{
+		return;
+	}
+
+	PhysicsBodyInfo* Info = static_cast<PhysicsBodyInfo*>(Body->PhysicsSystemBody);
+	JoltBodyInterface->SetLinearVelocity(Info->ID, ToJPHVec3(NewVelocity));
 }
 
 void engine::internal::JoltInstance::ScaleBody(engine::physics::PhysicsBody* Body, Vector3 ScaleFactor) const
@@ -710,9 +721,8 @@ public:
 
 		if (ObjectsToIgnore->empty())
 			return true;
-		PhysicsBody* BodyInfo = Instance->Bodies[inObject].Body;
-		//auto val = Instance->JoltBodyInterface->GetUserData(inObject);
-		//PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
+		auto val = Instance->JoltBodyInterface->GetUserData(inObject);
+		PhysicsBody* BodyInfo = reinterpret_cast<PhysicsBody*>(val);
 		return ObjectsToIgnore->find(BodyInfo->Parent->RootObject) == ObjectsToIgnore->end();
 	}
 };
