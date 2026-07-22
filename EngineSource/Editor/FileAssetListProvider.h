@@ -7,7 +7,7 @@ namespace engine::editor
 	class FileAssetListProvider : public AssetListProvider
 	{
 	public:
-		virtual ~FileAssetListProvider() = default;
+		~FileAssetListProvider() override;
 
 		std::vector<AssetFile> GetFiles(string Path) override;
 		void DeleteFile(string Path) override;
