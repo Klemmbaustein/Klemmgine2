@@ -5,6 +5,11 @@
 
 using namespace engine;
 
+engine::editor::FileAssetListProvider::~FileAssetListProvider()
+{
+	delete Watcher;
+}
+
 std::vector<editor::AssetFile> editor::FileAssetListProvider::GetFiles(string Path)
 {
 	if (!std::filesystem::exists("Assets/"))
