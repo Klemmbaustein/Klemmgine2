@@ -96,6 +96,12 @@ static void Vector3_toString(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(str.data(), str.size()));
 }
 
+static void Engine_lookAtRotation(InterpretContext* context)
+{
+	Vector3 Pos = context->popValue<Vector3>();
+	context->pushValue(Rotation3::LookAt(Pos));
+}
+
 static void Transform_decompose(InterpretContext* context)
 {
 	script::DecomposeResult Result{};
@@ -295,6 +301,11 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 			Math.Vec2, "vec2", [](InterpretContext* context) {}));
 
 	Math.Vec2->addConstructor(Vec2Function);
+
+	To.addFunction(
+		NativeFunction({
+			FunctionArgument(Math.Vec3, "position"), },
+			Math.Rot, "getLookAtRotation", &Engine_lookAtRotation));
 
 	To.addType(Math.Rot);
 	To.addType(Math.Vec3);

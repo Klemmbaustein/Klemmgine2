@@ -3,10 +3,25 @@
 #include "Light.h"
 #include <Core/BoundingBox.h>
 #include <Engine/Graphics/Scene/BoundsHirarchy.h>
+#include <memory>
+#include <mutex>
 
 namespace engine::graphics
 {
 	class GraphicsScene;
+
+	class LightBvhAsyncData
+	{
+	public:
+		bool Cancelled = false;
+		std::mutex LightMutex;
+
+		std::list<Light*> CurrentLights;
+		std::list<Light*> NewLight;
+		std::list<Light*> RemovedLight;
+
+		BvhNode<Light*>* CurrentRoot = nullptr;
+	};
 
 	class LightBvh
 	{
@@ -96,13 +111,9 @@ namespace engine::graphics
 
 	private:
 
-		std::list<Light*> CurrentLights;
-		std::list<Light*> NewLight;
-		std::list<Light*> RemovedLight;
-
 		void ShowDebugNodes(GraphicsScene* With, BvhNode<Light*>* Node, size_t Depth = 0);
 
-		BvhNode<Light*>* CurrentRoot = nullptr;
+		std::shared_ptr<LightBvhAsyncData> AsyncData;
 
 		bool RunningUpdate = false;
 		bool RequireUpdate = true;

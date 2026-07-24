@@ -33,10 +33,10 @@ void engine::graphics::Model::Draw(Renderer* Render, GraphicsScene* In, const Tr
 
 		UsedMaterials[i]->Apply(Pass);
 		ShaderObject* Used = UsedMaterials[i]->Shader;
-		Used->Bind();
 
 		if (Used == nullptr)
 			continue;
+		Used->Bind();
 
 		if (In)
 		{
@@ -71,6 +71,11 @@ void engine::graphics::Model::SimpleDraw(Renderer* Render, const Transform& At, 
 {
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
+		if (UsedMaterials[i]->IsTransparent)
+		{
+			continue;
+		}
+
 		auto Pass = Render->StartRender();
 		UsedMaterials[i]->ApplySimple(Pass, Shader);
 		Shader->SetMatrix(Shader->ModelUniform, At.Matrix);

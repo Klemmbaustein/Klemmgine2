@@ -220,7 +220,7 @@ engine::graphics::OpenGLRenderer::OpenGLRenderer()
 {
 	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(MessageCallback, this);
+	glDebugMessageCallback(MessageCallback, VideoSubsystem::Current);
 }
 
 void engine::graphics::OpenGLRenderer::RenderScreen(kui::Window* WithWindow, RendererTexture* Texture, bool VSync)
@@ -825,7 +825,9 @@ uint32 engine::graphics::OpenGLShaderProgram::GetUniformLocation(const char* Nam
 
 uint32 engine::graphics::OpenGLShaderProgram::GetUniformBlockLocation(const char* Name)
 {
-	return glGetUniformBlockIndex(ProgramObject, Name);
+	auto index = glGetUniformBlockIndex(ProgramObject, Name);
+
+	return index == GL_INVALID_INDEX ? 0 : index;
 }
 
 void engine::graphics::OpenGLShaderProgram::SetInt(uint32 UniformLocation, int32 Value)

@@ -170,6 +170,13 @@ static void UIBox_deleteChildren(InterpretContext* context)
 	cls.getValue()->DeleteChildren();
 }
 
+static void UIBox_destroy(InterpretContext* context)
+{
+	ds::ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
+	delete cls.getValue();
+	cls.getValue() = nullptr;
+}
+
 static void UIBox_getUsedSize(InterpretContext* context)
 {
 	ds::ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
@@ -552,6 +559,9 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassMethod(UIBoxType, NativeFunction({  },
 		nullptr, "deleteChildren", &UIBox_deleteChildren));
 
+	To.addClassMethod(UIBoxType, NativeFunction({  },
+		nullptr, "destroy", &UIBox_destroy));
+
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMinSize", &UIBox_setMinSize));
 
@@ -582,6 +592,9 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UITextType, NativeFunction({ FunctionArgument(StrType, "newText") },
 		UITextType, "setText", &UIText_setText));
 
+	AddUIMethod(UITextType, NativeFunction({ FunctionArgument(Vec3Type, "newColor") },
+		UITextType, "setColor", &UIText_setColor));
+
 	// UIBackground
 	auto UIBackgroundType = To.createClass<UIBackground*>("UIBackground", UIBoxType);
 	To.addClassConstructor(UIBackgroundType,
@@ -593,7 +606,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 			UIBackgroundType, "setColor", &UIBackground_setColor));
 
 	AddUIMethod(UIBackgroundType,
-		NativeFunction({ FunctionArgument(Vec3Type, "newColor") },
+		NativeFunction({ FunctionArgument(SizeType, "newSize"), FunctionArgument(Vec3Type, "newColor") },
 			UIBackgroundType, "setBorder", &UIBackground_setBorder));
 
 	// UIBlurBackground
@@ -664,7 +677,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	To.addClassMethod(ElementType,
 		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(Vec3Type, "value") },
-			nullptr, "setVec3", & UIScriptElement_setVec3));
+			nullptr, "setVec3", &UIScriptElement_setVec3));
 
 	To.addClassMethod(ElementType,
 		NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(SizeVecType, "value") },

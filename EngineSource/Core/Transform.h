@@ -18,6 +18,8 @@ namespace engine
 
 		Vector3 EulerVector(bool Radians = false) const;
 
+		static Rotation3 LookAt(Vector3 Position);
+
 		static constexpr float PI = 3.14159265359f;
 
 		bool operator==(const Rotation3& Other) const;

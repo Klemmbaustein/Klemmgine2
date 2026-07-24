@@ -8,7 +8,7 @@ using namespace ds;
 
 void engine::script::ScriptSceneObject::OnDestroyed()
 {
-	if (ScriptData  && ScriptData->vtable[2])
+	if (ScriptData  && ScriptData->vtable[3])
 	{
 		Interpreter->pushValue(this->ScriptData);
 		Interpreter->virtualCall(ScriptData->vtable[3]);

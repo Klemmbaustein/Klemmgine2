@@ -46,6 +46,7 @@ namespace engine
 		float Deceleration = 40;
 		/// The air acceleration multiplier. If the movement is in air, both acceleration and deceleration will be multiplied with this value.
 		float AirAccelMultiplier = 0.1f;
+		float AirDecelMultiplier = 0.1f;
 		/// The gravity applied to the movement.
 		float Gravity = 17;
 		/// True if the movement is active.

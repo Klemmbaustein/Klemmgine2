@@ -86,6 +86,12 @@ void engine::CollisionComponent::Load(AssetRef File, bool StartCollisionEnabled)
 
 void engine::CollisionComponent::Load(GraphicsModel* Model, bool StartCollisionEnabled)
 {
+	if (Body && GetManager()->Active)
+	{
+		GetManager()->RemoveBody(Body);
+		delete Body;
+	}
+	Body = nullptr;
 	this->LoadedModel = Model;
 
 	if (!GetManager()->Active)

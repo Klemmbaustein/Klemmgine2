@@ -1,5 +1,6 @@
 #include "Environment.h"
 #include <Engine/Graphics/ShaderObject.h>
+#include <Engine/Stats.h>
 
 void engine::graphics::Environment::ApplyTo(ShaderObject* TargetShader) const
 {
@@ -17,4 +18,5 @@ void engine::graphics::Environment::ApplyTo(ShaderObject* TargetShader) const
 	TargetShader->SetFloat(TargetShader->GetUniformLocation("u_sceneFogRange"), this->FogRange);
 	TargetShader->SetFloat(TargetShader->GetUniformLocation("u_sceneFogStart"), this->FogStart);
 	TargetShader->SetVec3(TargetShader->GetUniformLocation("u_sceneFogColor"), this->FogColor);
+	TargetShader->SetFloat(TargetShader->GetUniformLocation("u_time"), stats::Time);
 }

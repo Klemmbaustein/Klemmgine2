@@ -8,68 +8,83 @@ using namespace engine::graphics;
 
 engine::graphics::LightBvh::LightBvh()
 {
+	AsyncData = std::make_shared<LightBvhAsyncData>();
 }
 
 engine::graphics::LightBvh::~LightBvh()
 {
-	delete CurrentRoot;
+	std::lock_guard g{ AsyncData->LightMutex };
+	AsyncData->Cancelled = true;
+	AsyncData->CurrentRoot = nullptr;
 }
 
 void engine::graphics::LightBvh::UpdateBounds(GraphicsScene* With)
 {
 	if (RequireUpdate && !RunningUpdate)
 	{
-		for (auto& i : RemovedLight)
+		for (auto& i : AsyncData->RemovedLight)
 		{
-			for (auto it = CurrentLights.begin(); it != CurrentLights.end(); it++)
+			for (auto it = AsyncData->CurrentLights.begin(); it != AsyncData->CurrentLights.end(); it++)
 			{
 				if (*it == i)
 				{
-					CurrentLights.erase(it);
+					AsyncData->CurrentLights.erase(it);
 					break;
 				}
 			}
-			for (auto it = NewLight.begin(); it != NewLight.end(); it++)
+			for (auto it = AsyncData->NewLight.begin(); it != AsyncData->NewLight.end(); it++)
 			{
 				if (*it == i)
 				{
-					NewLight.erase(it);
+					AsyncData->NewLight.erase(it);
 					break;
 				}
 			}
+			delete i;
 		}
-		RemovedLight.clear();
+		AsyncData->RemovedLight.clear();
 
-		for (auto& i : NewLight)
+		for (auto& i : AsyncData->NewLight)
 		{
-			CurrentLights.push_back(i);
+			AsyncData->CurrentLights.push_back(i);
 		}
 
-		NewLight.clear();
+		AsyncData->NewLight.clear();
 		RunningUpdate = true;
 
-		ThreadPool::Main()->AddJob([With, this]() {
+		ThreadPool::Main()->AddJob([With, this, AsyncData = AsyncData]() {
+			std::lock_guard g{ AsyncData->LightMutex };
+			if (AsyncData->Cancelled)
+			{
+				return;
+			}
 
 			std::list<std::pair<Light*, BoundingBox>> Bounds;
 
-			for (auto& i : CurrentLights)
+			for (auto& i : AsyncData->CurrentLights)
 			{
-				Bounds.push_back({i, BoundingBox(i->Position, i->Range)});
+				Bounds.push_back({ i, BoundingBox(i->Position, i->Range) });
 			}
 
-			auto NewNode = new BvhNode(Bounds);
+			auto NewNode = new BvhNode<Light*>(Bounds);
 
-			thread::ExecuteOnMainThread([With, this, NewNode] {
+			thread::ExecuteOnMainThread([With, this, NewNode, AsyncData = AsyncData] {
+				std::lock_guard g{ AsyncData->LightMutex };
+				if (AsyncData->Cancelled)
+				{
+					return;
+				}
+
 				RequireUpdate = ScheduleUpdate;
 				ScheduleUpdate = false;
 				RunningUpdate = false;
 
-				if (CurrentRoot)
+				if (AsyncData->CurrentRoot)
 				{
-					delete CurrentRoot;
+					delete AsyncData->CurrentRoot;
 				}
 
-				CurrentRoot = NewNode;
+				AsyncData->CurrentRoot = NewNode;
 				//ShowDebugNodes(With, CurrentRoot, 0);
 			});
 		});
@@ -86,13 +101,13 @@ Light* engine::graphics::LightBvh::AddLight(const Light& NewLight)
 		ScheduleUpdate = true;
 	}
 
-	this->NewLight.push_back(l);
+	AsyncData->NewLight.push_back(l);
 	return l;
 }
 
 void engine::graphics::LightBvh::RemoveLight(Light* ToRemove)
 {
-	this->RemovedLight.push_back(ToRemove);
+	AsyncData->RemovedLight.push_back(ToRemove);
 
 	if (RunningUpdate)
 	{
@@ -104,14 +119,14 @@ void engine::graphics::LightBvh::RemoveLight(Light* ToRemove)
 
 std::vector<Light*> engine::graphics::LightBvh::GetLights(const BoundingBox& Bounds)
 {
-	if (!CurrentRoot)
+	if (!AsyncData->CurrentRoot)
 	{
 		return {};
 	}
 
 	std::vector<Light*> Result;
 
-	CurrentRoot->Query(Bounds, Result);
+	AsyncData->CurrentRoot->Query(Bounds, Result);
 
 	return Result;
 }
