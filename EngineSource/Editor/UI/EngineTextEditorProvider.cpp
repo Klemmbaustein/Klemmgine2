@@ -134,7 +134,8 @@ void engine::editor::EngineTextEditorProvider::SetLine(size_t Index, const std::
 
 std::string engine::editor::EngineTextEditorProvider::ProcessInput(std::string Text)
 {
-	if (IsAutoCompleteActive && CompletionButtons.size() && Text == "\t")
+	if (IsAutoCompleteActive && CompletionButtons.size() > SelectedCompletionItem
+		&& CompletionButtons.size() && Text == "\t")
 	{
 		CompletionButtons[SelectedCompletionItem]->OnButtonClicked();
 		return "";

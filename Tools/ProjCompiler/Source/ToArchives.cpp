@@ -131,6 +131,15 @@ std::set<fs::path> engine::build::GetFileDependencies(fs::path FilePath, std::fu
 				auto& Properties = obj.At("properties").GetObject();
 				for (auto& property : Properties)
 				{
+					if (property.Value.GetType() == SerializedData::DataType::Array)
+					{
+						for (auto& ip : property.Value.GetArray())
+						{
+							string Path = property.Value.GetString();
+							if (fs::exists(Path) && fs::is_regular_file(Path))
+								out.insert(fs::path(Path));
+						}
+					}
 					string Path = property.Value.GetString();
 					if (fs::exists(Path) && fs::is_regular_file(Path))
 						out.insert(fs::path(Path));

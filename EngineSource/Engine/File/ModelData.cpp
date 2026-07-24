@@ -359,6 +359,7 @@ engine::GraphicsModel* engine::GraphicsModel::GetModel(AssetRef Asset, bool Load
 
 void engine::GraphicsModel::ReferenceModel(GraphicsModel* Target)
 {
+	std::lock_guard g{ ModelDataMutex };
 	for (auto& i : Models)
 	{
 		if (&i.second != Target)
@@ -372,12 +373,14 @@ void engine::GraphicsModel::ReferenceModel(GraphicsModel* Target)
 
 void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 {
+	std::lock_guard g{ ModelDataMutex };
 	for (auto& i : Models)
 	{
 		if (&i.second != Target)
 		{
 			continue;
 		}
+
 		i.second.References--;
 		if (i.second.References == 0)
 		{
@@ -394,6 +397,7 @@ void engine::GraphicsModel::UnloadModel(GraphicsModel* Target)
 
 void engine::GraphicsModel::UnloadModel(AssetRef Asset)
 {
+	std::lock_guard g{ ModelDataMutex };
 	for (auto& i : Models)
 	{
 		if (i.first != Asset.FilePath)

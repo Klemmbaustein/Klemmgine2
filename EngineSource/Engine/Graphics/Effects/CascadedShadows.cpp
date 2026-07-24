@@ -10,7 +10,7 @@
 using namespace engine;
 using namespace engine::graphics;
 
-constexpr uint32 ShadowResolution = 1000;
+constexpr uint32 ShadowResolution = 2000;
 constexpr float CAMERA_FAR_PLANE = 200.0f;
 std::vector<float> ShadowCascadeLevels = { CAMERA_FAR_PLANE / 30.0f, CAMERA_FAR_PLANE / 8.0f, CAMERA_FAR_PLANE / 2.0f };
 
@@ -42,10 +42,6 @@ void CascadedShadows::Init(Renderer* Render)
 	ShadowMatrices = Render->CreateUniformBuffer(sizeof(glm::mat4) * 16);
 	ShadowShader->Bind();
 	ShadowShader->SetInt(ShadowShader->GetUniformLocation("u_shadowCascadeCount"), int32(ShadowCascadeLevels.size()));
-
-	//uint32 UniformBlock = glGetUniformBlockIndex(ShadowShader->ShaderID, "LightSpaceMatrices");
-
-	//glUniformBlockBinding(ShadowShader->ShaderID, UniformBlock, 0);
 }
 
 void engine::graphics::CascadedShadows::Update(Camera* From)
@@ -70,7 +66,7 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 		ShadowMatrices->Write(i * sizeof(glm::mat4), &Matrices[i], sizeof(glm::mat4));
 	}
 
-	BiasModifier = Vector3::Dot(Vector3::Forward(From->Rotation), LightDirection);
+	BiasModifier = Vector3::Dot(From->GetForward(), LightDirection);
 }
 
 void CascadedShadows::Draw(GraphicsScene* With)

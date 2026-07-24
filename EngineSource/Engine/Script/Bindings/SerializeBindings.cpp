@@ -95,6 +95,36 @@ static void SerializedObject_at(InterpretContext* context)
 	context->pushValue(nullptr);
 }
 
+static void SerializedObject_setAt(InterpretContext* context)
+{
+	ClassRef<ScriptSerializedObject> Value = context->popValue<RuntimeClass*>();
+	ClassRef<ScriptSerializedValue> Value2 = context->popValue<RuntimeClass*>();
+	RuntimeStr Name = context->popRuntimeString();
+
+	ClassRef<modules::system::ArrayData> Array = Value->KeyValueArray;
+
+	for (Size i = 0; i < Array->length; i++)
+	{
+		ClassRef<ScriptSerializedKeyValue> Val = Array->at<RuntimeClass*>(i);
+
+		RuntimeStrRef Str = Val->NameString;
+
+		if (strcmp(Str.ptr(), Name.ptr()) == 0)
+		{
+			Val->Value = Value2.classPtr;
+			return;
+		}
+	}
+	Name.classPtr->addRef();
+
+	auto KeyValue = NativeModule::makeClass<ScriptSerializedKeyValue>(ScriptSerializedKeyValue{
+		.NameString = Name.classPtr,
+		.Value = Value2.classPtr,
+		}, ScriptSerializedKeyValue::ID, &SerializedKeyValue_vTable);
+
+	Array->append(&KeyValue, sizeof(KeyValue));
+}
+
 static void SerializedString_delete(InterpretContext* context)
 {
 	auto Value = context->popPtr<ScriptSerializedString>();
@@ -544,6 +574,9 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 
 	Serialize.addClassMethod(ObjectValue, NativeFunction({ FunctionArgument(StrType, "name") },
 		out.SerializedValue->nullable, "at", &SerializedObject_at));
+
+	Serialize.addClassMethod(ObjectValue, NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(out.SerializedValue, "value") },
+		nullptr, "setAt", &SerializedObject_setAt));
 
 	Serialize.addFunction(NativeFunction({ FunctionArgument(StrType, "serializedString") },
 		ObjectValue->nullable, "parseSerializedString", &Serialize_parseSerializedString));

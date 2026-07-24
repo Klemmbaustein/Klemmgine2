@@ -109,7 +109,18 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 	else if (HasGrabbedClick)
 	{
 		CurrentPosition[DraggedAxis] += Direction[DraggedAxis] * OldDistance - OldNormal[DraggedAxis] * OldDistance;
-		Selected->Position = Vector3::SnapToGrid(CurrentPosition, With->GridSize);
+		Vector3 NewPos = Vector3::SnapToGrid(CurrentPosition, With->GridSize);
+		Vector3 Difference = NewPos - Selected->Position;
+		Selected->Position = NewPos;
+
+		for (auto& i : With->SelectedObjects)
+		{
+			if (i != Selected)
+			{
+				i->Position += Difference;
+			}
+		}
+
 		OldDistance = Vector3::Distance(CurrentPosition, Cam->Position);
 		OldNormal = Direction;
 	}

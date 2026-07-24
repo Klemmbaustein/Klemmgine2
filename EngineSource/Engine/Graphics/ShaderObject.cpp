@@ -1,6 +1,7 @@
 #include "ShaderObject.h"
 #include "ShaderLoader.h"
 #include <Engine/Graphics/VideoSubsystem.h>
+#include <Engine/File/Resource.h>
 
 engine::graphics::ShaderObject::ShaderObject(string VertexFile, string FragmentFile, string GeometryFile)
 {
@@ -16,6 +17,7 @@ engine::graphics::ShaderObject::~ShaderObject()
 void engine::graphics::ShaderObject::ReCompile(string VertexFile, string FragmentFile)
 {
 	Uniforms.clear();
+	UniformBlocks.clear();
 	Compile(VertexFile, FragmentFile);
 }
 
@@ -24,6 +26,13 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	this->VertexFile = VertexFile;
 	this->FragmentFile = FragmentFile;
 	this->GeometryFile = GeometryFile;
+
+	if (VertexFile.empty() || FragmentFile.empty())
+	{
+		this->Valid = false;
+		return;
+	}
+
 	std::vector<ShaderProgramObject*> ResultModules;
 
 	auto VertexResult = ShaderLoader::Current->Modules.ParseShader(VertexFile, ShaderModule::ShaderType::Vertex);
@@ -108,11 +117,18 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 
 void engine::graphics::ShaderObject::Bind()
 {
-	Program->Activate();
+	if (Program)
+	{
+		Program->Activate();
+	}
 }
 
 uint32 engine::graphics::ShaderObject::GetUniformBlockLocation(const string& Name)
 {
+	if (!Program)
+	{
+		return 0;
+	}
 	auto Found = UniformBlocks.find(Name);
 	if (Found != UniformBlocks.end())
 		return Found->second;
@@ -126,6 +142,11 @@ uint32 engine::graphics::ShaderObject::GetUniformBlockLocation(const string& Nam
 
 uint32 engine::graphics::ShaderObject::GetUniformLocation(size_t NameHash, const char* Name) const
 {
+	if (!Program)
+	{
+		return 0;
+	}
+
 	auto Found = Uniforms.find(NameHash);
 	if (Found != Uniforms.end())
 		return Found->second;

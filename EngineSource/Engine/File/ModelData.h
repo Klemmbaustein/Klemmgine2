@@ -58,7 +58,7 @@ namespace engine
 	{
 		ModelData* Data = nullptr;
 		graphics::Model* Drawable = nullptr;
-		size_t References = 0;
+		size_t References = 1;
 		Event<> OnDereferenced;
 		Event<> OnMaterialsChanged;
 

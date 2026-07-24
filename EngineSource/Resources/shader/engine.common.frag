@@ -148,12 +148,13 @@ float getShadowStrength()
 		return 1.0;
 	}
 
-	float bias = (1 - (abs(dot(v_normal, u_lightDirection)))) / 75 + 0.01;
-	bias *= max((abs(u_shadowBiasModifier)), 0.8) / 10.0;
-	if (u_shadowBiasModifier < -0.95)
-		bias *= 1.5;
-	bias *= 0.12;
-	bias *= max(4096.0 / (textureSize(u_shadowMaps, 0).x * 1.0), 1.0);
+	float bias = (1 - (abs(dot(v_normal, u_lightDirection)))) / 75;
+	bias *= 0.015;
+	bias += 0.4 / float(textureSize(u_shadowMaps, 0).x);
+	bias *= max(abs(u_shadowBiasModifier) - 0.5, 0.0) * 4 + 1;
+
+	if (u_shadowBiasModifier < -0.9)
+		bias *= 1.25;
 
 	vec2 texelSize = 1.0 / textureSize(u_shadowMaps, 0).xy;
 	bool allValuesLight = true;
@@ -187,24 +188,26 @@ float getShadowStrength()
 }
 
 #export //!
-float getLightStrength()
+float getLightStrength(vec3 normal)
 {
-	return getShadowStrength() * max(dot(v_normal, u_lightDirection), 0.0);
+	return getShadowStrength() * max(dot(normal, u_lightDirection), 0.0);
 }
 
 #export //!
 vec3 applyLightingSpecular(vec3 color, float specularStength, float specularSize)
 {
+	vec3 normal = normalize(gl_FrontFacing ? v_normal : -v_normal);
 	float shadows = 1;
 	if (u_sunIntensity > 0)
 	{
-		shadows = getLightStrength();
+		shadows = getLightStrength(normal);
 	}
 
-	vec3 ambient = color * u_ambientStrength * getAmbient(v_normal);
+
+	vec3 ambient = color * u_ambientStrength * getAmbient(normal);
 
 	vec3 viewDir = normalize(u_cameraPos - v_position);
-	vec3 reflectDir = reflect(-u_lightDirection, v_normal);
+	vec3 reflectDir = reflect(-u_lightDirection, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularSize);
 	vec3 spec_color = spec * specularStength * u_sunColor * u_sunIntensity;
 

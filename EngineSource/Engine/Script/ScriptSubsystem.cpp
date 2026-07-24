@@ -54,6 +54,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 engine::script::ScriptSubsystem::~ScriptSubsystem()
 {
+	ClearTasks();
 	for (auto& [ClassId, ObjectId] : ScriptObjectIds)
 	{
 		Reflection::UnRegisterObject(ObjectId);

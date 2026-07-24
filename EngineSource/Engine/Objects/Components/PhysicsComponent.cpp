@@ -20,8 +20,18 @@ void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, phys
 		Clear();
 	}
 
+	auto Root = GetRootObject();
+
+	if (Root)
+	{
+		Root->CheckTransform();
+	}
+
 	UpdateTransform(false);
 	this->Offset = Scale;
+	Vector3 Position, Scale;
+	Rotation3 Rotation;
+	WorldTransform.Decompose(Position, Rotation, Scale);
 
 	Body = new physics::SphereBody(Position,
 		Rotation,
@@ -31,8 +41,6 @@ void engine::PhysicsComponent::CreateSphere(physics::MotionType Movability, phys
 		this);
 
 	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
-
-	auto Root = GetRootObject();
 
 	if (StartEnabled && Root)
 	{
@@ -53,10 +61,20 @@ void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics
 		Clear();
 	}
 
+	auto Root = GetRootObject();
+
+	if (Root)
+	{
+		Root->CheckTransform();
+	}
+
 	UpdateTransform(false);
 	Offset = InScale;
+	Vector3 Position, Scale;
+	Rotation3 Rotation;
+	WorldTransform.Decompose(Position, Rotation, Scale);
 
-	Body = new physics::BoxBody(WorldTransform.ApplyTo(0),
+	Body = new physics::BoxBody(Position,
 		Rotation,
 		Scale * Offset,
 		Movability,
@@ -65,7 +83,6 @@ void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics
 
 	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
 
-	auto Root = GetRootObject();
 
 	if (StartEnabled && Root)
 	{

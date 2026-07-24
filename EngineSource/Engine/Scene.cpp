@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <Engine/UI/UICanvas.h>
 #include <Engine/Sound/SoundSubsystem.h>
+#include <Engine/Script/ScriptSubsystem.h>
 
 #if EDITOR
 #include <Editor/UI/Panels/Viewport.h>
@@ -20,6 +21,8 @@ using namespace engine::graphics;
 using namespace engine;
 
 std::atomic<int32> engine::Scene::AsyncLoads = 0;
+
+static std::mutex SceneLoadMutex;
 
 engine::Scene::Scene(bool DoLoadAsync)
 {
@@ -52,6 +55,7 @@ engine::Scene::Scene(string FilePath)
 engine::Scene::~Scene()
 {
 	SceneSubsystem* Sys = SceneSubsystem::Current;
+	script::ScriptSubsystem::Instance->ClearTasks();
 
 	if (Sys->Main == this)
 	{
@@ -67,11 +71,11 @@ engine::Scene::~Scene()
 		}
 	}
 
+	std::lock_guard g{ SceneLoadMutex };
 	for (auto& i : ReferencedAssets)
 	{
 		UnloadAsset(i);
 	}
-
 	for (auto& i : Objects)
 	{
 		i->OnDestroyed();
@@ -461,41 +465,44 @@ void engine::Scene::LoadInternal(string File, bool Async)
 
 	File = File.substr(0, File.find_last_of('.'));
 
-	try
 	{
-		AssetRef SceneAsset = AssetRef::Convert(File + ".kts");
-		if (SceneAsset.Exists())
+		std::lock_guard g{ SceneLoadMutex };
+		try
 		{
-			Name = SceneAsset.FilePath;
-			std::stringstream stream;
-			stream << resource::GetTextFile(SceneAsset.FilePath);
-
-			if (stream.str().size() != 0)
+			AssetRef SceneAsset = AssetRef::Convert(File + ".kts");
+			if (SceneAsset.Exists())
 			{
-				SceneData = TextSerializer::FromStream(stream);
+				Name = SceneAsset.FilePath;
+				std::stringstream stream;
+				stream << resource::GetTextFile(SceneAsset.FilePath);
+
+				if (stream.str().size() != 0)
+				{
+					SceneData = TextSerializer::FromStream(stream);
+				}
+			}
+			SceneAsset = AssetRef::Convert(File + ".kbs");
+
+			if (SceneAsset.Exists())
+			{
+				Name = SceneAsset.FilePath;
+				IBinaryStream* SceneFile = resource::GetBinaryFile(Name);
+				SceneData = BinarySerializer::FromStream(SceneFile, "kbs");
+				delete SceneFile;
 			}
 		}
-		SceneAsset = AssetRef::Convert(File + ".kbs");
-
-		if (SceneAsset.Exists())
+		catch (SerializeReadException& ReadErr)
 		{
-			Name = SceneAsset.FilePath;
-			IBinaryStream* SceneFile = resource::GetBinaryFile(Name);
-			SceneData = BinarySerializer::FromStream(SceneFile, "kbs");
-			delete SceneFile;
+			SceneSubsystem::Current->Print(
+				str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
+				subsystem::Subsystem::LogType::Error
+			);
+			return;
 		}
-	}
-	catch (SerializeReadException& ReadErr)
-	{
-		SceneSubsystem::Current->Print(
-			str::Format("Failed read scene file %s: %s", File.c_str(), ReadErr.what()),
-			subsystem::Subsystem::LogType::Error
-		);
-		return;
-	}
-	resource::LoadSceneFiles(Name);
+		resource::LoadSceneFiles(Name);
 
-	DeSerializeInternal(&SceneData, Async);
+		DeSerializeInternal(&SceneData, Async);
+	}
 
 	if (!Async)
 	{

@@ -5,6 +5,14 @@
 
 using namespace engine;
 
+Rotation3 engine::Rotation3::LookAt(Vector3 Position)
+{
+	Position = -Position.Normalize();
+	glm::quat quat = glm::quatLookAtLH(glm::vec3(Position.X, Position.Y, Position.Z), glm::vec3(0, 1, 0));
+	glm::vec3 Euler = glm::eulerAngles(quat);
+
+	return Rotation3(Euler.x, Euler.y, Euler.z, true);
+}
 engine::Transform::Transform(Vector3 Position, Rotation3 Rotation, Vector3 Scale)
 	: Transform()
 {

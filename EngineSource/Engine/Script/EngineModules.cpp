@@ -279,6 +279,21 @@ static void SceneObject_attach(InterpretContext* context)
 	Data.getValue()->Attach(*Component);
 }
 
+static void SceneObject_detach(InterpretContext* context)
+{
+	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+	CHECK_OBJ(Data);
+	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
+
+	if (!(*Component.get())->ParentObject && !(*Component.get())->ParentComponent)
+	{
+		context->runtimePanic("Component attached twice");
+		return;
+	}
+
+	Data.getValue()->Detach(*Component);
+}
+
 static void SceneObject_getScene(InterpretContext* context)
 {
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
@@ -961,6 +976,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			"attach", &SceneObject_attach));
 
 	EngineModule.addClassMethod(ObjectType,
+		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
+			"detach", &SceneObject_detach));
+
+	EngineModule.addClassMethod(ObjectType,
 		NativeFunction({ }, nullptr,
 			"destroy", &SceneObject_destroy));
 
@@ -1076,7 +1095,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	//		&PhysicsComponent_onBeginOverlap));
 
 	EngineModule.addClassMethod(PhysicsComponentType,
-		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") }, nullptr, "setVelocity", & PhysicsComponent_setVelocity));
+		NativeFunction({ FunctionArgument(Math.Vec3, "newVelocity") }, nullptr, "setVelocity", &PhysicsComponent_setVelocity));
 
 	auto CollisionComponentType = EngineModule.createClass<PhysicsComponent*>("CollisionComponent", ComponentType);
 
@@ -1208,6 +1227,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	MoveComponentType->members.push_back(ClassMember{
 		.name = "jumpHeight",
 		.offset = DS_OFFSETOF(MoveComponent, JumpHeight),
+		.type = FloatInst
+		});
+	MoveComponentType->members.push_back(ClassMember{
+		.name = "airAccelerationMultiplier",
+		.offset = DS_OFFSETOF(MoveComponent, AirAccelMultiplier),
 		.type = FloatInst
 		});
 

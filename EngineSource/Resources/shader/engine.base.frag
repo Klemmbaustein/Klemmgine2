@@ -28,6 +28,9 @@ bool affectAO = true;
 #export //!
 uniform vec3 u_cameraPos = vec3(0);
 
+#export //!
+uniform float u_time = 0;
+
 vec3 fragment();
 
 uniform vec3 u_sceneFogColor = vec3(0.0);

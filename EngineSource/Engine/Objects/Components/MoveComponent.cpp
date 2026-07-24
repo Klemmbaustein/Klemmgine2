@@ -34,6 +34,8 @@ void engine::MoveComponent::Update()
 
 	float AccelModifier = GroundedTimer ? 1 : AirAccelMultiplier;
 
+	float OldLength = MovementVelocity.Length();
+
 	MovementVelocity += Vector2(InputDirection.X, InputDirection.Z) * stats::DeltaTime * Acceleration * AccelModifier;
 
 	float InputLength = InputDirection.Length();
@@ -43,11 +45,12 @@ void engine::MoveComponent::Update()
 	{
 		if (MovementLength > MaxSpeed && InputLength >= 0.95f)
 		{
-			MovementVelocity = MovementVelocity.Normalize() * MaxSpeed;
+			MovementVelocity = MovementVelocity.Normalize() * (GetIsOnGround() ? MaxSpeed : OldLength);
 		}
 		else
 		{
-			MovementLength = std::max(MovementLength - Deceleration * stats::DeltaTime * AccelModifier, 0.0f);
+			float Change = GetIsOnGround() ? Deceleration : AirDecelMultiplier * Deceleration;
+			MovementLength = std::max(MovementLength - Change * stats::DeltaTime * AccelModifier, 0.0f);
 			MovementVelocity = MovementVelocity.Normalize() * MovementLength;
 		}
 	}

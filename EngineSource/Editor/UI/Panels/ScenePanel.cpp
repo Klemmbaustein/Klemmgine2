@@ -35,6 +35,7 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	{
 		return;
 	}
+	Id = Target->Manager ? Target->Manager->TypeID : 0;
 
 	auto OnChanged = [] {
 		Viewport::Current->SceneChanged();
@@ -68,9 +69,6 @@ void engine::editor::ScenePanel::LoadPropertiesFrom(Scene* Target)
 	Properties->AddBooleanEntry("Bloom enabled", Target->Graphics.SceneEnvironment.Render.Bloom, OnChanged);
 	Properties->AddFloatEntry("Bloom strength", Target->Graphics.SceneEnvironment.Render.BloomStrength, OnChanged);
 	Properties->AddFloatEntry("Bloom threshold", Target->Graphics.SceneEnvironment.Render.BloomThreshold, OnChanged);
-
-
-	Id = Target->Manager ? Target->Manager->TypeID : 0;
 }
 
 void engine::editor::ScenePanel::OnThemeChanged()
