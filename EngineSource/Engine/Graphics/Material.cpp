@@ -6,6 +6,7 @@
 #include <Core/File/BinarySerializer.h>
 #include <Engine/MainThread.h>
 #include <sstream>
+#include <Core/File/FileUtil.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -25,7 +26,7 @@ void engine::graphics::Material::Load(AssetRef File)
 	{
 		SerializedValue FileData;
 
-		if (File.Extension == "kmt")
+		if (File.Extension == "kmt" && File.Exists())
 		{
 			std::stringstream Stream;
 			Stream << resource::GetTextFile(File.FilePath);
@@ -33,6 +34,10 @@ void engine::graphics::Material::Load(AssetRef File)
 		}
 		else
 		{
+			if (!File.Exists())
+			{
+				File = AssetRef::Convert(file::FileNameWithoutExt(File.FilePath) + ".kbm");
+			}
 			IBinaryStream* BinaryFile = resource::GetBinaryFile(File.FilePath);
 			if (BinaryFile)
 			{

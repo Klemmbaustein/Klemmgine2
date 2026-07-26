@@ -274,8 +274,6 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool
 			ModelDataMutex.unlock();
 		return &Found->second;
 	}
-	if (Lock)
-		ModelDataMutex.unlock();
 	ModelData* New = nullptr;
 	GraphicsModel* NewModel = nullptr;
 	try
@@ -285,10 +283,10 @@ engine::GraphicsModel* engine::GraphicsModel::RegisterModel(AssetRef Asset, bool
 	catch (SerializeReadException& e)
 	{
 		Log::Warn(str::Format("Failed to load model: %s", e.what()));
+		if (Lock)
+			ModelDataMutex.unlock();
 		return nullptr;
 	}
-	if (Lock)
-		ModelDataMutex.lock();
 
 	if (thread::IsMainThread)
 	{

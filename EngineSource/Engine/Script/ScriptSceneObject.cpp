@@ -71,6 +71,10 @@ void engine::script::ScriptSceneObject::EndHotReload(ds::ReflectInfo* ClassData)
 {
 	Class = ClassData->types[Class.hash];
 	LoadScriptData();
+}
+
+void engine::script::ScriptSceneObject::ReInitializeAfterHotReload()
+{
 	Begin();
 }
 
