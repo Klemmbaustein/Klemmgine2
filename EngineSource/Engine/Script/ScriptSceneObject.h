@@ -19,6 +19,7 @@ namespace engine::script
 		void Update() override;
 		void BeginHotReload() override;
 		void EndHotReload(ds::ReflectInfo* ClassData) override;
+		void ReInitializeAfterHotReload() override;
 		void InitializePropertyFlags(ObjPropertyBase* p, const string& FlagsString);
 
 	private:

@@ -28,6 +28,7 @@ namespace engine::script
 		virtual void InitializeScriptPointer() = 0;
 		virtual void BeginHotReload() = 0;
 		virtual void EndHotReload(ds::ReflectInfo* ClassData) = 0;
+		virtual void ReInitializeAfterHotReload() = 0;
 
 		template<typename T>
 		void InitializePointerWithValue(T Value)

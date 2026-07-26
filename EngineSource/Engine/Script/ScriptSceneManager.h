@@ -13,10 +13,9 @@ namespace engine::script
 
 		// Inherited via ScriptObject
 		void InitializeScriptPointer() override;
-
-		// Inherited via ScriptObject
 		void BeginHotReload() override;
 		void EndHotReload(ds::ReflectInfo* ClassData) override;
 		void Update() override;
+		void ReInitializeAfterHotReload() override;
 	};
 }

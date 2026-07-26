@@ -211,6 +211,8 @@ bool engine::script::ScriptSubsystem::Reload()
 		}
 	}
 
+	ReInitializeAfterHotReloadEvent.Invoke();
+
 #if EDITOR
 
 	editor::EditorUI::ForEachPanel<editor::PropertyPanel>([](editor::PropertyPanel* p) {
@@ -256,7 +258,7 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(ReflectionObject* O
 		return;
 	}
 
-	ScriptObjectMappings.insert({ Object, Class });
+	ScriptObjectMappings[Object] = Class;
 	Object->OnDestroyedEvent.Add(this, [this, Object, Class]() {
 		if (Class)
 		{

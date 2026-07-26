@@ -88,6 +88,7 @@ namespace engine::script
 
 		Event<> BeginHotReloadEvent;
 		Event<> EndHotReloadEvent;
+		Event<> ReInitializeAfterHotReloadEvent;
 
 	private:
 		void ReloadDynamicUIContext();

@@ -16,12 +16,16 @@ engine::script::ScriptObject::ScriptObject(const ds::TypeInfo& Class,
 	ScriptSubsystem::Instance->EndHotReloadEvent.Add(this, [this] {
 		EndHotReload(&ScriptSubsystem::Instance->ScriptInstructions->reflect);
 	});
+	ScriptSubsystem::Instance->ReInitializeAfterHotReloadEvent.Add(this, [this] {
+		ReInitializeAfterHotReload();
+	});
 }
 
 engine::script::ScriptObject::~ScriptObject()
 {
 	ScriptSubsystem::Instance->BeginHotReloadEvent.Remove(this);
 	ScriptSubsystem::Instance->EndHotReloadEvent.Remove(this);
+	ScriptSubsystem::Instance->ReInitializeAfterHotReloadEvent.Remove(this);
 }
 
 void engine::script::ScriptObject::LoadScriptData()

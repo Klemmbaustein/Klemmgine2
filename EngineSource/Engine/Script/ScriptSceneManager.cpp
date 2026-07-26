@@ -38,3 +38,7 @@ void engine::script::ScriptSceneManager::Update()
 		Interpreter->callVirtualMethodVoid(ScriptData, 1);
 	}
 }
+
+void engine::script::ScriptSceneManager::ReInitializeAfterHotReload()
+{
+}
