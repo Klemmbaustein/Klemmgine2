@@ -46,18 +46,26 @@ static string CompileArgs(const BuildOptions& Options)
 void engine::editor::BuildProjectLinux(BuildOptions Options)
 {
 	string OutPath = Options.OutputPath;
+	string Path = editor::GetEditorPath() + "/..";
 
-	if (!BuildProjectExecuteCommand("wsl -- cmake -S . -B build/out/linux-x64/ -Wno-deprecated " + ConfigureArgs(Options), Options, BuildStage::Configure))
+	size_t DriveLetter = Path.find_first_of(':');
+
+	if (DriveLetter != string::npos)
+	{
+		Path = "/mnt/" + str::Lower(Path.substr(0, DriveLetter)) + Path.substr(DriveLetter + 1);
+	}
+
+	if (!BuildProjectExecuteCommand("wsl -- cmake -S " + Path + " -B " + OutPath + "/out/linux-x64/ -Wno-deprecated " + ConfigureArgs(Options), Options, BuildStage::Configure))
 	{
 		return;
 	}
 
-	if (!BuildProjectExecuteCommand("wsl -- cmake --build build/out/linux-x64/ --target ProjectCompiler " + CompileArgs(Options), Options, BuildStage::Compile))
+	if (!BuildProjectExecuteCommand("wsl -- cmake --build " + OutPath + "/out/linux-x64/ --target ProjectCompiler " + CompileArgs(Options), Options, BuildStage::Compile))
 	{
 		return;
 	}
 
-	if (BuildProjectExecuteCommand("wsl -- build/out/linux-x64/bin/ProjectCompiler -out build/linux"
+	if (BuildProjectExecuteCommand("wsl -- " + OutPath + "/out/linux-x64/bin/ProjectCompiler -out build/linux"
 		+ ProjectBuildArgs(Options), Options, BuildStage::CreateBuild))
 	{
 		Options.LogLineAdded("", BuildStage::Done);
