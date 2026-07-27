@@ -47,9 +47,9 @@ engine::editor::ScriptMiniMap::~ScriptMiniMap()
 
 void ScriptMiniMap::Update()
 {
-	if (OldLength != Editor->GetLoadedLines())
+	if (OldLength != Provider->GetLineCount())
 	{
-		OldLength = Editor->GetLoadedLines();
+		OldLength = Provider->GetLineCount();
 		ReGenerate = true;
 	}
 
