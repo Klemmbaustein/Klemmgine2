@@ -392,6 +392,10 @@ void engine::editor::ScriptEditorUI::CloseTab(size_t Index)
 	delete Tabs[Index].Provider;
 	Tabs.erase(Tabs.begin() + Index);
 	UpdateEditorTabs();
+	if (auto Tab = GetSelectedTab())
+	{
+		Tab->Editor->Reload();
+	}
 }
 
 void engine::editor::ScriptEditorUI::CloseSearch()

@@ -109,10 +109,20 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 
 		Editor->Get(EditorPosition(0, y), SIZE_MAX, l, true, true);
 
+		std::set<ScriptSyntaxHighlight> Highlights;
+
+		if (!Editor->IsLineLoaded(y))
+		{
+			Highlights = Provider->GetHighlightsFor(y);
+		}
+
+		std::set<ScriptSyntaxHighlight>::iterator HighlightIterator = Highlights.begin();
+
 		TextSegment* CurrentSegment = l.size() ? &*l.begin() : nullptr;
 
 		size_t CurrentCharIndex = 0;
 		size_t CurrentSegmentIndex = 0;
+		size_t CharacterIndex = 0;
 
 		for (size_t x = 0; x < Width; x++)
 		{
@@ -140,10 +150,21 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 				}
 				x--;
 			}
-
 			else if (CurrentSegment && c != ' ')
 			{
 				Vec3f Color = CurrentSegment->Color;
+
+				if (HighlightIterator != Highlights.end() && HighlightIterator->Start <= CharacterIndex)
+				{
+					if (HighlightIterator->Start + HighlightIterator->Length < CharacterIndex)
+					{
+						HighlightIterator++;
+					}
+					else
+					{
+						Color = HighlightIterator->Color;
+					}
+				}
 
 				SetPixel(x, y, Color.X * 255.0f, Color.Y * 255.0f, Color.Z * 255.0f);
 			}
@@ -151,6 +172,7 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 			{
 				SetPixel(x, y, BackgroundR, BackgroundG, BackgroundB);
 			}
+			CharacterIndex++;
 		}
 	}
 }
