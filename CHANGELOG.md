@@ -14,10 +14,14 @@
 	- Added keyboard tab switcher, accessed using Ctrl+Tab, which can be navigated using arrow keys.
 	- Improved the controls of auto complete results.
 	- Added a shortcut to close the selected tab, Ctrl+W.
+- Added support for editing scripts externally, reloading scripts automatically when changes occur.
 
 ### Fixes
 
-- Fixed a crash when calling the virtual functions of native SceneObjects (such as update()) directly from a script.
+- Fixed many script language bugs.
+- Fixed syntax highlighting in the script minimap appearing incomplete sometimes.
+- Fixed many engine bugs and crashes.
+- Fixed incorrect shadow bias calculation.
 
 ## Klemmgine 2.0.0-dev1
 
