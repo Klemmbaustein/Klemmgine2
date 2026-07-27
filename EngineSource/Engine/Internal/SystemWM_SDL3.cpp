@@ -379,12 +379,7 @@ kui::Vec2i kui::systemWM::GetCursorPosition(SysWindow* Target)
 	int winX, winY;
 	SDL_GetWindowPosition(Target->SDLWindow, &winX, &winY);
 
-	Vec2i Position = { int(x) - winX, int(y) - winY };
-
-#ifdef LINUX
-	Position = Vec2f(Position) * Vec2f(GetDPIScale(Target));
-#endif
-	return Position;
+	return { int(x) - winX, int(y) - winY };
 }
 
 kui::Vec2ui kui::systemWM::GetScreenSize()
@@ -449,11 +444,7 @@ void kui::systemWM::SetWindowCursor(SysWindow* Target, Window::Cursor NewCursor)
 
 float kui::systemWM::GetDPIScale(SysWindow* Target)
 {
-#ifdef LINUX
-	float Density = SDL_GetWindowPixelDensity(Target->SDLWindow);
-#else
-	float Density = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(Target->SDLWindow));
-#endif
+	float Density = SDL_GetWindowDisplayScale(Target->SDLWindow);
 
 	if (Density == 0)
 	{
