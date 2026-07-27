@@ -90,6 +90,8 @@ namespace engine::editor
 			return CompletionUsingLine;
 		}
 
+		std::set<ScriptSyntaxHighlight> GetHighlightsFor(size_t Line);
+
 	private:
 		thread::ThreadMessagesRef Queue;
 		std::set<size_t> Changed;

@@ -32,6 +32,17 @@ engine::editor::ScriptEditorProvider::~ScriptEditorProvider()
 	Context->Commit(nullptr, nullptr);
 }
 
+std::set<ScriptSyntaxHighlight> engine::editor::ScriptEditorProvider::GetHighlightsFor(size_t Line)
+{
+	auto Found = this->Highlights.find(Line);
+
+	if (Found != this->Highlights.end())
+	{
+		return Found->second;
+	}
+	return {};
+}
+
 void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)
 {
 	FileEditorProvider::GetHighlightsForRange(Begin, Length);
