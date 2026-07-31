@@ -9,6 +9,7 @@
 #include <kui/UI/UIBackground.h>
 #include <Editor/FileAssetListProvider.h>
 #include <Editor/UI/Documentation/DocumentationDatabase.h>
+#include <Editor/Assets/EditorAssetType.h>
 
 namespace engine::editor
 {
@@ -167,6 +168,12 @@ namespace engine::editor
 		 */
 		void AddMenuBarItem(string Name, std::vector<DropdownMenu::Option> Options);
 
+		void AddAssetType(EditorAssetType* Type);
+
+		EditorAssetType* GetAssetTypeForExtension(const string& Extensions);
+
+		void OnProjectAssetChanged(AssetRef File);
+
 		/**
 		 * @brief
 		 * Converts an editor asset path into a full path.
@@ -197,6 +204,10 @@ namespace engine::editor
 		kui::UIBackground* Root = nullptr;
 		kui::UIBackground* MenuBar = nullptr;
 		kui::UIBackground* StatusBar = nullptr;
+
+		std::vector<EditorAssetType*> AssetTypes;
+		std::map<string, EditorAssetType*> AssetMap;
+		std::set<AssetRef> ExternallyChangedAssets;
 
 		EditorPanel* RootPanel = nullptr;
 		StatusBarElement* StatsBarElement;

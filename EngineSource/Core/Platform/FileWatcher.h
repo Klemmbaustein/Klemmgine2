@@ -30,6 +30,8 @@ namespace engine
 
 		Event<FileChange> OnFileChanged;
 
+		string WatchedDirectory = "";
+
 	private:
 #if WINDOWS
 		void WaitForNextChanges();

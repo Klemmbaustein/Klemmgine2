@@ -103,6 +103,8 @@ set(KLEMMUI_INCLUDE_EXAMPLES OFF)
 if(UNIX)
 	if(ENGINE_DYNAMIC_SYMBOLS)
 		target_link_options(Klemmgine PUBLIC "-rdynamic")
+	else()
+		add_link_options("-s")
 	endif()
 endif()
 
@@ -126,6 +128,8 @@ if(MSVC)
 	# OpenAL soft uses deprecated GSL functions.
 	target_compile_options(OpenAL PRIVATE "/wd4875")
 	target_compile_options(alsoft.common PRIVATE "/wd4875")
+else()
+	set(OVERRIDE_CXX_FLAGS OFF)
 endif()
 
 set(CMAKE_BUILD_TYPE "${OLD_BUILD_TYPE}")

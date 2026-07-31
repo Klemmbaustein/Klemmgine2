@@ -157,5 +157,7 @@ namespace engine::graphics
 		virtual DrawUniformBuffer* CreateUniformBuffer(size_t Size) = 0;
 		virtual ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) = 0;
 		virtual ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) = 0;
+
+		virtual bool SupportsUniformBuffer() = 0;
 	};
 }

@@ -34,6 +34,7 @@ public:
 
 engine::FileWatcher::FileWatcher(string Directory)
 {
+	this->WatchedDirectory = Directory;
 #if WINDOWS
 	this->Platform = new FileWatcherPlatformData();
 
@@ -213,7 +214,7 @@ void engine::FileWatcher::FlushEvents()
 	for (auto& i : this->Changes)
 	{
 		FileChange CombinedChange;
-		CombinedChange.FilePath = i.first;
+		CombinedChange.FilePath = WatchedDirectory + str::ReplaceChar(i.first, '\\', '/');
 
 		for (auto& item : i.second)
 		{

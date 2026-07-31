@@ -229,6 +229,7 @@ namespace engine::graphics
 		DrawUniformBuffer* CreateUniformBuffer(size_t Size) override;
 		ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) override;
 		ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) override;
+		bool SupportsUniformBuffer() override;
 
 		OpenGLDrawCommand CurrentCommand = OpenGLDrawCommand(this);
 

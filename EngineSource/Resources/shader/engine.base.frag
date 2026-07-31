@@ -21,8 +21,11 @@ layout(location = 1) out vec4 f_position;
 layout(location = 2) out vec4 f_normal;
 
 #export //!
+extern float opacity;
 float opacity = 1.0;
+
 #export //!
+extern bool affectAO;
 bool affectAO = true;
 
 #export //!

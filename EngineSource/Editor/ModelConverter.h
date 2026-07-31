@@ -14,6 +14,7 @@ namespace engine::editor::modelConverter
 		bool ImportTextures : 1 = true;
 		/// Import and create material files.
 		bool ImportMaterials : 1 = true;
+		bool ReplaceMaterials : 1 = false;
 
 		/// Import scale to multiply everything by.
 		float ImportScale = 1;

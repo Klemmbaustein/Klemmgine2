@@ -33,8 +33,9 @@
 #include <ItemBrowser.kui.hpp>
 #include <MenuBar.kui.hpp>
 #include <Editor/Launcher/EditorLauncher.h>
-#include <Core/File/FileUtil.h>
-#include <Engine/Script/ScriptSubsystem.h>
+#include <Editor/Assets/ModelAssetType.h>
+#include <Editor/Assets/MaterialAssetType.h>
+#include <Editor/Assets/ScriptAssetType.h>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -196,6 +197,10 @@ engine::editor::EditorUI::EditorUI()
 	Instance = this;
 	RegisterDefaultPanels();
 	InitTheme();
+
+	AddAssetType(new ModelAssetType());
+	AddAssetType(new MaterialAssetType());
+	AddAssetType(new ScriptAssetType());
 
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
 	ObjectIcons.AddObjectIcon(Asset("Sound.png"), SoundObject::ObjectType);
@@ -368,15 +373,28 @@ void engine::editor::EditorUI::LoadAssetProvider(AssetListProvider* Provider)
 
 	this->AssetsProvider = Provider;
 	Provider->OnModified.Add(this, [this](string File) {
-		if (!Window::GetActiveWindow()->HasFocus() && file::Extension(File) == "ds")
+		if (Window::GetActiveWindow()->HasFocus() || (ScriptEditorWindowOpen && ScriptEditorWindow::Current->HasFocus))
 		{
-			if (ScriptEditorWindowOpen && ScriptEditorWindow::Current->HasFocus)
-			{
-				return;
-			}
-			ScriptsChanged = true;
+			return;
 		}
+
+		ExternallyChangedAssets.insert(AssetRef::Convert(File));
 	});
+}
+
+void engine::editor::EditorUI::OnProjectAssetChanged(AssetRef File)
+{
+	auto Type = GetAssetTypeForExtension(File.Extension);
+	auto Listeners = resource::AssetListeners.find(File.FilePath);
+	if (Listeners != resource::AssetListeners.end())
+	{
+		Listeners->second.Invoke();
+	}
+
+	if (Type)
+	{
+		Type->ReloadAsset(File);
+	}
 }
 
 std::vector<DropdownMenu::Option> engine::editor::EditorUI::GetPanelMenuOptions()
@@ -408,6 +426,11 @@ engine::editor::EditorUI::~EditorUI()
 	SaveEditorStateConfig();
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
+
+	for (auto& i : this->AssetTypes)
+	{
+		delete i;
+	}
 
 	VideoSystem->OnResizedCallbacks.Remove(this);
 	delete RootPanel;
@@ -447,7 +470,7 @@ string engine::editor::EditorUI::GetLayoutConfigPath()
 	return editor::GetEditorPath() + "/Config/Layout/";
 }
 
-engine::string engine::editor::EditorUI::CreateAsset (string Path, string Name, string Extension)
+engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)
 {
 	if (*Path.rbegin() != '/')
 	{
@@ -491,6 +514,30 @@ string engine::editor::EditorUI::CreateDirectory(string Path)
 	Instance->AssetsProvider->NewDirectory(NewPath);
 
 	return NewPath;
+}
+
+void engine::editor::EditorUI::AddAssetType(EditorAssetType* Type)
+{
+	this->AssetTypes.push_back(Type);
+
+	auto Types = Type->GetExtensions();
+
+	for (auto& t : Types)
+	{
+		this->AssetMap.insert({ t, Type });
+	}
+}
+
+EditorAssetType* engine::editor::EditorUI::GetAssetTypeForExtension(const string& Extensions)
+{
+	auto Found = AssetMap.find(Extensions);
+
+	if (Found != AssetMap.end())
+	{
+		return Found->second;
+	}
+
+	return nullptr;
 }
 
 void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
@@ -575,15 +622,17 @@ void engine::editor::EditorUI::Update()
 
 	DropdownMenu::UpdateDropdowns();
 
+	if (Window::GetActiveWindow()->HasFocus())
+	{
+		for (auto& i : this->ExternallyChangedAssets)
+		{
+			OnProjectAssetChanged(i);
+		}
+		this->ExternallyChangedAssets.clear();
+	}
+
 	if (ScriptsChanged && Window::GetActiveWindow()->HasFocus())
 	{
-		Engine::Instance->GetSubsystem<script::ScriptSubsystem>()->Reload();
-
-		SetStatusMessage("Script files changed externally. Reloading scripts", StatusType::Info);
-
-		ForEachPanel<ClassBrowser>([](ClassBrowser* Browser) {
-			Browser->UpdateItems();
-		});
 		ScriptsChanged = false;
 	}
 }

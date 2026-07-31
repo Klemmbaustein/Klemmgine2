@@ -20,13 +20,13 @@ DrawUniformBuffer* CascadedShadows::ShadowMatrices = nullptr;
 
 CascadedShadows::CascadedShadows()
 {
-	Enabled = openGL::GetGLVersion() >= openGL::Version::GL430
-		/*|| glewIsSupported("GL_ARB_uniform_buffer_object")*/;
+	Enabled = true;
 }
 
 void CascadedShadows::Init(Renderer* Render)
 {
-	if (!Enabled)
+	Supported = Render->SupportsUniformBuffer();
+	if (!Enabled || !Supported)
 		return;
 
 	if (ShadowShader)

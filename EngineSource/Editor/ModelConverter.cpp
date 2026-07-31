@@ -7,6 +7,7 @@
 #include <Core/Log.h>
 #include <Engine/File/ModelData.h>
 #include <fstream>
+#include <Engine/File/Resource.h>
 #include <Editor/EditorSubsystem.h>
 using namespace engine;
 using namespace engine::editor::modelConverter;
@@ -77,6 +78,11 @@ static void ProcessScene(const aiNode* Node, ConvertContext Context, string OutD
 static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 {
 	using namespace graphics;
+
+	if (resource::FileExists(Path) && !Context.Options.ReplaceMaterials)
+	{
+		return;
+	}
 
 	Material* NewMaterial = Material::MakeDefault();
 
