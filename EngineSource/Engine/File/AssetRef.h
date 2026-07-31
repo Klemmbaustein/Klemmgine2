@@ -57,6 +57,11 @@ namespace engine
 
 		[[nodiscard]]
 		bool Exists() const;
+
+		bool operator<(const AssetRef& other) const
+		{
+			return FilePath < other.FilePath;
+		}
 	};
 
 }

@@ -5,6 +5,7 @@
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/Graphics/VideoSubsystem.h>
+#include <Engine/Graphics/OpenGL.h>
 
 #ifdef EDITOR
 #include <Editor/EditorSubsystem.h>
@@ -70,6 +71,12 @@ ShaderProgram* engine::graphics::OpenGLRenderer::LinkShaderProgram(std::vector<S
 	{
 		return nullptr;
 	}
+}
+
+bool engine::graphics::OpenGLRenderer::SupportsUniformBuffer()
+{
+	return openGL::GetGLVersion() >= openGL::Version::GL430
+		|| glewIsSupported("GL_ARB_uniform_buffer_object");
 }
 
 void engine::graphics::OpenGLRenderer::ActivateFramebuffer(uint32 BufferObject)

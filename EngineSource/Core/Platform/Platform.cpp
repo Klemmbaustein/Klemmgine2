@@ -40,6 +40,7 @@ void engine::platform::Execute(string File, string Arguments)
 	if (!CreateProcess(File.data(), Arguments.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW,
 		NULL, NULL, &Startup, &ProcInfo))
 	{
+		Log::Error(GetLastErrorString());
 		return;
 	}
 	WaitForSingleObject(ProcInfo.hProcess, INFINITE);

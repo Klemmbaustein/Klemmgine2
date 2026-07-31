@@ -176,6 +176,7 @@ void engine::editor::ScriptEditorSettingsPage::GenerateExternalEditor(PropertyMe
 #endif
 			if (o.Name == "Visual Studio Code")
 			{
+				this->ExternalEditorCommand = "code";
 				this->ExternalEditorArguments = "{workspace} --goto {file}";
 				Settings::GetInstance()->Script.SetSetting("externalEditorArguments", ExternalEditorArguments);
 				Target->UpdateProperties();

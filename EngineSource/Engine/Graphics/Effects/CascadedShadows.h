@@ -24,6 +24,7 @@ namespace engine::graphics
 		Vector3 LightDirection = Vector3(1, 2, 1).Normalize();
 
 		bool Enabled = false;
+		bool Supported = true;
 
 	private:
 		bool EnvironmentHasShadows = true;
@@ -32,7 +33,7 @@ namespace engine::graphics
 
 		bool ShouldRender() const
 		{
-			return Enabled && EnvironmentHasShadows;
+			return Enabled && EnvironmentHasShadows && Supported;
 		}
 
 		float BiasModifier = 0;

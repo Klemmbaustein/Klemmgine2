@@ -294,7 +294,7 @@ void engine::editor::MaterialEditor::Save()
 	Buffer.WriteStringNoNull(FileString.str());
 	Buffer.ResetStreamPosition();
 	EditorUI::Instance->AssetsProvider->SaveToFile(EditedAsset.FilePath, &Buffer, Buffer.GetSize());
-	resource::AssetListeners[EditedAsset.FilePath].Invoke();
+	EditorUI::Instance->OnProjectAssetChanged(EditedAsset);
 
 }
 void engine::editor::MaterialEditor::OnResized()

@@ -69,6 +69,8 @@ namespace engine
 		static void UnloadModel(GraphicsModel* Target);
 		static void UnloadModel(AssetRef Asset);
 
+		static void ReloadModel(AssetRef Asset);
+
 		static GraphicsModel* UnitCube();
 		static GraphicsModel* UnitPlane();
 		static GraphicsModel* Billboard();

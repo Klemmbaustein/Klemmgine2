@@ -548,3 +548,34 @@ void engine::GraphicsModel::ClearAll()
 	delete BillboardModel;
 	BillboardModel = nullptr;
 }
+
+void engine::GraphicsModel::ReloadModel(AssetRef Asset)
+{
+	std::lock_guard g{ ModelDataMutex };
+	auto Found = Models.find(Asset.FilePath);
+	if (Found == Models.end())
+	{
+		return;
+	}
+	try
+	{
+		auto NewModel = new ModelData(Asset.FilePath, Found->second.Data->LoadMaterials);
+
+		if (Found->second.Data)
+		{
+			delete Found->second.Data;
+		}
+
+		if (Found->second.Drawable)
+		{
+			delete Found->second.Drawable;
+		}
+		Found->second.Data = NewModel;
+		Found->second.Drawable = new graphics::Model(NewModel);
+	}
+	catch (SerializeException& e)
+	{
+		Log::Error(str::Format("Failed to reload model: %s", e.what()));
+		return;
+	}
+}

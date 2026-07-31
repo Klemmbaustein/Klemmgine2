@@ -19,8 +19,6 @@ namespace engine::editor
 		void DuplicateFile(string FilePath);
 		void RenameFile(string FilePath, bool IsNew = false);
 
-		void OpenScript(string FilePath);
-
 		std::vector<DropdownMenu::Option> GetAddOptions(string WorkDir, std::function<void()> OnAddCallback);
 	};
 }

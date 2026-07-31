@@ -131,41 +131,6 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 }
 
-void engine::editor::AssetBrowser::OpenScript(string FilePath)
-{
-	auto Setting = Settings::GetInstance()->Script;
-
-	if (resource::AllowLocalFiles && Setting.GetSetting("useExternalEditor", false).GetBool())
-	{
-		if (Setting.GetSetting("useDefaultEditor", true).GetBool())
-		{
-			platform::Open(FilePath);
-		}
-		auto Name = Setting.GetSetting("externalEditorCommand", "").GetString();
-		auto Arguments = Setting.GetSetting("externalEditorArguments", "").GetString();
-
-		Arguments = str::Replace(Arguments, "{file}", std::filesystem::canonical(FilePath).string());
-		Arguments = str::Replace(Arguments, "{workspace}",
-			std::filesystem::canonical(std::filesystem::current_path()).string());
-
-		platform::Execute(Name, " " + Arguments);
-
-		return;
-	}
-	if (ScriptEditorWindow::Current)
-	{
-		ScriptEditorWindow::Current->Queue->Run([FilePath] {
-			ScriptEditorWindow::Current->UI->NavigateTo(FilePath, {});
-		});
-		return;
-	}
-
-	EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath](ScriptEditorPanel* p) {
-		p->UI.NavigateTo(FilePath, {});
-		p->SetFocused();
-	});
-}
-
 std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Path)
 {
 	std::vector<Item> Out;
@@ -197,26 +162,20 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 				EditorUI::SetStatusMessage("Loading Scene: " + FilePath, EditorUI::StatusType::Info);
 			};
 		}
-		else if (Extension == "ds" || Extension == "kui")
-		{
-			OnClick = std::bind(&AssetBrowser::OpenScript, this, FilePath);
-		}
-		else if (Extension == "kmdl")
-		{
-			OnClick = [this, FilePath]() {
-				Viewport::Current->AddChild(new ModelEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
-			};
-		}
-		else if (Extension == "kmt")
-		{
-			OnClick = [this, FilePath]() {
-				Viewport::Current->AddChild(new MaterialEditor(AssetRef::FromPath(FilePath)), Align::Tabs, true);
-			};
-		}
 		else if (Extension == "png")
 		{
 			OnClick = [this, FilePath]() {
 				platform::Open(FilePath);
+			};
+		}
+		else
+		{
+			OnClick = [this, FilePath, Extension]() {
+				auto Type = EditorUI::Instance->GetAssetTypeForExtension(Extension);
+				if (Type)
+				{
+					Type->Open(EditorUI::Instance, AssetRef::FromPath(FilePath));
+				}
 			};
 		}
 
@@ -364,8 +323,9 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 		EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", File.c_str(), Out.c_str()), EditorUI::StatusType::Info);
 		Progress->Close();
 
-		thread::ExecuteOnMainThread([]() {
+		thread::ExecuteOnMainThread([Out]() {
 			resource::ScanForAssets();
+			EditorUI::Instance->OnProjectAssetChanged(AssetRef::FromPath(Out));
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
 				Browser->UpdateItems();
 			});
@@ -373,9 +333,11 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 	}
 	else
 	{
-		std::filesystem::copy(File, CurrentPath + "/" + file::FileName(File));
-		thread::ExecuteOnMainThread([]() {
+		string Out = CurrentPath + "/" + file::FileName(File);
+		std::filesystem::copy(File, Out);
+		thread::ExecuteOnMainThread([Out]() {
 			resource::ScanForAssets();
+			EditorUI::Instance->OnProjectAssetChanged(AssetRef::FromPath(Out));
 			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
 				Browser->UpdateItems();
 			});
