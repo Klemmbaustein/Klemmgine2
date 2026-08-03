@@ -45,7 +45,7 @@ engine::graphics::OpenGLGraphicsBackend::OpenGLGraphicsBackend()
 
 Renderer* engine::graphics::OpenGLGraphicsBackend::CreateRenderer()
 {
-    return new OpenGLRenderer();
+	return new OpenGLRenderer();
 }
 
 string engine::graphics::OpenGLGraphicsBackend::GetBackendIdentifier()

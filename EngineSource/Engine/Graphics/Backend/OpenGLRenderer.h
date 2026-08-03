@@ -265,6 +265,6 @@ namespace engine::graphics
 		bool BlendEnabled = false;
 		bool StencilWriteEnabled = false;
 		bool FaceCullEnabled = false;
-		bool VSyncEnabled = true;
+		bool VSyncEnabled = false;
 	};
 }
