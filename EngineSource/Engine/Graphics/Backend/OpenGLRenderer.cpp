@@ -228,6 +228,7 @@ engine::graphics::OpenGLRenderer::OpenGLRenderer()
 	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, VideoSubsystem::Current);
+	SDL_GL_SetSwapInterval(VSyncEnabled ? 1 : 0);
 }
 
 void engine::graphics::OpenGLRenderer::RenderScreen(kui::Window* WithWindow, RendererTexture* Texture, bool VSync)
