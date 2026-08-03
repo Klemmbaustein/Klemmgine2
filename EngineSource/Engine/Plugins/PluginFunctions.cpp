@@ -75,7 +75,7 @@ static plugin::LogEntry* GetLog(size_t* OutSize)
 	return Entries.data();
 }
 
-auto engine::plugin::PluginInterface = EnginePluginInterface{
+EnginePluginInterface engine::plugin::PluginInterface = EnginePluginInterface{
 #include "InterfaceDefines.hpp"
 };
 
