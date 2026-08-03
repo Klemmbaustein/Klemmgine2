@@ -7,7 +7,6 @@
 #include <Engine/File/ModelData.h>
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/Texture.h>
-#include <Engine/Plugins/PluginLoader.h>
 #include <filesystem>
 #include <Engine/UI/UICanvas.h>
 #include <Engine/Sound/SoundSubsystem.h>
@@ -264,7 +263,7 @@ void engine::Scene::ReloadObjects(SerializedValue* FromState, std::function<void
 		}
 	}
 
-	plugin::OnNewSceneLoaded(this);
+	SceneSubsystem::Current->OnSceneLoaded.Invoke(this);
 }
 
 void engine::Scene::LoadAsync(string SceneFile)
@@ -278,7 +277,7 @@ void engine::Scene::LoadAsyncFinish()
 	AsyncLoads--;
 	Init();
 
-	auto ObjectCopy = Objects;
+	std::vector ObjectCopy = Objects;
 	for (SceneObject* obj : ObjectCopy)
 	{
 		obj->CheckTransform();
@@ -514,7 +513,7 @@ void engine::Scene::Init()
 {
 	Graphics.Init();
 	SceneSubsystem::Current->LoadedScenes.push_back(this);
-	plugin::OnNewSceneLoaded(this);
+	SceneSubsystem::Current->OnSceneLoaded.Invoke(this);
 }
 
 engine::SerializedValue engine::Scene::GetSceneInfo()

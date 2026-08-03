@@ -14,6 +14,7 @@
 #include "Windows/BuildWindow.h"
 #include "Windows/ProjectSettingsWindow.h"
 #include "Windows/SettingsWindow.h"
+#include "Windows/PluginManagerWindow.h"
 #include <Core/File/JsonSerializer.h>
 #include <Editor/Editor.h>
 #include <Editor/UI/Windows/ScriptEditorWindow.h>
@@ -326,6 +327,11 @@ engine::editor::EditorUI::EditorUI()
 				DropdownMenu::Option("Project settings", "", "", []() {
 					new ProjectSettingsWindow();
 				}),
+#ifdef EDITOR_PLUGIN_SUPPORT
+				DropdownMenu::Option("Plugins", "", "", []() {
+					new PluginManagerWindow();
+				}),
+#endif
 		});
 
 	AddMenuBarItem("Scene",

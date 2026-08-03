@@ -148,7 +148,7 @@ void engine::ConsoleSubsystem::RemoveCommand(const string& CommandName)
 
 void engine::ConsoleSubsystem::LogWriteFunction()
 {
-	error::InitForThread("Log write thread");
+	error::InitForThread("Log Write Thread");
 
 	size_t LastMessages = 0;
 

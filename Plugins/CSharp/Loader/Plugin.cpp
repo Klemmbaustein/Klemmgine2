@@ -70,14 +70,13 @@ Functions.push_back(NativeFunction{ \
 
 	static void LoadRuntime()
 	{
-		return;
 		engine::plugin::EnginePluginInterface* Interface = engine::plugin::GetInterface();
 
 #undef STRUCT_MEMBER
 #undef STRUCT_MEMBER_CALL_DIRECT
 		// (void*)(intptr_t) cast to prevent GCC from complaining about casting function pointers to void*
-#define STRUCT_MEMBER(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(intptr_t)Interface->name},
-#define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(intptr_t)Interface->name},
+#define STRUCT_MEMBER(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(uintptr_t)Interface->name},
+#define STRUCT_MEMBER_CALL_DIRECT(name, ret, args, func) NativeFunction{.Name = # name, .FunctionPointer = (void*)(uintptr_t)Interface->name},
 
 		std::vector<NativeFunction> Functions = {
 #include "../internal/InterfaceDefines.hpp"
@@ -112,6 +111,5 @@ ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
 
 ENGINE_EXPORT void Update(float Delta)
 {
-	return;
 	engine::cSharp::Current->Update(Delta);
 }

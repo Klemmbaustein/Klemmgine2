@@ -20,6 +20,7 @@ option(ENGINE_BUILD_TOOLS "Include all tools in the Tools/ directory" ON)
 option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF)
 option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripting only)" OFF)
 option(ENGINE_BUILD_ID "Build identifier" "")
+option(EDITOR_PLUGIN_SUPPORT "Enable experimental support for managing plugins in-editor" OFF)
 
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
@@ -145,6 +146,10 @@ target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
 if(IS_SOURCELESS_BUILD)
 	target_compile_definitions(KlemmgineCore PUBLIC IS_SOURCELESS_BUILD=1)
 endif()
+if(EDITOR_PLUGIN_SUPPORT)
+	target_compile_definitions(KlemmgineEditor PUBLIC EDITOR_PLUGIN_SUPPORT=1)
+endif()
+
 if(NOT ENGINE_BUILD_ID STREQUAL "" AND ENGINE_BUILD_ID)
 	message("Build ID: ${ENGINE_BUILD_ID}")
 	target_compile_definitions(KlemmgineCore PUBLIC ENGINE_BUILD_ID="${ENGINE_BUILD_ID}")

@@ -20,13 +20,20 @@ layout(location = 1) out vec4 f_position;
 #export //!
 layout(location = 2) out vec4 f_normal;
 
-#export //!
-extern float opacity;
 float opacity = 1.0;
+bool affectAO = true;
 
 #export //!
-extern bool affectAO;
-bool affectAO = true;
+void setOpacity(float newOpacity)
+{
+	opacity = newOpacity;
+}
+
+#export //!
+void setAffectAO(bool newAffectAO)
+{
+	affectAO = newAffectAO;
+}
 
 #export //!
 uniform vec3 u_cameraPos = vec3(0);

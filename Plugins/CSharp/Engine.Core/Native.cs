@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -66,11 +66,10 @@ public class Native
 
 		Log = GetFunction<LogFunction>("Log")! as LogFunction;
 
-		Assembly Engine = Assembly.LoadFrom(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/Klemmgine.CSharp.dll"); ;
-		Assembly ProjectAssembly = Assembly.LoadFile(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/CSharpAssembly.dll");
-
 		try
 		{
+			Assembly Engine = Assembly.LoadFrom(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/Klemmgine.CSharp.dll"); ;
+			Assembly ProjectAssembly = Assembly.LoadFile(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/CSharpAssembly.dll");
 			Engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Initialize")!.Invoke(null, []);
 			UpdateFunction = Engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Update")!;
 			ObjectTypes.LoadObjects(ProjectAssembly, Engine);

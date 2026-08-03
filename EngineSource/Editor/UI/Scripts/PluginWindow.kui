@@ -1,0 +1,19 @@
+element PluginWindowItem
+{
+	width = 100%
+
+	child UIButton btn
+	{
+		color = Color_DarkBackground
+		border = 1px
+		borderColor = Color_Highlight1
+		width = 100%
+		child UIText
+		{
+			size = 12px
+			color = Color_Text
+			padding = 5px
+			text = "Klemmgine.DebugUI"
+		}
+	}
+}

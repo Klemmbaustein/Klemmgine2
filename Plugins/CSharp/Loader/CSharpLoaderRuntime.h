@@ -21,7 +21,7 @@ namespace engine::cSharp
 	class CSharpLoaderRuntime : public CSharpLoader
 	{
 	public:
-		
+
 		static inline const string ASSEMBLY_NAME = "Klemmgine.CSharp.Core";
 		static inline const string ASSEMBLY_EXT = ".dll";
 
