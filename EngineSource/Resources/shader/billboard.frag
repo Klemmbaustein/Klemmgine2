@@ -16,6 +16,6 @@ vec3 fragment()
 		discard;
 	}
 
-	opacity = textureValue.a;
+	setOpacity(textureValue.a);
 	return applyFog(textureValue.xyz / textureValue.a * u_color);
 }

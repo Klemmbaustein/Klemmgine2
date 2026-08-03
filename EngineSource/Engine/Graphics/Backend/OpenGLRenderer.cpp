@@ -278,7 +278,8 @@ void engine::graphics::OpenGLRenderer::RenderScreen(kui::Window* WithWindow, Ren
 	}
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	if (VSyncEnabled != VSync)
+	int Interval = 0;
+	if (SDL_GL_GetSwapInterval(&Interval) && (VSync ? 1 : 0) != Interval)
 	{
 		SDL_GL_SetSwapInterval(VSync ? 1 : 0);
 		VSyncEnabled = VSync;

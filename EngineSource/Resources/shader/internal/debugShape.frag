@@ -10,7 +10,7 @@ vec3 fragment()
 
 	coords = max(pow(coords, vec2(2.0)) - vec2(0.5), 0.1);
 
-	opacity = max(abs(coords.x), abs(coords.y));
-	affectAO = false;
+	setOpacity(max(abs(coords.x), abs(coords.y)));
+	setAffectAO(false);
 	return applyFog(u_color);
 }

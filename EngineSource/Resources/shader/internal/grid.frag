@@ -10,10 +10,8 @@ vec3 fragment()
 
 	float gridSize = 0.1;
 	float lineSize = LINE_SIZE;
-
-	opacity = 0.25;
-	affectAO = false;
-
+	setAffectAO(false);
+	float opacity = 0.25;
 	vec3 color = vec3(0.75);
 
 	if (mod(v_position.x + lineSize * 5.0 / 2.0, gridSize * 10.0) < lineSize * 5.0
@@ -36,6 +34,7 @@ vec3 fragment()
 	{
 		opacity /= depth - 9;
 	}
+	setOpacity(opacity);
 
 	if (depth > 20)
 	{

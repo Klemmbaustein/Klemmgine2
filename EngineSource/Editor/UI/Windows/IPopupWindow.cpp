@@ -4,6 +4,7 @@
 #include <thread>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
+#include <Core/Error/EngineError.h>
 
 using namespace engine::editor;
 
@@ -48,6 +49,8 @@ void engine::editor::IPopupWindow::Close()
 void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 {
 	using namespace kui;
+
+	error::InitForThread(Name);
 
 	Window::WindowFlag Flags = Window::WindowFlag::None;
 

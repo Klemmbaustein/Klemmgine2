@@ -32,6 +32,8 @@ namespace engine
 		Scene* Main = nullptr;
 		bool IsLoading = false;
 
+		Event<Scene*> OnSceneLoaded;
+
 		static SceneSubsystem* Current;
 
 	private:

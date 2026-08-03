@@ -527,7 +527,7 @@ void engine::graphics::Material::UpdateShader()
 		}
 		else
 		{
-			Log::Error("Shader is not valid!");
+			Log::Error(str::Format("Shader is not valid: %s, %s", VertexShader.c_str(), FragmentShader.c_str()));
 			SetToDefault();
 		}
 	}

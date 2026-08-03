@@ -6,6 +6,12 @@
 #include <Core/Log.h>
 #include "PluginCanvas.hpp"
 
+namespace engine
+{
+	class SceneObject;
+	class Scene;
+}
+
 namespace engine::plugin
 {
 #define STRUCT_MEMBER(name, ret, args, func) using name ## Fn = ret (*) args; name ## Fn name = nullptr;

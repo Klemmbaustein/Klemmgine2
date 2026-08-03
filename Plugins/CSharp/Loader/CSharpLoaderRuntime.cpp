@@ -109,7 +109,7 @@ void* engine::cSharp::CSharpLoaderRuntime::LoadCSharpFunction(string Function, s
 	//ENGINE_ASSERT(pos != netString::npos, "Root path isn't valid");
 
 	string Path = plugin::GetInterface()->PluginPath;
-	
+
 	netString LibraryPath = RuntimeString(Path) + NET_STR("/bin/net8.0/") + RuntimeString(ASSEMBLY_NAME) + RuntimeString(ASSEMBLY_EXT);
 	netString NamespacePath = RuntimeString(Namespace) + NET_STR(", ") + RuntimeString(ASSEMBLY_NAME);
 

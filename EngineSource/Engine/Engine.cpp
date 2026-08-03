@@ -44,7 +44,7 @@ Engine* engine::Engine::Init(std::function<void(Engine*)> LoadSystems)
 	Instance = new Engine();
 
 	Instance->LoadSubsystem(new ConsoleSubsystem());
-	Instance->LoadSubsystem(new PluginSubsystem());
+	Instance->LoadSubsystem(new plugin::PluginSubsystem());
 	Instance->LoadSubsystem(new VideoSubsystem());
 	Instance->LoadSubsystem(new InputSubsystem());
 	Instance->LoadSubsystem(new sound::SoundSubsystem());

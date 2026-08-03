@@ -3,6 +3,7 @@
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Engine/MainThread.h>
 #include <Core/File/FileUtil.h>
+#include <Core/Error/EngineError.h>
 #include <Engine/File/Resource.h>
 
 using namespace ds;
@@ -375,6 +376,8 @@ void engine::editor::ScriptEditorContext::Initialize()
 
 void engine::editor::ScriptEditorContext::ContextCompilerThread()
 {
+	error::InitForThread("Script Editor Service Thread");
+
 	while (!Quit)
 	{
 		std::unique_lock lk(TaskMutex);
