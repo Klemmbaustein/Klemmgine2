@@ -279,9 +279,12 @@ void engine::graphics::OpenGLRenderer::RenderScreen(kui::Window* WithWindow, Ren
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	int Interval = 0;
-	if (SDL_GL_GetSwapInterval(&Interval) && (VSync ? 1 : 0) != Interval)
+	if ((SDL_GL_GetSwapInterval(&Interval) && (VSync ? 1 : 0) != Interval) || VSyncEnabled != VSync)
 	{
-		SDL_GL_SetSwapInterval(VSync ? 1 : 0);
+		if (!SDL_GL_SetSwapInterval(VSync ? 1 : 0))
+		{
+			Log::Error(SDL_GetError());
+		}
 		VSyncEnabled = VSync;
 	}
 	SDL_GL_SwapWindow(GetSysWindow(WithWindow)->SDLWindow);
@@ -757,7 +760,7 @@ engine::graphics::OpenGLDrawUniformBuffer::OpenGLDrawUniformBuffer(size_t Size, 
 	BufferId = Render->UniformBufferIndex++;
 	glGenBuffers(1, &BufferObject);
 	glBindBuffer(GL_UNIFORM_BUFFER, BufferObject);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 16, nullptr, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, Size, nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, BufferId, BufferObject);
 }
 
