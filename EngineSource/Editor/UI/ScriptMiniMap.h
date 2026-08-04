@@ -23,12 +23,18 @@ namespace engine::editor
 
 	private:
 
+		struct MiniMapBuildData
+		{
+			std::mutex m;
+			bool IsLoaded = false;
+		};
+
 		void SetPixel(size_t x, size_t y, uByte R, uByte G, uByte B);
 		thread::ThreadMessagesRef Queue;
 		std::vector<uByte> Texture;
 		kui::UITextEditor* Editor = nullptr;
 		ScriptEditorProvider* Provider = nullptr;
-		std::shared_ptr<bool> IsLoadedPtr = std::make_shared<bool>(true);
+		std::shared_ptr<MiniMapBuildData> Data = std::make_shared<MiniMapBuildData>();
 		size_t Width = 0;
 		size_t Height = 0;
 		size_t OldLength = 0;

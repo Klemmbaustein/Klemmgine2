@@ -33,7 +33,8 @@ ScriptMiniMap::ScriptMiniMap(kui::UITextEditor* Editor, ScriptEditorProvider* Pr
 
 engine::editor::ScriptMiniMap::~ScriptMiniMap()
 {
-	*IsLoadedPtr = false;
+	std::lock_guard g{ Data->m };
+	Data->IsLoaded = false;
 	if (Image)
 	{
 		image::UnloadImage(Image);
@@ -62,17 +63,18 @@ void ScriptMiniMap::Update()
 		uint32 h = Editor->EditorScrollBox->GetUsedSize().GetPixels().Y;
 		IsGenerating = true;
 
-		ThreadPool::Main()->AddJob([this, h, IsLoadedPtr = IsLoadedPtr] {
+		ThreadPool::Main()->AddJob([this, h, Data = Data] {
 
-			if (!*IsLoadedPtr)
+			std::lock_guard g{ Data->m };
+			if (!Data->IsLoaded)
 			{
 				return;
 			}
 
 			GenerateTexture(h);
 
-			Queue->Run([this, IsLoadedPtr = IsLoadedPtr] {
-				if (!*IsLoadedPtr)
+			Queue->Run([this, Data = Data] {
+				if (!Data->IsLoaded)
 				{
 					return;
 				}
