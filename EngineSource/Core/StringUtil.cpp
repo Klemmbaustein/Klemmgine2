@@ -122,6 +122,12 @@ engine::string engine::str::FloatToString(float Val, size_t Precision)
 {
 	string Out = std::to_string(Val);
 
+	if (Precision != 0)
+	{
+		size_t Dot = Out.find_first_of('.');
+		Out = Out.substr(0, Dot + 1 + Precision);
+	}
+
 	while (Out.size()
 		&& (Out[Out.size() - 1] == '0' || Out[Out.size() - 1] == '.'))
 	{
@@ -138,7 +144,6 @@ engine::string engine::str::FloatToString(float Val, size_t Precision)
 		return Out;
 	}
 
-	size_t Dot = Out.find_first_of('.');
 
-	return Out.substr(0, Dot + 1 + Precision);
+	return Out;
 }
