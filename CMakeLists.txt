@@ -123,6 +123,7 @@ set(ALSOFT_UTILS OFF)
 set(OLD_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
 set(CMAKE_BUILD_TYPE "Release")
 set(ALSOFT_ENABLE_MODULES OFF)
+set(ALSOFT_BACKEND_WAVE OFF)
 add_subdirectory("Dependencies/openal-soft" EXCLUDE_FROM_ALL)
 
 if(MSVC)
