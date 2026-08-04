@@ -2,6 +2,7 @@
 #include <kui/UI/UITextEditor.h>
 #include <Editor/UI/ScriptEditorProvider.h>
 #include <Core/ThreadMessages.h>
+#include <memory>
 
 namespace engine::editor
 {
@@ -27,6 +28,7 @@ namespace engine::editor
 		std::vector<uByte> Texture;
 		kui::UITextEditor* Editor = nullptr;
 		ScriptEditorProvider* Provider = nullptr;
+		std::shared_ptr<bool> IsLoadedPtr = std::make_shared<bool>(true);
 		size_t Width = 0;
 		size_t Height = 0;
 		size_t OldLength = 0;

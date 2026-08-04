@@ -623,7 +623,7 @@ void engine::editor::ScriptEditorUI::AddTab(std::string File)
 	{
 		NewTab.Provider->ScanFile();
 	}
-	NewTab.Editor = new UITextEditor(NewTab.Provider, ScriptFont, false);
+	NewTab.Editor = new UITextEditor(NewTab.Provider, ScriptFont, this->Tabs.size() == 1);
 
 	if (Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool())
 	{
