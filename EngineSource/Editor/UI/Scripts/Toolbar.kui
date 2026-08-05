@@ -68,6 +68,7 @@ element ToolBarButton
 				upPadding = 8px
 				downPadding = 8px
 				leftPadding = 4px
+				color = Color_Text
 			}
 		}
 	}

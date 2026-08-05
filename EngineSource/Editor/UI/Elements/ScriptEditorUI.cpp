@@ -912,7 +912,10 @@ void engine::editor::ScriptEditorUI::UpdateColors()
 	for (auto& Tab : Tabs)
 	{
 		if (Tab.MiniMap)
+		{
 			Tab.MiniMap->BackgroundColor = EditorUI::Theme.Background;
+			Tab.MiniMap->ReGenerate = true;
+		}
 		EditorUI::Theme.CodeTheme.ApplyToScript(Tab.Provider);
 		Tab.Provider->ParentEditor->SelectionColor = EditorUI::Theme.SelectedText;
 		Tab.Provider->ParentEditor->CursorColor = EditorUI::Theme.Text;
