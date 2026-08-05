@@ -266,7 +266,14 @@ void engine::PhysicsComponent::Update()
 
 void engine::PhysicsComponent::SetVelocity(Vector3 NewVelocity)
 {
-	Body->SetVelocity(NewVelocity);
+	if (Body)
+	{
+		Body->SetVelocity(NewVelocity);
+	}
+	else
+	{
+		Log::Warn("Tried to set velocity of physics component, but no physics collider is initialized!");
+	}
 }
 
 bool engine::PhysicsComponent::UpdateTransform(bool IsDirty)

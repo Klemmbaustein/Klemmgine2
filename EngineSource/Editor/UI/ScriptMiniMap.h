@@ -26,7 +26,7 @@ namespace engine::editor
 		struct MiniMapBuildData
 		{
 			std::mutex m;
-			bool IsLoaded = false;
+			bool IsLoaded = true;
 		};
 
 		void SetPixel(size_t x, size_t y, uByte R, uByte G, uByte B);
