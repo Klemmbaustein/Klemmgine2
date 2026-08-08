@@ -41,7 +41,7 @@ static void HitResult_getHitObject(InterpretContext* context)
 
 	if (Obj)
 	{
-		auto Found = script::ScriptSubsystem::Instance->GetClassFromObject(Obj);
+		auto Found = script::ScriptSubsystem::Instance->GetClassFromObject<SceneObject>(Obj, script::SceneObject_vTable);
 		context->pushValue<RuntimeClass*>(Found);
 	}
 	else

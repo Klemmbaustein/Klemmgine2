@@ -1,5 +1,7 @@
 element PluginWindowItem
 {
+	var Name = "Plugin name"
+
 	width = 100%
 
 	child UIButton btn
@@ -8,12 +10,32 @@ element PluginWindowItem
 		border = 1px
 		borderColor = Color_Highlight1
 		width = 100%
+
+		padding = 5px
+
+		verticalAlign = centered
+
 		child UIText
 		{
 			size = 12px
 			color = Color_Text
 			padding = 5px
-			text = "Klemmgine.DebugUI"
+			text = Name
+		}
+
+		child UIBackground devBadge
+		{
+			color = Color_HighlightDark
+			borderColor = Color_Highlight1
+			border = 1px
+			corners = Theme_CornerSize
+
+			child UIText
+			{
+				size = 9px
+				text = "DEV"
+				padding = 4px
+			}
 		}
 	}
 }

@@ -1,11 +1,12 @@
 #pragma once
 #include <Core/Transform.h>
+#include <Engine/Destructible.h>
 
 namespace engine
 {
 	class SceneObject;
 
-	class ObjectComponent
+	class ObjectComponent : public Destructible
 	{
 	public:
 

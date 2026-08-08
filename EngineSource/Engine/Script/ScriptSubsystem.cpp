@@ -62,6 +62,7 @@ engine::script::ScriptSubsystem::~ScriptSubsystem()
 
 	// Check for memory leaks. Ideally if the reference counting works as expected this should be 0.
 	Print("Script classes leaked: " + std::to_string(RuntimeClass::classRefCount), LogType::Note);
+	Print("Object map leaks: " + std::to_string(ScriptObjectMappings.size()), LogType::Note);
 
 	delete this->Runtime;
 	delete this->ScriptLanguage;
@@ -235,23 +236,8 @@ void engine::script::ScriptSubsystem::ClearTasks()
 	WaitTasks.clear();
 }
 
-RuntimeClass* engine::script::ScriptSubsystem::GetClassFromObject(ReflectionObject* Object)
-{
-	auto found = ScriptObjectMappings.find(Object);
 
-	if (found != ScriptObjectMappings.end())
-	{
-		found->second->addRef();
-		return found->second;
-	}
-
-	RuntimeClass* NewObj = CreateSceneObject(Object);
-	NewObj->addRef();
-	RegisterClassForObject(Object, NewObj);
-	return NewObj;
-}
-
-void engine::script::ScriptSubsystem::RegisterClassForObject(ReflectionObject* Object, ds::RuntimeClass* Class)
+void engine::script::ScriptSubsystem::RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class)
 {
 	if (!Class)
 	{
@@ -259,14 +245,14 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(ReflectionObject* O
 	}
 
 	ScriptObjectMappings[Object] = Class;
-	Object->OnDestroyedEvent.Add(this, [this, Object, Class]() {
+	Object->OnDestroyedEvent.Add(Class, [this, Object, Class]() {
 		if (Class)
 		{
 			*(void**)Class->getBody() = nullptr;
 			Runtime->baseContext->destruct(Class);
 			ScriptObjectMappings.erase(Object);
 		}
-		Object->OnDestroyedEvent.Remove(this);
+		Object->OnDestroyedEvent.Remove(Class);
 	});
 }
 

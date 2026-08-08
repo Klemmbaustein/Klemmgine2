@@ -15,7 +15,6 @@ namespace engine
 		virtual ~ReflectionObject() = default;
 
 		ObjectTypeID TypeID = 0;
-		Event<> OnDestroyedEvent;
 	};
 
 #ifndef ENGINE_PLUGIN

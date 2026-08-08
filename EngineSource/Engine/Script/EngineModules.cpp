@@ -1,35 +1,36 @@
 #include "EngineModules.h"
-#include <Engine/Objects/Components/MeshComponent.h>
-#include <Engine/Objects/Components/MoveComponent.h>
-#include <Engine/Objects/Components/CameraComponent.h>
-#include <Engine/Objects/Components/PhysicsComponent.h>
-#include <Engine/Objects/Components/CollisionComponent.h>
-#include <Engine/Objects/SceneObject.h>
-#include <Engine/Script/ScriptSceneManager.h>
-#include <Engine/Script/ScriptSubsystem.h>
-#include <Engine/Script/ScriptObject.h>
-#include <Engine/Scene.h>
-#include <Engine/Input.h>
-#include <Engine/Engine.h>
-#include <Engine/Stats.h>
+#include <Core/Log.h>
+#include <ds/callableWrapper.hpp>
 #include <ds/language.hpp>
+#include <ds/modules/system.async.hpp>
+#include <ds/modules/system.hpp>
 #include <ds/native/nativeGeneric.hpp>
 #include <ds/native/nativeModule.hpp>
-#include <ds/modules/system.hpp>
-#include <ds/modules/system.async.hpp>
+#include <ds/parser/types/arrayType.hpp>
+#include <ds/parser/types/functionType.hpp>
 #include <ds/parser/types/stringType.hpp>
 #include <ds/parser/types/taskType.hpp>
-#include <ds/parser/types/arrayType.hpp>
-#include <ds/callableWrapper.hpp>
-#include <Core/Log.h>
-#include <kui/Window.h>
-#include <ds/parser/types/functionType.hpp>
+#include <Engine/Engine.h>
+#include <Engine/Input.h>
+#include <Engine/Objects/Components/CameraComponent.h>
+#include <Engine/Objects/Components/CollisionComponent.h>
+#include <Engine/Objects/Components/MeshComponent.h>
+#include <Engine/Objects/Components/MoveComponent.h>
+#include <Engine/Objects/Components/PhysicsComponent.h>
+#include <Engine/Objects/SceneObject.h>
+#include <Engine/Scene.h>
+#include <Engine/Script/ScriptObject.h>
+#include <Engine/Script/ScriptSceneManager.h>
+#include <Engine/Script/ScriptSubsystem.h>
+#include <Engine/Stats.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
+#include <kui/Window.h>
 
-#include "Bindings/MathBindings.h"
-#include "Bindings/SerializeBindings.h"
-#include "Bindings/PhysicsBindings.h"
 #include "Bindings/AssetBindings.h"
+#include "Bindings/GraphicsBindings.h"
+#include "Bindings/MathBindings.h"
+#include "Bindings/PhysicsBindings.h"
+#include "Bindings/SerializeBindings.h"
 #include "Bindings/SoundBindings.h"
 #include "UI/UIBindings.h"
 
@@ -37,12 +38,17 @@
 #include <Editor/Editor.h>
 #include <Editor/UI/Panels/Viewport.h>
 #endif
-#include <Engine/Objects/Components/SoundComponent.h>
 #include <Engine/Objects/Components/BillboardComponent.h>
 #include <Engine/Objects/Components/LightComponent.h>
+#include <Engine/Objects/Components/SoundComponent.h>
 
-#define CHECK_OBJ(obj) if (!obj.getValue()) { \
+#define CHECK_OBJ(obj) if (!*obj) { \
 	context->runtimePanic(str::Format("Got null object: %s", __FUNCTION__).c_str()); \
+	return; \
+}
+
+#define CHECK_COMPONENT(obj) if (!*obj) { \
+	context->runtimePanic(str::Format("Got null component: %s", __FUNCTION__).c_str()); \
 	return; \
 }
 
@@ -61,7 +67,34 @@ public:
 	}
 };
 
+static void Object_empty(InterpretContext* context)
+{
+	context->popValue<RuntimeClass*>();
+}
+
+RuntimeFunction engine::script::SceneObject_vTable[] = {
+	{},
+	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{.nativeFn = &Object_empty},
+};
+
 #pragma region Scene
+
+static void Scene_delete(InterpretContext* context)
+{
+	ClassPtr<Scene*> SceneValue = context->popPtr<Scene*>();
+
+	if (*SceneValue)
+	{
+		script::ScriptSubsystem::Instance->RemoveRegisteredObject(SceneValue.classPtr, *SceneValue);
+	}
+}
+
+static RuntimeFunction Scene_vTable = {
+	.nativeFn = &Scene_delete
+};
 
 static void Scene_new(InterpretContext* context)
 {
@@ -101,7 +134,7 @@ static void Scene_getMainScene(InterpretContext* context)
 
 	if (Main)
 	{
-		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, nullptr);
+		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, &Scene_vTable);
 		NewScene.getValue() = Main;
 		context->pushValue(NewScene);
 	}
@@ -119,7 +152,7 @@ static void Scene_getObjects(InterpretContext* context)
 
 	for (auto& i : TargetScene.getValue()->Objects)
 	{
-		FoundObjects.push_back(script::ScriptSubsystem::Instance->GetClassFromObject(i));
+		FoundObjects.push_back(script::ScriptSubsystem::Instance->GetClassFromObject<SceneObject>(i, script::SceneObject_vTable));
 	}
 
 	auto outArray = createArray<RuntimeClass*>(FoundObjects.data(), FoundObjects.size(), true);
@@ -160,7 +193,7 @@ static void Scene_getObjectByName(InterpretContext* context)
 
 	if (FoundObject)
 	{
-		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject(FoundObject));
+		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject(FoundObject, script::SceneObject_vTable));
 	}
 	else
 	{
@@ -173,6 +206,13 @@ static void Scene_getPhysics(InterpretContext* context)
 	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
 
 	context->pushValue(NativeModule::makePointerClass(&TargetScene.getValue()->Physics));
+}
+
+static void Scene_getEnvironment(InterpretContext* context)
+{
+	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
+
+	context->pushValue(NativeModule::makePointerClass(&TargetScene.getValue()->Graphics.SceneEnvironment));
 }
 
 static void Scene_getName(InterpretContext* context)
@@ -197,7 +237,7 @@ static void Scene_getManager(InterpretContext* context)
 
 	if (TargetScene.getValue()->Manager)
 	{
-		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject(TargetScene.getValue()->Manager));
+		context->pushValue(script::ScriptSubsystem::Instance->GetClassFromObject<SceneManager>(TargetScene.getValue()->Manager, nullptr));
 	}
 	else
 	{
@@ -244,19 +284,6 @@ static void Scene_createNewObject(InterpretContext* context)
 
 #pragma region SceneObject
 
-static void Object_empty(InterpretContext* context)
-{
-	context->popValue<RuntimeClass*>();
-}
-
-static RuntimeFunction SceneObject_vTable[] = {
-	{},
-	RuntimeFunction{.nativeFn = &Object_empty},
-	RuntimeFunction{.nativeFn = &Object_empty},
-	RuntimeFunction{.nativeFn = &Object_empty},
-	RuntimeFunction{.nativeFn = &Object_empty},
-};
-
 static void SceneObject_destroy(InterpretContext* context)
 {
 	ClassRef<SceneObject*> obj = context->popValue<RuntimeClass*>();
@@ -284,6 +311,7 @@ static void SceneObject_detach(InterpretContext* context)
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
 	CHECK_OBJ(Data);
 	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
+	CHECK_COMPONENT(Component);
 
 	if (!(*Component.get())->ParentObject && !(*Component.get())->ParentComponent)
 	{
@@ -303,8 +331,10 @@ static void SceneObject_getScene(InterpretContext* context)
 
 	if (FoundScene)
 	{
-		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, nullptr);
+		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, &Scene_vTable);
 		NewScene.getValue() = FoundScene;
+		script::ScriptSubsystem::Instance->RegisterClassForObject(FoundScene, NewScene.classPtr);
+		NewScene.classPtr->addRef();
 		context->pushValue(NewScene);
 	}
 	else
@@ -323,19 +353,33 @@ static void SceneObject_getName(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
 }
 
+static void ObjectComponent_delete(InterpretContext* context)
+{
+	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
+
+	if (*Component)
+	{
+		script::ScriptSubsystem::Instance->RemoveRegisteredObject(Component.classPtr, *Component);
+	}
+}
+
+static RuntimeFunction ObjectComponent_vTable = {
+	.nativeFn = &ObjectComponent_delete,
+};
+
 static void ObjectComponent_new(InterpretContext* context)
 {
 	// TODO: Add a vtable that frees this component if it has not been attached to anything.
 
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new ObjectComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
 static void ObjectComponent_getWorldPosition(InterpretContext* context)
 {
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
-
 	context->pushValue(Component.getValue()->GetWorldTransform().ApplyTo(0));
 }
 
@@ -370,6 +414,7 @@ static void MeshComponent_new(InterpretContext* context)
 static void MeshComponent_load(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	ClassPtr<AssetRef*> File = context->popPtr<AssetRef*>();
 
 	Component.getValue()->Load(**File);
@@ -391,6 +436,17 @@ static void MeshComponent_getModel(InterpretContext* context)
 	}
 }
 
+static void MeshComponent_setMaterialUniformVector3(InterpretContext* context)
+{
+	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Vector3 Value = context->popValue<Vector3>();
+	RuntimeStr Name = context->popRuntimeString();
+	Int Index = context->popValue<Int>();
+
+	Component.getValue()->SetMaterialUniformVector3(Index, Name.ptr(), Value);
+}
+
 static void DrawableComponent_getBounds(InterpretContext* context)
 {
 	ClassRef<DrawableComponent*> Component = context->popValue<RuntimeClass*>();
@@ -402,6 +458,7 @@ static void PhysicsComponent_new(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new PhysicsComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -513,6 +570,7 @@ static void CollisionComponent_new(InterpretContext* context)
 {
 	ClassRef<CollisionComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new CollisionComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -537,6 +595,7 @@ static void MoveComponent_new(InterpretContext* context)
 {
 	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new MoveComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -578,6 +637,7 @@ static void SoundComponent_new(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new SoundComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -633,6 +693,7 @@ static void BillboardComponent_new(InterpretContext* context)
 {
 	ClassRef<BillboardComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new BillboardComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -656,6 +717,7 @@ static void LightComponent_new(InterpretContext* context)
 {
 	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new LightComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -687,6 +749,7 @@ static void CameraComponent_new(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new CameraComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -848,6 +911,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	auto StrType = ToContext->registry->getEntry<StringType>();
 	auto FloatInst = ToContext->registry->getEntry<FloatType>();
+	auto IntInst = ToContext->registry->getEntry<FloatType>();
 	auto BoolInst = ToContext->registry->getEntry<BoolType>();
 
 	auto SceneType = EngineModule.createClass<Scene*>("Scene");
@@ -864,6 +928,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	ui::UIBindings UI = ui::AddUIModule(EngineUIModule, EngineModule, ToContext);
 	PhysicsBindings Physics = AddPhysicsModule(EngineModule, ToContext);
 	SoundBindings Sound = AddSoundModule(EngineModule, ToContext);
+	GraphicsBindings Graphics = AddGraphicsModule(EngineModule, ToContext);
 
 	EngineModule.addClassConstructor(SceneType,
 		NativeFunction({}, nullptr, "Scene.new", &Scene_new));
@@ -897,6 +962,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(SceneType,
 		NativeFunction({}, Physics.PhysicsManagerType, "getPhysics", &Scene_getPhysics));
 
+	EngineModule.addClassMethod(SceneType,
+		NativeFunction({}, Graphics.EnvironmentType, "getEnvironment", &Scene_getEnvironment));
+
 	EngineModule.addFunction(NativeFunction({}, SceneType->nullable, "getMainScene", &Scene_getMainScene));
 	EngineModule.addFunction(NativeFunction({ FunctionArgument(StrType, "name") }, nullptr, "openScene", &openScene));
 
@@ -926,6 +994,8 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(ComponentType, "component") }, nullptr,
 			"attach", &ObjectComponent_attach));
 
+	EngineModule.setClassDestructor(ComponentType, NativeFunction({}, nullptr,
+		"ObjectComponent.delete", &ObjectComponent_delete));
 	ComponentType->makePointerClass();
 
 	EngineModule.addClassVirtualMethod(ManagerType,
@@ -1040,6 +1110,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(MeshComponentType,
 		NativeFunction({},
 			Assets.ModelData->nullable, "getModel", &MeshComponent_getModel));
+
+	EngineModule.addClassMethod(MeshComponentType,
+		NativeFunction({ FunctionArgument(IntInst, "index"),
+			FunctionArgument(StrType, "name"), FunctionArgument(Math.Vec3, "value") },
+			nullptr, "setMaterialUniformVector3", &MeshComponent_setMaterialUniformVector3));
 
 
 	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);
@@ -1352,12 +1427,23 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	return OutData;
 }
 
-ds::RuntimeClass* engine::script::CreateSceneObject(ReflectionObject* From)
+ds::RuntimeClass* engine::script::CreateSceneObject(Destructible* From)
 {
-	ClassRef<ReflectionObject*> NewObject = RuntimeClass::allocateClass(sizeof(ReflectionObject*),
+	ClassRef<SceneObject*> NewObject = RuntimeClass::allocateClass(sizeof(SceneObject*),
 		0, SceneObject_vTable);
-	NewObject.getValue() = From;
+	NewObject.getValue() = dynamic_cast<SceneObject*>(From);
 	return NewObject.classPtr;
+}
+
+void engine::script::RegisterComponent(ds::RuntimeClass* Class)
+{
+	ClassRef<ObjectComponent*> Component = Class;
+	if (!Class->vtable)
+	{
+		Class->vtable = &ObjectComponent_vTable;
+	}
+	Component.classPtr->addRef();
+	script::ScriptSubsystem::Instance->RegisterClassForObject(Component.getValue(), Component.classPtr);
 }
 
 void engine::script::UpdateWaitTasks()

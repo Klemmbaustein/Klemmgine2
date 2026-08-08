@@ -10,6 +10,8 @@ namespace ds
 
 namespace engine::script
 {
+	extern ds::RuntimeFunction SceneObject_vTable[];
+
 	struct EngineModuleData
 	{
 		ds::TypeId SceneObjectType = 0;
@@ -23,7 +25,8 @@ namespace engine::script
 
 	EngineModuleData RegisterEngineModules(ds::LanguageContext* ToContext);
 
-	ds::RuntimeClass* CreateSceneObject(ReflectionObject* From);
+	ds::RuntimeClass* CreateSceneObject(Destructible* From);
+	void RegisterComponent(ds::RuntimeClass* Class);
 
 	void UpdateWaitTasks();
 }

@@ -55,6 +55,7 @@ namespace engine
 
 		bool ReadBytes(uByte* To, size_t Count)
 		{
+			ByteCount += Count;
 			return Stream->Read(To, Count);
 		}
 
@@ -89,12 +90,16 @@ namespace engine
 		T Get()
 		{
 			AlignToByte();
+			ByteCount += sizeof(T);
 			return Stream->Get<T>();
 		}
 
 		void AlignToByte()
 		{
-			CurrentBytePosition = 8;
+			if (CurrentBytePosition != 0)
+			{
+				CurrentBytePosition = 8;
+			}
 		}
 
 	private:

@@ -108,7 +108,7 @@ void engine::sound::FlacFileLoader::ReadBody(BitStreamReader* Stream)
 {
 	while (DecodeFrame(Stream))
 	{
-
+		ReadFrameFooter(Stream);
 	}
 }
 
@@ -122,7 +122,7 @@ bool engine::sound::FlacFileLoader::DecodeFrame(BitStreamReader* Stream)
 	}
 	bool BlockStrategy = Stream->ReadBit();
 
-	auto BlockSize = Stream->ReadBits<4>();
+	auto BlockSize = ConvertBlockSize(Stream->ReadBits<4>());
 	auto SampleRate = Stream->ReadBits<4>();
 	auto StereoMode = Stream->ReadBits<4>();
 	auto BitDepth = Stream->ReadBits<3>();
@@ -138,9 +138,25 @@ bool engine::sound::FlacFileLoader::DecodeFrame(BitStreamReader* Stream)
 		abort();
 	}
 
+	for (uint8 i = 0; i < this->NumChannels + 1; i++)
+	{
+		DecodeSubFrame(Stream, BitDepth, BlockSize);
+	}
+	return true;
+}
+
+void engine::sound::FlacFileLoader::DecodeSubFrame(BitStreamReader* Stream, uint64 BitDepth, uint64 BlockSize)
+{
 	bool ZeroBit = Stream->ReadBit();
 	auto FrameType = Stream->ReadBits<6>();
 	bool WastedSpace = Stream->ReadBit();
+	std::vector<int16> Samples;
+
+	if (FrameType == 0)
+	{
+		DecodeConstantFrame(Stream, BitDepth, BlockSize, Samples);
+		return;
+	}
 
 	int8 FixedPredictor = FrameType - 0b001000;
 	int8 LinearPredictOrder = FrameType - 31;
@@ -152,33 +168,11 @@ bool engine::sound::FlacFileLoader::DecodeFrame(BitStreamReader* Stream)
 		BitDepth = this->BitsPerSample;
 	}
 
-	std::vector<int16> Samples;
-
 	for (int8 i = 0; i < LinearPredictOrder; i++)
 	{
-		switch (BitDepth)
-		{
-		case 0b001:
-			FirstSample = Stream->ReadBits<8>();
-			break;
-		case 0b010:
-			FirstSample = Stream->ReadBits<12>();
-			break;
-		case 0b100:
-			FirstSample = Stream->ReadBits<16>();
-			break;
-		case 0b101:
-			FirstSample = Stream->ReadBits<20>() >> 4;
-			break;
-		case 0b110:
-			FirstSample = Stream->ReadBits<24>() >> 8;
-			break;
-		case 0b111:
-			FirstSample = Stream->ReadBits<32>() >> 16;
-			break;
-		}
+		FirstSample = DecodeSample(Stream, BitDepth);
 
-		Samples.push_back(i);
+		Samples.push_back(FirstSample);
 	}
 
 	auto PredictorPrecision = Stream->ReadBits<4>() + 1;
@@ -192,11 +186,76 @@ bool engine::sound::FlacFileLoader::DecodeFrame(BitStreamReader* Stream)
 	}
 
 	DecodeResiduals(Stream);
-
-	return false;
+	throw FlacLoadException("Not implemented");
 }
 
 void engine::sound::FlacFileLoader::DecodeResiduals(BitStreamReader* Stream)
 {
 	auto CodingMethod = Stream->ReadBits<4>();
+}
+
+void engine::sound::FlacFileLoader::DecodeConstantFrame(BitStreamReader* Stream, uint64 BitDepth, uint64 BlockSize,
+	std::vector<int16>& Samples)
+{
+	int16 FirstSample = DecodeSample(Stream, BitDepth);
+
+	for (size_t i = 0; i < BlockSize; i++)
+	{
+		Samples.push_back(FirstSample);
+	}
+}
+
+uint64 engine::sound::FlacFileLoader::ConvertBlockSize(uint8 BlockSizeType)
+{
+	switch (BlockSizeType)
+	{
+	case 0b0001:
+		return 192;
+	case 0b0010:
+	case 0b0011:
+	case 0b0100:
+	case 0b0101:
+		return 144 * std::pow(2.0, double(BlockSizeType));
+	case 0b0110:
+		abort();
+	case 0b0111:
+		abort();
+	case 0b1000:
+	case 0b1001:
+	case 0b1010:
+	case 0b1011:
+	case 0b1100:
+	case 0b1101:
+	case 0b1110:
+	case 0b1111:
+		return std::pow(2.0, double(BlockSizeType));
+	}
+	return uint64();
+}
+
+int16 engine::sound::FlacFileLoader::DecodeSample(BitStreamReader* Stream, uint8 Type)
+{
+	switch (Type)
+	{
+	case 0b001:
+		return Stream->ReadBits<8>();
+	case 0b010:
+		return Stream->ReadBits<12>();
+	case 0b100:
+		return Stream->ReadBits<16>();
+	case 0b101:
+		return Stream->ReadBits<20>() >> 4;
+	case 0b110:
+		return Stream->ReadBits<24>() >> 8;
+		break;
+	case 0b111:
+		return Stream->ReadBits<32>() >> 16;
+	}
+	throw FlacLoadException("Invalid bit depth");
+}
+
+void engine::sound::FlacFileLoader::ReadFrameFooter(BitStreamReader* Stream)
+{
+	Stream->AlignToByte();
+	auto crc = Stream->ReadBits<16>(); // CRC (ignore for now)
 }

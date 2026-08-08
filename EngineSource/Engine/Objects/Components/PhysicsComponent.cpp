@@ -233,7 +233,7 @@ void engine::PhysicsComponent::SetActive(bool NewActive)
 
 bool engine::PhysicsComponent::GetActive() const
 {
-	return Body->IsActive;
+	return Body && Body->IsActive;
 }
 
 void engine::PhysicsComponent::Update()

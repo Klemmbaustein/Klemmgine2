@@ -8,22 +8,25 @@
 #include <Core/File/TextSerializer.h>
 
 using namespace engine::platform;
+using namespace engine::plugin;
+using namespace engine;
 
 engine::plugin::PluginSubsystem::PluginSubsystem()
 	: Subsystem("Plugin", Log::LogColor::Gray)
 {
 #ifdef EDITOR
-	static const string PLUGIN_DIR = editor::GetEditorPath() + "/../Plugins/";
+	PluginDir = editor::GetEditorPath() + "/../Plugins/";
 #else
-	static const string PLUGIN_DIR = "Plugins/";
+	PluginDir = "Plugins/";
 #endif
-	if (!std::filesystem::exists(PLUGIN_DIR))
+
+	if (!std::filesystem::exists(PluginDir))
 		return;
 
-	for (const auto& i : std::filesystem::directory_iterator(PLUGIN_DIR))
+	for (const auto& i : std::filesystem::directory_iterator(PluginDir))
 	{
 		if (std::filesystem::exists(i.path() / "Plugin.k2p"))
-			LoadPlugin(i.path().string(), PLUGIN_DIR);
+			LoadPluginData(i.path().string());
 	}
 }
 
@@ -31,15 +34,12 @@ engine::plugin::PluginSubsystem::~PluginSubsystem()
 {
 	for (auto& i : LoadedPlugins)
 	{
-		debug::TimeLogger PluginLoadTime{ str::Format("Unloaded plugin: %s", i.Name.c_str()), GetLogPrefixes() };
-		if (i.PluginUnload)
-			i.PluginUnload();
-		UnloadSharedLibrary((SharedLibrary*)i.PluginHandle);
+		UnloadPlugin(&i);
 	}
 	LoadedPlugins.clear();
 }
 
-void engine::plugin::PluginSubsystem::LoadPlugin(string Path, string PluginDir)
+void engine::plugin::PluginSubsystem::LoadPluginData(string Path)
 {
 	PluginInfo New;
 
@@ -47,8 +47,10 @@ void engine::plugin::PluginSubsystem::LoadPlugin(string Path, string PluginDir)
 
 	New.Name = File.At("name").GetString();
 	New.LibraryName = File.At("binary").GetString();
+	New.IsDev = File.Contains("devOnly") && File.At("devOnly").GetBool();
 
 	InitializePlugin(&New, this, PluginDir);
+
 	LoadedPlugins.push_back(New);
 }
 
@@ -74,4 +76,34 @@ void engine::plugin::PluginSubsystem::Update()
 		if (i.PluginUpdate)
 			i.PluginUpdate(stats::DeltaTime);
 	}
+}
+
+PluginInfo* engine::plugin::PluginSubsystem::GetPluginFromName(string Name)
+{
+	for (auto& i : this->LoadedPlugins)
+	{
+		if (i.Name == Name)
+		{
+			return &i;
+		}
+	}
+
+	return nullptr;
+}
+
+void engine::plugin::PluginSubsystem::LoadPlugin(PluginInfo* Info)
+{
+	InitializePlugin(Info, this, PluginDir);
+}
+
+void engine::plugin::PluginSubsystem::UnloadPlugin(PluginInfo* Info)
+{
+	debug::TimeLogger PluginLoadTime{ str::Format("Unloaded plugin: %s", Info->Name.c_str()), GetLogPrefixes() };
+	if (Info->PluginUnload)
+		Info->PluginUnload();
+	UnloadSharedLibrary(Info->PluginHandle);
+	Info->PluginHandle = nullptr;
+	Info->PluginUnload = nullptr;
+	Info->PluginUpdate = nullptr;
+	Info->OnNewSceneLoaded = nullptr;
 }

@@ -1,12 +1,13 @@
 #pragma once
 #include <Core/Transform.h>
 #include <Engine/Objects/Reflection/ObjectReflection.h>
+#include <Engine/Destructible.h>
 
 namespace engine
 {
 	class Scene;
 
-	class SceneManager : public ReflectionObject
+	class SceneManager : public ReflectionObject, public Destructible
 	{
 	public:
 

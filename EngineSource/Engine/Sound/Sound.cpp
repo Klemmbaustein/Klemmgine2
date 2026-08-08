@@ -10,8 +10,6 @@
 #include <Engine/Engine.h>
 #include <Engine/Stats.h>
 
-// TODO: fully implement
-
 using namespace engine::subsystem;
 using namespace engine::sound;
 using namespace engine;
@@ -441,8 +439,6 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::De
 	if (FromCamera)
 	{
 		Pos = FromCamera->GetPosition();
-		//alListenerf(AL_GAIN, 1);
-
 		Directions[0] = FromCamera->GetForward();
 		Directions[1] = FromCamera->GetUp();
 	}
