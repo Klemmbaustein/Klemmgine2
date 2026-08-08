@@ -1,6 +1,7 @@
 #pragma once
 #include "Components/ObjectComponent.h"
 #include "Reflection/ObjectPropery.h"
+#include <Engine/Destructible.h>
 #include "Reflection/ObjectReflection.h"
 #include <Core/File/SerializedData.h>
 #include <Core/Transform.h>
@@ -11,7 +12,7 @@ namespace engine
 
 	class Scene;
 
-	class SceneObject : public ReflectionObject
+	class SceneObject : public ReflectionObject, public Destructible
 	{
 	public:
 

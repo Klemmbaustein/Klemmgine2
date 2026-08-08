@@ -3,6 +3,14 @@
 
 namespace engine::editor
 {
+	class PluginData
+	{
+	public:
+		string Name;
+		bool IsDev = false;
+		bool IsExperimental = false;
+	};
+
 	class PluginManagerWindow : public IDialogWindow
 	{
 	public:
@@ -11,5 +19,8 @@ namespace engine::editor
 		void Begin() override;
 		void Update() override;
 		void Destroy() override;
+
+	private:
+		std::vector<PluginData> Plugins;
 	};
 }

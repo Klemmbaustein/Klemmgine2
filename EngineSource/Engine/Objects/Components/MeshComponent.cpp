@@ -40,6 +40,16 @@ void engine::MeshComponent::DrawTransparent(Renderer* Render, Camera* From, ::Gr
 	}
 }
 
+void engine::MeshComponent::SetMaterialUniformVector3(size_t MaterialIndex, string UniformName, Vector3 Value)
+{
+	if (Materials.size() <= MaterialIndex)
+	{
+		return;
+	}
+
+	Materials[MaterialIndex]->SetVec3(UniformName, Value);
+}
+
 void engine::MeshComponent::LoadMaterial(size_t MaterialIndex, AssetRef MaterialFile)
 {
 	auto Previous = this->Materials[MaterialIndex];

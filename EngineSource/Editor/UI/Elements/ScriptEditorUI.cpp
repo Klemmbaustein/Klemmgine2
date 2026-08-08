@@ -91,6 +91,8 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 	VerticalTabBox = new UIScrollBox(false, 0, true);
 	VerticalTabBox->SetMinWidth(189_px);
 	VerticalTabBox->SetMinHeight(UISize::Parent(1));
+	VerticalTabBox->SetMaxHeight(VerticalTabBox->GetMinSize().Y);
+	VerticalTabBox->SetPadding(1_px, 1_px, 0, 0);
 	HorizontalTabBox = new UIScrollBox(true, 0, false);
 
 	HorizontalTabBox->SetMinWidth(UISize::Parent(1));
@@ -344,6 +346,11 @@ void engine::editor::ScriptEditorUI::Update()
 		{
 			Tab.Provider->ClearHovered();
 		}
+	}
+
+	if (SearchUI)
+	{
+		SearchUI->IsVisible = this->IsVisible;
 	}
 
 	if (Selected)

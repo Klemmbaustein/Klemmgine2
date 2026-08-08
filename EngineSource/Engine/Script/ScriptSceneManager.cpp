@@ -21,7 +21,7 @@ void engine::script::ScriptSceneManager::InitializeScriptPointer()
 
 void engine::script::ScriptSceneManager::BeginHotReload()
 {
-	Interpreter->destruct(ScriptData);
+	OnDestroyedEvent.Invoke();
 	UnloadScriptData();
 }
 

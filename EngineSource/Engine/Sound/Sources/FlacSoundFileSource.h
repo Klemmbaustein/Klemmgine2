@@ -26,8 +26,15 @@ namespace engine::sound
 
 		void ReadBody(BitStreamReader* Stream);
 
+	private:
 		bool DecodeFrame(BitStreamReader* Stream);
+		void DecodeSubFrame(BitStreamReader* Stream, uint64 BitDepth, uint64 BlockSize);
 		void DecodeResiduals(BitStreamReader* Stream);
+		void DecodeConstantFrame(BitStreamReader* Stream, uint64 BitDepth, uint64 BlockSize, std::vector<int16>& Samples);
+
+		uint64 ConvertBlockSize(uint8 BlockSizeType);
+		int16 DecodeSample(BitStreamReader* Stream, uint8 Type);
+		void ReadFrameFooter(BitStreamReader* Stream);
 	};
 
 	class FlacLoadException

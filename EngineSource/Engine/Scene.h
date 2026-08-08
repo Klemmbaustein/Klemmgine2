@@ -18,7 +18,7 @@ namespace engine
 	*
 	* @see subsystem::SceneSubsystem
 	*/
-	class Scene : ISerializable
+	class Scene : ISerializable, public Destructible
 	{
 	public:
 		Scene(bool DoLoadAsync = false);

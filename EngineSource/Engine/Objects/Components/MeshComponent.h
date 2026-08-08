@@ -24,6 +24,8 @@ namespace engine
 		void Load(AssetRef From, bool LoadMaterials = true);
 		void Load(GraphicsModel* From);
 
+		void SetMaterialUniformVector3(size_t MaterialIndex, string UniformName, Vector3 Value);
+
 		void OnAttached() override;
 
 		~MeshComponent() override;

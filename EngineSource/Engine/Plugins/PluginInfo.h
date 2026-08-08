@@ -9,6 +9,11 @@ namespace engine::plugin
 		string Name;
 		string LibraryName;
 		platform::SharedLibrary* PluginHandle = nullptr;
+
+		bool IsLoaded = false;
+		bool IsDev = false;
+		bool IsExperimental = false;
+
 		using SceneLoadFn = void(*)(Scene* New);
 		using UpdateFn = void(*)(float Delta);
 		using PluginUnloadFn = void(*)();

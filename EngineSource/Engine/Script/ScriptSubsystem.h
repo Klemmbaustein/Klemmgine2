@@ -4,6 +4,7 @@
 #include "UI/ParseUI.h"
 #include "EngineModules.h"
 #include "kui/DynamicMarkup.h"
+#include <Engine/Destructible.h>
 #include <Engine/Objects/Reflection/ObjectReflection.h>
 #include <map>
 
@@ -78,12 +79,36 @@ namespace engine::script
 
 		void ClearTasks();
 
-		ds::RuntimeClass* GetClassFromObject(ReflectionObject* Object);
-		void RegisterClassForObject(ReflectionObject* Object, ds::RuntimeClass* Class);
+		void RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class);
+		template<typename T>
+		void RemoveRegisteredObject(ds::RuntimeClass* Class, T* obj)
+		{
+			ScriptObjectMappings.erase(obj);
+			obj->OnDestroyedEvent.Remove(Class);
+		}
+
+		template<typename T>
+		ds::RuntimeClass* GetClassFromObject(T* Object, ds::RuntimeFunction* vTable)
+		{
+			auto found = ScriptObjectMappings.find(Object);
+
+			if (found != ScriptObjectMappings.end())
+			{
+				found->second->addRef();
+				return found->second;
+			}
+
+			ds::ClassRef<T*> NewObject = ds::RuntimeClass::allocateClass(sizeof(T*),
+				0, vTable);
+			NewObject.getValue() = dynamic_cast<T*>(Object);
+			NewObject.classPtr->addRef();
+			RegisterClassForObject(Object, NewObject.classPtr);
+			return NewObject.classPtr;
+		}
 
 		/// Maps all objects to their script language representation. This might be a user-defined class for an
 		/// object defined in the scripts or
-		std::map<ReflectionObject*, ds::RuntimeClass*> ScriptObjectMappings;
+		std::map<Destructible*, ds::RuntimeClass*> ScriptObjectMappings;
 		std::map<void*, ds::RuntimeClass*> UIObjectMappings;
 
 		Event<> BeginHotReloadEvent;

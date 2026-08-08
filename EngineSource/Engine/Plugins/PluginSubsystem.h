@@ -11,12 +11,19 @@ namespace engine::plugin
 		PluginSubsystem();
 		~PluginSubsystem() override;
 
-		void LoadPlugin(string Path, string PluginDir);
+		void LoadPluginData(string Path);
 
 		void Update() override;
 
-	private:
-		SceneSubsystem* LastSceneSystem = nullptr;
 		std::vector<PluginInfo> LoadedPlugins;
+
+		PluginInfo* GetPluginFromName(string Name);
+
+		void LoadPlugin(PluginInfo* Info);
+		void UnloadPlugin(PluginInfo* Info);
+	private:
+		string PluginDir;
+
+		SceneSubsystem* LastSceneSystem = nullptr;
 	};
 }
