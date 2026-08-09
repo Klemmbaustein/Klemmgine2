@@ -11,6 +11,7 @@ namespace ds
 namespace engine::script
 {
 	extern ds::RuntimeFunction SceneObject_vTable[];
+	extern ds::RuntimeFunction ObjectComponent_vTable[];
 
 	struct EngineModuleData
 	{

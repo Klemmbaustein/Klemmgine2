@@ -29,6 +29,20 @@ engine::editor::Settings::Settings()
 
 engine::editor::Settings::~Settings()
 {
+	bool Changed = false;
+
+	for (auto& i : this->Categories)
+	{
+		if (i->IsChanged())
+		{
+			Changed = true;
+		}
+	}
+
+	if (Changed)
+	{
+		Save();
+	}
 }
 
 void engine::editor::Settings::Save()
@@ -45,6 +59,12 @@ Settings* engine::editor::Settings::GetInstance()
 	}
 
 	return Instance;
+}
+
+void engine::editor::Settings::CloseInstance()
+{
+	delete Instance;
+	Instance = nullptr;
 }
 
 SerializedValue engine::editor::Settings::Serialize()

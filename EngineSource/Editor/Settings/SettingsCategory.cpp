@@ -11,6 +11,7 @@ engine::editor::SettingsCategory::SettingsCategory(string Name)
 
 SerializedValue engine::editor::SettingsCategory::Serialize()
 {
+	Changed = false;
 	return this->SettingsObject;
 }
 
@@ -49,6 +50,8 @@ void engine::editor::SettingsCategory::SetSetting(string Name, SerializedValue N
 	{
 		return;
 	}
+
+	Changed = true;
 
 	for (auto& [name, event] : PrivateListeners)
 	{

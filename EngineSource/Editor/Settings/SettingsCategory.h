@@ -29,6 +29,10 @@ namespace engine::editor
 		void ListenToSetting(void* Listener, string Name, SettingsListener OnChanged,
 			thread::ThreadMessagesRef Queue);
 		void RemoveListener(void* Listener);
+		bool IsChanged() const
+		{
+			return Changed;
+		}
 
 	protected:
 		void AddPrivateListener(string Name, SettingsListener OnChanged);
@@ -39,6 +43,7 @@ namespace engine::editor
 
 		SerializedValue SettingsObject = std::vector<SerializedData>();
 
+		bool Changed = false;
 		bool Initialized = false;
 	};
 }

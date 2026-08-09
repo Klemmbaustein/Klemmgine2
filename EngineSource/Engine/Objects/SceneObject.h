@@ -94,7 +94,6 @@ namespace engine
 
 		void UpdateObject();
 
-		SceneObject(SceneObject&) = delete;
 		Scene* OriginScene = nullptr;
 	};
 }

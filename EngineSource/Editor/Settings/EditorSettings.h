@@ -16,6 +16,7 @@ namespace engine::editor
 		void Save();
 
 		static Settings* GetInstance();
+		static void CloseInstance();
 
 		SerializedValue Serialize() override;
 		void DeSerialize(SerializedValue* From) override;
