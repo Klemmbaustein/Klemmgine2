@@ -331,10 +331,7 @@ static void SceneObject_getScene(InterpretContext* context)
 
 	if (FoundScene)
 	{
-		ClassRef<Scene*> NewScene = RuntimeClass::allocateClass(sizeof(Scene*), 0, &Scene_vTable);
-		NewScene.getValue() = FoundScene;
-		script::ScriptSubsystem::Instance->RegisterClassForObject(FoundScene, NewScene.classPtr);
-		NewScene.classPtr->addRef();
+		ClassRef<Scene*> NewScene = script::ScriptSubsystem::Instance->GetClassFromObject<Scene>(FoundScene, &Scene_vTable);
 		context->pushValue(NewScene);
 	}
 	else
@@ -359,18 +356,23 @@ static void ObjectComponent_delete(InterpretContext* context)
 
 	if (*Component)
 	{
-		script::ScriptSubsystem::Instance->RemoveRegisteredObject(Component.classPtr, *Component);
+		auto c = *Component;
+		script::ScriptSubsystem::Instance->RemoveRegisteredObject(Component.classPtr, c);
+		if (!c->ParentComponent && !c->ParentObject)
+		{
+			delete c;
+		}
 	}
 }
 
-static RuntimeFunction ObjectComponent_vTable = {
-	.nativeFn = &ObjectComponent_delete,
+RuntimeFunction engine::script::ObjectComponent_vTable[] = {
+	RuntimeFunction{
+		.nativeFn = &ObjectComponent_delete,
+	}
 };
 
 static void ObjectComponent_new(InterpretContext* context)
 {
-	// TODO: Add a vtable that frees this component if it has not been attached to anything.
-
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new ObjectComponent();
 	script::RegisterComponent(Component.classPtr);
@@ -380,12 +382,14 @@ static void ObjectComponent_new(InterpretContext* context)
 static void ObjectComponent_getWorldPosition(InterpretContext* context)
 {
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	context->pushValue(Component.getValue()->GetWorldTransform().ApplyTo(0));
 }
 
 static void ObjectComponent_getWorldTransform(InterpretContext* context)
 {
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	context->pushValue(Component.getValue()->GetWorldTransform());
 }
@@ -394,6 +398,8 @@ static void ObjectComponent_attach(InterpretContext* context)
 {
 	ClassRef<ObjectComponent*> Component = context->popValue<RuntimeClass*>();
 	ClassPtr<ObjectComponent*> SubComponent = context->popPtr<ObjectComponent*>();
+	CHECK_COMPONENT(Component);
+	CHECK_COMPONENT(SubComponent);
 
 	if ((*SubComponent.get())->ParentObject || (*SubComponent.get())->ParentComponent)
 	{
@@ -408,6 +414,7 @@ static void MeshComponent_new(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
 	Component.getValue() = new MeshComponent();
+	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
 }
 
@@ -423,6 +430,7 @@ static void MeshComponent_load(InterpretContext* context)
 static void MeshComponent_getModel(InterpretContext* context)
 {
 	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	auto Model = Component.getValue()->DrawnModel;
 
@@ -443,6 +451,7 @@ static void MeshComponent_setMaterialUniformVector3(InterpretContext* context)
 	Vector3 Value = context->popValue<Vector3>();
 	RuntimeStr Name = context->popRuntimeString();
 	Int Index = context->popValue<Int>();
+	CHECK_COMPONENT(Component);
 
 	Component.getValue()->SetMaterialUniformVector3(Index, Name.ptr(), Value);
 }
@@ -450,6 +459,7 @@ static void MeshComponent_setMaterialUniformVector3(InterpretContext* context)
 static void DrawableComponent_getBounds(InterpretContext* context)
 {
 	ClassRef<DrawableComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	context->pushValue(Component.getValue()->DrawBoundingBox);
 }
@@ -465,6 +475,7 @@ static void PhysicsComponent_new(InterpretContext* context)
 static void PhysicsComponent_createBox(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Vector3 Scale = context->popValue<Vector3>();
 	physics::Layer Layer = physics::Layer(context->popValue<Int>());
@@ -476,6 +487,7 @@ static void PhysicsComponent_createBox(InterpretContext* context)
 static void PhysicsComponent_createSphere(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Float Scale = context->popValue<Float>();
 	physics::Layer Layer = physics::Layer(context->popValue<Int>());
@@ -487,6 +499,7 @@ static void PhysicsComponent_createSphere(InterpretContext* context)
 static void PhysicsComponent_setIsActive(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Bool Active = context->popValue<Bool>();
 
@@ -496,6 +509,7 @@ static void PhysicsComponent_setIsActive(InterpretContext* context)
 static void PhysicsComponent_setVelocity(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Vector3 Active = context->popValue<Vector3>();
 
@@ -505,6 +519,7 @@ static void PhysicsComponent_setVelocity(InterpretContext* context)
 static void PhysicsComponent_setIsCollisionEnabled(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Bool CollisionEnabled = context->popValue<Bool>();
 
@@ -514,6 +529,7 @@ static void PhysicsComponent_setIsCollisionEnabled(InterpretContext* context)
 static void PhysicsComponent_collisionTest(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	physics::Layer Layer = physics::Layer(context->popValue<Int>());
 
@@ -532,6 +548,7 @@ static void PhysicsComponent_collisionTest(InterpretContext* context)
 static void PhysicsComponent_shapeCast(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	ClassPtr<ArrayData> IgnoredObjects = context->popPtr<ArrayData>();
 	physics::Layer Layer = physics::Layer(context->popValue<Int>());
@@ -560,6 +577,7 @@ static void PhysicsComponent_shapeCast(InterpretContext* context)
 static void PhysicsComponent_onBeginOverlap(InterpretContext* context)
 {
 	ClassRef<PhysicsComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	CallableWrapper<void> Callable = { context->popValue<RuntimeClass*>(), context };
 
@@ -577,6 +595,7 @@ static void CollisionComponent_new(InterpretContext* context)
 static void CollisionComponent_load(InterpretContext* context)
 {
 	ClassRef<CollisionComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	ClassPtr<AssetRef*> File = context->popPtr<AssetRef*>();
 
 	Component.getValue()->Load(**File);
@@ -585,6 +604,7 @@ static void CollisionComponent_load(InterpretContext* context)
 static void CollisionComponent_setIsCollisionEnabled(InterpretContext* context)
 {
 	ClassRef<CollisionComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Bool CollisionEnabled = context->popValue<Bool>();
 
@@ -602,6 +622,7 @@ static void MoveComponent_new(InterpretContext* context)
 static void MoveComponent_addInput(InterpretContext* context)
 {
 	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Vector3 Direction = context->popValue<Vector3>();
 
 	Component.getValue()->AddMovementInput(Direction);
@@ -610,6 +631,7 @@ static void MoveComponent_addInput(InterpretContext* context)
 static void MoveComponent_jump(InterpretContext* context)
 {
 	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Component.getValue()->Jump();
 }
@@ -617,12 +639,14 @@ static void MoveComponent_jump(InterpretContext* context)
 static void MoveComponent_isOnGround(InterpretContext* context)
 {
 	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	context->pushValue<Bool>(Component.getValue()->GetIsOnGround());
 }
 
 static void MoveComponent_setVelocity(InterpretContext* context)
 {
 	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Vector3 NewVelocity = context->popValue<Vector3>();
 	Component.getValue()->SetVelocity(NewVelocity);
 }
@@ -630,6 +654,7 @@ static void MoveComponent_setVelocity(InterpretContext* context)
 static void MoveComponent_getVelocity(InterpretContext* context)
 {
 	ClassRef<MoveComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	context->pushValue(Component.getValue()->GetVelocity());
 }
 
@@ -644,6 +669,7 @@ static void SoundComponent_new(InterpretContext* context)
 static void SoundComponent_load(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	ClassPtr<AssetRef*> Sound = context->popPtr<AssetRef*>();
 
 	Component.getValue()->Load(**Sound);
@@ -652,6 +678,7 @@ static void SoundComponent_load(InterpretContext* context)
 static void SoundComponent_play(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Bool Is3D = context->popValue<Bool>();
 	Bool Loop = context->popValue<Bool>();
 
@@ -661,6 +688,7 @@ static void SoundComponent_play(InterpretContext* context)
 static void SoundComponent_stop(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Component.getValue()->Stop();
 }
@@ -668,6 +696,7 @@ static void SoundComponent_stop(InterpretContext* context)
 static void SoundComponent_setVolume(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Float Volume = context->popValue<Float>();
 
 	Component.getValue()->SetVolume(Volume);
@@ -676,6 +705,7 @@ static void SoundComponent_setVolume(InterpretContext* context)
 static void SoundComponent_setPitch(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Float Pitch = context->popValue<Float>();
 
 	Component.getValue()->SetPitch(Pitch);
@@ -684,6 +714,7 @@ static void SoundComponent_setPitch(InterpretContext* context)
 static void SoundComponent_setRange(InterpretContext* context)
 {
 	ClassRef<SoundComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Float Range = context->popValue<Float>();
 
 	Component.getValue()->SetRange(Range);
@@ -700,6 +731,7 @@ static void BillboardComponent_new(InterpretContext* context)
 static void BillboardComponent_load(InterpretContext* context)
 {
 	ClassRef<BillboardComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	ClassPtr<AssetRef*> Image = context->popPtr<AssetRef*>();
 
 	Component.getValue()->LoadImage(**Image);
@@ -708,6 +740,7 @@ static void BillboardComponent_load(InterpretContext* context)
 static void BillboardComponent_setColor(InterpretContext* context)
 {
 	ClassRef<BillboardComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Vector3 Color = context->popValue<Vector3>();
 
 	Component.getValue()->SetColor(Color);
@@ -724,6 +757,7 @@ static void LightComponent_new(InterpretContext* context)
 static void LightComponent_setColor(InterpretContext* context)
 {
 	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Vector3 Color = context->popValue<Vector3>();
 
 	Component.getValue()->SetColor(Color);
@@ -732,6 +766,7 @@ static void LightComponent_setColor(InterpretContext* context)
 static void LightComponent_setIntensity(InterpretContext* context)
 {
 	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Float Intensity = context->popValue<Float>();
 
 	Component.getValue()->SetIntensity(Intensity);
@@ -740,6 +775,7 @@ static void LightComponent_setIntensity(InterpretContext* context)
 static void LightComponent_setRange(InterpretContext* context)
 {
 	ClassRef<LightComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Float Intensity = context->popValue<Float>();
 
 	Component.getValue()->SetRange(Intensity);
@@ -756,12 +792,14 @@ static void CameraComponent_new(InterpretContext* context)
 static void CameraComponent_use(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	Component.getValue()->Use();
 }
 
 static void CameraComponent_setFOV(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 	float FOV = context->popValue<float>();
 	Component.getValue()->SetFov(FOV);
 }
@@ -769,6 +807,7 @@ static void CameraComponent_setFOV(InterpretContext* context)
 static void CameraComponent_screenToWorldDirection(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Vector2 Screen = context->popValue<Vector2>();
 	context->pushValue(Component.getValue()->ScreenToWorld(Screen));
@@ -777,6 +816,7 @@ static void CameraComponent_screenToWorldDirection(InterpretContext* context)
 static void CameraComponent_worldPositionToScreen(InterpretContext* context)
 {
 	ClassRef<CameraComponent*> Component = context->popValue<RuntimeClass*>();
+	CHECK_COMPONENT(Component);
 
 	Vector3 World = context->popValue<Vector3>();
 	context->pushValue(Component.getValue()->WorldToScreen(World));
@@ -785,6 +825,13 @@ static void CameraComponent_worldPositionToScreen(InterpretContext* context)
 #pragma endregion
 
 #pragma region Log
+
+static void Log_note(InterpretContext* context)
+{
+	auto message = context->popRuntimeString();
+
+	Log::Note(string(message.ptr(), message.length()));
+}
 
 static void Log_info(InterpretContext* context)
 {
@@ -798,6 +845,20 @@ static void Log_warn(InterpretContext* context)
 	auto message = context->popRuntimeString();
 
 	Log::Warn(string(message.ptr(), message.length()));
+}
+
+static void Log_error(InterpretContext* context)
+{
+	auto message = context->popRuntimeString();
+
+	Log::Error(string(message.ptr(), message.length()));
+}
+
+static void Log_critical(InterpretContext* context)
+{
+	auto message = context->popRuntimeString();
+
+	Log::Critical(string(message.ptr(), message.length()));
 }
 
 #pragma endregion
@@ -1063,11 +1124,23 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "message") },
+			nullptr, "note", &Log_note));
+
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(StrType, "message") },
 			nullptr, "info", &Log_info));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "message") },
 			nullptr, "warn", &Log_warn));
+
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(StrType, "message") },
+			nullptr, "error", &Log_error));
+
+	EngineModule.addFunction(
+		NativeFunction({ FunctionArgument(StrType, "message") },
+			nullptr, "critical", &Log_critical));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(FloatInst, "timeInSeconds") },
@@ -1440,10 +1513,9 @@ void engine::script::RegisterComponent(ds::RuntimeClass* Class)
 	ClassRef<ObjectComponent*> Component = Class;
 	if (!Class->vtable)
 	{
-		Class->vtable = &ObjectComponent_vTable;
+		Class->vtable = ObjectComponent_vTable;
 	}
-	Component.classPtr->addRef();
-	script::ScriptSubsystem::Instance->RegisterClassForObject(Component.getValue(), Component.classPtr);
+	script::ScriptSubsystem::Instance->RegisterClassForObject(Component.getValue(), Component.classPtr, false);
 }
 
 void engine::script::UpdateWaitTasks()

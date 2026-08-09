@@ -80,6 +80,7 @@ engine::editor::EditorSubsystem::~EditorSubsystem()
 		console->RemoveCommand("ed.edit");
 		console->RemoveCommand("ed.run");
 	}
+	Settings::CloseInstance();
 }
 
 void engine::editor::EditorSubsystem::Update()

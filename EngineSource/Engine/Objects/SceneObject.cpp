@@ -114,7 +114,6 @@ void engine::SceneObject::Detach(ObjectComponent* Component)
 			return;
 		}
 	}
-	ENGINE_UNREACHABLE();
 }
 
 void engine::SceneObject::ClearComponents()

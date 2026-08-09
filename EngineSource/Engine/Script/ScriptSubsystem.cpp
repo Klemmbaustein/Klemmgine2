@@ -237,7 +237,7 @@ void engine::script::ScriptSubsystem::ClearTasks()
 }
 
 
-void engine::script::ScriptSubsystem::RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class)
+void engine::script::ScriptSubsystem::RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class, bool Destruct)
 {
 	if (!Class)
 	{
@@ -245,11 +245,14 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(Destructible* Objec
 	}
 
 	ScriptObjectMappings[Object] = Class;
-	Object->OnDestroyedEvent.Add(Class, [this, Object, Class]() {
+	Object->OnDestroyedEvent.Add(Class, [this, Object, Class, Destruct]() {
 		if (Class)
 		{
 			*(void**)Class->getBody() = nullptr;
-			Runtime->baseContext->destruct(Class);
+			if (Destruct)
+			{
+				Runtime->baseContext->destruct(Class);
+			}
 			ScriptObjectMappings.erase(Object);
 		}
 		Object->OnDestroyedEvent.Remove(Class);

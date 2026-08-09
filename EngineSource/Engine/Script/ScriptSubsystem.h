@@ -79,7 +79,7 @@ namespace engine::script
 
 		void ClearTasks();
 
-		void RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class);
+		void RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class, bool Destruct = true);
 		template<typename T>
 		void RemoveRegisteredObject(ds::RuntimeClass* Class, T* obj)
 		{
