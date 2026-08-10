@@ -2,6 +2,7 @@
 #include <cstring>
 #include <Core/Log.h>
 #include <Core/File/BitStreamReader.h>
+#include <cmath>
 
 using namespace engine::sound;
 
