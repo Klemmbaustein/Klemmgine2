@@ -44,6 +44,16 @@ static void SerializedKeyValue_new(InterpretContext* context)
 	context->pushValue(KeyValue);
 }
 
+static void SerializedVector3_new(InterpretContext* context)
+{
+	ClassRef<ScriptSerializedVector3> IntValue = context->popValue<RuntimeClass*>();
+
+	IntValue->Type = SerializedData::DataType::Vector3;
+	IntValue->Vector3Value = context->popValue<Vector3>();
+
+	context->pushValue(IntValue);
+}
+
 static void SerializedInt_new(InterpretContext* context)
 {
 	ClassRef<ScriptSerializedInt> IntValue = context->popValue<RuntimeClass*>();
@@ -452,6 +462,7 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	auto IntInst = ToContext->registry->getEntry<IntType>();
 	auto BoolInst = ToContext->registry->getEntry<BoolType>();
 	auto AssetRefTypeInst = To.getType("AssetRef");
+	auto Vec3Type = To.getType("Vector3");
 
 	SerializeBindings out;
 
@@ -485,7 +496,8 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	auto IntValue = Serialize.createClass<ScriptSerializedInt>("SerializedInt", out.SerializedValue);
 	auto FloatValue = Serialize.createClass<ScriptSerializedFloat>("SerializedFloat", out.SerializedValue);
 	auto StringValue = Serialize.createClass<ScriptSerializedString>("SerializedString", out.SerializedValue);
-	auto BoolValue = Serialize.createClass<ScriptSerializedString>("SerializedBool", out.SerializedValue);
+	auto BoolValue = Serialize.createClass<ScriptSerializedBool>("SerializedBool", out.SerializedValue);
+	auto Vec3Value = Serialize.createClass<ScriptSerializedVector3>("SerializedVector3", out.SerializedValue);
 	out.SerializedKeyValue = Serialize.createClass<ScriptSerializedKeyValue>("SerializedKeyValue");
 
 	auto KeyValueArrayType = ToContext->registry->getArray(out.SerializedKeyValue);
@@ -524,6 +536,10 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 		{ FunctionArgument(KeyValueArrayType, "value") },
 		nullptr, "SerializedObject.new", &SerializedObject_new));
 
+	Serialize.addClassConstructor(ObjectValue, NativeFunction(
+		{ FunctionArgument(Vec3Type, "value") },
+		nullptr, "SerializedVector3.new", &SerializedVector3_new));
+
 	ObjectValue->members.push_back(ClassMember{
 		.name = "items",
 		.offset = DS_OFFSETOF(ScriptSerializedObject, KeyValueArray),
@@ -558,6 +574,12 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 		.name = "value",
 		.offset = DS_OFFSETOF(ScriptSerializedBool, BoolValue),
 		.type = BoolInst,
+		});
+
+	Vec3Value->members.push_back(ClassMember{
+		.name = "value",
+		.offset = DS_OFFSETOF(ScriptSerializedVector3, Vector3Value),
+		.type = Vec3Type,
 		});
 
 	out.SerializedKeyValue->members.push_back(ClassMember{

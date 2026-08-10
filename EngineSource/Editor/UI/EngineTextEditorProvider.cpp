@@ -325,7 +325,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 {
 	AutoCompleteBox->DeleteChildren();
 	CompletionButtons.clear();
-	if (!HoverBox->IsVisible)
+	if (!HoverBox || !HoverBox->IsVisible)
 	{
 		return;
 	}
