@@ -115,7 +115,10 @@ namespace engine::script
 		Event<> EndHotReloadEvent;
 		Event<> ReInitializeAfterHotReloadEvent;
 
+		void ReloadRuntime();
+
 	private:
+		bool DoingHotReload = false;
 		void ReloadDynamicUIContext();
 	};
 }

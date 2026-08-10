@@ -2,6 +2,7 @@
 #include <Core/Types.h>
 #include "Subsystem/Subsystem.h"
 #include <functional>
+#include <Engine/ProjectFile.h>
 
 namespace engine
 {
@@ -102,6 +103,8 @@ namespace engine
 		static bool IsPlaying;
 		static bool GameHasFocus;
 
+		ProjectFile* OpenedProject = nullptr;
+
 	private:
 
 		Engine();
@@ -112,6 +115,7 @@ namespace engine
 			IsPlaying = false;
 		}
 		void InitSystems();
+		void LoadProjectFile();
 		static void ErrorCallback(string Error, string StackTrace);
 
 		std::vector<subsystem::Subsystem*> LoadedSystems;

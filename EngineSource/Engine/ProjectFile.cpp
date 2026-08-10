@@ -1,13 +1,13 @@
 #include "ProjectFile.h"
 #include <Core/File/JsonSerializer.h>
 #include <Engine/Version.h>
-#include <filesystem>
+#include <Engine/File/Resource.h>
 
 using namespace engine;
 
 engine::ProjectFile::ProjectFile(string Path)
 {
-	if (!std::filesystem::exists(Path))
+	if (!resource::FileExists(Path))
 	{
 		Save(Path);
 		return;
@@ -31,6 +31,7 @@ SerializedValue engine::ProjectFile::Serialize()
 		SerializedData("name", this->Name),
 		SerializedData("engineVersion", VersionInfo::Get().GetShortName()),
 		SerializedData("startupScene", this->StartupScene),
+		SerializedData("useScriptJIT", this->UseScriptJIT)
 		});
 }
 
@@ -39,6 +40,10 @@ void engine::ProjectFile::DeSerialize(SerializedValue* From)
 	this->Name = From->At("name").GetString();
 	this->EngineVersion = From->At("engineVersion").GetString();
 	this->StartupScene = From->At("startupScene").GetString();
+	if (From->Contains("useScriptJIT"))
+	{
+		this->UseScriptJIT = From->At("useScriptJIT").GetBool();
+	}
 }
 
 void engine::ProjectFile::Save(string ToPath)

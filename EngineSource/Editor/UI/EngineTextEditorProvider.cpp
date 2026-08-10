@@ -146,7 +146,23 @@ std::string engine::editor::EngineTextEditorProvider::ProcessInput(std::string T
 std::vector<ds::AutoCompleteResult> engine::editor::EngineTextEditorProvider::GetCompletionsAt(
 	kui::EditorPosition At, CompletionSource Source)
 {
-	return {};
+	std::vector<ds::AutoCompleteResult> result;
+
+	for (auto& i : this->Keywords)
+	{
+		CompletionType types[] = {
+			CompletionType::keyword,
+			CompletionType::variable,
+			CompletionType::function
+		};
+
+		result.push_back(AutoCompleteResult{
+			.name = i.Name,
+			.type = types[i.UserData]
+			});
+	}
+
+	return result;
 }
 
 void engine::editor::EngineTextEditorProvider::OnCursorMove(int64& Column, int64& Line, bool IsPages)
@@ -309,6 +325,10 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 {
 	AutoCompleteBox->DeleteChildren();
 	CompletionButtons.clear();
+	if (!HoverBox->IsVisible)
+	{
+		return;
+	}
 	HoverBox->IsVisible = false;
 	size_t it = 0;
 	for (auto& i : Completions)

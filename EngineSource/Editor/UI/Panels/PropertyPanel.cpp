@@ -185,7 +185,7 @@ void engine::editor::PropertyPanel::AddEntry(ObjPropertyBase* i, SceneObject* Ob
 			if (Ref->OnChanged)
 				Ref->OnChanged();
 
-		}, Ref->HasHint(PropertyHint::Vec3Color));
+		}, Ref->HasHint(PropertyHint::Vec3Color), Ref->HasHint(PropertyHint::Vec3Rotation));
 		break;
 	}
 	case PropertyType::Array:

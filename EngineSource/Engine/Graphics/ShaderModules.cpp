@@ -91,7 +91,18 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 				if (LineString[LineString.size() - 1] == '{')
 					LineString = LineString.substr(0, LineString.size() - 1);
 
-				ParsedModule.Exported.push_back(LineString);
+				auto SplitDef = str::Split(LineString, " \t(),.{}+-=*/;");
+
+				ExportedShaderItem Item;
+
+				Item.Definition = LineString;
+				bool IsLayoutDef = SplitDef.size() > 1 ? (SplitDef[0] == "layout") : false;
+				Item.IsUniform = IsLayoutDef
+					|| (SplitDef.size() > 1 ? (SplitDef[0] == "uniform" || SplitDef[0] == "in" || SplitDef[0] == "out") : false);
+				size_t NamePos = IsLayoutDef ? 5 : (Item.IsUniform ? 2 : 1);
+				Item.Name = SplitDef.size() > NamePos ? SplitDef[NamePos] : "";
+
+				ParsedModule.Exported.insert(Item);
 				NextLineIsExport = false;
 			}
 			if (NextLineIsParam)
@@ -165,8 +176,8 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 
 			for (auto& i : Found.Exported)
 			{
-				ParsedModule.Exported.push_back(i);
-				OutStream << i << ";";
+				ParsedModule.Exported.insert(i);
+				OutStream << i.Definition << ";";
 			}
 
 			for (auto& i : Found.Dependencies)

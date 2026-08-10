@@ -28,7 +28,8 @@ bool Engine::GameHasFocus = true;
 
 Engine::Engine()
 {
-	Instance->InitSystems();
+	InitSystems();
+	LoadProjectFile();
 }
 
 Engine* engine::Engine::Init(std::function<void(Engine*)> LoadSystems)
@@ -123,6 +124,18 @@ void engine::Engine::InitSystems()
 	ThreadPool::AllocateDefaultThreadPool();
 	Reflection::Init();
 	resource::ScanForAssets();
+}
+
+void engine::Engine::LoadProjectFile()
+{
+	if (resource::FileExists("Assets/project.json"))
+	{
+		this->OpenedProject = new ProjectFile("Assets/project.json");
+	}
+	if (resource::FileExists("project.json"))
+	{
+		this->OpenedProject = new ProjectFile("project.json");
+	}
 }
 
 void engine::Engine::ErrorCallback(string Error, string StackTrace)

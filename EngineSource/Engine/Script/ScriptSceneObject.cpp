@@ -114,14 +114,14 @@ void engine::script::ScriptSceneObject::LoadProperties()
 
 	for (auto& i : this->Class.members)
 	{
-		if (i.attributeType != Script->ScriptEngine.ExportAttributeType)
+		if (i.attribute.type != Script->ScriptEngine.ExportAttributeType)
 		{
 			continue;
 		}
 
-		string Name = i.getParameterValue("name").value_or(i.name);
-		string Hints = i.getParameterValue("hint").value_or("");
-		bool Visible = i.getParameterValue("visible").value_or("true") == "true";
+		string Name = i.attribute.getParameterValue("name").value_or(i.name);
+		string Hints = i.attribute.getParameterValue("hint").value_or("");
+		bool Visible = i.attribute.getParameterValue("visible").value_or("true") == "true";
 
 		if (i.type == Script->ScriptEngine.AssetRefType)
 		{

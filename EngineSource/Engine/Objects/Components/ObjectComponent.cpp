@@ -56,7 +56,6 @@ void engine::ObjectComponent::Detach(ObjectComponent* c)
 			return;
 		}
 	}
-	ENGINE_UNREACHABLE();
 }
 
 SceneObject* engine::ObjectComponent::GetRootObject()

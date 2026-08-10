@@ -7,6 +7,18 @@
 
 namespace engine::graphics
 {
+	struct ExportedShaderItem
+	{
+		string Name;
+		string Definition;
+		bool IsUniform = false;
+
+		std::strong_ordering operator<=>(const ExportedShaderItem& other) const
+		{
+			return Name <=> other.Name;
+		}
+	};
+
 	class ShaderModule
 	{
 	public:
@@ -15,7 +27,7 @@ namespace engine::graphics
 
 		std::vector<ShaderProgramObject*> Dependencies;
 
-		std::vector<string> Exported;
+		std::set<ExportedShaderItem> Exported;
 		enum class ShaderType
 		{
 			Vertex,

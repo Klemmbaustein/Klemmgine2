@@ -504,7 +504,7 @@ void engine::editor::Viewport::UpdateSceneControls(Scene* Current, kui::Window* 
 
 	Win->Input.PollForText = false;
 	Current->Graphics.SceneCamera->Rotation = Current->Graphics.SceneCamera->Rotation
-		- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0);
+		- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0) * 1.5f;
 }
 
 void engine::editor::Viewport::OnGameFocus()

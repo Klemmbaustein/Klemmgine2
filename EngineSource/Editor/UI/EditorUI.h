@@ -57,7 +57,7 @@ namespace engine::editor
 		 */
 		static EditorTheme Theme;
 
-		EditorIcons ObjectIcons;
+		static EditorIcons ObjectIcons;
 
 		kui::UIBox* DraggedBox = nullptr;
 		kui::UIBox* MainBackground = nullptr;

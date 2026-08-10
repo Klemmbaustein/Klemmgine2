@@ -200,7 +200,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 
 		if (!Obj.FromScene)
 		{
-			Elem->SetIcon(!Obj.From ? EditorUI::Asset("Folder.png") : EditorUI::Instance->ObjectIcons.GetObjectIcon(Obj.From->TypeID));
+			Elem->SetIcon(!Obj.From ? EditorUI::Asset("Folder.png") : EditorUI::ObjectIcons.GetObjectIcon(Obj.From->TypeID));
 		}
 		else
 		{
@@ -208,7 +208,7 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 
 			if (Manager)
 			{
-				Elem->SetIcon(EditorUI::Instance->ObjectIcons.GetObjectIcon(Manager->TypeID));
+				Elem->SetIcon(EditorUI::ObjectIcons.GetObjectIcon(Manager->TypeID));
 			}
 			else
 			{

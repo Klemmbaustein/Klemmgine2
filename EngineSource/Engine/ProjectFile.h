@@ -18,5 +18,6 @@ namespace engine
 		string Name = "Untitled";
 		string EngineVersion;
 		string StartupScene;
+		bool UseScriptJIT = false;
 	};
 }

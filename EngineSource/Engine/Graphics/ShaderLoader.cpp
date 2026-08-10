@@ -37,6 +37,21 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 	return New;
 }
 
+std::vector<ShaderLoadData> engine::graphics::ShaderLoader::GetAllUsing(string Shader)
+{
+	std::vector<ShaderLoadData> Result;
+
+	for (auto& i : Loaded)
+	{
+		if (i.second.FragmentSource == Shader || i.second.VertexSource == Shader)
+		{
+			Result.push_back(i.second);
+		}
+	}
+
+	return Result;
+}
+
 void engine::graphics::ShaderLoader::ReloadAll()
 {
 	Modules.ScanModules(VideoSubsystem::Current->Renderer);
