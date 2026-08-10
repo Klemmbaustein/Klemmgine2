@@ -16,5 +16,6 @@ namespace engine::editor
 
 		string Name = "Untitled";
 		AssetRef StartupScene = AssetRef::EmptyAsset("kts");
+		bool UseScriptJIT = false;
 	};
 }

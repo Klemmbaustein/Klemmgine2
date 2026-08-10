@@ -67,6 +67,16 @@ public:
 	}
 };
 
+class IconAttribute : public ReflectAttribute
+{
+public:
+	IconAttribute()
+	{
+		this->name = "Icon";
+		this->attributeParameters = { "name", "color" };
+	}
+};
+
 static void Object_empty(InterpretContext* context)
 {
 	context->popValue<RuntimeClass*>();
@@ -296,6 +306,7 @@ static void SceneObject_attach(InterpretContext* context)
 	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
 	CHECK_OBJ(Data);
 	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
+	CHECK_COMPONENT(Component);
 
 	if ((*Component.get())->ParentObject || (*Component.get())->ParentComponent)
 	{
@@ -1486,6 +1497,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 
 	EngineModuleData OutData;
 	OutData.ExportAttributeType = EngineModule.addAttribute(new ExportAttribute());
+	OutData.IconAttributeType = EngineModule.addAttribute(new IconAttribute());
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);

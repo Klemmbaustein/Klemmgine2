@@ -39,7 +39,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 
 	ScriptInstructions = new BytecodeStream();
 	Runtime = this->ScriptLanguage->createRuntime({
-		.useJustInTimeCompiler = launchArgs::GetArg("useJIT").has_value(),
+		.useJustInTimeCompiler = launchArgs::GetArg("useJIT").has_value() || Engine::Instance->OpenedProject->UseScriptJIT,
 		});
 	Runtime->createBackgroundThread = [](std::function<void()> function) {
 		ThreadPool::Main()->AddJob(function);
@@ -165,10 +165,13 @@ bool engine::script::ScriptSubsystem::Reload()
 	}
 #endif
 
-	UICanvas::ClearAll();
+	if (!DoingHotReload)
+	{
+		UICanvas::ClearAll();
 
-	BeginHotReloadEvent.Invoke();
-
+		BeginHotReloadEvent.Invoke();
+	}
+	DoingHotReload = false;
 	*ScriptInstructions = NewInstructions;
 	this->Runtime->loadBytecode(ScriptInstructions);
 	ReloadDynamicUIContext();
@@ -195,21 +198,44 @@ bool engine::script::ScriptSubsystem::Reload()
 		string Name = TypeInfo.name.substr(LastColon + 1);
 		string Path = LastColon == string::npos ? "" : TypeInfo.name.substr(0, LastColon - 1);
 
+		ObjectTypeID ObjectId = 0;
+
 		if (IsSceneObject)
 		{
-			ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() {
+			ObjectId = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() {
 				return new ScriptSceneObject(TypeInfo, this->Runtime->baseContext);
 			}, str::Hash("Engine/SceneObject"), Path);
 		}
 		else
 		{
-			ScriptObjectIds[Id] = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() {
+			ObjectId = Reflection::RegisterObject(Name, [TypeInfo = TypeInfo, this]() {
 				auto NewManager = new ScriptSceneManager(TypeInfo, this->Runtime->baseContext);
 				NewManager->InitializeScriptPointer();
-
 				return NewManager;
 			}, str::Hash("Engine/Scene/SceneManager"), Path);
 		}
+
+#if EDITOR
+		for (auto& i : TypeInfo.attributes)
+		{
+			if (i.type == this->ScriptEngine.IconAttributeType)
+			{
+				auto val = i.getParameterValue("name");
+				if (!val)
+				{
+					continue;
+				}
+
+				AssetRef Asset = AssetRef::Convert(*val);
+
+				if (Asset.Exists())
+				{
+					editor::EditorUI::ObjectIcons.AddObjectIcon(Asset.FilePath, ObjectId);
+				}
+			}
+		}
+#endif
+		ScriptObjectIds[Id] = ObjectId;
 	}
 
 	ReInitializeAfterHotReloadEvent.Invoke();
@@ -236,7 +262,6 @@ void engine::script::ScriptSubsystem::ClearTasks()
 	WaitTasks.clear();
 }
 
-
 void engine::script::ScriptSubsystem::RegisterClassForObject(Destructible* Object, ds::RuntimeClass* Class, bool Destruct)
 {
 	if (!Class)
@@ -257,6 +282,21 @@ void engine::script::ScriptSubsystem::RegisterClassForObject(Destructible* Objec
 		}
 		Object->OnDestroyedEvent.Remove(Class);
 	});
+}
+
+void engine::script::ScriptSubsystem::ReloadRuntime()
+{
+	ClearTasks();
+	UICanvas::ClearAll();
+	BeginHotReloadEvent.Invoke();
+	DoingHotReload = true;
+	delete this->Runtime;
+
+	this->Runtime = Runtime = this->ScriptLanguage->createRuntime({
+		.useJustInTimeCompiler = launchArgs::GetArg("useJIT").has_value() || Engine::Instance->OpenedProject->UseScriptJIT,
+		});
+
+	Reload();
 }
 
 void engine::script::ScriptSubsystem::ReloadDynamicUIContext()

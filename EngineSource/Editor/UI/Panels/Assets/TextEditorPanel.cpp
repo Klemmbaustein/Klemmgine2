@@ -85,6 +85,8 @@ void engine::editor::TextEditorPanel::Save()
 
 	out << this->Provider->GetContent();
 	Provider->IsChanged = false;
+	out.close();
+	EditorUI::Instance->OnProjectAssetChanged(this->EditedAsset);
 }
 
 void engine::editor::TextEditorPanel::OnThemeChanged()

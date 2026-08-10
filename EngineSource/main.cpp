@@ -12,18 +12,8 @@ static inline int32 LaunchEngine(int argc, char** argv)
 {
 	Engine* Instance = Engine::Init();
 
-	if (std::filesystem::exists("Assets/project.json"))
-	{
-		auto proj = ProjectFile("Assets/project.json");
-		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
-		Instance->GetSubsystem<VideoSubsystem>()->MainWindow->SetTitle(proj.Name);
-	}
-	if (std::filesystem::exists("project.json"))
-	{
-		auto proj = ProjectFile("project.json");
-		Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(proj.StartupScene);
-		Instance->GetSubsystem<VideoSubsystem>()->MainWindow->SetTitle(proj.Name);
-	}
+	Instance->GetSubsystem<SceneSubsystem>()->LoadSceneAsync(Instance->OpenedProject->StartupScene);
+	Instance->GetSubsystem<VideoSubsystem>()->MainWindow->SetTitle(Instance->OpenedProject->Name);
 
 	Instance->Run();
 	return 0;

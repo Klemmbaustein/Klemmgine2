@@ -37,6 +37,7 @@
 #include <Editor/Assets/ModelAssetType.h>
 #include <Editor/Assets/MaterialAssetType.h>
 #include <Editor/Assets/ScriptAssetType.h>
+#include <Editor/Assets/ShaderAssetType.h>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -50,6 +51,7 @@ Font* EditorUI::EditorFont = nullptr;
 Font* EditorUI::MonospaceFont = nullptr;
 EditorTheme EditorUI::Theme;
 EditorPanel* EditorUI::FocusedPanel = nullptr;
+EditorIcons EditorUI::ObjectIcons;
 
 static std::map<engine::string, Vec3f> FileNameColors =
 {
@@ -202,6 +204,7 @@ engine::editor::EditorUI::EditorUI()
 	AddAssetType(new ModelAssetType());
 	AddAssetType(new MaterialAssetType());
 	AddAssetType(new ScriptAssetType());
+	AddAssetType(new ShaderAssetType());
 
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
 	ObjectIcons.AddObjectIcon(Asset("Sound.png"), SoundObject::ObjectType);

@@ -32,7 +32,7 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 		{
 			std::vector<SerializedValue> AttributeInfo;
 
-			for (auto& p : m.parameterData)
+			for (auto& p : m.attribute.parameterData)
 			{
 				AttributeInfo.push_back(SerializedValue(p));
 			}
@@ -40,7 +40,7 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 			Members.Append(SerializedData(m.name, SerializedValue({
 				SerializedData("offset", int32(m.offset)),
 				SerializedData("type", int32(m.type)),
-				SerializedData("attrType", int32(m.attributeType)),
+				SerializedData("attrType", int32(m.attribute.type)),
 				SerializedData("attrData", AttributeInfo)
 				})));
 		}
@@ -187,21 +187,23 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 
 		for (auto& m : Members)
 		{
-			std::vector<string> AttributeData;
+			std::vector<string> AttribData;
 
 			if (m.Value.Contains("attrInfo"))
 			{
 				for (auto& p : m.At("attrInfo").GetArray())
 				{
-					AttributeData.push_back(p.GetString());
+					AttribData.push_back(p.GetString());
 				}
 			}
 
 			NewType.members.push_back(TypeMember{
 				.type = TypeId(m.Value.At("type").GetInt()),
-				.attributeType = m.Value.Contains("attrType") ? TypeId(m.Value.At("attrType").GetInt()) : 0,
 				.name = m.Name,
-				.parameterData = AttributeData,
+				.attribute = ds::AttributeData{
+					.type = m.Value.Contains("attrType") ? TypeId(m.Value.At("attrType").GetInt()) : 0,
+					.parameterData = AttribData,
+				},
 				.offset = BytecodeOffset(m.Value.At("offset").GetInt()),
 				});
 		}

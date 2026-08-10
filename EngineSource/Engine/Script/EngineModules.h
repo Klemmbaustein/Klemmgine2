@@ -20,6 +20,7 @@ namespace engine::script
 		ds::TypeId Vector3Type = 0;
 		ds::TypeId AssetRefType = 0;
 		ds::TypeId ExportAttributeType = 0;
+		ds::TypeId IconAttributeType = 0;
 
 		ds::TypeId UITextType = 0;
 	};

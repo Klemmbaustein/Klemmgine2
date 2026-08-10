@@ -5,15 +5,15 @@
 
 namespace engine::graphics
 {
+	struct ShaderLoadData
+	{
+		ShaderObject* Object = nullptr;
+		std::string VertexSource;
+		std::string FragmentSource;
+	};
+
 	class ShaderLoader
 	{
-		struct ShaderLoadData
-		{
-			ShaderObject* Object = nullptr;
-			std::string VertexSource;
-			std::string FragmentSource;
-		};
-
 		std::unordered_map<string, ShaderLoadData> Loaded;
 
 	public:
@@ -24,6 +24,7 @@ namespace engine::graphics
 		ShaderModuleLoader Modules;
 
 		ShaderObject* Get(string Vertex, string Fragment);
+		std::vector<ShaderLoadData> GetAllUsing(string Shader);
 		void ReloadAll();
 
 		static ShaderLoader* Current;

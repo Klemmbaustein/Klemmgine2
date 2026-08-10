@@ -14,6 +14,7 @@ engine::script::ScriptObject::ScriptObject(const ds::TypeInfo& Class,
 		BeginHotReload();
 	});
 	ScriptSubsystem::Instance->EndHotReloadEvent.Add(this, [this] {
+		this->Interpreter = ScriptSubsystem::Instance->Runtime->baseContext;
 		EndHotReload(&ScriptSubsystem::Instance->ScriptInstructions->reflect);
 	});
 	ScriptSubsystem::Instance->ReInitializeAfterHotReloadEvent.Add(this, [this] {
