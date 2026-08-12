@@ -138,7 +138,11 @@ void engine::graphics::GraphicsScene::RemoveDrawnComponent(DrawableComponent* Re
 void engine::graphics::GraphicsScene::Draw(Renderer* With)
 {
 	if (!AlwaysRedraw && !RedrawNextFrame)
+	{
+		BuildBoundingVolume();
+		Lights.UpdateBounds(this);
 		return;
+	}
 
 	RedrawNextFrame = false;
 
