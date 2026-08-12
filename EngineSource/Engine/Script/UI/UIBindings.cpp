@@ -396,6 +396,7 @@ static void UITextField_setOnSubmit(InterpretContext* context)
 
 	cls.getValue()->OnChanged = OnSubmit;
 
+	cls.classPtr->addRef();
 	context->pushValue(cls);
 }
 
@@ -406,6 +407,22 @@ static void UITextField_setOnChanged(InterpretContext* context)
 
 	cls.getValue()->OnValueChanged = OnChanged;
 
+	cls.classPtr->addRef();
+	context->pushValue(cls);
+}
+
+static void UITextField_getText(InterpretContext* context)
+{
+	ClassRef<UITextField*> cls = context->popValue<RuntimeClass*>();
+
+	context->pushRuntimeString(RuntimeStr(cls.getValue()->GetText().c_str()));
+}
+
+static void UITextField_setText(InterpretContext* context)
+{
+	ClassRef<UITextField*> cls = context->popValue<RuntimeClass*>();
+	RuntimeStr text = context->popRuntimeString();
+	cls.getValue()->SetText(text.ptr());
 	context->pushValue(cls);
 }
 
@@ -635,6 +652,14 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UITextFieldType, NativeFunction(
 		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
 		UITextFieldType, "setOnChanged", &UITextField_setOnChanged));
+
+	AddUIMethod(UITextFieldType, NativeFunction(
+		{ FunctionArgument(StrType, "newText") },
+		UITextFieldType, "setText", &UITextField_setText));
+
+	To.addClassMethod(UITextFieldType,
+		NativeFunction({ },
+			StrType, "getText", &UITextField_getText));
 
 	// UIButton
 	auto UIButtonType = To.createClass<UIBackground*>("UIButton", UIBackgroundType);
