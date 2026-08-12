@@ -325,7 +325,7 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 {
 	AutoCompleteBox->DeleteChildren();
 	CompletionButtons.clear();
-	if (!HoverBox || !HoverBox->IsVisible)
+	if (!HoverBox)
 	{
 		return;
 	}
@@ -465,7 +465,7 @@ void engine::editor::EngineTextEditorProvider::TrimWhitespace(size_t IgnoreLine)
 
 		auto lastChar = str.find_last_not_of("\t ");
 
-		if (lastChar == str.size())
+		if (lastChar + 1 <= str.size())
 		{
 			continue;
 		}
@@ -483,7 +483,10 @@ void engine::editor::EngineTextEditorProvider::TrimWhitespace(size_t IgnoreLine)
 		Changed = true;
 	}
 
-	Commit();
+	if (Changed)
+	{
+		Commit();
+	}
 }
 
 std::vector<DropdownMenu::Option> engine::editor::EngineTextEditorProvider::GetRightClickOptions(EditorPosition At)

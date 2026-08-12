@@ -13,7 +13,7 @@
 [submodule "Dependencies/JoltPhysics"]
 	path = Dependencies/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "Dependencies/ProgrammingLanguage"]
+[submodule "Dependencies/DSharp"]
 	path = Dependencies/DSharp
 	url = https://github.com/Klemmbaustein/DSharp.git
 [submodule "Dependencies/IXWebSocket"]
