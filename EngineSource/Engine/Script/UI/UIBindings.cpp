@@ -423,6 +423,7 @@ static void UITextField_setText(InterpretContext* context)
 	ClassRef<UITextField*> cls = context->popValue<RuntimeClass*>();
 	RuntimeStr text = context->popRuntimeString();
 	cls.getValue()->SetText(text.ptr());
+	cls.classPtr->addRef();
 	context->pushValue(cls);
 }
 
