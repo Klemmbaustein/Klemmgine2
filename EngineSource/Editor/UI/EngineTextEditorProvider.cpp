@@ -465,7 +465,7 @@ void engine::editor::EngineTextEditorProvider::TrimWhitespace(size_t IgnoreLine)
 
 		auto lastChar = str.find_last_not_of("\t ");
 
-		if (lastChar + 1 <= str.size())
+		if (lastChar + 1 >= str.size())
 		{
 			continue;
 		}
