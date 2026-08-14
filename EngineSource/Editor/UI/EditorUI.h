@@ -191,6 +191,9 @@ namespace engine::editor
 		DocumentationDatabase Documentation;
 
 		string GetProjectDataPath();
+		EditorPanel* RootPanel = nullptr;
+
+		void LoadDefaultLayout();
 
 	private:
 
@@ -209,7 +212,6 @@ namespace engine::editor
 		std::map<string, EditorAssetType*> AssetMap;
 		std::set<AssetRef> ExternallyChangedAssets;
 
-		EditorPanel* RootPanel = nullptr;
 		StatusBarElement* StatsBarElement;
 
 		bool ScriptsChanged = false;

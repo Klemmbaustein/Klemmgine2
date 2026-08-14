@@ -34,6 +34,7 @@ STRUCT_MEMBER(MeshComponentLoad, void, (void* Comp, const char* Name), ((MeshCom
 
 // Input
 STRUCT_MEMBER(InputIsKeyDown, bool, (int KeyCode), return input::IsKeyHeld(input::Key(KeyCode)))
+STRUCT_MEMBER(InputIsKeyPressed, bool, (int KeyCode), return input::IsKeyPressed(input::Key(KeyCode)))
 
 // UI
 STRUCT_MEMBER(CreateUICanvas, void*, (const char* Name, const char* Source, engine::plugin::PluginCanvasInterface * Canvas), \

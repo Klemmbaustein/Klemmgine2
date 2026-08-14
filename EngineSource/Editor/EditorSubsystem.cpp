@@ -6,9 +6,11 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Editor/Editor.h>
 #include <Engine/Input.h>
+#include <Editor/UI/Layout/SaveLayout.h>
 #include <Engine/Script/ScriptSubsystem.h>
 #include <Editor/Settings/EditorSettings.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
+#include <Core/File/TextSerializer.h>
 #include <filesystem>
 
 using namespace engine::editor;
@@ -66,6 +68,19 @@ void engine::editor::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
 				Engine::Instance->LoadSubsystem(new EditorSubsystem());
 			}
 		} });
+	System->AddCommand(console::Command{
+		.Name = "ed.dump_layout",
+		.Args = {},
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
+		auto instance = EditorUI::Instance;
+		if (instance)
+		{
+			std::stringstream Stream;
+			TextSerializer::ToStream(layout::SerializePanel(instance->RootPanel).GetObject(), Stream);
+			Log::Info(Stream.str());
+		}
+	} });
+
 }
 
 engine::editor::EditorSubsystem::~EditorSubsystem()
