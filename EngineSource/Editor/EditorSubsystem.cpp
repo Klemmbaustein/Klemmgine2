@@ -72,11 +72,10 @@ void engine::editor::EditorSubsystem::RegisterCommands(ConsoleSubsystem* System)
 		.Name = "ed.dump_layout",
 		.Args = {},
 		.OnCalled = [this](const console::Command::CallContext& ctx) {
-		auto instance = EditorUI::Instance;
-		if (instance)
+		if (UI)
 		{
 			std::stringstream Stream;
-			TextSerializer::ToStream(layout::SerializePanel(instance->RootPanel).GetObject(), Stream);
+			TextSerializer::ToStream(layout::SerializePanel(UI->RootPanel).GetObject(), Stream);
 			Log::Info(Stream.str());
 		}
 	} });
@@ -94,6 +93,7 @@ engine::editor::EditorSubsystem::~EditorSubsystem()
 	{
 		console->RemoveCommand("ed.edit");
 		console->RemoveCommand("ed.run");
+		console->RemoveCommand("ed.dump_layout");
 	}
 	Settings::CloseInstance();
 }
