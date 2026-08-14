@@ -51,8 +51,8 @@ namespace engine::graphics
 
 			void SetStencilMode(bool NewIsStencilMode);
 
-			uint32 GetUITexture() override;
-			void SetFilterMode(TextureOptions::Filtering NewFilter, size_t TextureIndex) override;
+			uint32 GetUITexture() final override;
+			void SetFilterMode(TextureOptions::Filtering NewFilter, size_t TextureIndex) final override;
 		};
 
 		std::vector<TargetTexture> Textures;
@@ -60,9 +60,9 @@ namespace engine::graphics
 
 		// Inherited via RendererDrawTarget
 		void Activate() override;
-		void Clear(bool ClearColor, bool ClearDepth, uint8 ClearStencil) override;
-		RendererTexture* GetTexture(size_t Index) override;
-		RendererTexture* GetStencilTexture() override;
+		void Clear(bool ClearColor, bool ClearDepth, uint8 ClearStencil) final override;
+		RendererTexture* GetTexture(size_t Index) final override;
+		RendererTexture* GetStencilTexture() final override;
 
 	private:
 		uint32 Width = 0;
@@ -78,7 +78,7 @@ namespace engine::graphics
 		~OpenGLDrawUniformBuffer();
 
 		// Inherited via DrawUniformBuffer
-		void Write(size_t Offset, void* Data, size_t DataSize) override;
+		void Write(size_t Offset, void* Data, size_t DataSize) final override;
 
 		uint32 BufferObject = 0;
 		uint32 BufferId = 0;
@@ -105,18 +105,18 @@ namespace engine::graphics
 		OpenGLDrawCommand(OpenGLRenderer* Render);
 
 		// Inherited via DrawCommand
-		void UseShader(ShaderObject* TargetShader) override;
-		void BindTexture(const string& UniformName, RendererTexture* Target) override;
-		void BindTexture(uint32 UniformLocation, RendererTexture* Target) override;
-		void DrawVertices(size_t Count) override;
-		void DrawVertexBuffer(VertexBuffer* Buffer) override;
-		void ResetTextures() override;
-		void SetResolution(uint32 Width, uint32 Height) override;
-		void SetFaceCullEnabled(bool NewEnabled) override;
-		void SetDepthCheckEnabled(bool NewEnabled) override;
-		void SetBlendEnabled(bool NewEnabled) override;
-		void SetStencilValue(bool Enabled, uint8 Value) override;
-		void BindUniformBlock(const string& UniformBlockName, DrawUniformBuffer* Target) override;
+		void UseShader(ShaderObject* TargetShader) final override;
+		void BindTexture(const string& UniformName, RendererTexture* Target) final override;
+		void BindTexture(uint32 UniformLocation, RendererTexture* Target) final override;
+		void DrawVertices(size_t Count) final override;
+		void DrawVertexBuffer(VertexBuffer* Buffer) final override;
+		void ResetTextures() final override;
+		void SetResolution(uint32 Width, uint32 Height) final override;
+		void SetFaceCullEnabled(bool NewEnabled) final override;
+		void SetDepthCheckEnabled(bool NewEnabled) final override;
+		void SetBlendEnabled(bool NewEnabled) final override;
+		void SetStencilValue(bool Enabled, uint8 Value) final override;
+		void BindUniformBlock(const string& UniformBlockName, DrawUniformBuffer* Target) final override;
 
 		void Reset();
 
@@ -148,9 +148,10 @@ namespace engine::graphics
 		~RendererShadowDrawTarget();
 
 		// Inherited via RendererDrawTarget
-		RendererTexture* GetTexture(size_t Index) override;
-		RendererTexture* GetStencilTexture() override;
-		void Activate() override;
+		RendererTexture* GetTexture(size_t Index) final override;
+		RendererTexture* GetStencilTexture() final override;
+		void Activate() final override;
+		void Clear(bool ClearColor, bool ClearDepth, uint8 ClearStencil) final override;
 
 		uint32 LightFBO = 0;
 
@@ -158,9 +159,6 @@ namespace engine::graphics
 		uint32 Width = 0;
 		uint32 Height = 0;
 		OpenGLRenderer* Render = nullptr;
-
-		// Inherited via RendererDrawTarget
-		void Clear(bool ClearColor, bool ClearDepth, uint8 ClearStencil) override;
 	};
 
 	struct TextureSlot
@@ -188,14 +186,14 @@ namespace engine::graphics
 		uint32 ProgramObject = 0;
 
 		// Inherited via ShaderProgram
-		void Activate() override;
-		uint32 GetUniformLocation(const char* Name) override;
-		uint32 GetUniformBlockLocation(const char* Name) override;
-		void SetInt(uint32 UniformLocation, int32 Value) override;
-		void SetFloat(uint32 UniformLocation, float Value) override;
-		void SetVec3(uint32 UniformLocation, Vector3 Value) override;
-		void SetVec2(uint32 UniformLocation, Vector2 Value) override;
-		void SetMatrix(uint32 UniformLocation, const glm::mat4& Value) override;
+		void Activate() final override;
+		uint32 GetUniformLocation(const char* Name) final override;
+		uint32 GetUniformBlockLocation(const char* Name) final override;
+		void SetInt(uint32 UniformLocation, int32 Value) final override;
+		void SetFloat(uint32 UniformLocation, float Value) final override;
+		void SetVec3(uint32 UniformLocation, Vector3 Value) final override;
+		void SetVec2(uint32 UniformLocation, Vector2 Value) final override;
+		void SetMatrix(uint32 UniformLocation, const glm::mat4& Value) final override;
 
 	private:
 		OpenGLRenderer* Render = nullptr;
@@ -212,24 +210,24 @@ namespace engine::graphics
 		OpenGLRenderer();
 
 		// Inherited via Renderer
-		void RenderScreen(kui::Window* WithWindow, RendererTexture* Texture, bool VSync) override;
+		void RenderScreen(kui::Window* WithWindow, RendererTexture* Texture, bool VSync) final override;
 		OpenGLRendererTexture* CreateTexture(const uByte* Pixels, uint32 Width, uint32 Height,
-			const TextureOptions& Options) override;
+			const TextureOptions& Options) final override;
 		OpenGLRendererDrawTarget* CreateDrawTarget(uint32 Width, uint32 Height,
-			std::vector<DrawTargetBuffer> Buffers) override;
-		RendererShadowDrawTarget* CreateShadowMaps(uint32 Width, uint32 Height, uint32 Count) override;
+			std::vector<DrawTargetBuffer> Buffers) final override;
+		RendererShadowDrawTarget* CreateShadowMaps(uint32 Width, uint32 Height, uint32 Count) final override;
 		OpenGLVertexBuffer* CreateVertexBuffer(const std::vector<Vertex>& Vertices,
-			const std::vector<uint32>& Indices) override;
-		OpenGLDrawCommand* StartRender() override
+			const std::vector<uint32>& Indices) final override;
+		OpenGLDrawCommand* StartRender() final override
 		{
 			CurrentCommand = OpenGLDrawCommand(this);
 			return &CurrentCommand;
 		}
 
-		DrawUniformBuffer* CreateUniformBuffer(size_t Size) override;
-		ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) override;
-		ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) override;
-		bool SupportsUniformBuffer() override;
+		DrawUniformBuffer* CreateUniformBuffer(size_t Size) final override;
+		ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) final override;
+		ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) final override;
+		bool SupportsUniformBuffer() final override;
 
 		OpenGLDrawCommand CurrentCommand = OpenGLDrawCommand(this);
 
