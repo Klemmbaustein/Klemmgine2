@@ -443,7 +443,7 @@ void engine::editor::EditorPanel::ClearParent()
 		break;
 	}
 
-	if (Parent->Children.empty())
+	if (Parent->Children.empty() && Parent->Parent /* Do not delete the root panel */)
 	{
 		delete Parent;
 	}

@@ -35,6 +35,7 @@ engine::editor::TranslateGizmo::~TranslateGizmo()
 		{
 			Current->Graphics.RemoveDrawnComponent(Grid);
 			Current->Graphics.RemoveDrawnComponent(GizmoMesh);
+			Current->Graphics.Post.RemoveEffect(Effect);
 		}
 	}
 

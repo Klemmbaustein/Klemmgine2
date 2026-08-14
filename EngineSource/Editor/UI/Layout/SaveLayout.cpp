@@ -44,7 +44,11 @@ SerializedValue engine::editor::layout::SerializePanel(EditorPanel* Target)
 	Result.push_back({ "name", Target->GetTypeName() });
 	Result.push_back({ "size", Target->SizeFraction });
 	Result.push_back({ "align", int32(Target->ChildrenAlign) });
-	Result.push_back({ "data", Target->Serialize() });
+	auto data = Target->Serialize();
+	if (data.GetType() != SerializedData::DataType::Null)
+	{
+		Result.push_back({ "data", data });
+	}
 
 	std::vector<SerializedValue> Children;
 
@@ -53,7 +57,10 @@ SerializedValue engine::editor::layout::SerializePanel(EditorPanel* Target)
 		Children.push_back(SerializePanel(p));
 	}
 
-	Result.push_back({ "children", Children });
+	if (!Children.empty())
+	{
+		Result.push_back({ "children", Children });
+	}
 
 	return Result;
 }
@@ -71,6 +78,11 @@ void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedVal
 
 	auto Align = EditorPanel::Align(Obj.At("align").GetInt());
 
+	if (!Obj.Contains("children"))
+	{
+		return;
+	}
+
 	auto& Children = Obj.At("children");
 	for (auto& i : Children.GetArray())
 	{
@@ -85,6 +97,13 @@ void engine::editor::layout::DeSerializePanel(EditorPanel* Target, SerializedVal
 		}
 		else if (Type == "panel")
 		{
+			if (Children.GetArray().size() == 1 && Target->Parent)
+			{
+				auto OldSize = Target->SizeFraction;
+				DeSerializePanel(Target, i, Registry);
+				Target->SizeFraction = OldSize;
+				continue;
+			}
 			IsDefaultPanel = true;
 			NewPanel = new EditorPanel(Type, Type);
 		}

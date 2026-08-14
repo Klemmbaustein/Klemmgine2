@@ -191,6 +191,40 @@ void engine::editor::EditorUI::SaveEditorStateConfig()
 	}
 }
 
+void engine::editor::EditorUI::LoadDefaultLayout()
+{
+	while (RootPanel->Children.size())
+	{
+		delete RootPanel->Children[0];
+	}
+
+	EditorPanel* Left = new EditorPanel("panel");
+	Left->AddChild(new AssetBrowser(), EditorPanel::Align::Tabs);
+	Left->AddChild(new ClassBrowser(), EditorPanel::Align::Tabs);
+
+	RootPanel->AddChild(Left->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+
+	EditorPanel* Center = new EditorPanel("panel");
+	EditorPanel* LowerPanel = new EditorPanel("panel");
+	Center->AddChild((new ConsolePanel())->SetWidth(0.2f), EditorPanel::Align::Vertical);
+
+	auto vp = new Viewport();
+
+	Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
+	RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
+	EditorPanel* Right = new EditorPanel("panel");
+	auto Properties = new EditorPanel("panel");
+	Right->AddChild(Properties, EditorPanel::Align::Vertical);
+
+	Properties->AddChild(new PropertyPanel(), EditorPanel::Align::Tabs);
+	Properties->AddChild(new ScenePanel(), EditorPanel::Align::Tabs);
+
+	Right->AddChild(new ObjectListPanel(), EditorPanel::Align::Vertical);
+	RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
+
+	vp->AddChild(new ScriptEditorPanel(), EditorPanel::Align::Tabs, false);
+}
+
 engine::editor::EditorUI::EditorUI()
 {
 	if (resource::AllowLocalFiles)
@@ -261,31 +295,7 @@ engine::editor::EditorUI::EditorUI()
 
 	if (!std::filesystem::exists(LayoutFile))
 	{
-		EditorPanel* Left = new EditorPanel("panel");
-		Left->AddChild(new AssetBrowser(), EditorPanel::Align::Tabs);
-		Left->AddChild(new ClassBrowser(), EditorPanel::Align::Tabs);
-
-		RootPanel->AddChild(Left->SetWidth(0.15f), EditorPanel::Align::Horizontal);
-
-		EditorPanel* Center = new EditorPanel("panel");
-		EditorPanel* LowerPanel = new EditorPanel("panel");
-		Center->AddChild((new ConsolePanel())->SetWidth(0.2f), EditorPanel::Align::Vertical);
-
-		auto vp = new Viewport();
-
-		Center->AddChild(vp->SetWidth(1.8f), EditorPanel::Align::Vertical);
-		RootPanel->AddChild(Center->SetWidth(0.7f), EditorPanel::Align::Horizontal);
-		EditorPanel* Right = new EditorPanel("panel");
-		auto Properties = new EditorPanel("panel");
-		Right->AddChild(Properties, EditorPanel::Align::Vertical);
-
-		Properties->AddChild(new PropertyPanel(), EditorPanel::Align::Tabs);
-		Properties->AddChild(new ScenePanel(), EditorPanel::Align::Tabs);
-
-		Right->AddChild(new ObjectListPanel(), EditorPanel::Align::Vertical);
-		RootPanel->AddChild(Right->SetWidth(0.15f), EditorPanel::Align::Horizontal);
-
-		vp->AddChild(new ScriptEditorPanel(), EditorPanel::Align::Tabs, false);
+		LoadDefaultLayout();
 	}
 	else
 	{
@@ -327,7 +337,7 @@ engine::editor::EditorUI::EditorUI()
 				DropdownMenu::Option("Settings", "", Asset("Settings.png"), []() {
 					new SettingsWindow();
 				}),
-				DropdownMenu::Option("Project settings", "", "", []() {
+				DropdownMenu::Option("Project Settings", "", "", []() {
 					new ProjectSettingsWindow();
 				}),
 #ifdef EDITOR_PLUGIN_SUPPORT
@@ -357,6 +367,12 @@ engine::editor::EditorUI::EditorUI()
 				.Name = "Panels",
 				.SubMenu = GetPanelMenuOptions()
 			},
+			DropdownMenu::Option{
+				.Name = "Reset Window Layout",
+				.OnClicked = [this] {
+					LoadDefaultLayout();
+				}
+			},
 		});
 
 	AddMenuBarItem("Help",
@@ -364,7 +380,7 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("About", "", Asset("Info.png"), []() {
 				new AboutWindow();
 			}),
-			DropdownMenu::Option("View log directory", "", Asset("Open.png"), []() {
+			DropdownMenu::Option("View Log Directory", "", Asset("Open.png"), []() {
 				platform::Open("Logs");
 			}),
 		}
@@ -465,8 +481,8 @@ engine::editor::EditorUI::~EditorUI()
 void engine::editor::EditorUI::RegisterDefaultPanels()
 {
 	PANEL_ENTRY_HIDDEN("Viewport", Viewport);
-	PANEL_ENTRY("Asset browser", AssetBrowser);
-	PANEL_ENTRY("Class browser", ClassBrowser);
+	PANEL_ENTRY("Asset Browser", AssetBrowser);
+	PANEL_ENTRY("Class Browser", ClassBrowser);
 	PANEL_ENTRY("Console", ConsolePanel);
 	PANEL_ENTRY("Scripts", ScriptEditorPanel);
 	PANEL_ENTRY("Properties", PropertyPanel);

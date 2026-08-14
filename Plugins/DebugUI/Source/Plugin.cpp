@@ -59,7 +59,7 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 			UpdateFPS = false;
 		}
 
-		if (Interface->GameHasFocus() && Interface->InputIsKeyDown(int(input::Key::RETURN)) && !ConsoleBox)
+		if (Interface->GameHasFocus() && Interface->InputIsKeyPressed(int(input::Key::RETURN)) && !ConsoleBox)
 		{
 			ConsoleBox = Interface->CreateUIBox("Console", UIObject);
 			ConsoleBackground = Interface->GetDynamicChild(ConsoleBox, "bg");
