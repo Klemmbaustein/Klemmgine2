@@ -2,155 +2,45 @@
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
 #include <Engine/Physics/Physics.h>
+#include <Engine/Debug/TimeLogger.h>
 #include <Engine/Graphics/VideoSubsystem.h>
+#include <Core/ThreadPool.h>
 
 using namespace engine::graphics;
+using namespace engine;
 
-constexpr uint32 SIZE = 64;
-
-constexpr float Fade(float t)
-{
-	return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
-}
-
-constexpr float dot_grad(int hash, float xf, float yf) {
-	// In 2D case, the gradient may be any of 8 direction vectors pointing to the
-	// edges of a unit-square. The distance vector is the input offset (relative to
-	// the smallest bound).
-	switch (hash & 0x7) {
-	case 0x0: return  xf + yf;
-	case 0x1: return  xf;
-	case 0x2: return  xf - yf;
-	case 0x3: return -yf;
-	case 0x4: return -xf - yf;
-	case 0x5: return -xf;
-	case 0x6: return -xf + yf;
-	case 0x7: return  yf;
-	default:  return  0.0f;
-	}
-}
-
-static constexpr unsigned char p[512] = {
-	0x97, 0xA0, 0x89, 0x5B, 0x5A, 0x0F, 0x83, 0x0D, 0xC9, 0x5F, 0x60, 0x35, 0xC2, 0xE9, 0x07, 0xE1,
-	0x8C, 0x24, 0x67, 0x1E, 0x45, 0x8E, 0x08, 0x63, 0x25, 0xF0, 0x15, 0x0A, 0x17, 0xBE, 0x06, 0x94,
-	0xF7, 0x78, 0xEA, 0x4B, 0x00, 0x1A, 0xC5, 0x3E, 0x5E, 0xFC, 0xDB, 0xCB, 0x75, 0x23, 0x0B, 0x20,
-	0x39, 0xB1, 0x21, 0x58, 0xED, 0x95, 0x38, 0x57, 0xAE, 0x14, 0x7D, 0x88, 0xAB, 0xA8, 0x44, 0xAF,
-	0x4A, 0xA5, 0x47, 0x86, 0x8B, 0x30, 0x1B, 0xA6, 0x4D, 0x92, 0x9E, 0xE7, 0x53, 0x6F, 0xE5, 0x7A,
-	0x3C, 0xD3, 0x85, 0xE6, 0xDC, 0x69, 0x5C, 0x29, 0x37, 0x2E, 0xF5, 0x28, 0xF4, 0x66, 0x8F, 0x36,
-	0x41, 0x19, 0x3F, 0xA1, 0x01, 0xD8, 0x50, 0x49, 0xD1, 0x4C, 0x84, 0xBB, 0xD0, 0x59, 0x12, 0xA9,
-	0xC8, 0xC4, 0x87, 0x82, 0x74, 0xBC, 0x9F, 0x56, 0xA4, 0x64, 0x6D, 0xC6, 0xAD, 0xBA, 0x03, 0x40,
-	0x34, 0xD9, 0xE2, 0xFA, 0x7C, 0x7B, 0x05, 0xCA, 0x26, 0x93, 0x76, 0x7E, 0xFF, 0x52, 0x55, 0xD4,
-	0xCF, 0xCE, 0x3B, 0xE3, 0x2F, 0x10, 0x3A, 0x11, 0xB6, 0xBD, 0x1C, 0x2A, 0xDF, 0xB7, 0xAA, 0xD5,
-	0x77, 0xF8, 0x98, 0x02, 0x2C, 0x9A, 0xA3, 0x46, 0xDD, 0x99, 0x65, 0x9B, 0xA7, 0x2B, 0xAC, 0x09,
-	0x81, 0x16, 0x27, 0xFD, 0x13, 0x62, 0x6C, 0x6E, 0x4F, 0x71, 0xE0, 0xE8, 0xB2, 0xB9, 0x70, 0x68,
-	0xDA, 0xF6, 0x61, 0xE4, 0xFB, 0x22, 0xF2, 0xC1, 0xEE, 0xD2, 0x90, 0x0C, 0xBF, 0xB3, 0xA2, 0xF1,
-	0x51, 0x33, 0x91, 0xEB, 0xF9, 0x0E, 0xEF, 0x6B, 0x31, 0xC0, 0xD6, 0x1F, 0xB5, 0xC7, 0x6A, 0x9D,
-	0xB8, 0x54, 0xCC, 0xB0, 0x73, 0x79, 0x32, 0x2D, 0x7F, 0x04, 0x96, 0xFE, 0x8A, 0xEC, 0xCD, 0x5D,
-	0xDE, 0x72, 0x43, 0x1D, 0x18, 0x48, 0xF3, 0x8D, 0x80, 0xC3, 0x4E, 0x42, 0xD7, 0x3D, 0x9C, 0xB4,
-
-	0x97, 0xA0, 0x89, 0x5B, 0x5A, 0x0F, 0x83, 0x0D, 0xC9, 0x5F, 0x60, 0x35, 0xC2, 0xE9, 0x07, 0xE1,
-	0x8C, 0x24, 0x67, 0x1E, 0x45, 0x8E, 0x08, 0x63, 0x25, 0xF0, 0x15, 0x0A, 0x17, 0xBE, 0x06, 0x94,
-	0xF7, 0x78, 0xEA, 0x4B, 0x00, 0x1A, 0xC5, 0x3E, 0x5E, 0xFC, 0xDB, 0xCB, 0x75, 0x23, 0x0B, 0x20,
-	0x39, 0xB1, 0x21, 0x58, 0xED, 0x95, 0x38, 0x57, 0xAE, 0x14, 0x7D, 0x88, 0xAB, 0xA8, 0x44, 0xAF,
-	0x4A, 0xA5, 0x47, 0x86, 0x8B, 0x30, 0x1B, 0xA6, 0x4D, 0x92, 0x9E, 0xE7, 0x53, 0x6F, 0xE5, 0x7A,
-	0x3C, 0xD3, 0x85, 0xE6, 0xDC, 0x69, 0x5C, 0x29, 0x37, 0x2E, 0xF5, 0x28, 0xF4, 0x66, 0x8F, 0x36,
-	0x41, 0x19, 0x3F, 0xA1, 0x01, 0xD8, 0x50, 0x49, 0xD1, 0x4C, 0x84, 0xBB, 0xD0, 0x59, 0x12, 0xA9,
-	0xC8, 0xC4, 0x87, 0x82, 0x74, 0xBC, 0x9F, 0x56, 0xA4, 0x64, 0x6D, 0xC6, 0xAD, 0xBA, 0x03, 0x40,
-	0x34, 0xD9, 0xE2, 0xFA, 0x7C, 0x7B, 0x05, 0xCA, 0x26, 0x93, 0x76, 0x7E, 0xFF, 0x52, 0x55, 0xD4,
-	0xCF, 0xCE, 0x3B, 0xE3, 0x2F, 0x10, 0x3A, 0x11, 0xB6, 0xBD, 0x1C, 0x2A, 0xDF, 0xB7, 0xAA, 0xD5,
-	0x77, 0xF8, 0x98, 0x02, 0x2C, 0x9A, 0xA3, 0x46, 0xDD, 0x99, 0x65, 0x9B, 0xA7, 0x2B, 0xAC, 0x09,
-	0x81, 0x16, 0x27, 0xFD, 0x13, 0x62, 0x6C, 0x6E, 0x4F, 0x71, 0xE0, 0xE8, 0xB2, 0xB9, 0x70, 0x68,
-	0xDA, 0xF6, 0x61, 0xE4, 0xFB, 0x22, 0xF2, 0xC1, 0xEE, 0xD2, 0x90, 0x0C, 0xBF, 0xB3, 0xA2, 0xF1,
-	0x51, 0x33, 0x91, 0xEB, 0xF9, 0x0E, 0xEF, 0x6B, 0x31, 0xC0, 0xD6, 0x1F, 0xB5, 0xC7, 0x6A, 0x9D,
-	0xB8, 0x54, 0xCC, 0xB0, 0x73, 0x79, 0x32, 0x2D, 0x7F, 0x04, 0x96, 0xFE, 0x8A, 0xEC, 0xCD, 0x5D,
-	0xDE, 0x72, 0x43, 0x1D, 0x18, 0x48, 0xF3, 0x8D, 0x80, 0xC3, 0x4E, 0x42, 0xD7, 0x3D, 0x9C, 0xB4,
-};
-
-float Noise(float x, float y)
-{
-	// Top-left coordinates of the unit-square.
-	int xi0 = floor(x);
-	int yi0 = floor(y);
-
-	// Input location in the unit-square.
-	float xf0 = x - float(xi0);
-	float yf0 = y - float(yi0);
-	float xf1 = xf0 - 1.0f;
-	float yf1 = yf0 - 1.0f;
-
-	// Wrap to range 0-255.
-	int xi = xi0 & 0xFF;
-	int yi = yi0 & 0xFF;
-
-	// Apply the fade function to the location.
-	float u = Fade(xf0);
-	float v = Fade(yf0);
-
-	// Generate hash values for each point of the unit-square.
-	int h00 = p[p[xi + 0] + yi + 0];
-	int h01 = p[p[xi + 0] + yi + 1];
-	int h10 = p[p[xi + 1] + yi + 0];
-	int h11 = p[p[xi + 1] + yi + 1];
-
-	// Linearly interpolate between dot products of each gradient with its distance to the input location.
-	float x1 = std::lerp(dot_grad(h00, xf0, yf0), dot_grad(h10, xf1, yf0), u);
-	float x2 = std::lerp(dot_grad(h01, xf0, yf1), dot_grad(h11, xf1, yf1), u);
-	return std::lerp(x1, x2, v);
-
-}
+constexpr uint32 SIZE = 128;
 
 void engine::LandscapeComponent::OnAttached()
 {
-	std::vector<Vertex> Vertices;
-	std::vector<uint32> Indices;
+	Data = std::make_shared<LandscapeData>(16, 16);
+	Generator = std::make_shared<LandscapeMeshGenerator>();
+	Generator->Data = Data;
+
+	size_t NumChunks = Data->Width * Data->Height;
+	{
+		Generate();
+	}
+	//for (auto& i : Vertices)
+	//{
+	//	i.Normal = Vector3(0);
+	//}
+
+	//for (size_t i = 0; i < Indices.size(); i += 3)
+	//{
+	//	size_t A = Indices[i], B = Indices[i + 1], C = Indices[i + 2];
+	//	Vector3 n = Vector3::Cross(Vertices[B].Position - Vertices[A].Position, Vertices[C].Position - Vertices[A].Position);
+	//	Vertices[A].Normal += n;
+	//	Vertices[B].Normal += n;
+	//	Vertices[C].Normal += n;
+	//}
+	//for (auto& v : Vertices)
+	//{
+	//	v.Normal = v.Normal.Normalize();
+	//}
 
 	std::vector<float> Samples;
-
-	for (uint32 y = 0; y < SIZE; y++)
-	{
-		for (uint32 x = 0; x < SIZE; x++)
-		{
-			uint32 i = x + y * SIZE;
-			float randOffset = Noise(x / 32.0f, y / 32.0f) * 16.0f;
-			randOffset += Noise(x / 16.0f, y / 16.0f) * 4.0f;
-			randOffset += Noise(x / 8.0f, y / 8.0f) * 1.0f;
-			randOffset += Noise(x / 4.0f, y / 4.0f) * 0.5f;
-			Samples.push_back(randOffset);
-
-			Vertices.emplace_back(Vector3(x, randOffset, y + 0), Vector2(x, y), Vector3(0, 1, 0));
-
-			if (x < SIZE - 1 && y < SIZE - 1)
-			{
-				Indices.push_back(i + 0);
-				Indices.push_back(i + SIZE);
-				Indices.push_back(i + SIZE + 1);
-				Indices.push_back(i + 0);
-				Indices.push_back(i + SIZE + 1);
-				Indices.push_back(i + 1);
-			}
-		}
-	}
-
-	for (auto& i : Vertices)
-	{
-		i.Normal = Vector3(0);
-	}
-
-	for (size_t i = 0; i < Indices.size(); i += 3)
-	{
-		size_t A = Indices[i], B = Indices[i + 1], C = Indices[i + 2];
-		Vector3 n = Vector3::Cross(Vertices[B].Position - Vertices[A].Position, Vertices[C].Position - Vertices[A].Position);
-		Vertices[A].Normal += n;
-		Vertices[B].Normal += n;
-		Vertices[C].Normal += n;
-	}
-	for (auto& v : Vertices)
-	{
-		v.Normal = v.Normal.Normalize();
-	}
-
-	LandscapeMesh = VideoSubsystem::Current->Renderer->CreateVertexBuffer(Vertices, Indices);
-
+	Samples.resize(SIZE * SIZE);
 	Collider = new physics::HeightMapBody(Samples, SIZE, WorldTransform,
 		physics::MotionType::Static, physics::Layer::Static, this);
 
@@ -169,29 +59,29 @@ void engine::LandscapeComponent::Draw(graphics::Renderer* Render, graphics::Came
 	auto Pass = Render->StartRender();
 	auto Root = GetRootObject();
 	auto Scene = Root ? Root->GetScene() : nullptr;
-
-	//for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
+	LandscapeMaterial->Apply(Pass);
+	ShaderObject* Used = LandscapeMaterial->Shader;
+	if (!Used)
 	{
-		LandscapeMaterial->Apply(Pass);
-		ShaderObject* Used = LandscapeMaterial->Shader;
-		if (!Used)
-		{
-			return;
-		}
+		return;
+	}
 
-		if (!Used->Unlit)
-		{
-			In->Lights.ApplyToShader(Used, DrawBoundingBox);
-			In->Shadows.BindUniforms(Pass, Used);
-		}
-		From->UsedEnvironment->ApplyTo(Used);
+	if (!Used->Unlit)
+	{
+		In->Lights.ApplyToShader(Used, DrawBoundingBox);
+		In->Shadows.BindUniforms(Pass, Used);
+	}
+	From->UsedEnvironment->ApplyTo(Used);
 
-		Used->SetMatrix(Used->ModelUniform, WorldTransform.Matrix);
-		Used->SetMatrix(Used->GetUniformLocation("u_view"), From->View);
-		Used->SetMatrix(Used->GetUniformLocation("u_projection"), From->Projection);
-		Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), From->GetPosition());
-		Pass->SetStencilValue(DrawStencil, 1);
-		Pass->DrawVertexBuffer(LandscapeMesh);
+	Used->SetMatrix(Used->ModelUniform, WorldTransform.Matrix);
+	Used->SetMatrix(Used->GetUniformLocation("u_view"), From->View);
+	Used->SetMatrix(Used->GetUniformLocation("u_projection"), From->Projection);
+	Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), From->GetPosition());
+	Pass->SetStencilValue(DrawStencil, 1);
+
+	if (RootSegment)
+	{
+		RootSegment->Draw(Pass, Used, From);
 	}
 }
 
@@ -200,7 +90,39 @@ void engine::LandscapeComponent::SimpleDraw(graphics::Renderer* Render, graphics
 	auto Pass = Render->StartRender();
 	this->LandscapeMaterial->ApplySimple(Pass, With);
 	With->SetMatrix(With->ModelUniform, WorldTransform.Matrix);
-	Pass->DrawVertexBuffer(LandscapeMesh);
+
+	if (RootSegment)
+	{
+		RootSegment->Draw(Pass, nullptr);
+	}
+}
+
+void engine::LandscapeComponent::Update()
+{
+	if (Generator->IsDone)
+	{
+		Generator->IsDone = false;
+		if (this->RootSegment)
+		{
+			delete this->RootSegment;
+		}
+		this->RootSegment = Generator->RootSegment;
+		this->RootSegment->CreateVertexBuffer(this->WorldTransform);
+		CanGenerate = true;
+	}
+
+	if (CanGenerate)
+	{
+		Generator->CameraPosition = WorldTransform.Inverse().ApplyTo(GetRootObject()->GetScene()->Graphics.UsedCamera->Position);
+		if (CheckLod(RootSegment))
+		{
+			Generate();
+		}
+		else if (IsDirty)
+		{
+			Generate();
+		}
+	}
 }
 
 bool engine::LandscapeComponent::UpdateTransform(bool Dirty)
@@ -208,7 +130,417 @@ bool engine::LandscapeComponent::UpdateTransform(bool Dirty)
 	bool Result = ObjectComponent::UpdateTransform(Dirty);
 	if (Result)
 	{
-		this->DrawBoundingBox = BoundingBox(Vector3(SIZE / 2) * Vector3(1, 0, 1), SIZE / 2).Translate(WorldTransform);
+		this->DrawBoundingBox = BoundingBox(Vector3(SIZE) * Vector3(1, 0, 1), SIZE).Translate(WorldTransform);
+		this->IsDirty = true;
 	}
 	return Result;
+}
+
+static void GenerateThread(std::shared_ptr<LandscapeMeshGenerator> Generator,
+	std::shared_ptr<LandscapeData> Data)
+{
+	Generator->RootSegment = Generator->BuildSegment(0, 0, Generator->Data->Width);
+	Generator->MergeSegments(Generator->RootSegment, nullptr, nullptr);
+	Generator->BuildSegments(Generator->RootSegment, 0, 0, Generator->Data->Width);
+	Generator->IsDone = true;
+}
+
+void engine::LandscapeComponent::Generate()
+{
+	ThreadPool::Main()->AddJob(std::bind(GenerateThread, this->Generator, this->Data));
+	CanGenerate = false;
+	IsDirty = false;
+}
+
+bool engine::LandscapeComponent::CheckLod(LandscapeSegment* ForSegment)
+{
+	auto CalcScale = Generator->CalculateLodScale(ForSegment->ChunkX, ForSegment->ChunkY, ForSegment->Scale);
+	if (ForSegment->SegmentMesh)
+	{
+		return ForSegment->Scale >= CalcScale;
+	}
+
+	for (auto& i : ForSegment->SubSegments)
+	{
+		bool Result = CheckLod(i);
+
+		if (Result)
+		{
+			return true;
+		}
+	}
+
+	return ForSegment->Scale < CalcScale;
+}
+
+LandscapeSegment* engine::LandscapeMeshGenerator::BuildSegment(size_t X, size_t Y, size_t Scale)
+{
+	if (Scale < CalculateLodScale(X, Y, Scale))
+	{
+		return new LandscapeSegment(Data->CombineChunks(X * LANDSCAPE_CHUNK_SIZE, Y * LANDSCAPE_CHUNK_SIZE, Scale),
+			X, Y, Scale);
+	}
+
+	auto SuperSegment = new LandscapeSegment(X, Y, Scale);
+
+	size_t NewScale = Scale / 2;
+
+	SuperSegment->SubSegments[0] = BuildSegment(X, Y + NewScale, NewScale);
+	SuperSegment->SubSegments[1] = BuildSegment(X + NewScale, Y + NewScale, NewScale);
+	SuperSegment->SubSegments[2] = BuildSegment(X, Y, NewScale);
+	SuperSegment->SubSegments[3] = BuildSegment(X + NewScale, Y, NewScale);
+	return SuperSegment;
+}
+
+void engine::LandscapeMeshGenerator::MergeSegments(LandscapeSegment* From, LandscapeSegment* Left, LandscapeSegment* Bottom)
+{
+	if (From->PlaceholderChunk)
+	{
+		if (Bottom && From->ChunkY > 0)
+		{
+			auto BottomSegment = GetSegment(Bottom, From->ChunkX, From->ChunkY - 1);
+
+			if (BottomSegment && BottomSegment->Scale > From->Scale)
+			{
+				From->BottomScaleDifference = BottomSegment->Scale / From->Scale;
+				for (size_t x = 0; x < LANDSCAPE_CHUNK_SIZE; x += From->BottomScaleDifference)
+				{
+					LandscapePoint p = From->PlaceholderChunk->Points[x];
+					p.Interpolate(From->PlaceholderChunk->Points[x + From->BottomScaleDifference], 0.5f);
+					From->PlaceholderChunk->Points[x + 1] = p;
+				}
+			}
+		}
+		if (Left && From->ChunkX > 0)
+		{
+			auto LeftSegment = GetSegment(Left, From->ChunkX - 1, From->ChunkY);
+
+			if (LeftSegment && LeftSegment->Scale > From->Scale)
+			{
+				From->LeftScaleDifference = LeftSegment->Scale / From->Scale;
+				for (size_t y = 0; y < LANDSCAPE_CHUNK_SIZE - LeftSegment->Scale; y += From->LeftScaleDifference)
+				{
+					LandscapePoint p = From->PlaceholderChunk->Points[y * LANDSCAPE_CHUNK_SIZE];
+					p.Interpolate(From->PlaceholderChunk->Points[(From->LeftScaleDifference + y) * LANDSCAPE_CHUNK_SIZE], 0.5f);
+					From->PlaceholderChunk->Points[(1 + y) * LANDSCAPE_CHUNK_SIZE] = p;
+				}
+
+			}
+		}
+
+		return;
+	}
+
+	MergeSegments(From->SubSegments[0], Left, From->SubSegments[2]);
+	MergeSegments(From->SubSegments[1], From->SubSegments[0], From->SubSegments[3]);
+	MergeSegments(From->SubSegments[2], Left, Bottom);
+	MergeSegments(From->SubSegments[3], From->SubSegments[2], Bottom);
+}
+
+void engine::LandscapeMeshGenerator::BuildSegments(LandscapeSegment* From, size_t X, size_t Y, size_t Scale)
+{
+	if (From->PlaceholderChunk)
+	{
+		LandscapeSegment* Chunks[4] = {
+			nullptr, nullptr, nullptr, nullptr
+		};
+
+		Chunks[0] = From;
+
+		if (X + Scale < Data->Width)
+		{
+			Chunks[1] = GetSegment(RootSegment, X + Scale, Y);
+		}
+		if (Y + Scale < Data->Height)
+		{
+			Chunks[2] = GetSegment(RootSegment, X, Y + Scale);
+		}
+		if (Y + Scale < Data->Height && X + Scale < Data->Width)
+		{
+			Chunks[3] = GetSegment(RootSegment, X + Scale, Y + Scale);
+		}
+		From->BuildBuffer(Chunks, this);
+	}
+	else
+	{
+		for (auto& i : From->SubSegments)
+		{
+			BuildSegments(i, i->ChunkX, i->ChunkY, Scale / 2);
+		}
+	}
+}
+
+LandscapeSegment* engine::LandscapeMeshGenerator::GetSegment(LandscapeSegment* From, size_t ChunkX, size_t ChunkY)
+{
+	if (ChunkX >= From->ChunkX && ChunkX < From->ChunkX + From->Scale
+		&& ChunkY >= From->ChunkY && ChunkY < From->ChunkY + From->Scale)
+	{
+		if (From->PlaceholderChunk || From->SegmentMesh)
+		{
+			return From;
+		}
+
+		for (auto& i : From->SubSegments)
+		{
+			auto Result = GetSegment(i, ChunkX, ChunkY);
+
+			if (Result)
+			{
+				return Result;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+size_t engine::LandscapeMeshGenerator::CalculateLodScale(size_t X, size_t Y, size_t Scale)
+{
+	Vector3 SegmentPosition = Vector3(X, 0.0f, Y);
+	float SegmentScale = float(Scale) / 2.0f;
+
+	SegmentPosition += Vector3(SegmentScale, 0, SegmentScale);
+
+	float Distance = Vector3::Distance(this->CameraPosition / LANDSCAPE_CHUNK_SIZE, SegmentPosition) - SegmentScale;
+
+	return std::max(Distance / 2.0f, 2.0f);
+}
+
+engine::LandscapeSegment::LandscapeSegment(size_t X, size_t Y, size_t Scale)
+{
+	this->ChunkX = X;
+	this->ChunkY = Y;
+	this->Scale = Scale;
+}
+
+engine::LandscapeSegment::LandscapeSegment(LandscapeChunk* PlaceholderChunk, size_t X, size_t Y, size_t Scale)
+{
+	this->PlaceholderChunk = PlaceholderChunk;
+
+	this->ChunkX = X;
+	this->ChunkY = Y;
+	this->Scale = Scale;
+}
+
+void engine::LandscapeSegment::BuildBuffer(LandscapeSegment* Chunks[4], LandscapeMeshGenerator* Generator)
+{
+	size_t MaxX = Chunks[1] ? LANDSCAPE_CHUNK_SIZE + 1 : LANDSCAPE_CHUNK_SIZE;
+	size_t MaxY = Chunks[2] ? LANDSCAPE_CHUNK_SIZE + 1 : LANDSCAPE_CHUNK_SIZE;
+	Vertices.reserve(MaxX * MaxY);
+
+	LandscapeSegment* RightSegment = Chunks[1];
+	LandscapeSegment* TopSegment = Chunks[2];
+
+	size_t CornerItemOffset = 0;
+	size_t BottomSizeScale = (BottomScaleDifference - 1);
+	size_t LeftSizeScale = (LeftScaleDifference - 1);
+
+	if (Chunks[3])
+	{
+		size_t DiffX = (ChunkX + Scale - Chunks[3]->ChunkX) * LANDSCAPE_CHUNK_SIZE / Chunks[3]->Scale;
+		size_t DiffY = (ChunkY + Scale - Chunks[3]->ChunkY) * LANDSCAPE_CHUNK_SIZE / Chunks[3]->Scale;
+
+		CornerItemOffset = DiffX + DiffY * LANDSCAPE_CHUNK_SIZE;
+	}
+
+	auto SamplePointX = [Chunks, CornerItemOffset](LandscapeSegment* Segment, size_t X, size_t Scale) {
+		if (Scale != 1)
+		{
+			float Offset = float(X % Scale) / float(Scale);
+
+			auto& p = Segment->PlaceholderChunk->Points[X / Scale];
+
+			if (Offset == 0.0f)
+			{
+				return p;
+			}
+
+			if (X / Scale + 1 >= LANDSCAPE_CHUNK_SIZE)
+			{
+				if (!Chunks[3])
+				{
+					return p;
+				}
+
+				LandscapePoint Result = p;
+				Result.Interpolate(Chunks[3]->PlaceholderChunk->Points[CornerItemOffset], Offset);
+				return Result;
+			}
+
+			LandscapePoint Result = p;
+			Result.Interpolate(Segment->PlaceholderChunk->Points[X / Scale + 1], Offset);
+
+			return Result;
+		}
+
+		return Segment->PlaceholderChunk->Points[X];
+	};
+
+	auto SamplePointY = [Chunks, CornerItemOffset](LandscapeSegment* Segment, size_t Y, size_t Scale) {
+		if (Scale != 1)
+		{
+			float Offset = float(Y % Scale) / float(Scale);
+
+			auto& p = Segment->PlaceholderChunk->Points[Y / Scale * LANDSCAPE_CHUNK_SIZE];
+
+			if (Offset == 0.0f)
+			{
+				return p;
+			}
+
+			if (Y / Scale + 1 >= LANDSCAPE_CHUNK_SIZE)
+			{
+				if (!Chunks[3])
+				{
+					return p;
+				}
+
+				LandscapePoint Result = p;
+				Result.Interpolate(Chunks[3]->PlaceholderChunk->Points[CornerItemOffset], Offset);
+				return Result;
+			}
+
+			LandscapePoint Result = p;
+			Result.Interpolate(Segment->PlaceholderChunk->Points[(Y / Scale + 1) * LANDSCAPE_CHUNK_SIZE], Offset);
+
+			return Result;
+		}
+
+		return Segment->PlaceholderChunk->Points[Y * LANDSCAPE_CHUNK_SIZE];
+	};
+
+	for (uint32 y = 0; y < MaxY; y++)
+	{
+		for (uint32 x = 0; x < MaxX; x++)
+		{
+			uint32 i = x + y * MaxX;
+
+			LandscapePoint p;
+
+			if (x < LANDSCAPE_CHUNK_SIZE && y < LANDSCAPE_CHUNK_SIZE)
+			{
+				if (RightSegment && x + BottomSizeScale >= LANDSCAPE_CHUNK_SIZE && y < 1)
+				{
+					p = Chunks[0]->PlaceholderChunk->Points[x - 1 + y * LANDSCAPE_CHUNK_SIZE];
+					size_t ChunkDiff = (ChunkY - RightSegment->ChunkY) * LANDSCAPE_CHUNK_SIZE;
+					auto p2 = SamplePointY(RightSegment, ChunkDiff + y * this->Scale, RightSegment->Scale);
+
+					p.Interpolate(p2, 0.5f);
+				}
+				else if (TopSegment && y + LeftSizeScale >= LANDSCAPE_CHUNK_SIZE && x < 1)
+				{
+					p = Chunks[0]->PlaceholderChunk->Points[1 + (y - 1) * LANDSCAPE_CHUNK_SIZE];
+					size_t ChunkDiff = (ChunkX - TopSegment->ChunkX) * LANDSCAPE_CHUNK_SIZE;
+					auto p2 = SamplePointX(TopSegment, ChunkDiff + x * this->Scale, TopSegment->Scale);
+
+					p.Interpolate(p2, 0.5f);
+				}
+				else
+				{
+					p = Chunks[0]->PlaceholderChunk->Points[x + y * LANDSCAPE_CHUNK_SIZE];
+				}
+			}
+			else if (x >= LANDSCAPE_CHUNK_SIZE && y < LANDSCAPE_CHUNK_SIZE)
+			{
+				size_t ChunkPos = (y * Scale + ChunkY * LANDSCAPE_CHUNK_SIZE) / LANDSCAPE_CHUNK_SIZE;
+
+				if (ChunkPos >= RightSegment->ChunkY + RightSegment->Scale)
+				{
+					RightSegment = Generator->GetSegment(Generator->RootSegment, RightSegment->ChunkX, ChunkPos);
+				}
+
+				size_t ChunkDiff = (ChunkY - RightSegment->ChunkY) * LANDSCAPE_CHUNK_SIZE;
+				p = SamplePointY(RightSegment, ChunkDiff + y * this->Scale, RightSegment->Scale);
+			}
+			else if (x < LANDSCAPE_CHUNK_SIZE && y >= LANDSCAPE_CHUNK_SIZE)
+			{
+				size_t ChunkPos = (x * Scale + ChunkX * LANDSCAPE_CHUNK_SIZE) / LANDSCAPE_CHUNK_SIZE;
+
+				if (ChunkPos >= TopSegment->ChunkX + TopSegment->Scale)
+				{
+					TopSegment = Generator->GetSegment(Generator->RootSegment, ChunkPos, TopSegment->ChunkY);
+				}
+
+				size_t ChunkDiff = (ChunkX - TopSegment->ChunkX) * LANDSCAPE_CHUNK_SIZE;
+				p = SamplePointX(TopSegment, ChunkDiff + x * this->Scale, TopSegment->Scale);
+			}
+			else
+			{
+				p = Chunks[3]->PlaceholderChunk->Points[CornerItemOffset];
+			}
+
+			Vertices.emplace_back(Vector3(
+				x * Scale + ChunkX * LANDSCAPE_CHUNK_SIZE,
+				p.Height,
+				y * Scale + ChunkY * LANDSCAPE_CHUNK_SIZE),
+				Vector2(x * Scale, y * Scale), p.Normal);
+
+			if (x < MaxX - 1 && y < MaxY - 1)
+			{
+				Indices.push_back(i + 0);
+				Indices.push_back(i + MaxX);
+				Indices.push_back(i + MaxX + 1);
+				Indices.push_back(i + 0);
+				Indices.push_back(i + MaxX + 1);
+				Indices.push_back(i + 1);
+			}
+		}
+	}
+}
+
+
+void engine::LandscapeSegment::Draw(graphics::DrawCommand* Pass, ShaderObject* WithShader)
+{
+	if (SegmentMesh)
+	{
+		Pass->DrawVertexBuffer(SegmentMesh);
+	}
+	else
+	{
+		for (auto& i : SubSegments)
+		{
+			i->Draw(Pass, WithShader);
+		}
+	}
+}
+
+void engine::LandscapeSegment::Draw(graphics::DrawCommand* Pass, graphics::ShaderObject* WithShader, graphics::Camera* Cam)
+{
+	if (Cam->Collider.OverlapsBounds(this->Bounds))
+	{
+		if (SegmentMesh)
+		{
+			Pass->DrawVertexBuffer(SegmentMesh);
+		}
+		else
+		{
+			for (auto& i : SubSegments)
+			{
+				i->Draw(Pass, WithShader, Cam);
+			}
+		}
+	}
+}
+
+void engine::LandscapeSegment::CreateVertexBuffer(const Transform& WithTransform)
+{
+	if (this->PlaceholderChunk)
+	{
+		SegmentMesh = VideoSubsystem::Current->Renderer->CreateVertexBuffer(Vertices, Indices);
+		Vertices.clear();
+		Indices.clear();
+		delete this->PlaceholderChunk;
+		PlaceholderChunk = nullptr;
+	}
+	else
+	{
+		for (auto& i : this->SubSegments)
+		{
+			i->CreateVertexBuffer(WithTransform);
+		}
+	}
+	Vector3 SegmentPosition = Vector3(ChunkX, 0.0f, ChunkY) * LANDSCAPE_CHUNK_SIZE;
+	float SegmentScale = float(Scale * LANDSCAPE_CHUNK_SIZE) / 2.0f;
+
+	this->Bounds = BoundingBox(SegmentPosition + Vector3(SegmentScale, 0, SegmentScale), Vector3(SegmentScale, 100.0f, SegmentScale)).Translate(WithTransform);
 }

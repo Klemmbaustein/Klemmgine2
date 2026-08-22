@@ -145,7 +145,6 @@ void engine::editor::ObjectListPanel::DisplayList()
 		{ Name, ListObject{.Name = Name, .FromScene = Current} }
 	).first->second;
 
-
 	size_t Number = 0;
 	for (SceneObject* i : Objects)
 	{

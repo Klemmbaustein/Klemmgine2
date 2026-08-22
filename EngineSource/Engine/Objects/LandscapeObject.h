@@ -15,6 +15,8 @@ namespace engine
 
 		ObjProperty<AssetRef> Material = ObjProperty<AssetRef>("Material", AssetRef::EmptyAsset("kmt"), this);
 
+		LandscapeComponent* Component = nullptr;
+
 	private:
 	};
 }

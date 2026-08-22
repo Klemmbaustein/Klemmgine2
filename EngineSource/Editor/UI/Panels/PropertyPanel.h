@@ -6,10 +6,13 @@
 
 namespace engine::editor
 {
+	class Viewport;
+
 	class PropertyPanel : public EditorPanel
 	{
 	public:
 		PropertyPanel();
+		~PropertyPanel();
 
 		void Update() override;
 		void OnResized() override;
@@ -18,14 +21,17 @@ namespace engine::editor
 
 		void OnThemeChanged() override;
 
-		SceneObject* SelectedObj = nullptr;
+		Viewport* CurrentView = nullptr;
 
 	private:
 
 		void AddEntry(ObjPropertyBase* Entry, SceneObject* Object);
 
+		SceneObject* NewSelection = nullptr;
 		PropertyMenu* Properties = nullptr;
 		Transform OldObjectTransform;
 		kui::Timer UpdateTimer;
+
+		bool HasSelection = false;
 	};
 }

@@ -17,6 +17,7 @@ namespace engine::editor
 		kui::EditorPosition At;
 		size_t Length = 0;
 		string Description;
+		ds::ErrorCode Code = ds::ErrorCode::internalError;
 	};
 
 	class ScriptEditorContext
@@ -67,6 +68,8 @@ namespace engine::editor
 
 		void PublishUIData(kui::markup::UIElement& For, string File);
 		void PublishUIData(kui::markup::MarkupElement& For, string File);
+
+		void ClearErrorsForFile(string Name);
 
 		void UpdateFilesList();
 

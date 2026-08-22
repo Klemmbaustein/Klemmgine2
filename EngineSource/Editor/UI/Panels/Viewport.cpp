@@ -5,6 +5,7 @@
 #include <Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Engine.h>
 #include <Engine/Graphics/Effects/PostProcess.h>
+#include <Editor/UI/ObjectEditors/LandscapeObjectEditor.h>
 #include <Core/Platform/Platform.h>
 #include <Engine/Input.h>
 #include <Core/File/TextSerializer.h>
@@ -33,8 +34,6 @@ engine::editor::Viewport::Viewport()
 
 	ViewportBackground = new UIBackground(false, 0, 1, 0, HoleShader);
 	ViewportBackground
-		->SetVerticalAlign(UIBox::Align::Centered)
-		->SetHorizontalAlign(UIBox::Align::Centered)
 		->SetPadding(1_px)
 		->SetUpPadding(0);
 	ViewportBackground->HasMouseCollision = true;
@@ -68,25 +67,12 @@ engine::editor::Viewport::Viewport()
 	ViewportStatusText
 		->SetPadding(UISize::Pixels(4));
 
-	LoadingScreenBox = new UIBox(true);
-
-	LoadingScreenBox
-		->SetVerticalAlign(UIBox::Align::Centered)
-		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
-			->SetBackgroundColor(EditorUI::Theme.LightBackground)
-			->SetPadding(15_px, 15_px, 15_px, 5_px))
-		->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
-			->SetPadding(10_px))
-		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
-			->SetPadding(5_px, 5_px, 5_px, 15_px));
-
 	auto ViewportDropBox = new DroppableBox(false, std::bind(&Viewport::OnItemDropped, this, std::placeholders::_1));
 
 	Background
 		->AddChild(ViewportToolbar)
 		->AddChild(ViewportDropBox
-			->AddChild(ViewportBackground
-				->AddChild(LoadingScreenBox)))
+			->AddChild(ViewportBackground))
 		->AddChild(StatusBarBox
 			->AddChild(ViewportStatusText));
 
@@ -224,6 +210,68 @@ engine::editor::Viewport::Viewport()
 	Grid->CastShadow = false;
 	Grid->SetScale(1000);
 	Grid->UpdateTransform(false);
+
+	this->OnSelectionChanged.Add(this, [this](SceneObject* Obj) {
+		if (!Obj || Engine::IsPlaying)
+		{
+			ViewportBackground->DeleteChildren();
+			return;
+		}
+
+		std::vector<UIBox*> ViewportBoxes;
+
+		for (auto& i : this->ObjectEditors)
+		{
+			if (Reflection::ObjectTypes[Obj->TypeID].IsSubclassOf(i->Type))
+			{
+				ViewportBoxes.push_back(i->ShowContextUI(this, Obj));
+			}
+		}
+
+		if (!ViewportBoxes.size())
+		{
+			ViewportBackground->DeleteChildren();
+		}
+
+		ViewportBackground->SetHorizontalAlign(UIBox::Align::Reverse);
+		ViewportBackground->SetVerticalAlign(UIBox::Align::Reverse);
+
+		UIBackground* Bg = new UIBackground(false, 0, EditorUI::Theme.Background, SizeVec(150_px, 0));
+		Bg->HasMouseCollision = true;
+
+		Bg->SetBorder(1_px, EditorUI::Theme.Highlight1);
+		Bg->SetCorner(EditorUI::Theme.CornerSize);
+		Bg->SetPadding(5_px);
+
+		for (auto& i : ViewportBoxes)
+		{
+			Bg->AddChild(i);
+		}
+		ViewportBackground->AddChild(Bg);
+	});
+
+	ObjectEditors.push_back(new LandscapeObjectEditor());
+}
+
+void engine::editor::Viewport::ShowLoadScreen()
+{
+	auto LoadingScreenBox = new UIBox(true);
+
+	LoadingScreenBox
+		->SetVerticalAlign(UIBox::Align::Centered)
+		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
+			->SetBackgroundColor(EditorUI::Theme.LightBackground)
+			->SetPadding(15_px, 15_px, 15_px, 5_px))
+		->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
+			->SetPadding(10_px))
+		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
+			->SetPadding(5_px, 5_px, 5_px, 15_px));
+
+
+	ViewportBackground
+		->SetVerticalAlign(UIBox::Align::Centered)
+		->SetHorizontalAlign(UIBox::Align::Centered)
+		->AddChild(LoadingScreenBox);
 }
 
 bool engine::editor::Viewport::GetShowUI()
@@ -284,6 +332,7 @@ engine::editor::Viewport::~Viewport()
 {
 	delete Translate;
 	delete Grid;
+	Current = nullptr;
 }
 
 void engine::editor::Viewport::OnResized()
@@ -323,6 +372,7 @@ void engine::editor::Viewport::ClearSelected()
 		HighlightObject(i, false);
 	}
 	SelectedObjects.clear();
+	OnSelectionChanged.Invoke(nullptr);
 }
 
 void engine::editor::Viewport::Update()
@@ -332,7 +382,20 @@ void engine::editor::Viewport::Update()
 	Window* Win = VideoSystem->MainWindow;
 	FameCount++;
 
-	LoadingScreenBox->IsVisible = SceneSubsystem::Current && !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
+	bool ShouldLoad = SceneSubsystem::Current && !SceneSubsystem::Current->Main && SceneSubsystem::Current->IsLoading;
+	if (IsLoading != ShouldLoad)
+	{
+		IsLoading = ShouldLoad;
+		if (ShouldLoad)
+		{
+			ShowLoadScreen();
+		}
+		else
+		{
+			ViewportBackground->DeleteChildren();
+		}
+	}
+
 	PolledForText = Win->Input.PollForText;
 
 	if ((StatsRedrawTimer.Get() > 1 || RedrawStats))
@@ -533,18 +596,6 @@ void engine::editor::Viewport::OnEditorFocus()
 void engine::editor::Viewport::OnThemeChanged()
 {
 	ViewportStatusText->SetColor(EditorUI::Theme.Text);
-	delete LoadingScreenBox;
-	LoadingScreenBox = new UIBox(true);
-
-	LoadingScreenBox
-		->SetVerticalAlign(UIBox::Align::Centered)
-		->AddChild((new UISpinner(0, EditorUI::Theme.Highlight1, 32_px))
-			->SetBackgroundColor(EditorUI::Theme.LightBackground)
-			->SetPadding(15_px, 15_px, 15_px, 5_px))
-		->AddChild((new UIBackground(true, 0, EditorUI::Theme.BackgroundHighlight, SizeVec(1_px, UISize::Parent(1))))
-			->SetPadding(10_px))
-		->AddChild((new UIText(12_px, EditorUI::Theme.Text, "Loading scene...", EditorUI::EditorFont))
-			->SetPadding(5_px, 5_px, 5_px, 15_px));
 }
 
 void engine::editor::Viewport::SceneChanged()
@@ -843,6 +894,28 @@ void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)
 void engine::editor::Viewport::UpdateSelection()
 {
 	Scene* Current = Scene::GetMain();
+	if (Current)
+	{
+		SceneObject* New = nullptr;
+		if (!SelectedObjects.empty())
+		{
+			New = *SelectedObjects.begin();
+		}
+
+		if (New != SelectedObj)
+		{
+			SelectedObj = New;
+			OnSelectionChanged.Invoke(SelectedObj);
+		}
+	}
+	else
+	{
+		if (SelectedObj)
+		{
+			SelectedObj = nullptr;
+			OnSelectionChanged.Invoke(SelectedObj);
+		}
+	}
 
 	if (!Current)
 		return;
