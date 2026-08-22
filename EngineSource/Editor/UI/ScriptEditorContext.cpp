@@ -21,6 +21,7 @@ engine::editor::ScriptEditorContext::ScriptEditorContext()
 			.At = EditorPosition(At.position.startPos, At.position.line),
 			.Length = At.position.endPos - At.position.startPos,
 			.Description = Description,
+			.Code = code,
 			});
 	};
 
@@ -141,7 +142,7 @@ void engine::editor::ScriptEditorContext::UpdateFile(const string& Content, cons
 {
 	OnChange(Name);
 	ScheduleContextTask([this, Content = Content, Name = Name] {
-		NewErrors[Name].clear();
+		ClearErrorsForFile(Name);
 		if (file::Extension(Name) == "kui")
 		{
 			CompileUIFile(Content, Name, true);
@@ -151,6 +152,31 @@ void engine::editor::ScriptEditorContext::UpdateFile(const string& Content, cons
 			this->ScriptService->updateFile(Content, Name);
 		}
 	});
+}
+
+void engine::editor::ScriptEditorContext::ClearErrorsForFile(string Name)
+{
+	NewErrors[Name].clear();
+
+	for (auto& File : this->NewErrors)
+	{
+		bool Found = false;
+
+		do
+		{
+			Found = false;
+
+			for (auto Err = File.second.begin(); Err != File.second.end(); Err++)
+			{
+				if (int(Err->Code) < 2000 || int(Err->Code) >= 3000)
+				{
+					File.second.erase(Err);
+					Found = true;
+					break;
+				}
+			}
+		} while (Found);
+	}
 }
 
 void engine::editor::ScriptEditorContext::RemoveFile(const string& Name)

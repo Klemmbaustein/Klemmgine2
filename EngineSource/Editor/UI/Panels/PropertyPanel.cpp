@@ -1,12 +1,7 @@
 #include "PropertyPanel.h"
 #include <Editor/UI/EditorUI.h>
-#include <kui/UI/UITextField.h>
 #include "Viewport.h"
-#include <kui/Window.h>
 #include <Engine/Scene.h>
-#include <PropertyPanel.kui.hpp>
-#include <Core/Log.h>
-#include <Editor/UI/Elements/AssetSelector.h>
 using namespace kui;
 
 engine::editor::PropertyPanel::PropertyPanel()
@@ -15,42 +10,37 @@ engine::editor::PropertyPanel::PropertyPanel()
 	LoadPropertiesFrom(nullptr);
 }
 
+engine::editor::PropertyPanel::~PropertyPanel()
+{
+	if (Viewport::Current)
+	{
+		Viewport::Current->OnSelectionChanged.Remove(this);
+	}
+}
+
 void engine::editor::PropertyPanel::Update()
 {
-	if (Viewport::Current && Scene::GetMain())
+	if (Viewport::Current != CurrentView)
 	{
-		SceneObject* New = nullptr;
-		if (!Viewport::Current->SelectedObjects.empty())
-		{
-			New = *Viewport::Current->SelectedObjects.begin();
-		}
-
-		if (New != SelectedObj)
-		{
-			SelectedObj = New;
-			LoadPropertiesFrom(SelectedObj);
-		}
-		else if (UpdateTimer.Get() > 0.1f && SelectedObj
-			&& OldObjectTransform.Matrix != SelectedObj->ObjectTransform.Matrix)
-		{
-			this->UpdateTimer.Reset();
-			OldObjectTransform = SelectedObj->ObjectTransform.Matrix;
-			Properties->UpdateProperties();
-		}
+		CurrentView = Viewport::Current;
+		CurrentView->OnSelectionChanged.Add(this, [this](SceneObject* Obj) {
+			this->NewSelection = Obj;
+			LoadPropertiesFrom(Obj);
+		});
 	}
-	else
+
+	if (UpdateTimer.Get() > 0.1f && NewSelection
+		&& OldObjectTransform.Matrix != NewSelection->ObjectTransform.Matrix)
 	{
-		if (SelectedObj)
-		{
-			SelectedObj = nullptr;
-			LoadPropertiesFrom(SelectedObj);
-		}
+		this->UpdateTimer.Reset();
+		OldObjectTransform = NewSelection->ObjectTransform.Matrix;
+		Properties->UpdateProperties();
 	}
 }
 
 void engine::editor::PropertyPanel::OnResized()
 {
-	LoadPropertiesFrom(SelectedObj);
+	LoadPropertiesFrom(NewSelection);
 }
 
 void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
@@ -69,15 +59,17 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 		Properties->SetMode(PropertyMenu::Mode::DisplayText);
 		Properties->AddChild((new UIText(11_px, EditorUI::Theme.Text, "Nothing selected", EditorUI::EditorFont))
 			->SetPadding(10_px));
+		HasSelection = false;
 		return;
 	}
+	HasSelection = true;
 
 	Properties->SetMode(PropertyMenu::Mode::DisplayEntries);
 	Properties->CreateNewHeading("Object: " + Object->Name, EditorUI::Instance->ObjectIcons.GetObjectIcon(Object->TypeID));
 
 	Properties->CreateNewHeading("Object");
 
-	auto OnObjectChanged = [Obj = SelectedObj] {
+	auto OnObjectChanged = [Obj = Object] {
 		Viewport::Current->OnObjectChanged(Obj);
 	};
 
@@ -90,7 +82,7 @@ void engine::editor::PropertyPanel::LoadPropertiesFrom(SceneObject* Object)
 	Properties->AddInfoEntry("Class", Reflection::ObjectTypes[Object->TypeID].Name);
 
 	Properties->CreateNewHeading(Reflection::ObjectTypes[Object->TypeID].Name);
-	OldObjectTransform = SelectedObj->ObjectTransform.Matrix;
+	OldObjectTransform = Object->ObjectTransform.Matrix;
 
 	for (ObjPropertyBase* i : Object->Properties)
 	{

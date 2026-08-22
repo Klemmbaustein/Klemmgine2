@@ -3,9 +3,11 @@
 #include <Editor/UI/Elements/Toolbar.h>
 #include <Editor/UI/Gizmos/TranslateGizmo.h>
 #include <Editor/UI/EditorUI.h>
+#include <Editor/UI/ObjectEditors/SceneObjectEditor.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <kui/Timer.h>
+#include <Core/Event.h>
 #include <kui/UI/UIText.h>
 #include <set>
 #include <stack>
@@ -73,8 +75,13 @@ namespace engine::editor
 
 		static kui::Vec2f GetMousePositionViewportRelative();
 
-	private:
+		Event<SceneObject*> OnSelectionChanged;
 
+		std::vector<SceneObjectEditor*> ObjectEditors;
+
+		SceneObjectEditor* CurrentEditor = nullptr;
+
+	private:
 		void OnItemDropped(EditorUI::DraggedItem Item);
 		bool ShowUI = false;
 		bool LastCursorVisible = false;
@@ -92,15 +99,17 @@ namespace engine::editor
 		void UpdateSceneControls(Scene* Current, kui::Window* Win);
 
 		bool PolledForText = false;
+		bool IsLoading = false;
 
 		Toolbar* ViewportToolbar = nullptr;
 		TranslateGizmo* Translate = nullptr;
 
 		string LastSceneName;
+		SceneObject* SelectedObj = nullptr;
 		void UpdateName();
+		void ShowLoadScreen();
 
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;
-		kui::UIBox* LoadingScreenBox = nullptr;
 	};
 }

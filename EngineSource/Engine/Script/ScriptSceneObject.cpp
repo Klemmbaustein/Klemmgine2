@@ -212,6 +212,20 @@ void engine::script::ScriptSceneObject::LoadProperties()
 				Value = p->Value;
 			};
 		}
+		else if (i.type == BoolType::BOOL_ID)
+		{
+			ds::Bool Value = *reinterpret_cast<ds::Bool*>(this->ScriptData->getBody() + i.offset);
+
+			auto p = new ObjProperty<bool>(Name, Value, this);
+			p->IsHidden = !Visible;
+			InitializePropertyFlags(p, Hints);
+
+			p->OnChanged = [this, i, p] {
+				Bool& Value = *reinterpret_cast<Bool*>(this->ScriptData->getBody() + i.offset);
+
+				Value = p->Value;
+			};
+		}
 		else
 		{
 			Log::Warn(str::Format("%s: The property '%s' has an unsupported type.",
