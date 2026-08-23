@@ -64,7 +64,7 @@ namespace engine
 		void BuildSegments(LandscapeSegment* From, size_t X, size_t Y, size_t Scale);
 		LandscapeSegment* GetSegment(LandscapeSegment* From, size_t ChunkX, size_t ChunkY);
 
-		size_t CalculateLodScale(size_t X, size_t Y, size_t Scale);
+		size_t CalculateLodScale(size_t X, size_t Y, size_t Scale) const;
 	};
 
 	class LandscapeComponent : public DrawableComponent
