@@ -5,6 +5,7 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/ThreadPool.h>
+#include <Engine/Input.h>
 
 using namespace engine::graphics;
 using namespace engine;
@@ -99,6 +100,11 @@ void engine::LandscapeComponent::SimpleDraw(graphics::Renderer* Render, graphics
 
 void engine::LandscapeComponent::Update()
 {
+	if (input::IsKeyHeld(input::Key::SPACE))
+	{
+		return;
+	}
+
 	if (Generator->IsDone)
 	{
 		Generator->IsDone = false;
@@ -203,7 +209,7 @@ void engine::LandscapeMeshGenerator::MergeSegments(LandscapeSegment* From, Lands
 			if (BottomSegment && BottomSegment->Scale > From->Scale)
 			{
 				From->BottomScaleDifference = BottomSegment->Scale / From->Scale;
-				for (size_t x = 0; x < LANDSCAPE_CHUNK_SIZE; x += From->BottomScaleDifference)
+				for (size_t x = 0; x < LANDSCAPE_CHUNK_SIZE - BottomSegment->Scale; x += From->BottomScaleDifference)
 				{
 					LandscapePoint p = From->PlaceholderChunk->Points[x];
 					p.Interpolate(From->PlaceholderChunk->Points[x + From->BottomScaleDifference], 0.5f);
@@ -294,7 +300,7 @@ LandscapeSegment* engine::LandscapeMeshGenerator::GetSegment(LandscapeSegment* F
 	return nullptr;
 }
 
-size_t engine::LandscapeMeshGenerator::CalculateLodScale(size_t X, size_t Y, size_t Scale)
+size_t engine::LandscapeMeshGenerator::CalculateLodScale(size_t X, size_t Y, size_t Scale) const
 {
 	Vector3 SegmentPosition = Vector3(X, 0.0f, Y);
 	float SegmentScale = float(Scale) / 2.0f;
@@ -303,7 +309,7 @@ size_t engine::LandscapeMeshGenerator::CalculateLodScale(size_t X, size_t Y, siz
 
 	float Distance = Vector3::Distance(this->CameraPosition / LANDSCAPE_CHUNK_SIZE, SegmentPosition) - SegmentScale;
 
-	return std::max(Distance / 2.0f, 2.0f);
+	return std::max(Distance / 1.5f, 2.0f);
 }
 
 engine::LandscapeSegment::LandscapeSegment(size_t X, size_t Y, size_t Scale)
@@ -421,7 +427,7 @@ void engine::LandscapeSegment::BuildBuffer(LandscapeSegment* Chunks[4], Landscap
 			{
 				if (RightSegment && x + BottomSizeScale >= LANDSCAPE_CHUNK_SIZE && y < 1)
 				{
-					p = Chunks[0]->PlaceholderChunk->Points[x - 1 + y * LANDSCAPE_CHUNK_SIZE];
+					p = Chunks[0]->PlaceholderChunk->Points[x > 0 ? x - 1 : 0];
 					size_t ChunkDiff = (ChunkY - RightSegment->ChunkY) * LANDSCAPE_CHUNK_SIZE;
 					auto p2 = SamplePointY(RightSegment, ChunkDiff + y * this->Scale, RightSegment->Scale);
 
@@ -429,7 +435,7 @@ void engine::LandscapeSegment::BuildBuffer(LandscapeSegment* Chunks[4], Landscap
 				}
 				else if (TopSegment && y + LeftSizeScale >= LANDSCAPE_CHUNK_SIZE && x < 1)
 				{
-					p = Chunks[0]->PlaceholderChunk->Points[1 + (y - 1) * LANDSCAPE_CHUNK_SIZE];
+					p = Chunks[0]->PlaceholderChunk->Points[(y - 1) * LANDSCAPE_CHUNK_SIZE];
 					size_t ChunkDiff = (ChunkX - TopSegment->ChunkX) * LANDSCAPE_CHUNK_SIZE;
 					auto p2 = SamplePointX(TopSegment, ChunkDiff + x * this->Scale, TopSegment->Scale);
 
