@@ -2,57 +2,64 @@
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
 #include <Engine/Physics/Physics.h>
-#include <Engine/Debug/TimeLogger.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/ThreadPool.h>
-#include <Engine/Input.h>
+#include <Engine/Debug/TimeLogger.h>
 
 using namespace engine::graphics;
 using namespace engine;
 
-constexpr uint32 SIZE = 128;
-
 void engine::LandscapeComponent::OnAttached()
 {
-	Data = std::make_shared<LandscapeData>(16, 16);
-	Generator = std::make_shared<LandscapeMeshGenerator>();
-	Generator->Data = Data;
+}
 
-	size_t NumChunks = Data->Width * Data->Height;
+void engine::LandscapeComponent::Load(AssetRef HeightmapFile)
+{
+	if (Collider)
 	{
-		Generate();
+		GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
+		GetRootObject()->GetScene()->Graphics.RemoveDrawnComponent(this);
 	}
-	//for (auto& i : Vertices)
-	//{
-	//	i.Normal = Vector3(0);
-	//}
+	if (RootSegment)
+	{
+		delete RootSegment;
+		CanGenerate = false;
+	}
 
-	//for (size_t i = 0; i < Indices.size(); i += 3)
-	//{
-	//	size_t A = Indices[i], B = Indices[i + 1], C = Indices[i + 2];
-	//	Vector3 n = Vector3::Cross(Vertices[B].Position - Vertices[A].Position, Vertices[C].Position - Vertices[A].Position);
-	//	Vertices[A].Normal += n;
-	//	Vertices[B].Normal += n;
-	//	Vertices[C].Normal += n;
-	//}
-	//for (auto& v : Vertices)
-	//{
-	//	v.Normal = v.Normal.Normalize();
-	//}
+	RootSegment = nullptr;
+	Collider = nullptr;
 
-	std::vector<float> Samples;
-	Samples.resize(SIZE * SIZE);
-	Collider = new physics::HeightMapBody(Samples, SIZE, WorldTransform,
-		physics::MotionType::Static, physics::Layer::Static, this);
+	if (!HeightmapFile.Exists())
+	{
+		return;
 
-	GetRootObject()->GetScene()->Physics.AddBody(Collider, true, true);
-	GetRootObject()->GetScene()->Graphics.AddDrawnComponent(this);
+	}
+
+	auto PreLoaded = GetRootObject()->GetScene()->GetPreLoadedAsset<LandscapeDataRef*>(HeightmapFile);
+	if (PreLoaded)
+	{
+		Data = PreLoaded->Ptr;
+	}
+	else
+	{
+		Data = std::make_shared<LandscapeData>(HeightmapFile);
+	}
+
+	InitializeMesh();
 }
 
 void engine::LandscapeComponent::OnDetached()
 {
-	GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
-	GetRootObject()->GetScene()->Graphics.RemoveDrawnComponent(this);
+	if (Collider)
+	{
+		GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
+		GetRootObject()->GetScene()->Graphics.RemoveDrawnComponent(this);
+	}
+
+	if (RootSegment)
+	{
+		delete RootSegment;
+	}
 }
 
 void engine::LandscapeComponent::Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
@@ -100,12 +107,7 @@ void engine::LandscapeComponent::SimpleDraw(graphics::Renderer* Render, graphics
 
 void engine::LandscapeComponent::Update()
 {
-	if (input::IsKeyHeld(input::Key::SPACE))
-	{
-		return;
-	}
-
-	if (Generator->IsDone)
+	if (Generator && Generator->IsDone)
 	{
 		Generator->IsDone = false;
 		if (this->RootSegment)
@@ -114,12 +116,14 @@ void engine::LandscapeComponent::Update()
 		}
 		this->RootSegment = Generator->RootSegment;
 		this->RootSegment->CreateVertexBuffer(this->WorldTransform);
+		this->DrawBoundingBox = RootSegment->Bounds;
 		CanGenerate = true;
 	}
 
 	if (CanGenerate)
 	{
-		Generator->CameraPosition = WorldTransform.Inverse().ApplyTo(GetRootObject()->GetScene()->Graphics.UsedCamera->Position);
+		Generator->CameraPosition = WorldTransform.Inverse().ApplyTo(GetRootObject()->GetScene()->Graphics.UsedCamera->GetPosition());
+		Generator->LodFalloff = this->LodFalloff;
 		if (CheckLod(RootSegment))
 		{
 			Generate();
@@ -134,10 +138,19 @@ void engine::LandscapeComponent::Update()
 bool engine::LandscapeComponent::UpdateTransform(bool Dirty)
 {
 	bool Result = ObjectComponent::UpdateTransform(Dirty);
-	if (Result)
+	if (Result && Collider)
 	{
-		this->DrawBoundingBox = BoundingBox(Vector3(SIZE) * Vector3(1, 0, 1), SIZE).Translate(WorldTransform);
 		this->IsDirty = true;
+
+		Vector3 Position, Scale;
+		Rotation3 Rotation;
+		WorldTransform.Decompose(Position, Rotation, Scale);
+		Collider->SetPositionAndRotation(Position, Rotation);
+		if (LastScale != Scale)
+		{
+			Collider->Scale((Scale / LastScale).Max(0.0000001f));
+		}
+		LastScale = Scale.Max(0.0000001f);
 	}
 	return Result;
 }
@@ -179,10 +192,40 @@ bool engine::LandscapeComponent::CheckLod(LandscapeSegment* ForSegment)
 	return ForSegment->Scale < CalcScale;
 }
 
+void engine::LandscapeComponent::InitializeMesh()
+{
+	Generator = std::make_shared<LandscapeMeshGenerator>();
+	Generator->Data = Data;
+
+	Generate();
+
+	Collider = Data->Collider;
+
+	if (!Data->Collider)
+	{
+		Collider = new physics::HeightMapBody(Data.get(), WorldTransform,
+			physics::MotionType::Static, physics::Layer::Static, this);
+	}
+	else
+	{
+		Collider->Parent = this;
+	}
+
+	GetRootObject()->GetScene()->Physics.AddBody(Collider, true, true);
+	GetRootObject()->GetScene()->Graphics.AddDrawnComponent(this);
+
+	Vector3 Position, Scale;
+	Rotation3 Rotation;
+	WorldTransform.Decompose(Position, Rotation, Scale);
+	Collider->SetPositionAndRotation(Position, Rotation);
+	Collider->Scale(Scale);
+}
+
 LandscapeSegment* engine::LandscapeMeshGenerator::BuildSegment(size_t X, size_t Y, size_t Scale)
 {
 	if (Scale < CalculateLodScale(X, Y, Scale))
 	{
+		std::lock_guard g{ Data->Lock };
 		return new LandscapeSegment(Data->CombineChunks(X * LANDSCAPE_CHUNK_SIZE, Y * LANDSCAPE_CHUNK_SIZE, Scale),
 			X, Y, Scale);
 	}
@@ -202,6 +245,7 @@ void engine::LandscapeMeshGenerator::MergeSegments(LandscapeSegment* From, Lands
 {
 	if (From->PlaceholderChunk)
 	{
+		std::lock_guard g{ Data->Lock };
 		if (Bottom && From->ChunkY > 0)
 		{
 			auto BottomSegment = GetSegment(Bottom, From->ChunkX, From->ChunkY - 1);
@@ -309,7 +353,7 @@ size_t engine::LandscapeMeshGenerator::CalculateLodScale(size_t X, size_t Y, siz
 
 	float Distance = Vector3::Distance(this->CameraPosition / LANDSCAPE_CHUNK_SIZE, SegmentPosition) - SegmentScale;
 
-	return std::max(Distance / 1.5f, 2.0f);
+	return std::max(Distance / LodFalloff, 2.0f);
 }
 
 engine::LandscapeSegment::LandscapeSegment(size_t X, size_t Y, size_t Scale)
@@ -330,6 +374,7 @@ engine::LandscapeSegment::LandscapeSegment(LandscapeChunk* PlaceholderChunk, siz
 
 void engine::LandscapeSegment::BuildBuffer(LandscapeSegment* Chunks[4], LandscapeMeshGenerator* Generator)
 {
+	std::lock_guard g{ Generator->Data->Lock };
 	size_t MaxX = Chunks[1] ? LANDSCAPE_CHUNK_SIZE + 1 : LANDSCAPE_CHUNK_SIZE;
 	size_t MaxY = Chunks[2] ? LANDSCAPE_CHUNK_SIZE + 1 : LANDSCAPE_CHUNK_SIZE;
 	Vertices.reserve(MaxX * MaxY);
@@ -479,7 +524,7 @@ void engine::LandscapeSegment::BuildBuffer(LandscapeSegment* Chunks[4], Landscap
 				x * Scale + ChunkX * LANDSCAPE_CHUNK_SIZE,
 				p.Height,
 				y * Scale + ChunkY * LANDSCAPE_CHUNK_SIZE),
-				Vector2(x * Scale, y * Scale), p.Normal);
+				Vector2(x * Scale * Generator->UvScale, y * Scale * Generator->UvScale), p.Normal);
 
 			if (x < MaxX - 1 && y < MaxY - 1)
 			{

@@ -12,7 +12,7 @@ using namespace engine;
 SerializedValue engine::SceneObject::Serialize()
 {
 	SerializedValue SerializedProperties = std::vector<SerializedData>();
-
+	OnSaved();
 	for (auto& i : this->Properties)
 	{
 		SerializedProperties.Append({

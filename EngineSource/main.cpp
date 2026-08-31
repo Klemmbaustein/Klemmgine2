@@ -3,7 +3,6 @@
 #include <Engine/Graphics/VideoSubsystem.h>
 #include "Core/Types.h"
 #include <Engine/ProjectFile.h>
-#include <filesystem>
 #include <Core/LaunchArgs.h>
 
 using namespace engine;

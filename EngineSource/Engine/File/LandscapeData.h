@@ -2,10 +2,18 @@
 #include <Core/Vector.h>
 #include <array>
 #include <Core/BoundingBox.h>
+#include <Core/File/BinaryStream.h>
+#include <Core/Types.h>
+#include <Engine/File/AssetRef.h>
+#include <mutex>
+#include <memory>
+#include <Engine/Physics/Physics.h>
 
 namespace engine
 {
 	constexpr inline size_t LANDSCAPE_CHUNK_SIZE = 16;
+
+	class ObjectComponent;
 
 	class LandscapePoint
 	{
@@ -33,8 +41,13 @@ namespace engine
 	public:
 
 		LandscapeData(size_t Width, size_t Height);
+		LandscapeData(AssetRef Asset);
 		LandscapeData();
 		~LandscapeData();
+
+		void InitializeNormal();
+		void LoadCollider(ObjectComponent* Component);
+		void InitializeNormalForRange(int64 X, int64 Y, int64 W, int64 H);
 
 		std::vector<LandscapeChunk*> GetOverlappingChunks(BoundingBox Box);
 
@@ -54,5 +67,17 @@ namespace engine
 		std::vector<LandscapeChunk> Chunks;
 		size_t Width = 0;
 		size_t Height = 0;
+
+		std::mutex Lock;
+		physics::HeightMapBody* Collider = nullptr;
+
+		bool Changed = false;
+
+		void SaveToStream(IBinaryStream* Stream);
+	};
+
+	struct LandscapeDataRef
+	{
+		std::shared_ptr<LandscapeData> Ptr;
 	};
 }

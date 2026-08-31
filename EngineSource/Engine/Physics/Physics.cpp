@@ -3,6 +3,7 @@
 #include <Engine/Scene.h>
 #include <Engine/Physics/Internal/JoltPhysics.h>
 #include <Engine/Engine.h>
+#include <Engine/File/LandscapeData.h>
 using namespace engine::physics;
 
 PhysicsBody::PhysicsBody(BodyType NativeType, Transform BodyTransform,
@@ -129,6 +130,11 @@ void engine::physics::PhysicsManager::PreLoadMesh(GraphicsModel* Mesh)
 	PhysicsSystem->PreLoadMesh(Mesh);
 }
 
+void engine::physics::PhysicsManager::PreLoadShape(physics::PhysicsBody* ForBody)
+{
+	PhysicsSystem->CreateShape(ForBody);
+}
+
 HitResult engine::physics::HitResult::GetAverageHit(std::vector<HitResult> Hits)
 {
 	if (!Hits.size())
@@ -180,12 +186,11 @@ MeshBody::MeshBody(GraphicsModel* Mesh, Transform MeshTransform, MotionType Coll
 	this->Model = Mesh;
 }
 
-HeightMapBody::HeightMapBody(const std::vector<float>& Samples, uint32 Size, Transform MeshTransform,
+HeightMapBody::HeightMapBody(LandscapeData* Landscape, Transform MeshTransform,
 	MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent)
 	: PhysicsBody(BodyType::HeightMap, MeshTransform, ColliderMovability, CollisionLayers, Parent)
 {
-	this->Samples = Samples;
-	this->Size = Size;
+	this->Landscape = Landscape;
 }
 
 void engine::physics::PhysicsBody::SetVelocity(Vector3 NewVelocity)

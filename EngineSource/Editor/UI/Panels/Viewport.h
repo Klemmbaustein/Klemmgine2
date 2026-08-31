@@ -81,6 +81,8 @@ namespace engine::editor
 
 		SceneObjectEditor* CurrentEditor = nullptr;
 
+		void ClearOverlay();
+
 	private:
 		void OnItemDropped(EditorUI::DraggedItem Item);
 		bool ShowUI = false;
@@ -108,6 +110,7 @@ namespace engine::editor
 		SceneObject* SelectedObj = nullptr;
 		void UpdateName();
 		void ShowLoadScreen();
+		Scene* LastScene = nullptr;
 
 		kui::UIText* ViewportStatusText = nullptr;
 		kui::UIBox* StatusBarBox = nullptr;

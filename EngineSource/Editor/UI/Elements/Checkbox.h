@@ -12,6 +12,8 @@ namespace engine::editor
 
 		void OnButtonClicked() override;
 
+		void UpdateImage();
+
 		bool Value = false;
 	};
 }

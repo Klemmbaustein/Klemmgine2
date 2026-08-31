@@ -44,6 +44,11 @@ namespace engine
 
 		std::vector<ObjPropertyBase*> Properties;
 
+		virtual void OnSaved()
+		{
+
+		}
+
 #ifndef ENGINE_PLUGIN
 
 		SerializedValue Serialize();
