@@ -132,9 +132,13 @@ void engine::Engine::LoadProjectFile()
 	{
 		this->OpenedProject = new ProjectFile("Assets/project.json");
 	}
-	if (resource::FileExists("project.json"))
+	else if (resource::FileExists("project.json"))
 	{
 		this->OpenedProject = new ProjectFile("project.json");
+	}
+	else
+	{
+		this->OpenedProject = new ProjectFile();
 	}
 }
 

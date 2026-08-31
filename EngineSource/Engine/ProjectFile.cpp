@@ -25,6 +25,10 @@ engine::ProjectFile::ProjectFile(string Path)
 	}
 }
 
+engine::ProjectFile::ProjectFile()
+{
+}
+
 SerializedValue engine::ProjectFile::Serialize()
 {
 	return SerializedValue({

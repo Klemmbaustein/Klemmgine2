@@ -8,6 +8,7 @@ namespace engine
 	{
 	public:
 		ProjectFile(string Path);
+		ProjectFile();
 
 		// Inherited via ISerializable
 		SerializedValue Serialize() override;
