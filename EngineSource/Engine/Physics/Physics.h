@@ -14,6 +14,8 @@ namespace engine
 	{
 		class JoltInstance;
 	}
+
+	class LandscapeData;
 }
 
 namespace engine::physics
@@ -197,8 +199,6 @@ namespace engine::physics
 
 		void* PhysicsSystemBody = nullptr;
 		void* ShapeInfo = nullptr;
-	protected:
-	private:
 	};
 
 	/**
@@ -320,10 +320,9 @@ namespace engine::physics
 
 	struct HeightMapBody : public PhysicsBody
 	{
-		std::vector<float> Samples;
-		uint32 Size;
-		HeightMapBody(const std::vector<float>& Samples, uint32 Size,
-			Transform MeshTransform, MotionType ColliderMovability, Layer CollisionLayers, ObjectComponent* Parent);
+		LandscapeData* Landscape = nullptr;
+		HeightMapBody(LandscapeData* Landscape, Transform MeshTransform, MotionType ColliderMovability,
+			Layer CollisionLayers, ObjectComponent* Parent);
 	};
 
 
@@ -363,6 +362,7 @@ namespace engine::physics
 		void RemoveBody(PhysicsBody* Body);
 
 		void PreLoadMesh(GraphicsModel* Mesh);
+		void PreLoadShape(physics::PhysicsBody* ForBody);
 
 		friend struct PhysicsBody;
 

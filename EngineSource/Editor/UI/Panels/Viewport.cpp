@@ -179,6 +179,8 @@ engine::editor::Viewport::Viewport()
 		Viewport::Current->RedrawStats = true;
 		Viewport::Current->SetName(Viewport::Current->UnsavedChanges
 			? "Viewport*" : "Viewport");
+		ClearSelected();
+		OnSelectionChanged.Invoke(nullptr);
 	}, ShortcutOptions::AllowInText);
 
 	AddShortcut(Key::ESCAPE, { .Shift = true }, [this] {
@@ -214,7 +216,7 @@ engine::editor::Viewport::Viewport()
 	this->OnSelectionChanged.Add(this, [this](SceneObject* Obj) {
 		if (!Obj || Engine::IsPlaying)
 		{
-			ViewportBackground->DeleteChildren();
+			ClearOverlay();
 			return;
 		}
 
@@ -225,12 +227,14 @@ engine::editor::Viewport::Viewport()
 			if (Reflection::ObjectTypes[Obj->TypeID].IsSubclassOf(i->Type))
 			{
 				ViewportBoxes.push_back(i->ShowContextUI(this, Obj));
+				CurrentEditor = i;
 			}
 		}
 
 		if (!ViewportBoxes.size())
 		{
-			ViewportBackground->DeleteChildren();
+			ClearOverlay();
+			return;
 		}
 
 		ViewportBackground->SetHorizontalAlign(UIBox::Align::Reverse);
@@ -248,13 +252,21 @@ engine::editor::Viewport::Viewport()
 			Bg->AddChild(i);
 		}
 		ViewportBackground->AddChild(Bg);
+		ViewportBackground->UpdateElement();
 	});
 
 	ObjectEditors.push_back(new LandscapeObjectEditor());
 }
 
+void engine::editor::Viewport::ClearOverlay()
+{
+	CurrentEditor = nullptr;
+	ViewportBackground->DeleteChildren();
+}
+
 void engine::editor::Viewport::ShowLoadScreen()
 {
+	ClearOverlay();
 	auto LoadingScreenBox = new UIBox(true);
 
 	LoadingScreenBox
@@ -372,7 +384,6 @@ void engine::editor::Viewport::ClearSelected()
 		HighlightObject(i, false);
 	}
 	SelectedObjects.clear();
-	OnSelectionChanged.Invoke(nullptr);
 }
 
 void engine::editor::Viewport::Update()
@@ -392,7 +403,7 @@ void engine::editor::Viewport::Update()
 		}
 		else
 		{
-			ViewportBackground->DeleteChildren();
+			ClearOverlay();
 		}
 	}
 
@@ -513,16 +524,27 @@ void engine::editor::Viewport::Update()
 		UpdateSceneControls(Current, Win);
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
-		&& input::IsLMBClicked && !Translate->HasGrabbedClick)
+		 && !Translate->HasGrabbedClick)
 	{
-		if (!input::IsKeyHeld(input::Key::SHIFT))
+		if (input::IsLMBDown)
 		{
-			Viewport::Current->ClearSelected();
+			if (CurrentEditor && CurrentEditor->HandleMouseClick(this, !input::IsLMBClicked))
+			{
+				return;
+			}
 		}
-		auto hit = RayAtCursor(1000, 0);
-		if (hit.Hit)
+
+		if (input::IsLMBClicked)
 		{
-			this->SelectedObjects.insert(hit.HitComponent->GetRootObject());
+			if (!input::IsKeyHeld(input::Key::SHIFT))
+			{
+				Viewport::Current->ClearSelected();
+			}
+			auto hit = RayAtCursor(1000, 0);
+			if (hit.Hit)
+			{
+				this->SelectedObjects.insert(hit.HitComponent->GetRootObject());
+			}
 		}
 	}
 }
@@ -752,6 +774,7 @@ void engine::editor::Viewport::Run()
 	ObjectChanges = {};
 
 	Viewport::Current->ClearSelected();
+	OnSelectionChanged.Invoke(nullptr);
 	SetFocused();
 
 	if (Scene::GetMain()->Sound)
@@ -896,6 +919,12 @@ void engine::editor::Viewport::UpdateSelection()
 	Scene* Current = Scene::GetMain();
 	if (Current)
 	{
+		if (Current != this->LastScene)
+		{
+			SelectedObjects.clear();
+			LastScene = Current;
+		}
+
 		SceneObject* New = nullptr;
 		if (!SelectedObjects.empty())
 		{

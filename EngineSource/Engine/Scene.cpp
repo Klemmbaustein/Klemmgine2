@@ -1,7 +1,7 @@
 #include "Scene.h"
 #include "Engine.h"
 #include "Subsystem/SceneSubsystem.h"
-#include "Graphics/VideoSubsystem.h"
+#include <Engine/File/LandscapeData.h>
 #include <Core/File/BinarySerializer.h>
 #include <Core/File/TextSerializer.h>
 #include <Engine/File/ModelData.h>
@@ -352,6 +352,14 @@ void engine::Scene::PreLoadAsset(AssetRef Target)
 			TargetPtr = Model;
 		}
 	}
+	if (Target.Extension == "hmp")
+	{
+		auto NewHeightMap = std::make_shared<LandscapeData>(Target);
+		NewHeightMap->LoadCollider(nullptr);
+		TargetPtr = new LandscapeDataRef(NewHeightMap);
+		NewHeightMap->Collider->Manager = &Physics;
+		Physics.PreLoadShape(NewHeightMap->Collider);
+	}
 	if (Target.Extension == "png" && graphics::TextureLoader::Instance)
 	{
 		TargetPtr = const_cast<Texture*>(graphics::TextureLoader::Instance->PreLoadBuffer(Target,
@@ -371,6 +379,10 @@ void engine::Scene::UnloadAsset(const SceneAsset& Target)
 	if (Target.FileReference.Extension == "kmdl")
 	{
 		GraphicsModel::UnloadModel(Target.FileReference);
+	}
+	if (Target.FileReference.Extension == "hmp")
+	{
+		delete reinterpret_cast<LandscapeDataRef*>(Target.LoadedData);
 	}
 	if (Target.FileReference.Extension == "png")
 	{

@@ -136,6 +136,20 @@ namespace engine
 
 		SceneManager* Manager = nullptr;
 
+		template<typename T>
+		T GetPreLoadedAsset(AssetRef Name)
+		{
+			for (auto& i : ReferencedAssets)
+			{
+				if (i.FileReference.FilePath == Name.FilePath)
+				{
+					return reinterpret_cast<T>(i.LoadedData);
+				}
+			}
+
+			return {};
+		}
+
 	private:
 		struct SceneAsset
 		{

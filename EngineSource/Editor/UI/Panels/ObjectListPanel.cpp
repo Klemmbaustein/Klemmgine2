@@ -13,8 +13,7 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 	: EditorPanel("Objects", "ObjectListPanel")
 {
 	Heading = new ObjectListHeader();
-	Heading->search->field->OnValueChanged = [this]()
-	{
+	Heading->search->field->OnValueChanged = [this]() {
 		Filter = str::Lower(Heading->search->field->GetText());
 		DisplayList();
 	};
@@ -69,11 +68,33 @@ engine::editor::ObjectListPanel::ObjectListPanel()
 		->SetSize(UISize::Parent(1))
 		->AddChild(Heading));
 
+	Viewport::Current->OnSelectionChanged.Add(this, [this](SceneObject*) {
+		DisplayList();
+	});
+
+	CurrentViewport = Viewport::Current;
+
 	DisplayList();
+}
+
+engine::editor::ObjectListPanel::~ObjectListPanel()
+{
+	if (Viewport::Current)
+	{
+		Viewport::Current->OnSelectionChanged.Remove(this);
+	}
 }
 
 void engine::editor::ObjectListPanel::Update()
 {
+	if (CurrentViewport != Viewport::Current)
+	{
+		Viewport::Current->OnSelectionChanged.Add(this, [this](SceneObject*) {
+			DisplayList();
+		});
+		CurrentViewport = Viewport::Current;
+	}
+
 	Heading->SetMinSize(Size - UIBox::PixelSizeToScreenSize(2, Heading->GetParentWindow()));
 	Heading->search->SetSize(UISize::Pixels(Heading->GetMinSize().GetPixels().X - 35));
 

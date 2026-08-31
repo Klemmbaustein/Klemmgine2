@@ -81,13 +81,13 @@ void Engine::Run()
 		}
 	}
 
-	ThreadPool::FreeDefaultThreadPool();
 
 	for (int64 i = LoadedSystems.size() - 1; i >= 0; i--)
 	{
 		delete LoadedSystems[i];
 	}
 	LoadedSystems.clear();
+	ThreadPool::FreeDefaultThreadPool();
 
 	delete this;
 }

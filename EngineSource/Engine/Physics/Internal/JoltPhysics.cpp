@@ -8,6 +8,7 @@
 #include <mutex>
 #include <algorithm>
 #include <Core/ThreadPool.h>
+#include <Engine/File/LandscapeData.h>
 
 CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
@@ -385,11 +386,17 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 	case PhysicsBody::BodyType::HeightMap:
 	{
 		HeightMapBody* MapPtr = static_cast<HeightMapBody*>(Body);
+		std::vector<float> LandscapeField;
+		for (size_t y = 0; y < MapPtr->Landscape->Height * LANDSCAPE_CHUNK_SIZE; y++)
+		{
+			for (size_t x = 0; x < MapPtr->Landscape->Width * LANDSCAPE_CHUNK_SIZE; x++)
+			{
+				LandscapeField.push_back(MapPtr->Landscape->GetPointAt(x, y).Height);
+			}
+		}
 
-		std::lock_guard g{ LoadedModelsMutex };
-
-		JPH::HeightFieldShapeSettings Settings = JPH::HeightFieldShapeSettings(MapPtr->Samples.data(),
-			ToJPHVec3(Position), ToJPHVec3(Scale), MapPtr->Size);
+		JPH::HeightFieldShapeSettings Settings = JPH::HeightFieldShapeSettings(LandscapeField.data(),
+			JPH::Vec3(0, 0, 0), ToJPHVec3(Scale), MapPtr->Landscape->Width * LANDSCAPE_CHUNK_SIZE);
 		JPH::ShapeSettings::ShapeResult r;
 		JPH::HeightFieldShape* Shape = new JPH::HeightFieldShape(Settings, r);
 
@@ -399,7 +406,7 @@ JPH::BodyCreationSettings engine::internal::JoltInstance::CreateJoltShapeFromBod
 		}
 
 		return JPH::BodyCreationSettings(Shape,
-			JPH::Vec3(0, 0, 0),
+			ToJPHVec3(Position),
 			ToJPHQuat(Rotation),
 			JPH::EMotionType::Static,
 			JPH::ObjectLayer(MapPtr->CollisionLayers));

@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include "EditorPanel.h"
 #include <Engine/Objects/SceneObject.h>
@@ -6,10 +5,13 @@
 
 namespace engine::editor
 {
+	class Viewport;
+
 	class ObjectListPanel : public EditorPanel
 	{
 	public:
 		ObjectListPanel();
+		~ObjectListPanel();
 
 		ObjectListHeader* Heading = nullptr;
 		virtual void Update() override;
@@ -35,7 +37,8 @@ namespace engine::editor
 		SceneObject* LastSelectedObj = nullptr;
 		string Filter;
 
+		Viewport* CurrentViewport = nullptr;
+
 		void AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth, bool& LastWasSelected);
 	};
 }
-#endif

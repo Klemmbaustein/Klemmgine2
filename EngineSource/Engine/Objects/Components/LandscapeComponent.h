@@ -57,6 +57,8 @@ namespace engine
 		LandscapeSegment* RootSegment = nullptr;
 		std::shared_ptr<LandscapeData> Data = nullptr;
 		bool IsDone = false;
+		float LodFalloff = 1.5f;
+		float UvScale = 1.0f;
 		Vector3 CameraPosition;
 
 		LandscapeSegment* BuildSegment(size_t X, size_t Y, size_t Scale);
@@ -76,6 +78,8 @@ namespace engine
 		void OnAttached() override;
 		void OnDetached() override;
 
+		void Load(AssetRef HeightmapFile);
+
 		void Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) override;
 		void SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With) override;
 
@@ -94,6 +98,15 @@ namespace engine
 		bool CanGenerate = false;
 		bool IsDirty = false;
 
+		float LodFalloff = 1.5f;
+		float UvScale = 1.0f;
+
 		bool CheckLod(LandscapeSegment* ForSegment);
+
+	private:
+
+		void InitializeMesh();
+
+		Vector3 LastScale = 1.0f;
 	};
 }
