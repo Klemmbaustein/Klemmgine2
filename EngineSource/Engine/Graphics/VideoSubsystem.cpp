@@ -9,11 +9,11 @@
 #include <Engine/Stats.h>
 #include <Engine/UI/UICanvas.h>
 #include <Core/LaunchArgs.h>
-#include <Engine/Graphics/OpenGL.h>
 #include <Engine/Debug/TimeLogger.h>
 #include <stdexcept>
 #include <kui/Rendering/OpenGLBackend.h>
 #include <Engine/File/Resource.h>
+#include <Engine/Graphics/Effects/CascadedShadows.h>
 #include <Engine/Graphics/Backend/OpenGLGraphicsBackend.h>
 
 using namespace kui;
@@ -180,6 +180,17 @@ void engine::VideoSubsystem::RegisterCommands(ConsoleSubsystem* System)
 		}
 
 		this->VSyncEnabled = val == "true";
+
+		} });
+
+	System->AddCommand(console::Command{
+		.Name = "video.shadow_resolution",
+		.Args = { console::Command::Argument{
+			.Name = "value",
+			.Required = true,
+		}, },
+		.OnCalled = [this](const console::Command::CallContext& ctx) {
+			graphics::CascadedShadows::ShadowResolution = std::max(std::stoi(ctx.ProvidedArguments.at(0)), 128);
 
 		} });
 }

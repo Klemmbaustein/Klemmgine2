@@ -20,11 +20,14 @@ namespace engine::graphics
 		void BindUniforms(DrawCommand* Pass, ShaderObject* Target) const;
 
 		static void UnloadShadows();
+		static uint32 ShadowResolution;
 
 		Vector3 LightDirection = Vector3(1, 2, 1).Normalize();
 
 		bool Enabled = false;
 		bool Supported = true;
+
+		void LoadShadowMapBuffer(Renderer* Render);
 
 	private:
 		bool EnvironmentHasShadows = true;
