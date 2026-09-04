@@ -37,6 +37,8 @@ namespace engine
 
 		void OnResized();
 
+		void UpdateTitle();
+
 	private:
 		string GetWindowTitle();
 		kui::Vec2ui GetWindowSize();

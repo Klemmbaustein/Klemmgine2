@@ -57,6 +57,16 @@ void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, s
 			.Size = 2_px,
 			});
 	}
+
+	if (DebugBreakpointLine != SIZE_MAX)
+	{
+		ParentEditor->HighlightArea(HighlightedArea{
+			.Start = EditorPosition(0, DebugBreakpointLine),
+			.End = EditorPosition(SIZE_MAX, DebugBreakpointLine),
+			.Color = Vec3f(0.4f, 0.1f, 0.1f),
+			.Priority = -10,
+			});
+	}
 }
 
 void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Length)

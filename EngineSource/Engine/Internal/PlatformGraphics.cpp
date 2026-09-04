@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <kui/App.h>
+#include <Engine/Engine.h>
 #include <kui/StringReplace.h>
 
 #if WINDOWS
@@ -62,6 +63,11 @@ void engine::platform::SetWindowTheming(kui::Vec3f Color, kui::Vec3f TextColor,
 	kui::Vec3f BorderColor, bool RoundCorners, kui::Window* Window)
 {
 	kui::systemWM::SysWindow* w = reinterpret_cast<kui::systemWM::SysWindow*>(Window->GetSysWindow());
+	if (w->IsMain)
+	{
+		Color = Engine::IsPaused ? kui::Vec3f(1.0f, 0.8f, 0.0f) : Color;
+		TextColor = Engine::IsPaused ? kui::Vec3f(0.0f) : TextColor;
+	}
 
 	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(w->SDLWindow),
 		SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);

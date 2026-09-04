@@ -90,6 +90,8 @@ namespace engine::editor
 			return CompletionUsingLine;
 		}
 
+		size_t DebugBreakpointLine = SIZE_MAX;
+
 		std::set<ScriptSyntaxHighlight> GetHighlightsFor(size_t Line);
 
 	private:

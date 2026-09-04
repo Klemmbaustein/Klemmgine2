@@ -149,6 +149,7 @@ namespace engine::editor
 		 */
 		static string CreateDirectory(string Path);
 		static void UpdateTheme(kui::Window* Target, bool Full);
+		static void UpdateTitleBar(kui::Window* Target);
 		void Update();
 		void UpdateBackgrounds();
 

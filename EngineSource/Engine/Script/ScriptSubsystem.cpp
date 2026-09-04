@@ -14,12 +14,16 @@
 #include <Engine/Script/ScriptSerializer.h>
 #include <Engine/Script/UI/ScriptUIElement.h>
 #include <Engine/Stats.h>
+#include <Engine/Engine.h>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/UI/UICanvas.h>
+#include <Engine/Subsystem/InputSubsystem.h>
 
 #if EDITOR
 #include <Editor/UI/Panels/PropertyPanel.h>
 #include <Editor/UI/EditorUI.h>
+#include <Editor/Assets/ScriptAssetType.h>
+#include <Editor/EditorSubsystem.h>
 #endif
 #include <Engine/ProjectFile.h>
 
@@ -45,8 +49,64 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 		ThreadPool::Main()->AddJob(function);
 	};
 
-	this->Runtime->writeError = [this](const char* Message) {
+	Runtime->writeError = [this](const char* Message) {
 		Print(Message, LogType::Error);
+	};
+
+	Runtime->onDebugBreak = [this](InterpretContext* context, Pointer bytecodePosition, DebugState* state) {
+
+		IsOnBreakpoint = true;
+
+		for (auto& [Line, File] : BreakpointLines)
+		{
+			if (Line.offset != bytecodePosition)
+			{
+				continue;
+			}
+			Log::Info(str::Format("Hit breakpoint: %s:%i", File.c_str(), Line.lineNumber));
+
+			auto ScriptAsset = dynamic_cast<editor::ScriptAssetType*>(
+				editor::EditorUI::Instance->GetAssetTypeForExtension("ds"));
+
+			if (ScriptAsset)
+			{
+				ScriptAsset->RunOnActiveScriptEditor([File = File, Line = Line.lineNumber]
+				(editor::ScriptEditorUI* UI) {
+					UI->HighlightLine(File, Line);
+				});
+			}
+		}
+
+		auto frames = state->getFrames();
+
+		for (auto& i : frames)
+		{
+			Log::Info(context->runtime->debug->getSectionAt(i->getOffset())->name);
+
+			auto variables = i->getVariables();
+			for (auto& j : variables)
+			{
+				Log::Info(str::Format("\t%s", j.name));
+			}
+		}
+
+		auto& w = VideoSubsystem::Current->MainWindow;
+
+		auto Input = Engine::GetSubsystem<subsystem::InputSubsystem>();
+		auto OldShowCursor = input::ShowMouseCursor;
+		input::ShowMouseCursor = true;
+		Engine::GameHasFocus = false;
+		Engine::IsPaused = true;
+
+		while (IsOnBreakpoint && !Engine::Instance->ShouldQuit)
+		{
+			thread::MainThreadUpdate();
+			Input->Update();
+			Engine::GetSubsystem<editor::EditorSubsystem>()->Update();
+			VideoSubsystem::Current->Update();
+			VideoSubsystem::Current->RenderUpdate();
+		}
+		Engine::IsPaused = false;
 	};
 
 	Reload();
@@ -77,7 +137,48 @@ void engine::script::ScriptSubsystem::RegisterCommands(ConsoleSubsystem* System)
 			this->Reload();
 		}
 		});
+
+	System->AddCommand(console::Command{
+		.Name = "script.breakpoint",
+		.Args = {console::Command::Argument("file", true), console::Command::Argument("line", true)},
+		.OnCalled = [this](const console::Command::CallContext& c) {
+
+			string File = c.ProvidedArguments[0];
+			int32 Line = std::stoi(c.ProvidedArguments[1]);
+
+			AddBreakpoint(File, Line);
+		}
+		});
+	System->AddCommand(console::Command{
+		.Name = "script.continue",
+		.Args = {},
+		.OnCalled = [this](const console::Command::CallContext& c) {
+			ScriptSubsystem::Instance->IsOnBreakpoint = false;
+		}
+		});
 }
+
+void engine::script::ScriptSubsystem::AddBreakpoint(string File, size_t Line)
+{
+	this->Breakpoints[File].insert(Line);
+	ApplyBreakpoint(File, Line);
+}
+
+void engine::script::ScriptSubsystem::ApplyBreakpoint(string File, size_t Line)
+{
+	auto FoundLine = this->Runtime->debug->getLineAt(File, Line);
+
+	if (FoundLine && this->Runtime->baseContext->setDebugBreakpoint(FoundLine->offset))
+	{
+		BreakpointLines.push_back({ *FoundLine, File });
+		Log::Info(str::Format("Set breakpoint at %s:%i -> instructions+%i", File.c_str(), Line, FoundLine->offset));
+	}
+	else
+	{
+		Log::Warn(str::Format("Failed to set breakpoint at %s:%i", File.c_str(), Line));
+	}
+}
+
 void engine::script::ScriptSubsystem::Update()
 {
 	std::vector<std::list<WaitTask>::iterator> ToRemove;
@@ -107,7 +208,7 @@ bool engine::script::ScriptSubsystem::Reload()
 	auto CurrentScene = Scene::GetMain();
 
 	auto Compiler = this->ScriptLanguage->createCompiler(ParserOptions{
-		.printAssembly = launchArgs::GetArg("printScriptAssembly").has_value()
+		.printAssembly = launchArgs::GetArg("printScriptAssembly").has_value(),
 		});
 
 	debug::TimeLogger CompileTime = { "Compiled scripts", this->GetLogPrefixes() };

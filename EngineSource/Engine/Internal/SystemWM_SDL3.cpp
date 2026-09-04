@@ -342,9 +342,9 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 			{
 				if (SDL_GetWindowID(i->SDLWindow) == ev.window.windowID)
 				{
+					std::lock_guard g{ i->InputMutex };
 					if (ev.type == SDL_EVENT_TEXT_INPUT && !i->Parent->Input.IsKeyDown(Key::CTRL))
 					{
-						std::lock_guard g{ i->InputMutex };
 						i->TextInput += ev.text.text;
 					}
 					else
@@ -354,11 +354,8 @@ void kui::systemWM::UpdateWindow(SysWindow* Target)
 				}
 			}
 		}
-
 	}
-	static std::mutex m;
 
-	std::lock_guard g{ m };
 	Target->UpdateEvents();
 }
 
@@ -636,8 +633,6 @@ std::string kui::systemWM::SelectFileDialog(bool PickFolders)
 
 void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 {
-	std::lock_guard g{ InputMutex };
-
 	if (k == SDLK_TAB && IsDown)
 	{
 		InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
@@ -648,26 +643,27 @@ void kui::systemWM::SysWindow::HandleKey(SDL_Keycode k, bool IsDown)
 		}
 	}
 
+	if (Engine::Instance)
+	{
+		// Set this first because the Window Input function might trigger callbacks, so the Input values are already properly set beforehand
+		InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
+		if (InputSys)
+		{
+			InputSys->SetKeyDown(input::Key(k), IsDown);
+		}
+	}
+
 	Parent->Input.SetKeyDown(Keys[k], IsDown);
-
-	if (!Engine::Instance)
-	{
-		return;
-	}
-
-	InputSubsystem* InputSys = Engine::GetSubsystem<InputSubsystem>();
-	if (InputSys)
-	{
-		InputSys->SetKeyDown(input::Key(k), IsDown);
-	}
 }
 
 void kui::systemWM::SysWindow::UpdateEvents()
 {
 	std::vector<SDL_Event> EventsCopy;
-	EventsCopy = Events;
-	Events.clear();
-
+	{
+		std::lock_guard g{ InputMutex };
+		EventsCopy = Events;
+		Events.clear();
+	}
 	input::MouseMovement = 0;
 
 	if (thread::IsMainThread)

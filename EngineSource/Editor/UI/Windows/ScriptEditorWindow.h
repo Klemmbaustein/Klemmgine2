@@ -23,6 +23,10 @@ namespace engine::editor
 
 	private:
 
+		bool DebuggerVisible = false;
+
+		kui::Vec2f EditorSize = 2.0f;
+
 		kui::UIBackground* Background = nullptr;
 		kui::Font* MonospacedFont = nullptr;
 	};

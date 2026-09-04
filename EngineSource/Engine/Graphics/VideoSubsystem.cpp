@@ -51,7 +51,7 @@ engine::VideoSubsystem::VideoSubsystem()
 	Textures.UsedRenderer = Renderer;
 	Print(str::Format("Using graphics backend: %s", Backend->GetBackendIdentifier().c_str()), LogType::Note);
 
-	MainWindow->SetTitle(GetWindowTitle().c_str());
+	UpdateTitle();
 
 	MainWindow->OnResizedCallback = [this](Window*) {
 		OnResized();
@@ -90,6 +90,12 @@ engine::string engine::VideoSubsystem::GetWindowTitle()
 #ifdef EDITOR
 	Title.append(" Editor");
 #endif
+
+	if (Engine::IsPaused)
+	{
+		Title.append(" - PAUSED");
+	}
+
 	return Title;
 }
 
@@ -246,4 +252,9 @@ void engine::VideoSubsystem::RenderUpdate()
 void engine::VideoSubsystem::OnResized()
 {
 	OnResizedCallbacks.Invoke(MainWindow->GetSize());
+}
+
+void engine::VideoSubsystem::UpdateTitle()
+{
+	MainWindow->SetTitle(GetWindowTitle());
 }

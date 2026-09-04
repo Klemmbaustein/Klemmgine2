@@ -25,6 +25,7 @@ using namespace engine::subsystem;
 Engine* Engine::Instance = nullptr;
 bool Engine::IsPlaying = true;
 bool Engine::GameHasFocus = true;
+bool Engine::IsPaused = false;
 
 Engine::Engine()
 {

@@ -128,6 +128,10 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 	StatusText = new UIText(12_px, EditorUI::Theme.Text, "Script status", TextFont);
 
+	BreakpointPreview = new UIBackground(true, 0, Vec3f(0.5f, 0, 0), 12_px);
+	BreakpointPreview->SetCorner(6_px);
+	BreakpointPreview->IsCollapsed = true;
+
 	CenterBox->AddChild(StatusText
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
 
@@ -310,11 +314,19 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 
 	for (auto& i : Tabs)
 	{
+		for (auto& j : i.Breakpoints)
+		{
+			delete j.second.Icon;
+		}
+
 		if (i.MiniMap)
 			delete i.MiniMap;
 		delete i.Editor;
 		delete i.Provider;
 	}
+
+	BreakpointPreview->SetCurrentScrollObject((ScrollObject*)nullptr);
+	delete BreakpointPreview;
 }
 
 void engine::editor::ScriptEditorUI::Update()
@@ -334,24 +346,13 @@ void engine::editor::ScriptEditorUI::Update()
 	}
 
 	auto Selected = GetSelectedTab();
-	for (auto& Tab : Tabs)
-	{
-		Tab.Editor->SetMinWidth(EditorBox->GetUsedSize().X);
-		Tab.Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
-		Tab.Editor->SetMaxWidth(EditorBox->GetUsedSize().X);
-		Tab.Editor->SetMaxHeight(EditorBox->GetUsedSize().Y);
-		Tab.Editor->SetPosition(EditorBox->GetScreenPosition());
-		Tab.Provider->AllowArrowKeys = !Switcher;
-		if (&Tab != Selected || !this->IsVisible)
-		{
-			Tab.Provider->ClearHovered();
-		}
-	}
 
 	if (SearchUI)
 	{
 		SearchUI->IsVisible = this->IsVisible;
 	}
+	BreakpointPreview->IsCollapsed = true;
+	BreakpointPreview->IsVisible = false;
 
 	if (Selected)
 	{
@@ -364,8 +365,75 @@ void engine::editor::ScriptEditorUI::Update()
 			}
 			this->StatusText->SetText(str::Format("%s | Errors: %i",
 				Selected->Provider->EditedFile.c_str(), this->Errors[Selected->Provider->EditedFile].size()));
+
+			auto ParentWindow = Window::GetActiveWindow();
+
+			auto& Hovered = ParentWindow->UI.HoveredBox;
+			auto& Input = ParentWindow->Input;
+
+			if (Hovered && Hovered->IsChildOf(Selected->Editor) && !UIScrollBox::IsDraggingScrollBox
+				&& Input.MousePosition.X < Selected->Editor->GetScreenPosition().X + UISize::Pixels(Selected->Editor->LeftMargin).GetScreen().X)
+			{
+				size_t Line = Selected->Editor->ScreenToEditor(Input.MousePosition).Line;
+
+				float Pos = Selected->Editor->EditorToScreen(EditorPosition(0, Line)).Y;
+
+				BreakpointPreview->SetPosition(Vec2f(Selected->Editor->GetScreenPosition().X, Pos));
+				BreakpointPreview->MoveToFront();
+				BreakpointPreview->SetCurrentScrollObject(Selected->Editor->EditorScrollBox);
+				BreakpointPreview->IsCollapsed = false;
+				BreakpointPreview->IsVisible = true;
+
+				if (Input.IsLMBClicked)
+				{
+					InsertBreakpoint(Selected, Line);
+				}
+			}
 		}
 	}
+
+	for (auto& Tab : Tabs)
+	{
+		Tab.Editor->SetMinWidth(EditorBox->GetUsedSize().X);
+		Tab.Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
+		Tab.Editor->SetMaxWidth(EditorBox->GetUsedSize().X);
+		Tab.Editor->SetMaxHeight(EditorBox->GetUsedSize().Y);
+		Tab.Editor->SetPosition(EditorBox->GetScreenPosition());
+		Tab.Provider->AllowArrowKeys = !Switcher;
+		if (&Tab != Selected || !this->IsVisible)
+		{
+			Tab.Provider->ClearHovered();
+		}
+
+		for (auto& i : Tab.Breakpoints)
+		{
+			i.second.Icon->IsVisible = Tab.Editor->IsVisible;
+		}
+	}
+}
+
+void engine::editor::ScriptEditorUI::HighlightLine(std::string File, size_t Line)
+{
+	NavigateTo(File, ds::TokenPos(0, 0, Line));
+
+	GetSelectedTab()->Provider->DebugBreakpointLine = Line;
+	GetSelectedTab()->Editor->RefreshHighlights();
+}
+
+void engine::editor::ScriptEditorUI::InsertBreakpoint(ScriptEditorTab* ToTab, size_t Line)
+{
+	auto Icon = new UIBackground(true, 0, Vec3f(1, 0, 0), 12_px);
+	Icon->SetCorner(6_px);
+	float Pos = ToTab->Editor->EditorToScreen(EditorPosition(0, Line)).Y;
+
+	Icon->SetPosition(Vec2f(ToTab->Editor->GetScreenPosition().X, Pos));
+	Icon->SetCurrentScrollObject(ToTab->Editor->EditorScrollBox);
+
+	ToTab->Breakpoints.insert({ Line, EditorBreakpoint{.Line = Line, .Icon = Icon} });
+
+	thread::MainThreadQueue->Run([this, File = ToTab->Provider->EditedFile, Line = Line] {
+		ScriptSubsystem::Instance->AddBreakpoint(File, Line);
+	});
 }
 
 void engine::editor::ScriptEditorUI::UpdateTabSize(ScriptEditorTab* Tab)
@@ -393,16 +461,25 @@ void engine::editor::ScriptEditorUI::CloseTab(size_t Index)
 	{
 		SelectedTab--;
 	}
+
+	for (auto& i : Tabs[Index].Breakpoints)
+	{
+		delete i.second.Icon;
+	}
+
 	if (Tabs[Index].MiniMap)
 		delete Tabs[Index].MiniMap;
 	delete Tabs[Index].Editor;
 	delete Tabs[Index].Provider;
+
 	Tabs.erase(Tabs.begin() + Index);
 	UpdateEditorTabs();
 	if (auto Tab = GetSelectedTab())
 	{
 		Tab->Editor->Reload();
 	}
+
+	BreakpointPreview->SetCurrentScrollObject((ScrollObject*)nullptr);
 }
 
 void engine::editor::ScriptEditorUI::CloseSearch()
@@ -631,6 +708,7 @@ void engine::editor::ScriptEditorUI::AddTab(std::string File)
 		NewTab.Provider->ScanFile();
 	}
 	NewTab.Editor = new UITextEditor(NewTab.Provider, ScriptFont, this->Tabs.size() == 1);
+	NewTab.Editor->LeftMargin = 16;
 
 	if (Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool())
 	{

@@ -409,6 +409,25 @@ void engine::editor::Viewport::Update()
 
 	PolledForText = Win->Input.PollForText;
 
+	if (Engine::IsPaused != LastIsPaused)
+	{
+		VideoSubsystem::Current->UpdateTitle();
+		EditorUI::UpdateTitleBar(Win);
+
+		LastIsPaused = Engine::IsPaused;
+
+		if (LastIsPaused)
+		{
+			ViewportBackground->SetHorizontalAlign(UIBox::Align::Centered);
+			ViewportBackground->SetVerticalAlign(UIBox::Align::Centered);
+			ViewportBackground->AddChild(new UIText(12_px, EditorUI::Theme.Text, "Engine Paused!", EditorUI::EditorFont));
+		}
+		else
+		{
+			ViewportBackground->DeleteChildren();
+		}
+	}
+
 	if ((StatsRedrawTimer.Get() > 1 || RedrawStats))
 	{
 		SceneSubsystem* SceneSystem = Engine::GetSubsystem<SceneSubsystem>();
@@ -440,9 +459,9 @@ void engine::editor::Viewport::Update()
 	}
 
 	Scene* Current = Scene::GetMain();
-	ViewportBackground->SetOpacity(Current == nullptr ? 0.0f : 1.0f);
+	ViewportBackground->SetOpacity(Current == nullptr ? 0.0f : (Engine::IsPaused ? 0.5f : 1.0f));
 
-	bool HasFocus = EditorUI::FocusedPanel == this;
+	bool HasFocus = EditorUI::FocusedPanel == this && !Engine::IsPaused;
 	UpdateSelection();
 
 	Grid->IsVisible = !Engine::IsPlaying && ShowGrid;
@@ -782,8 +801,8 @@ void engine::editor::Viewport::Run()
 		Scene::GetMain()->Sound->MarkReverbDirty();
 	}
 
-	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	SetName("Viewport (playing)");
+	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	RedrawStats = true;
 }
 
