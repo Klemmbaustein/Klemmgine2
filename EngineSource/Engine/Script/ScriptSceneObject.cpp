@@ -44,19 +44,18 @@ void engine::script::ScriptSceneObject::Begin()
 
 	ScriptSubsystem::Instance->RegisterClassForObject(this, ScriptData);
 
-	Interpreter->callVirtualMethodVoid(ScriptData, 1);
+	(void)Interpreter->callVirtualMethodVoid(ScriptData, 1);
 	if (Engine::IsPlaying)
 	{
-		Interpreter->callVirtualMethodVoid(ScriptData, 2);
+		(void)Interpreter->callVirtualMethodVoid(ScriptData, 2);
 	}
 }
 
 void engine::script::ScriptSceneObject::Update()
 {
-	if (Engine::IsPlaying && ScriptData && ScriptData->vtable[4])
+	if (Engine::IsPlaying && ScriptData)
 	{
-		Interpreter->pushValue(this->ScriptData);
-		Interpreter->virtualCall(ScriptData->vtable[4]);
+		(void)Interpreter->callVirtualMethodVoid(ScriptData, 4);
 	}
 }
 

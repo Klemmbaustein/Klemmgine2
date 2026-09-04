@@ -1,5 +1,6 @@
 #pragma once
 #include <Editor/Assets/EditorAssetType.h>
+#include <Editor/UI/Elements/ScriptEditorUI.h>
 
 namespace engine::editor
 {
@@ -11,5 +12,7 @@ namespace engine::editor
 		void ReloadAsset(AssetRef Asset) override;
 		void Open(EditorUI* With, AssetRef Asset) override;
 		std::vector<string> GetExtensions() const override;
+
+		void RunOnActiveScriptEditor(std::function<void(ScriptEditorUI*)> Function);
 	};
 }

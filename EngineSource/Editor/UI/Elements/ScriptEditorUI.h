@@ -9,6 +9,13 @@
 
 namespace engine::editor
 {
+	class EditorBreakpoint
+	{
+	public:
+		size_t Line = 0;
+		kui::UIBackground* Icon = nullptr;
+	};
+
 	struct ScriptEditorTab
 	{
 	public:
@@ -18,6 +25,8 @@ namespace engine::editor
 		kui::UIText* TabName = nullptr;
 		bool NeedsRefresh = false;
 		bool IsSaved = true;
+
+		std::map<size_t, EditorBreakpoint> Breakpoints;
 	};
 
 	class ScriptEditorUI : public ScriptEditorContext, KeyboardShortcuts
@@ -46,9 +55,11 @@ namespace engine::editor
 
 		std::vector<kui::UIBox*> GetEditorBoxes();
 		Toolbar* ScriptToolbar = nullptr;
+		thread::ThreadMessagesRef Queue;
+
+		void HighlightLine(std::string File, size_t Line);
 
 	private:
-		thread::ThreadMessagesRef Queue;
 		kui::Font* TextFont = nullptr;
 		kui::Font* ScriptFont = nullptr;
 
@@ -89,6 +100,8 @@ namespace engine::editor
 
 		void InitializeSettings();
 
+		void InsertBreakpoint(ScriptEditorTab* ToTab, size_t Line);
+
 		string NameFormat;
 		bool Saved = true;
 		bool UseVerticalTabs = true;
@@ -102,6 +115,8 @@ namespace engine::editor
 		string GetOpenedTabsFile();
 
 		kui::UIBackground* SeparatorBackgrounds[2];
+
+		kui::UIBackground* BreakpointPreview = nullptr;
 
 		// Inherited via KeyboardShortcuts
 		bool HasKeyboardFocus() override;

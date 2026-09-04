@@ -10,6 +10,7 @@
 #include "Panels/ScenePanel.h"
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/Viewport.h"
+#include "Panels/DebuggerPanel.h"
 #include "Windows/AboutWindow.h"
 #include "Windows/BuildWindow.h"
 #include "Windows/ProjectSettingsWindow.h"
@@ -488,6 +489,7 @@ void engine::editor::EditorUI::RegisterDefaultPanels()
 	PANEL_ENTRY("Properties", PropertyPanel);
 	PANEL_ENTRY("Object List", ObjectListPanel);
 	PANEL_ENTRY("Scene", ScenePanel);
+	PANEL_ENTRY("Debugger", DebuggerPanel);
 }
 
 string engine::editor::EditorUI::GetLayoutConfigPath()
@@ -590,8 +592,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Colors.TextFieldTextDefaultColor = Theme.Text;
 	Target->Colors.KeyboardSelectionColor = Theme.Text;
 
-	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1,
-		Theme.CornerSize.Value > 0, Target);
+	UpdateTitleBar(Target);
 
 	if (Full && thread::IsMainThread && Instance)
 	{
@@ -606,6 +607,12 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 		Instance->RootPanel->ShouldUpdate = true;
 		Instance->RootPanel->UpdatePanel();
 	}
+}
+
+void engine::editor::EditorUI::UpdateTitleBar(kui::Window* Target)
+{
+	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1,
+		Theme.CornerSize.Value > 0, Target);
 }
 
 void engine::editor::EditorUI::Update()

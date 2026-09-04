@@ -54,6 +54,8 @@ namespace engine::script
 		/// Holds script type IDs of various engine types for use with runtime type detection.
 		EngineModuleData ScriptEngine;
 
+		bool IsOnBreakpoint = false;
+
 		/// The currently active script subsystem.
 		static ScriptSubsystem* Instance;
 
@@ -115,9 +117,16 @@ namespace engine::script
 		Event<> EndHotReloadEvent;
 		Event<> ReInitializeAfterHotReloadEvent;
 
+		std::vector<std::pair<ds::DebugLine, std::string>> BreakpointLines;
+
 		void ReloadRuntime();
 
+		void AddBreakpoint(string File, size_t Line);
+		std::map<string, std::set<size_t>> Breakpoints;
+
 	private:
+		void ApplyBreakpoint(string File, size_t Line);
+
 		bool DoingHotReload = false;
 		void ReloadDynamicUIContext();
 	};

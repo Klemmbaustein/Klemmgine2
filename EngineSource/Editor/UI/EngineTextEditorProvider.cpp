@@ -330,6 +330,8 @@ void engine::editor::EngineTextEditorProvider::UpdateAutoCompleteEntries(string 
 		return;
 	}
 	HoverBox->IsVisible = false;
+	AutoCompleteBox->GetScrollObject()->Scrolled = 0;
+
 	size_t it = 0;
 	for (auto& i : Completions)
 	{

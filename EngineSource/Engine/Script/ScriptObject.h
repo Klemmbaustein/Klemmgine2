@@ -40,20 +40,20 @@ namespace engine::script
 			if (!thread::IsMainThread)
 			{
 				auto copy = Interpreter->createCopy();
-				this->ScriptData = Class.create(copy);
+				ScriptData = Class.create(copy);
 				if (ScriptData)
 				{
-					ds::ClassRef<T> ScriptDataRef = this->ScriptData;
+					ds::ClassRef<T> ScriptDataRef = ScriptData;
 					ScriptDataRef.getValue() = Value;
 					delete copy;
 				}
 			}
 			else
 			{
-				this->ScriptData = Class.create(Interpreter);
+				ScriptData = Class.create(Interpreter);
 				if (ScriptData)
 				{
-					ds::ClassRef<T> ScriptDataRef = this->ScriptData;
+					ds::ClassRef<T> ScriptDataRef = ScriptData;
 					ScriptDataRef.getValue() = Value;
 				}
 			}

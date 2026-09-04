@@ -44,22 +44,29 @@ void engine::editor::ScriptAssetType::Open(EditorUI* With, AssetRef Asset)
 
 		return;
 	}
-	if (ScriptEditorWindow::Current)
-	{
-		ScriptEditorWindow::Current->Queue->Run([FilePath = Asset.FilePath] {
-			ScriptEditorWindow::Current->UI->NavigateTo(FilePath, {});
-		});
-		return;
-	}
 
-	EditorUI::ForEachPanel<ScriptEditorPanel>([FilePath = Asset.FilePath](ScriptEditorPanel* p) {
-		p->UI.NavigateTo(FilePath, {});
-		p->SetFocused();
+	RunOnActiveScriptEditor([FilePath = Asset.FilePath](ScriptEditorUI* UI) {
+		UI->NavigateTo(FilePath, {});
 	});
-
 }
 
 std::vector<string> engine::editor::ScriptAssetType::GetExtensions() const
 {
 	return { "ds", "kui" };
+}
+
+void engine::editor::ScriptAssetType::RunOnActiveScriptEditor(std::function<void(ScriptEditorUI*)> Function)
+{
+	if (ScriptEditorWindow::Current)
+	{
+		ScriptEditorWindow::Current->Queue->Run([Function] {
+			Function(ScriptEditorWindow::Current->UI);
+		});
+		return;
+	}
+
+	EditorUI::ForEachPanel<ScriptEditorPanel>([Function](ScriptEditorPanel* p) {
+		Function(&p->UI);
+		p->SetFocused();
+	});
 }

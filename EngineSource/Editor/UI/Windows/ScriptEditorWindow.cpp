@@ -4,6 +4,7 @@
 #include <Engine/MainThread.h>
 #include <Editor/UI/Panels/ScriptEditorPanel.h>
 #include <Editor/UI/Panels/Viewport.h>
+#include <Engine/Script/ScriptSubsystem.h>
 
 using namespace kui;
 using namespace engine::editor;
@@ -11,7 +12,7 @@ using namespace engine::editor;
 ScriptEditorWindow* ScriptEditorWindow::Current = nullptr;
 
 engine::editor::ScriptEditorWindow::ScriptEditorWindow()
-	: IPopupWindow("Scripts", Vec2ui(600, 400), true, true)
+	: IPopupWindow("Scripts", Vec2ui(1000, 700), true, true)
 {
 	if (EditorUI::Instance->ScriptEditorWindowOpen)
 	{
@@ -31,11 +32,12 @@ void engine::editor::ScriptEditorWindow::Begin()
 	Background->SetSize(2);
 
 	UI = new ScriptEditorUI(Background, true, DefaultFont, MonospacedFont, Queue);
-	UI->OnResized(2);
+	UI->OnResized(EditorSize);
 
 	Popup->OnResizedCallback = [this](Window*) {
-		UI->OnResized(2);
+		UI->OnResized(EditorSize);
 	};
+
 	Current = this;
 }
 

@@ -102,6 +102,7 @@ namespace engine
 
 		static bool IsPlaying;
 		static bool GameHasFocus;
+		static bool IsPaused;
 
 		ProjectFile* OpenedProject = nullptr;
 

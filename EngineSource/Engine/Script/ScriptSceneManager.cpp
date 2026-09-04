@@ -35,7 +35,7 @@ void engine::script::ScriptSceneManager::Update()
 {
 	if (Engine::IsPlaying && ScriptData)
 	{
-		Interpreter->callVirtualMethodVoid(ScriptData, 1);
+		(void)Interpreter->callVirtualMethodVoid(ScriptData, 1);
 	}
 }
 

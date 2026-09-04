@@ -102,6 +102,7 @@ namespace engine::editor
 
 		bool PolledForText = false;
 		bool IsLoading = false;
+		bool LastIsPaused = false;
 
 		Toolbar* ViewportToolbar = nullptr;
 		TranslateGizmo* Translate = nullptr;
