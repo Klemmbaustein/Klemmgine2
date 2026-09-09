@@ -75,7 +75,7 @@ void engine::SceneSubsystem::SetAsMain(Scene* Target)
 
 void engine::SceneSubsystem::LoadSceneThread(string SceneName)
 {
-	if (Engine::IsPlaying)
+	if (Engine::IsStopped)
 	{
 		return;
 	}
