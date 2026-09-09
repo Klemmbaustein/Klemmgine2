@@ -76,11 +76,31 @@ engine::editor::EngineTextEditorProvider::~EngineTextEditorProvider()
 {
 }
 
+void engine::editor::EngineTextEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)
+{
+	FileEditorProvider::GetHighlightsForRange(Begin, Length);
+
+	if (ParentEditor->SelectionStart.Line == ParentEditor->SelectionEnd.Line)
+	{
+		ParentEditor->HighlightArea(HighlightedArea{
+			.Start = EditorPosition(SIZE_MAX, ParentEditor->SelectionEnd.Line),
+			.End = EditorPosition(SIZE_MAX, ParentEditor->SelectionEnd.Line),
+			.Color = EditorUI::Theme.LightBackground,
+			.Priority = -20,
+			});
+	}
+}
+
 void engine::editor::EngineTextEditorProvider::Update()
 {
 	auto Win = Window::GetActiveWindow();
 
 	auto Pos = Win->Input.MousePosition;
+
+	if (IsWaitingForAutoComplete && CanShowCompletions())
+	{
+		ShowAutoComplete(CompleteSource, CompleteFilter);
+	}
 
 	if (Win->Input.IsRMBClicked)
 	{
@@ -92,9 +112,17 @@ void engine::editor::EngineTextEditorProvider::Update()
 		{
 			ParentEditor->SetCursorPosition(ParentEditor->ScreenToEditor(Pos));
 		}
-		delete this->HoverBox;
-		this->HoverBox = nullptr;
+		delete HoverBox;
+		HoverBox = nullptr;
 		OnRightClick();
+	}
+
+	size_t NewSelectionLine = ParentEditor->SelectionEnd.Line != ParentEditor->SelectionStart.Line ? SIZE_MAX : ParentEditor->SelectionEnd.Line;
+
+	if (OldSelectionLine != NewSelectionLine)
+	{
+		OldSelectionLine = NewSelectionLine;
+		ParentEditor->RefreshHighlights();
 	}
 }
 
@@ -233,6 +261,11 @@ void engine::editor::EngineTextEditorProvider::OnCursorMove(int64& Column, int64
 		Line = 0;
 		return;
 	}
+}
+
+bool engine::editor::EngineTextEditorProvider::CanShowCompletions()
+{
+	return true;
 }
 
 void engine::editor::EngineTextEditorProvider::UpdateAutoComplete()
@@ -428,6 +461,14 @@ void engine::editor::EngineTextEditorProvider::CloseAutoComplete()
 
 void engine::editor::EngineTextEditorProvider::ShowAutoComplete(CompletionSource Source, std::string Filter)
 {
+	if (!CanShowCompletions())
+	{
+		CompleteFilter = Filter;
+		CompleteSource = Source;
+		IsWaitingForAutoComplete = true;
+		return;
+	}
+
 	CompletePosition = ParentEditor->SelectionStart;
 	SelectedCompletionItem = 0;
 
@@ -451,6 +492,7 @@ void engine::editor::EngineTextEditorProvider::ShowAutoComplete(CompletionSource
 	UpdateAutoCompleteEntries(Filter);
 
 	IsAutoCompleteActive = true;
+	IsWaitingForAutoComplete = false;
 }
 
 void engine::editor::EngineTextEditorProvider::TrimWhitespace(size_t IgnoreLine)

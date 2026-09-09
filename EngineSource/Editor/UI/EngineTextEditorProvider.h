@@ -23,7 +23,8 @@ namespace engine::editor
 
 		string EditedFile;
 
-		virtual void Update();
+		void Update() override;
+		void GetHighlightsForRange(size_t Begin, size_t Length) override;
 
 		[[nodiscard]]
 		virtual std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At);
@@ -48,6 +49,8 @@ namespace engine::editor
 		void CloseAutoComplete();
 
 		SearchContext* StartSearch(string Text, bool MatchCase);
+
+		virtual bool CanShowCompletions();
 
 		bool IsChanged = false;
 		bool AllowArrowKeys = true;
@@ -84,11 +87,15 @@ namespace engine::editor
 		kui::EditorPosition CompletePosition;
 
 		size_t SelectedCompletionItem = 0;
+		size_t OldSelectionLine = 0;
 
 		kui::UIScrollBox* AutoCompleteBox = nullptr;
 		std::vector<ds::AutoCompleteResult> Completions;
 		std::vector<kui::UIButton*> CompletionButtons;
 		bool IsAutoCompleteActive = false;
+		bool IsWaitingForAutoComplete = false;
+		string CompleteFilter;
+		CompletionSource CompleteSource = CompletionSource::TriggerChar;
 	};
 
 	class SearchContext

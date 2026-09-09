@@ -48,6 +48,11 @@ namespace engine::editor
 			ds::CompletionType type, size_t& OutUsingPosition);
 		bool Quit = false;
 
+		bool GetIsCompiling() const
+		{
+			return IsCompiling;
+		}
+
 	private:
 		bool SendUpdateEvent = false;
 		bool IsCompiling = false;

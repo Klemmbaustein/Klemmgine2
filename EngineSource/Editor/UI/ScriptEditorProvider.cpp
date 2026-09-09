@@ -45,7 +45,7 @@ std::set<ScriptSyntaxHighlight> engine::editor::ScriptEditorProvider::GetHighlig
 
 void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, size_t Length)
 {
-	FileEditorProvider::GetHighlightsForRange(Begin, Length);
+	EngineTextEditorProvider::GetHighlightsForRange(Begin, Length);
 
 	for (auto& i : Context->Errors[EditedFile])
 	{
@@ -60,13 +60,20 @@ void engine::editor::ScriptEditorProvider::GetHighlightsForRange(size_t Begin, s
 
 	if (DebugBreakpointLine != SIZE_MAX)
 	{
+		size_t Start = Lines[DebugBreakpointLine].find_first_not_of("\t ");
+
 		ParentEditor->HighlightArea(HighlightedArea{
-			.Start = EditorPosition(0, DebugBreakpointLine),
+			.Start = EditorPosition(Start, DebugBreakpointLine),
 			.End = EditorPosition(SIZE_MAX, DebugBreakpointLine),
-			.Color = Vec3f(0.4f, 0.1f, 0.1f),
+			.Color = BreakpointLineColor,
 			.Priority = -10,
 			});
 	}
+}
+
+bool engine::editor::ScriptEditorProvider::CanShowCompletions()
+{
+	return !Context->GetIsCompiling();
 }
 
 void engine::editor::ScriptEditorProvider::RemoveLines(size_t Start, size_t Length)

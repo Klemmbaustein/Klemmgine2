@@ -1,5 +1,7 @@
 #include "LandscapeObject.h"
+#if EDITOR
 #include <Editor/UI/EditorUI.h>
+#endif
 
 void engine::LandscapeObject::Begin()
 {

@@ -1,23 +1,25 @@
 element MenuBarButton
 {
-	var Name = "File";
-	leftPadding = 4px;
+	var Name = "File"
+	leftPadding = 4px
 
 	child UIButton button
 	{
-		minSize = (24, 20)px;
-		color = Color_DarkBackground;
-		verticalAlign = centered;
+		upPadding = 1px
+		downPadding = 1px
+		minSize = (24, 18)px
+		color = Color_DarkBackground
+		verticalAlign = centered
 
-		corners = Theme_CornerSize;
+		corners = Theme_CornerSize
 
 		child UIText
 		{
-			size = 12px;
-			color = Color_Text;
-			padding = 4px;
+			size = 12px
+			color = Color_Text
+			padding = 4px
 
-			text = Name;
+			text = Name
 		}
 	}
 }

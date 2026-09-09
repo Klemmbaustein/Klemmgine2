@@ -4,7 +4,7 @@
 > The engine is still in development. It isn't stable yet.
 
 A full rewrite of my game "Klemmgine" game engine.
-A very lightweight (the editor executable is 9MB, a non editor is 3.5MB) 3D game engine
+A very lightweight (the editor executable is 10MB, a non editor one is 4MB) 3D game engine
 written in C++ using OpenGL for rendering. It currently runs on Windows
 and Linux.
 
@@ -17,16 +17,16 @@ and Linux.
 - A customizable graphical editor to edit 3d scenes, assets and projects.
 - A custom scripting language inspired mostly by C#, integrated with the UI definition
   language [from my UI library](https://github.com/Klemmbaustein/KlemmUI)
-  and a script editor for this built into the editor.
+  and a script editor for this built into the editor, including a debugger with breakpoints.
 - Custom shader system and a material system that control uniforms for these shaders.
 - Built in graphical effects like real time shadows, bloom,
   ambient occlusion, anti aliasing and a robust post processing system that
   can easily support more post process effects.
 - A physics/collision system powered by Jolt Physics.
+- Audio using OpenAL.
 
 #### (WIP)
 
-- Audio using OpenAL.
 - (Very WIP) Plugin support.
 - A built in command line to interact with the engine directly. (Currently limited, not many commands)
 - (Soon, for now not included by default in builds) A "Visual Studio live share" like feature
@@ -37,8 +37,7 @@ and Linux.
 - A virtual filesystem allowing for asset compression and loading assets from various sources
   (Even from a remote server).
 - A custom serialization format that has a text (for source control and manual editing)
-  and binary representation, and can also be partially serialized to JSON
-  (see EngineSource/Core/File/JsonSerializer.h)
+  and binary representation, and can also be partially serialized to JSON.
 
 ### TODO/Missing features:
 

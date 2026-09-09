@@ -128,9 +128,10 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 	StatusText = new UIText(12_px, EditorUI::Theme.Text, "Script status", TextFont);
 
-	BreakpointPreview = new UIBackground(true, 0, Vec3f(0.5f, 0, 0), 12_px);
+	BreakpointPreview = new UIBackground(true, 0, EditorUI::Theme.CodeTheme.DebugBreakpoint, 12_px);
 	BreakpointPreview->SetCorner(6_px);
 	BreakpointPreview->IsCollapsed = true;
+	BreakpointPreview->SetOpacity(0.5f);
 
 	CenterBox->AddChild(StatusText
 		->SetPadding(2_px, 2_px, 5_px, 5_px));
@@ -314,9 +315,11 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 
 	for (auto& i : Tabs)
 	{
-		for (auto& j : i.Breakpoints)
+		std::map<size_t, EditorBreakpoint> BreakpointsCopy = i.Breakpoints;
+
+		for (auto& j : BreakpointsCopy)
 		{
-			delete j.second.Icon;
+			RemoveBreakpoint(&i, j.first);
 		}
 
 		if (i.MiniMap)
@@ -376,17 +379,24 @@ void engine::editor::ScriptEditorUI::Update()
 			{
 				size_t Line = Selected->Editor->ScreenToEditor(Input.MousePosition).Line;
 
-				float Pos = Selected->Editor->EditorToScreen(EditorPosition(0, Line)).Y;
-
-				BreakpointPreview->SetPosition(Vec2f(Selected->Editor->GetScreenPosition().X, Pos));
+				BreakpointPreview->SetPosition(GetBreakpointPosition(Selected->Editor, Line));
 				BreakpointPreview->MoveToFront();
 				BreakpointPreview->SetCurrentScrollObject(Selected->Editor->EditorScrollBox);
 				BreakpointPreview->IsCollapsed = false;
 				BreakpointPreview->IsVisible = true;
+				BreakpointPreview->SetColor(Selected->Provider->DebugBreakpointColor);
 
 				if (Input.IsLMBClicked)
 				{
-					InsertBreakpoint(Selected, Line);
+					if (Selected->Breakpoints.contains(Line))
+					{
+						RemoveBreakpoint(Selected, Line);
+					}
+					else
+					{
+						InsertBreakpoint(Selected, Line);
+					}
+					BreakpointPreview->RedrawElement();
 				}
 			}
 		}
@@ -412,7 +422,7 @@ void engine::editor::ScriptEditorUI::Update()
 	}
 }
 
-void engine::editor::ScriptEditorUI::HighlightLine(std::string File, size_t Line)
+void engine::editor::ScriptEditorUI::HighlightLine(string File, size_t Line)
 {
 	NavigateTo(File, ds::TokenPos(0, 0, Line));
 
@@ -424,10 +434,8 @@ void engine::editor::ScriptEditorUI::InsertBreakpoint(ScriptEditorTab* ToTab, si
 {
 	auto Icon = new UIBackground(true, 0, Vec3f(1, 0, 0), 12_px);
 	Icon->SetCorner(6_px);
-	float Pos = ToTab->Editor->EditorToScreen(EditorPosition(0, Line)).Y;
-
-	Icon->SetPosition(Vec2f(ToTab->Editor->GetScreenPosition().X, Pos));
 	Icon->SetCurrentScrollObject(ToTab->Editor->EditorScrollBox);
+	Icon->SetPosition(GetBreakpointPosition(ToTab->Editor, Line));
 
 	ToTab->Breakpoints.insert({ Line, EditorBreakpoint{.Line = Line, .Icon = Icon} });
 
@@ -436,13 +444,49 @@ void engine::editor::ScriptEditorUI::InsertBreakpoint(ScriptEditorTab* ToTab, si
 	});
 }
 
+void engine::editor::ScriptEditorUI::RemoveBreakpoint(ScriptEditorTab* ToTab, size_t Line)
+{
+	delete ToTab->Breakpoints[Line].Icon;
+	ToTab->Breakpoints.erase(Line);
+	if (thread::IsMainThread)
+	{
+		ScriptSubsystem::Instance->RemoveBreakpoint(ToTab->Provider->EditedFile, Line);
+	}
+	else
+	{
+		thread::ExecuteOnMainThread([this, File = ToTab->Provider->EditedFile, Line = Line] {
+			ScriptSubsystem::Instance->RemoveBreakpoint(File, Line);
+		});
+	}
+}
+
+kui::Vec2f engine::editor::ScriptEditorUI::GetBreakpointPosition(kui::UITextEditor* Editor, size_t Line)
+{
+	float Pos = Editor->EditorToScreen(EditorPosition(0, Line)).Y;
+
+	float HalfSize = Editor->CharSize.Y / 2 - UISize::Pixels(6).GetScreen().Y;
+	return Vec2f(EditorBox->GetScreenPosition().X, Pos + HalfSize);
+}
+
 void engine::editor::ScriptEditorUI::UpdateTabSize(ScriptEditorTab* Tab)
 {
 	if (Tab)
 	{
+		Tab->Editor->SetMinWidth(EditorBox->GetUsedSize().X);
+		Tab->Editor->SetMinHeight(EditorBox->GetUsedSize().Y);
+		Tab->Editor->SetMaxWidth(EditorBox->GetUsedSize().X);
+		Tab->Editor->SetMaxHeight(EditorBox->GetUsedSize().Y);
+		Tab->Editor->SetPosition(EditorBox->GetScreenPosition());
+		Tab->Editor->UpdateElement();
+
 		if (Tab->MiniMap)
 			Tab->MiniMap->ReGenerate = true;
-		Tab->Editor->UpdateElement();
+
+		for (auto& i : Tab->Breakpoints)
+		{
+			i.second.Icon->SetColor(Tab->Provider->DebugBreakpointColor);
+			i.second.Icon->SetPosition(GetBreakpointPosition(Tab->Editor, i.second.Line));
+		}
 	}
 }
 
@@ -465,6 +509,11 @@ void engine::editor::ScriptEditorUI::CloseTab(size_t Index)
 	for (auto& i : Tabs[Index].Breakpoints)
 	{
 		delete i.second.Icon;
+	}
+
+	for (auto& i : Tabs[Index].Breakpoints)
+	{
+		RemoveBreakpoint(&Tabs[Index], i.first);
 	}
 
 	if (Tabs[Index].MiniMap)
@@ -651,7 +700,7 @@ void engine::editor::ScriptEditorUI::InitializeSettings()
 	UseVerticalTabs = Settings::GetInstance()->Script.GetSetting("useVerticalTabs", true).GetBool();
 }
 
-void engine::editor::ScriptEditorUI::AddTab(std::string File)
+void engine::editor::ScriptEditorUI::AddTab(string File)
 {
 	auto& NewTab = this->Tabs.emplace_back();
 	NewTab.Provider = new ScriptEditorProvider(File, this, Queue);
@@ -905,7 +954,7 @@ bool engine::editor::ScriptEditorUI::HasKeyboardFocus()
 	return HasFocus;
 }
 
-void engine::editor::ScriptEditorUI::NavigateTo(std::string File, std::optional<ds::TokenPos> At)
+void engine::editor::ScriptEditorUI::NavigateTo(string File, std::optional<ds::TokenPos> At)
 {
 	for (size_t i = 0; i < Tabs.size(); i++)
 	{

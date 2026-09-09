@@ -255,7 +255,7 @@ engine::editor::EditorUI::EditorUI()
 
 	Documentation.Initialize(GetEditorPath());
 
-	UpdateTheme(VideoSystem->MainWindow, false);
+	UpdateTheme(VideoSystem->MainWindow, false, true);
 
 	if (!MonospaceFont)
 	{
@@ -567,7 +567,7 @@ EditorAssetType* engine::editor::EditorUI::GetAssetTypeForExtension(const string
 	return nullptr;
 }
 
-void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
+void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full, bool IsMainWindow)
 {
 	Target->Markup.SetGlobal("Color_Text", Theme.Text);
 	Target->Markup.SetGlobal("Color_DarkText", Theme.DarkText);
@@ -592,7 +592,7 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	Target->Colors.TextFieldTextDefaultColor = Theme.Text;
 	Target->Colors.KeyboardSelectionColor = Theme.Text;
 
-	UpdateTitleBar(Target);
+	UpdateTitleBar(Target, IsMainWindow);
 
 	if (Full && thread::IsMainThread && Instance)
 	{
@@ -609,10 +609,27 @@ void engine::editor::EditorUI::UpdateTheme(kui::Window* Target, bool Full)
 	}
 }
 
-void engine::editor::EditorUI::UpdateTitleBar(kui::Window* Target)
+void engine::editor::EditorUI::UpdateTitleBar(kui::Window* Target, bool IsMainWindow)
 {
-	platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1,
-		Theme.CornerSize.Value > 0, Target);
+	if (IsMainWindow && Engine::IsPaused)
+	{
+		if (EditorUI::Instance && EditorUI::Instance->MenuBar)
+		{
+			EditorUI::Instance->MenuBar->SetBorder(1_px, EditorUI::Theme.Highlight1);
+			EditorUI::Instance->MenuBar->SetBorderEdges(true, false, false, false);
+		}
+		platform::SetWindowTheming(Theme.HighlightDark, Theme.Text, Theme.Highlight1,
+			Theme.CornerSize.Value > 0, Target);
+	}
+	else
+	{
+		if (IsMainWindow && EditorUI::Instance && EditorUI::Instance->MenuBar)
+		{
+			EditorUI::Instance->MenuBar->SetBorder(0, EditorUI::Theme.DarkBackground);
+		}
+		platform::SetWindowTheming(Theme.DarkBackground, Theme.Text, Theme.Highlight1,
+			Theme.CornerSize.Value > 0, Target);
+	}
 }
 
 void engine::editor::EditorUI::Update()

@@ -16,7 +16,7 @@ namespace engine::editor
 		kui::UIBackground* Icon = nullptr;
 	};
 
-	struct ScriptEditorTab
+	class ScriptEditorTab
 	{
 	public:
 		kui::UITextEditor* Editor = nullptr;
@@ -39,12 +39,11 @@ namespace engine::editor
 
 		void Update();
 
-		void AddTab(std::string File);
-
+		void AddTab(string File);
 		void OpenTab(size_t Tab);
 
 		// Inherited via ScriptEditorContext
-		void NavigateTo(std::string File, std::optional<ds::TokenPos> At) override;
+		void NavigateTo(string File, std::optional<ds::TokenPos> At) override;
 		void OnChange(const string& Name) override;
 		void OnResized(kui::Vec2f NewSize);
 
@@ -57,7 +56,7 @@ namespace engine::editor
 		Toolbar* ScriptToolbar = nullptr;
 		thread::ThreadMessagesRef Queue;
 
-		void HighlightLine(std::string File, size_t Line);
+		void HighlightLine(string File, size_t Line);
 
 	private:
 		kui::Font* TextFont = nullptr;
@@ -101,6 +100,7 @@ namespace engine::editor
 		void InitializeSettings();
 
 		void InsertBreakpoint(ScriptEditorTab* ToTab, size_t Line);
+		void RemoveBreakpoint(ScriptEditorTab* ToTab, size_t Line);
 
 		string NameFormat;
 		bool Saved = true;
@@ -113,6 +113,8 @@ namespace engine::editor
 		void SaveLastOpenedFiles();
 
 		string GetOpenedTabsFile();
+
+		kui::Vec2f GetBreakpointPosition(kui::UITextEditor* Editor, size_t Line);
 
 		kui::UIBackground* SeparatorBackgrounds[2];
 

@@ -12,6 +12,8 @@ void engine::editor::CodeEditorTheme::ApplyToScript(ScriptEditorProvider* Provid
 	Provider->FunctionColor = Function;
 	Provider->VariableColor = Variable;
 	Provider->TypeColor = Type;
+	Provider->DebugBreakpointColor = DebugBreakpoint;
+	Provider->BreakpointLineColor = BreakpointHighlightLine;
 }
 
 void engine::editor::CodeEditorTheme::ApplyToFile(kui::FileEditorProvider* Provider) const
@@ -48,6 +50,8 @@ void engine::editor::CodeEditorTheme::LoadFromFile(string ThemeName)
 			{"bracketArea", this->BracketArea},
 			{"lineNumber", this->LineNumber},
 			{"comment", this->Comment},
+			{"debugBreakpoint", this->DebugBreakpoint},
+			{"breakpointHighlightLine", this->BreakpointHighlightLine},
 		};
 
 		auto& ColorData = ThemeData.At("colors");

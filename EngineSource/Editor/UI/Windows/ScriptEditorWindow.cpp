@@ -27,6 +27,7 @@ engine::editor::ScriptEditorWindow::ScriptEditorWindow()
 void engine::editor::ScriptEditorWindow::Begin()
 {
 	this->MonospacedFont = new Font(EditorUI::Asset("EditorMono.ttf"));
+	this->MonospacedFont->CharacterSize *= 1.1f;
 	Background = new UIBackground(true, -1, EditorUI::Theme.Background);
 
 	Background->SetSize(2);

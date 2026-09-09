@@ -148,8 +148,8 @@ namespace engine::editor
 		 * The actual path at which the directory has been created.
 		 */
 		static string CreateDirectory(string Path);
-		static void UpdateTheme(kui::Window* Target, bool Full);
-		static void UpdateTitleBar(kui::Window* Target);
+		static void UpdateTheme(kui::Window* Target, bool Full, bool IsMainWindow = false);
+		static void UpdateTitleBar(kui::Window* Target, bool IsMainWindow);
 		void Update();
 		void UpdateBackgrounds();
 

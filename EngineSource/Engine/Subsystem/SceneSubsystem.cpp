@@ -75,12 +75,18 @@ void engine::SceneSubsystem::SetAsMain(Scene* Target)
 
 void engine::SceneSubsystem::LoadSceneThread(string SceneName)
 {
+	if (Engine::IsPlaying)
+	{
+		return;
+	}
+
 	IsLoading = true;
 	Scene* New = new Scene(true);
 
 	New->LoadAsync(SceneName);
 
 	thread::ExecuteOnMainThread([this, SceneName, New]() {
+
 		if (Main)
 		{
 			delete Main;

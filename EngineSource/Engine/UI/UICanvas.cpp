@@ -54,7 +54,9 @@ void engine::UICanvas::Update()
 
 void engine::UICanvas::UpdateAll()
 {
-	for (auto& i : ActiveCanvases)
+	auto CanvasCopy = ActiveCanvases;
+
+	for (auto& i : CanvasCopy)
 	{
 #ifdef EDITOR
 		if (editor::Viewport::Current)
@@ -67,6 +69,10 @@ void engine::UICanvas::UpdateAll()
 
 		}
 #endif
+		if (Engine::IsPaused)
+		{
+			continue;
+		}
 
 		i->Update();
 	}
@@ -75,7 +81,7 @@ void engine::UICanvas::UpdateAll()
 void engine::UICanvas::ClearAll()
 {
 	Window::GetActiveWindow()->UI.ButtonEvents.clear();
-	auto CanvasCopy = ActiveCanvases;
+	std::vector CanvasCopy = ActiveCanvases;
 	for (auto& i : CanvasCopy)
 	{
 		delete i;

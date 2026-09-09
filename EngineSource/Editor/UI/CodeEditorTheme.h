@@ -19,6 +19,8 @@ namespace engine::editor
 		kui::Vec3f LineNumber = 0.75f;
 		kui::Vec3f BracketArea = 0.5f;
 		kui::Vec3f Comment = 0.5f;
+		kui::Vec3f DebugBreakpoint = kui::Vec3f(1, 0, 0);
+		kui::Vec3f BreakpointHighlightLine = kui::Vec3f(0.4f, 0.1f, 0.1f);
 
 		bool IsLight = false;
 
