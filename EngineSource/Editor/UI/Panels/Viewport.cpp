@@ -288,7 +288,7 @@ void engine::editor::Viewport::ShowLoadScreen()
 
 bool engine::editor::Viewport::GetShowUI()
 {
-	return this->Visible && (this->ShowUI || Engine::IsPlaying);
+	return this->Visible && (this->ShowUI || Engine::IsPlaying) && !Engine::IsPaused;
 }
 
 std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
@@ -412,7 +412,7 @@ void engine::editor::Viewport::Update()
 	if (Engine::IsPaused != LastIsPaused)
 	{
 		VideoSubsystem::Current->UpdateTitle();
-		EditorUI::UpdateTitleBar(Win);
+		EditorUI::UpdateTitleBar(Win, true);
 
 		LastIsPaused = Engine::IsPaused;
 
@@ -776,12 +776,16 @@ void engine::editor::Viewport::Run()
 		return;
 	}
 
+	if (Engine::IsPaused)
+	{
+		Log::Warn("Engine Paused - Cannot run");
+		return;
+	}
+
 	if (Engine::IsPlaying)
 	{
 		Engine::GetSubsystem<EditorSubsystem>()->StopProject();
 	}
-
-	using namespace subsystem;
 
 	if (!Scene::GetMain())
 	{

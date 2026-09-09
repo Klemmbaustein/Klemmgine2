@@ -12,6 +12,7 @@ namespace ds
 {
 	class InterpretContext;
 	class LanguageRuntime;
+	class DebugState;
 	struct LanguageContext;
 	struct BytecodeStream;
 	struct RuntimeClass;
@@ -55,6 +56,7 @@ namespace engine::script
 		EngineModuleData ScriptEngine;
 
 		bool IsOnBreakpoint = false;
+		bool StopAfterBreakpoint = false;
 
 		/// The currently active script subsystem.
 		static ScriptSubsystem* Instance;
@@ -117,12 +119,13 @@ namespace engine::script
 		Event<> EndHotReloadEvent;
 		Event<> ReInitializeAfterHotReloadEvent;
 
-		std::vector<std::pair<ds::DebugLine, std::string>> BreakpointLines;
-
 		void ReloadRuntime();
 
+		std::vector<std::pair<ds::DebugLine, std::string>> BreakpointLines;
 		void AddBreakpoint(string File, size_t Line);
+		void RemoveBreakpoint(string File, size_t Line);
 		std::map<string, std::set<size_t>> Breakpoints;
+		ds::DebugState* CurrentBreakpointState = nullptr;
 
 	private:
 		void ApplyBreakpoint(string File, size_t Line);

@@ -275,8 +275,15 @@ static void Scene_createNewObject(InterpretContext* context)
 
 	ClassRef<Scene*> TargetScene = context->popValue<RuntimeClass*>();
 
-	auto NewObject = TargetScene.getValue()->CreateObjectFromID(
-		script::ScriptSubsystem::Instance->ScriptObjectIds.at(obj.id));
+	auto found = script::ScriptSubsystem::Instance->ScriptObjectIds.find(obj.id);
+
+	if (found == script::ScriptSubsystem::Instance->ScriptObjectIds.end())
+	{
+		context->runtimePanic("This object cannot be instantiated.");
+		return;
+	}
+
+	auto NewObject = TargetScene.getValue()->CreateObjectFromID(found->second);
 
 	auto ScriptObject = dynamic_cast<script::ScriptObject*>(NewObject);
 	if (ScriptObject)

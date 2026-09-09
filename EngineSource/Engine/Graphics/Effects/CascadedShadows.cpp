@@ -2,7 +2,6 @@
 #include <Core/Log.h>
 #include <Core/StringUtil.h>
 #include <Engine/File/Resource.h>
-#include <Engine/Graphics/OpenGL.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/vec4.hpp>
@@ -10,7 +9,7 @@
 using namespace engine;
 using namespace engine::graphics;
 
-uint32 CascadedShadows::ShadowResolution = 1000;
+uint32 CascadedShadows::ShadowResolution = 2048;
 static uint32 LastShadowResolution = 1000;
 constexpr float CAMERA_FAR_PLANE = 200.0f;
 std::vector<float> ShadowCascadeLevels = { CAMERA_FAR_PLANE / 30.0f, CAMERA_FAR_PLANE / 8.0f, CAMERA_FAR_PLANE / 2.0f };

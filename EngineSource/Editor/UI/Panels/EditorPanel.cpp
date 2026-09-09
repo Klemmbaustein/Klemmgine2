@@ -145,10 +145,10 @@ void engine::editor::EditorPanel::UpdateLayout()
 	}
 	ShouldUpdate = false;
 
-	if (OldPosition != Position || OldUsedSize != UsedSize)
+	if (OldPosition != Position || OldUsedSize != SizeVec(UsedSize).GetPixels())
 	{
 		OldPosition = Position;
-		OldUsedSize = UsedSize;
+		OldUsedSize = SizeVec(UsedSize).GetPixels();
 		OnResized();
 	}
 }
@@ -473,13 +473,17 @@ void engine::editor::EditorPanel::HandleResizing()
 
 
 	if (std::abs(MousePos.X - (Position.X + UsedSize.X)) < PixelSize.X
-		&& IsBetween(MousePos.Y, Position.Y, UsedSize.Y))
+		&& IsBetween(MousePos.Y, Position.Y, UsedSize.Y)
+		&& Position.X + UsedSize.X
+		< EditorUI::Instance->RootPanel->Position.X + EditorUI::Instance->RootPanel->UsedSize.X)
 	{
 		Hovering = true;
 		HoverHorizontal = true;
 	}
 	else if (std::abs(MousePos.Y - (Position.Y + UsedSize.Y)) < PixelSize.Y
-		&& IsBetween(MousePos.X, Position.X, UsedSize.X))
+		&& IsBetween(MousePos.X, Position.X, UsedSize.X)
+		&& Position.Y + UsedSize.Y
+		< EditorUI::Instance->RootPanel->Position.Y + EditorUI::Instance->RootPanel->UsedSize.Y)
 	{
 		Hovering = true;
 		HoverHorizontal = false;

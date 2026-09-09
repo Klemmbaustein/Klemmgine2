@@ -47,6 +47,8 @@ namespace engine::editor
 		kui::Vec3f TypeColor = kui::Vec3f(1.0f, 0.8f, 0.1f);
 		kui::Vec3f VariableColor = kui::Vec3f(0.71f, 0.96f, 0.95f);
 		kui::Vec3f FunctionColor = kui::Vec3f(0.27f, 0.88f, 0.65f);
+		kui::Vec3f DebugBreakpointColor = 0;
+		kui::Vec3f BreakpointLineColor = 0;
 
 		ServerConnection* Connection = nullptr;
 		ScriptEditorContext* Context = nullptr;
@@ -81,6 +83,7 @@ namespace engine::editor
 
 		std::vector<DropdownMenu::Option> GetRightClickOptions(kui::EditorPosition At) override;
 		void OnRightClick() override;
+		bool CanShowCompletions() override;
 
 		std::vector<ds::AutoCompleteResult> GetCompletionsAt(kui::EditorPosition At,
 			CompletionSource Source) override;

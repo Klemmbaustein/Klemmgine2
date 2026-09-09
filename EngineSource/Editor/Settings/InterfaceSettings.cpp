@@ -12,12 +12,12 @@ engine::editor::InterfaceSettings::InterfaceSettings()
 		EditorUI::Theme.LoadFromFile(val.GetString());
 		if (thread::IsMainThread)
 		{
-			EditorUI::UpdateTheme(Window::GetActiveWindow(), true);
+			EditorUI::UpdateTheme(Window::GetActiveWindow(), true, true);
 		}
 		else
 		{
 			thread::ExecuteOnMainThread([] {
-				EditorUI::UpdateTheme(Window::GetActiveWindow(), true);
+				EditorUI::UpdateTheme(Window::GetActiveWindow(), true, true);
 			});
 		}
 	});

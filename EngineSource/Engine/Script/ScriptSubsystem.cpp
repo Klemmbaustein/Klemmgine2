@@ -1,5 +1,4 @@
 #include "ScriptSubsystem.h"
-#include <Core/Error/EngineAssert.h>
 #include <Core/File/FileUtil.h>
 #include <Core/LaunchArgs.h>
 #include <Core/ThreadPool.h>
@@ -17,13 +16,11 @@
 #include <Engine/Engine.h>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <Engine/UI/UICanvas.h>
-#include <Engine/Subsystem/InputSubsystem.h>
 
 #if EDITOR
 #include <Editor/UI/Panels/PropertyPanel.h>
 #include <Editor/UI/EditorUI.h>
-#include <Editor/Assets/ScriptAssetType.h>
-#include <Editor/EditorSubsystem.h>
+#include <Editor/UI/Debugger/DebuggerOverlay.h>
 #endif
 #include <Engine/ProjectFile.h>
 
@@ -53,61 +50,31 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 		Print(Message, LogType::Error);
 	};
 
+#if EDITOR
 	Runtime->onDebugBreak = [this](InterpretContext* context, Pointer bytecodePosition, DebugState* state) {
 
+		if (Engine::Instance->ShouldQuit || !thread::IsMainThread)
+		{
+			return true;
+		}
+
+		CurrentBreakpointState = state;
 		IsOnBreakpoint = true;
+		StopAfterBreakpoint = false;
 
-		for (auto& [Line, File] : BreakpointLines)
 		{
-			if (Line.offset != bytecodePosition)
-			{
-				continue;
-			}
-			Log::Info(str::Format("Hit breakpoint: %s:%i", File.c_str(), Line.lineNumber));
+			auto DebugUI = editor::DebuggerOverlay(this);
 
-			auto ScriptAsset = dynamic_cast<editor::ScriptAssetType*>(
-				editor::EditorUI::Instance->GetAssetTypeForExtension("ds"));
-
-			if (ScriptAsset)
+			while (IsOnBreakpoint && !Engine::Instance->ShouldQuit)
 			{
-				ScriptAsset->RunOnActiveScriptEditor([File = File, Line = Line.lineNumber]
-				(editor::ScriptEditorUI* UI) {
-					UI->HighlightLine(File, Line);
-				});
+				DebugUI.Update();
 			}
+			CurrentBreakpointState = nullptr;
 		}
 
-		auto frames = state->getFrames();
-
-		for (auto& i : frames)
-		{
-			Log::Info(context->runtime->debug->getSectionAt(i->getOffset())->name);
-
-			auto variables = i->getVariables();
-			for (auto& j : variables)
-			{
-				Log::Info(str::Format("\t%s", j.name));
-			}
-		}
-
-		auto& w = VideoSubsystem::Current->MainWindow;
-
-		auto Input = Engine::GetSubsystem<subsystem::InputSubsystem>();
-		auto OldShowCursor = input::ShowMouseCursor;
-		input::ShowMouseCursor = true;
-		Engine::GameHasFocus = false;
-		Engine::IsPaused = true;
-
-		while (IsOnBreakpoint && !Engine::Instance->ShouldQuit)
-		{
-			thread::MainThreadUpdate();
-			Input->Update();
-			Engine::GetSubsystem<editor::EditorSubsystem>()->Update();
-			VideoSubsystem::Current->Update();
-			VideoSubsystem::Current->RenderUpdate();
-		}
-		Engine::IsPaused = false;
+		return !StopAfterBreakpoint;
 	};
+#endif
 
 	Reload();
 }
@@ -126,6 +93,7 @@ engine::script::ScriptSubsystem::~ScriptSubsystem()
 
 	delete this->Runtime;
 	delete this->ScriptLanguage;
+	delete this->ScriptInstructions;
 }
 
 void engine::script::ScriptSubsystem::RegisterCommands(ConsoleSubsystem* System)
@@ -164,6 +132,20 @@ void engine::script::ScriptSubsystem::AddBreakpoint(string File, size_t Line)
 	ApplyBreakpoint(File, Line);
 }
 
+void engine::script::ScriptSubsystem::RemoveBreakpoint(string File, size_t Line)
+{
+	for (auto it = BreakpointLines.begin(); it < BreakpointLines.end(); it++)
+	{
+		if (it->first.lineNumber == Line)
+		{
+			Runtime->baseContext->removeDebugBreakpoint(it->first.offset);
+			BreakpointLines.erase(it);
+			break;
+		}
+	}
+	this->Breakpoints[File].erase(Line);
+}
+
 void engine::script::ScriptSubsystem::ApplyBreakpoint(string File, size_t Line)
 {
 	auto FoundLine = this->Runtime->debug->getLineAt(File, Line);
@@ -171,11 +153,11 @@ void engine::script::ScriptSubsystem::ApplyBreakpoint(string File, size_t Line)
 	if (FoundLine && this->Runtime->baseContext->setDebugBreakpoint(FoundLine->offset))
 	{
 		BreakpointLines.push_back({ *FoundLine, File });
-		Log::Info(str::Format("Set breakpoint at %s:%i -> instructions+%i", File.c_str(), Line, FoundLine->offset));
+		Log::Note(str::Format("Set breakpoint at %s:%i -> instructions+%i", File.c_str(), Line + 1, FoundLine->offset));
 	}
 	else
 	{
-		Log::Warn(str::Format("Failed to set breakpoint at %s:%i", File.c_str(), Line));
+		Log::Warn(str::Format("Failed to set breakpoint at %s:%i", File.c_str(), Line + 1));
 	}
 }
 
@@ -337,6 +319,14 @@ bool engine::script::ScriptSubsystem::Reload()
 		}
 #endif
 		ScriptObjectIds[Id] = ObjectId;
+	}
+
+	for (auto& [file, breakpoints] : this->Breakpoints)
+	{
+		for (auto& bp : breakpoints)
+		{
+			ApplyBreakpoint(file, bp);
+		}
 	}
 
 	ReInitializeAfterHotReloadEvent.Invoke();

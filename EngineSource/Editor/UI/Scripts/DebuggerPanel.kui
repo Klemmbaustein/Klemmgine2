@@ -1,0 +1,85 @@
+element DebuggerCallStackEntry
+{
+	var Name = "function"
+
+	width = 100%
+	child UIButton btn
+	{
+		padding = 2px
+		width = 100%
+		color = Color_Background
+		corners = Theme_CornerSize
+
+		child UIText
+		{
+			padding = 5px
+			text = Name
+			size = 12px
+			wrap = 200px
+			color = Color_Text
+		}
+	}
+}
+
+element DebuggerVariableElement
+{
+	var Name = "variable"
+	var CollapseIcon = $"RightArrow.png"
+	var ValueText = "value"
+	var NameWidth = 200px
+	var ValueWidth = 400px
+
+	width = 100%
+	orientation = vertical
+
+	child UIButton btn
+	{
+		width = 100%
+		color = Color_Background
+
+		child UIBackground collapse
+		{
+			image = CollapseIcon
+			size = 12px
+			color = Color_Text
+			leftPadding = 5px
+			upPadding = 8px
+		}
+
+		child UIText nameText
+		{
+			padding = 5px
+			text = Name
+			size = 12px
+			wrap = NameWidth
+			widthOverride = NameWidth
+			color = Color_Text
+		}
+
+		child UIBackground
+		{
+			height = 100%
+			width = 1px
+			color = Color_BackgroundHighlight
+			leftPadding = 5px
+			rightPadding = 5px
+		}
+
+		child UIText
+		{
+			padding = 5px
+			text = ValueText
+			size = 11px
+			wrap = ValueWidth
+			color = Color_Text
+			font = "mono"
+		}
+	}
+
+	child UIBox children
+	{
+		leftPadding = 16px
+		width = 100%
+		orientation = vertical
+	}
+}

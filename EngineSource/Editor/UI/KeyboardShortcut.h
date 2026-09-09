@@ -51,7 +51,6 @@ namespace engine::editor
 		virtual bool HasKeyboardFocus() = 0;
 
 	private:
-
 		std::vector<kui::Key> Shortcuts;
 	};
 }
