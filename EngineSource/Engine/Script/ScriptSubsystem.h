@@ -120,6 +120,7 @@ namespace engine::script
 		Event<> ReInitializeAfterHotReloadEvent;
 
 		void ReloadRuntime();
+		void InitializeBreakpointHandler();
 
 		std::vector<std::pair<ds::DebugLine, std::string>> BreakpointLines;
 		void AddBreakpoint(string File, size_t Line);
