@@ -50,32 +50,7 @@ engine::script::ScriptSubsystem::ScriptSubsystem()
 		Print(Message, LogType::Error);
 	};
 
-#if EDITOR
-	Runtime->onDebugBreak = [this](InterpretContext* context, Pointer bytecodePosition, DebugState* state) {
-
-		if (Engine::Instance->ShouldQuit || !thread::IsMainThread)
-		{
-			return true;
-		}
-
-		CurrentBreakpointState = state;
-		IsOnBreakpoint = true;
-		StopAfterBreakpoint = false;
-
-		{
-			auto DebugUI = editor::DebuggerOverlay(this);
-
-			while (IsOnBreakpoint && !Engine::Instance->ShouldQuit)
-			{
-				DebugUI.Update();
-			}
-			CurrentBreakpointState = nullptr;
-		}
-
-		return !StopAfterBreakpoint;
-	};
-#endif
-
+	InitializeBreakpointHandler();
 	Reload();
 }
 
@@ -387,7 +362,37 @@ void engine::script::ScriptSubsystem::ReloadRuntime()
 		.useJustInTimeCompiler = launchArgs::GetArg("useJIT").has_value() || Engine::Instance->OpenedProject->UseScriptJIT,
 		});
 
+	InitializeBreakpointHandler();
 	Reload();
+}
+
+void engine::script::ScriptSubsystem::InitializeBreakpointHandler()
+{
+#if EDITOR
+	Runtime->onDebugBreak = [this](InterpretContext* context, Pointer bytecodePosition, DebugState* state) {
+
+		if (Engine::Instance->ShouldQuit || !thread::IsMainThread)
+		{
+			return true;
+		}
+
+		CurrentBreakpointState = state;
+		IsOnBreakpoint = true;
+		StopAfterBreakpoint = false;
+
+		{
+			auto DebugUI = editor::DebuggerOverlay(this);
+
+			while (IsOnBreakpoint && !Engine::Instance->ShouldQuit)
+			{
+				DebugUI.Update();
+			}
+			CurrentBreakpointState = nullptr;
+		}
+
+		return !StopAfterBreakpoint;
+	};
+#endif
 }
 
 void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
