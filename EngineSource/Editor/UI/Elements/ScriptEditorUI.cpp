@@ -1058,6 +1058,19 @@ void engine::editor::ScriptEditorUI::UpdateColors()
 	}
 }
 
+void engine::editor::ScriptEditorUI::ClearDebugHighlights()
+{
+	for (auto& i : this->Tabs)
+	{
+		i.Provider->DebugBreakpointLine = SIZE_MAX;
+	}
+	auto Selected = GetSelectedTab();
+	if (Selected)
+	{
+		Selected->Editor->RefreshHighlights();
+	}
+}
+
 std::vector<kui::UIBox*> engine::editor::ScriptEditorUI::GetEditorBoxes()
 {
 	std::vector<kui::UIBox*> Result;
