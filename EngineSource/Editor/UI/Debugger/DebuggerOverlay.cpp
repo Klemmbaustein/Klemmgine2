@@ -41,13 +41,11 @@ engine::editor::DebuggerOverlay::DebuggerOverlay(script::ScriptSubsystem* Script
 
 		if (!Found)
 		{
-			EditorUI::ForEachPanel<ConsolePanel>([&Found](ConsolePanel* i) {
-				if (!Found)
-				{
-					i->AddChild(new DebuggerPanel(), EditorPanel::Align::Tabs, true);
-				}
-				Found = true;
+			ConsolePanel* ToPanel = nullptr;
+			EditorUI::ForEachPanel<ConsolePanel>([&ToPanel](ConsolePanel* i) {
+				ToPanel = i;
 			});
+			ToPanel->AddChild(new DebuggerPanel(), EditorPanel::Align::Tabs, true);
 		}
 	});
 
