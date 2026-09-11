@@ -26,12 +26,12 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 
 		if (!btn && Mode == DisplayMode::Tree)
 		{
-			if (std::filesystem::exists(GetPathDisplayName()))
+			if (std::filesystem::exists(str::AsUnicode(GetPathDisplayName())))
 			{
 				try
 				{
-					std::string FileName = Item.Path.substr(Item.Path.find_last_of("/\\") + 1);
-					std::filesystem::rename(Item.Path, GetPathDisplayName() + "/" + FileName);
+					string FileName = Item.Path.substr(Item.Path.find_last_of("/\\") + 1);
+					std::filesystem::rename(str::AsUnicode(Item.Path), str::AsUnicode(GetPathDisplayName() + "/" + FileName));
 				}
 				catch (std::filesystem::filesystem_error e)
 				{
@@ -46,18 +46,18 @@ engine::editor::ItemBrowser::ItemBrowser(string Name, string InternalName)
 			return;
 		}
 
-		if (!std::filesystem::exists(btn->first.Path))
+		if (!std::filesystem::exists(str::AsUnicode(btn->first.Path)))
 			return;
 
 		if (Item.Name == btn->first.Name)
 			return;
 
-		if (btn->first.IsDirectory && std::filesystem::exists(btn->first.Path))
+		if (btn->first.IsDirectory && std::filesystem::exists(str::AsUnicode(btn->first.Path)))
 		{
 			try
 			{
 				std::string FileName = Item.Path.substr(Item.Path.find_last_of("/\\") + 1);
-				std::filesystem::rename(Item.Path, btn->first.Path + "/" + FileName);
+				std::filesystem::rename(str::AsUnicode(Item.Path), str::AsUnicode(btn->first.Path + "/" + FileName));
 			}
 			catch (std::filesystem::filesystem_error e)
 			{

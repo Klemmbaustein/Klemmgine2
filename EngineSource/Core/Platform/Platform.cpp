@@ -78,25 +78,24 @@ engine::string engine::platform::GetLastErrorString()
 	return WstrToStr(Message);
 }
 
-std::string engine::platform::WstrToStr(const std::wstring& wstr)
+std::string engine::platform::WstrToStr(const std::wstring& WideString)
 {
-	std::string strTo;
-	int ResultLength = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.size(), nullptr, 0, 0, 0);
-	char* szTo = new char[ResultLength];
-	WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, szTo, ResultLength, NULL, NULL);
-	strTo = string(szTo, ResultLength);
-	delete[] szTo;
-	return strTo;
+	int ResultLength = WideCharToMultiByte(CP_UTF8, 0, WideString.c_str(), WideString.size(), nullptr, 0, 0, 0);
+	char* ToBuffer = new char[ResultLength];
+	WideCharToMultiByte(CP_UTF8, 0, WideString.c_str(), -1, ToBuffer, ResultLength, NULL, NULL);
+	string Result = string(ToBuffer, ResultLength);
+	delete[] ToBuffer;
+	return Result;
 }
 
 std::wstring engine::platform::StrToWstr(const std::string& str)
 {
 	int WideLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[WideLength + 1];
-	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wstr, WideLength);
-	wstr[WideLength] = 0;
-	std::wstring OutStr = wstr;
-	delete[] wstr;
+	wchar_t* WideString = new wchar_t[WideLength + 1];
+	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, WideString, WideLength);
+	WideString[WideLength] = 0;
+	std::wstring OutStr = WideString;
+	delete[] WideString;
 	return OutStr;
 }
 
