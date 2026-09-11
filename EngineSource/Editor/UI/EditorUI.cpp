@@ -652,6 +652,8 @@ void engine::editor::EditorUI::Update()
 
 		if (!input::IsLMBDown || input::IsRMBDown)
 		{
+			delete DraggedBox;
+			DraggedBox = nullptr;
 			if (CurrentDraggedItem.IsAsset)
 			{
 				DroppableBox* DropTo = DroppableBox::GetBoxAtCursor();
@@ -660,8 +662,6 @@ void engine::editor::EditorUI::Update()
 					DropTo->OnDrop(CurrentDraggedItem);
 				}
 			}
-			delete DraggedBox;
-			DraggedBox = nullptr;
 		}
 	}
 
