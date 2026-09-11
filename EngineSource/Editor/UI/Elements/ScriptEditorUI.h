@@ -48,6 +48,7 @@ namespace engine::editor
 		void OnResized(kui::Vec2f NewSize);
 
 		void UpdateColors();
+		void ClearDebugHighlights();
 
 		bool IsVisible = true;
 		bool HasFocus = true;

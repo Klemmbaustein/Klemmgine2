@@ -54,6 +54,19 @@ void engine::editor::DebuggerPanel::Update()
 			SetFocused();
 			NavigateTo(SelectedFrame);
 		}
+		else
+		{
+			auto ScriptAsset = dynamic_cast<editor::ScriptAssetType*>(
+				editor::EditorUI::Instance->GetAssetTypeForExtension("ds"));
+
+			if (ScriptAsset)
+			{
+				ScriptAsset->RunOnActiveScriptEditor(
+					[](editor::ScriptEditorUI* UI) {
+					UI->ClearDebugHighlights();
+				});
+			}
+		}
 	}
 }
 
