@@ -182,8 +182,8 @@ void resource::ScanForAssets()
 			if (i.is_regular_file())
 				LoadedAssets.insert(
 					{
-						i.path().filename().string(),
-						str::ReplaceChar(i.path().string(), '\\', '/')
+						str::ConvertUnicode(i.path().filename().u8string()),
+						str::ReplaceChar(str::ConvertUnicode(i.path().u8string()), '\\', '/')
 					});
 		}
 	}

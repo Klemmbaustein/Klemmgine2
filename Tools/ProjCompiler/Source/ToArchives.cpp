@@ -17,7 +17,7 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 
 	for (auto& file : fs::recursive_directory_iterator(AssetsPath))
 	{
-		string Extension = file.path().extension().string();
+		string Extension = str::ConvertUnicode(file.path().extension().u8string());
 
 		if (Extension == ".kts")
 		{
@@ -37,7 +37,7 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 				.File = file,
 				.DependentScenes = {}
 			} });
-			FileNames.insert({file.path().filename().string(), file.path()});
+			FileNames.insert({ str::ConvertUnicode(file.path().filename().u8string()), file.path()});
 		}
 	}
 
@@ -73,7 +73,7 @@ std::vector<ArchiveInfo> engine::build::GetBuildArchives(fs::path AssetsPath)
 		string ArchiveIdentifier;
 		for (auto& scn : i.second.DependentScenes)
 		{
-			ArchiveIdentifier += scn.string() + ";";
+			ArchiveIdentifier += str::ConvertUnicode(scn.u8string()) + ";";
 		}
 
 		auto& Arch = OutArchives[ArchiveIdentifier];

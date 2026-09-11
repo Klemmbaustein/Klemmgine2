@@ -119,5 +119,15 @@ namespace engine
 		}
 
 		string FloatToString(float Val, size_t Precision = 0);
+
+		inline std::string ConvertUnicode(std::u8string Unicode)
+		{
+			return std::string(Unicode.begin(), Unicode.end());
+		}
+
+		inline std::u8string AsUnicode(std::string Unicode)
+		{
+			return std::u8string(Unicode.begin(), Unicode.end());
+		}
 	}
 }

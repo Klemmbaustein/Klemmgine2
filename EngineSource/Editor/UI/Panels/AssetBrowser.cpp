@@ -247,8 +247,7 @@ std::vector<AssetBrowser::Item> engine::editor::AssetBrowser::GetItems(string Pa
 				.Name = "Delete",
 				.Shortcut = "Del",
 				.Icon = EditorUI::Asset("X.png"),
-				.OnClicked = [this, FilePath]()
-				{
+				.OnClicked = [this, FilePath]() {
 					EditorUI::Instance->AssetsProvider->DeleteFile(FilePath);
 					resource::ScanForAssets();
 					UpdateItems();
@@ -453,7 +452,7 @@ void engine::editor::AssetBrowser::RenameFile(string FilePath, bool IsNew)
 	if (resource::AllowLocalFiles)
 	{
 		new RenameWindow(FilePath, [this, FilePath](string NewPath) {
-			std::filesystem::rename(FilePath, NewPath);
+			std::filesystem::rename(str::AsUnicode(FilePath), str::AsUnicode(NewPath));
 			resource::ScanForAssets();
 			UpdateItems();
 		}, IsNew);
