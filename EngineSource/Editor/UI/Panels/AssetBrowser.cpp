@@ -449,14 +449,9 @@ void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
 
 void engine::editor::AssetBrowser::RenameFile(string FilePath, bool IsNew)
 {
-	if (resource::AllowLocalFiles)
-	{
-		new RenameWindow(FilePath, [this, FilePath](string NewPath) {
-			std::filesystem::rename(str::AsUnicode(FilePath), str::AsUnicode(NewPath));
-			resource::ScanForAssets();
-			UpdateItems();
-		}, IsNew);
-	}
+	new RenameWindow(FilePath, [this, FilePath](string NewPath) {
+		EditorUI::Instance->AssetsProvider->RenameFile(FilePath, NewPath);
+	}, IsNew);
 }
 
 std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(string WorkDir, std::function<void()> OnAddCallback)

@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <fstream>
 #include <Core/Log.h>
-#include <Core/Platform/Platform.h>
 
 using namespace engine;
 
@@ -63,12 +62,7 @@ void engine::editor::FileAssetListProvider::DeleteFile(string Path)
 
 void engine::editor::FileAssetListProvider::NewFile(string Path)
 {
-#if WINDOWS
-	// No u8char support for this, because C++ char8_t is really dumb.
-	std::ofstream File = std::ofstream(platform::StrToWstr(Path));
-#else
 	std::ofstream File = std::ofstream(Path);
-#endif
 	File.close();
 	OnChanged.Invoke();
 }
@@ -82,6 +76,12 @@ void engine::editor::FileAssetListProvider::NewDirectory(string Path)
 IBinaryStream* engine::editor::FileAssetListProvider::GetFileSaveStream(string Path)
 {
 	return new FileStream(Path, false);
+}
+
+void engine::editor::FileAssetListProvider::RenameFile(string OldPath, string NewPath)
+{
+	std::filesystem::rename(str::AsUnicode(OldPath), str::AsUnicode(NewPath));
+	OnChanged.Invoke();
 }
 
 void engine::editor::FileAssetListProvider::Update()

@@ -29,7 +29,6 @@ engine::editor::ScriptEditorProvider::~ScriptEditorProvider()
 {
 	Context->OnReady.Remove(this);
 	Context->RemoveFile(this->EditedFile);
-	Context->Commit(nullptr, nullptr);
 }
 
 std::set<ScriptSyntaxHighlight> engine::editor::ScriptEditorProvider::GetHighlightsFor(size_t Line)
@@ -120,23 +119,93 @@ void engine::editor::ScriptEditorProvider::Commit()
 	{
 		UpdateLineColorization(Index);
 	}
+
+	if (Connection && Changed.size())
+	{
+		SerializedValue NewData = std::vector<SerializedValue>();
+
+		size_t First = SIZE_MAX;
+
+		for (auto& i : Changed)
+		{
+			NewData.Append(Lines[i]);
+			First = std::min(i, First);
+		}
+
+		Connection->SendMessage("scriptEdit", SerializedValue({
+			SerializedData("editType", "modify"),
+			SerializedData("file", EditedFile),
+			SerializedData("line", int32(First)),
+			SerializedData("lines", NewData),
+			}));
+	}
+
 	Changed.clear();
+}
+
+void engine::editor::ScriptEditorProvider::LoadConnection(ServerConnection* NewConnection)
+{
+	Connection = NewConnection;
+
+	Connection->ListenToLiveFile(EditedFile, [this](string Method, SerializedValue& Value) {
+		if (Method == "openScript")
+		{
+			this->Lines.clear();
+			for (auto& i : Value.At("lines").GetArray())
+			{
+				this->Lines.push_back(i.GetString());
+			}
+			UpdateBracketAreas();
+			UpdateFileContent();
+			this->ParentEditor->FullRefresh();
+		}
+		else if (Method == "scriptEdit")
+		{
+			auto Type = Value.At("editType").GetString();
+			if (Type == "modify")
+			{
+				int32 it = Value.At("line").GetInt();
+				for (auto& i : Value.At("lines").GetArray())
+				{
+					Lines[it++] = i.GetString();
+				}
+			}
+			else if (Type == "delete")
+			{
+				int32 Line = Value.At("line").GetInt();
+				int32 Length = Value.At("length").GetInt();
+				this->Lines.erase(this->Lines.begin() + Line, this->Lines.begin() + Line + Length);
+				this->ParentEditor->FullRefresh();
+			}
+			else if (Type == "insert")
+			{
+				int32 Line = Value.At("line").GetInt();
+				this->Lines.insert(this->Lines.begin() + Line, Value.At("newContent").GetString());
+			}
+			UpdateBracketAreas();
+			UpdateFileContent();
+			this->ParentEditor->FullRefresh();
+		}
+
+	}, this->Queue);
+
+	SerializedValue SentLines = std::vector<SerializedValue>();
+
+	for (auto& i : this->Lines)
+	{
+		SentLines.Append(i);
+	}
+
+	Connection->SendMessage("openScript", SerializedValue({
+		SerializedData("file", EditedFile),
+		SerializedData("lines", SentLines)
+		}));
 }
 
 void engine::editor::ScriptEditorProvider::SetLine(size_t Index, const std::vector<TextSegment>& NewLine)
 {
 	EngineTextEditorProvider::SetLine(Index, NewLine);
 	Changed.insert(Index);
-
-	if (Connection)
-	{
-		Connection->SendMessage("scriptEdit", SerializedValue({
-			SerializedData("editType", "modify"),
-			SerializedData("file", this->EditedFile),
-			SerializedData("line", int32(Index)),
-			SerializedData("newContent", TextSegment::CombineToString(NewLine)),
-			}));
-	}
 }
 
 void engine::editor::ScriptEditorProvider::GetLine(size_t LineIndex, std::vector<TextSegment>& To)

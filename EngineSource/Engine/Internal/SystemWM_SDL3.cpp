@@ -122,7 +122,7 @@ kui::systemWM::SysWindow* kui::systemWM::NewWindow(
 		}
 #endif
 
-		OutWindow->IsMain = ActiveWindows.empty();
+		OutWindow->IsMain = ActiveWindows.empty() || OutWindow->IsEngineWindow;
 		ActiveWindows.push_back(OutWindow);
 	});
 

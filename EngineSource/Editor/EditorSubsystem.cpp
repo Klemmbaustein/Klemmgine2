@@ -11,6 +11,8 @@
 #include <Editor/Settings/EditorSettings.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <Core/File/TextSerializer.h>
+#include <Editor/Server/EditorServerSubsystem.h>
+#include <Editor/Server/ServerAssetsProvider.h>
 #include <filesystem>
 
 using namespace engine::editor;
@@ -29,13 +31,23 @@ engine::editor::EditorSubsystem::EditorSubsystem()
 
 	debug::TimeLogger UITime{ "Created editor UI", GetLogPrefixes() };
 
-	UI = new EditorUI();
+	auto Connection = Engine::GetSubsystem<EditorServerSubsystem>();
+
 	Active = true;
+	if (Connection)
+	{
+		UI = new EditorUI(new ServerAssetsProvider(Connection->Connection));
+		Connection->OnEditorLoaded(UI);
+	}
+	else
+	{
+		UI = new EditorUI(nullptr);
+	}
 
 	auto RemoteProject = editor::GetRemoteProjectName();
 	if (RemoteProject)
 	{
-		std::filesystem::create_directories(GetEditorPath() + "/Remote/" + *RemoteProject + "/");
+		std::filesystem::create_directories(GetEditorConfigPath() + "/Remote/" + *RemoteProject + "/");
 	}
 	else
 	{

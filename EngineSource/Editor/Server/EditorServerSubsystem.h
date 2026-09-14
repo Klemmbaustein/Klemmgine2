@@ -1,11 +1,11 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
-#include <Core/Networking/HttpWebSocket.h>
-#include <Core/File/SerializedData.h>
 #include "ServerConnection.h"
 
 namespace engine::editor
 {
+	class EditorUI;
+
 	class EditorServerSubsystem : public subsystem::Subsystem
 	{
 	public:
@@ -13,6 +13,7 @@ namespace engine::editor
 		EditorServerSubsystem(ServerConnection* Connection);
 		~EditorServerSubsystem() override;
 
+		void OnEditorLoaded(EditorUI* UI);
 		ServerConnection* Connection = nullptr;
 	};
 }

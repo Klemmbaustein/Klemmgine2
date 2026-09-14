@@ -155,7 +155,7 @@ string engine::editor::EditorUI::GetProjectDataPath()
 	{
 		return ".editor";
 	}
-	return GetEditorPath() + "/Remote/" + *Project + "";
+	return GetEditorConfigPath() + "/Remote/" + *Project + "";
 }
 
 void engine::editor::EditorUI::LoadEditorStateConfig()
@@ -226,9 +226,13 @@ void engine::editor::EditorUI::LoadDefaultLayout()
 	vp->AddChild(new ScriptEditorPanel(), EditorPanel::Align::Tabs, false);
 }
 
-engine::editor::EditorUI::EditorUI()
+engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 {
-	if (resource::AllowLocalFiles)
+	if (AssetsProvider)
+	{
+		LoadAssetProvider(AssetsProvider);
+	}
+	else if (resource::AllowLocalFiles)
 	{
 		LoadAssetProvider(new FileAssetListProvider());
 	}
@@ -381,9 +385,17 @@ engine::editor::EditorUI::EditorUI()
 			DropdownMenu::Option("About", "", Asset("Info.png"), []() {
 				new AboutWindow();
 			}),
-			DropdownMenu::Option("View Log Directory", "", Asset("Open.png"), []() {
-				platform::Open("Logs");
-			}),
+			DropdownMenu::Option{
+				.Name = "Editor Files",
+				.SubMenu = {
+				DropdownMenu::Option("View Log Directory", "", Asset("Open.png"), []() {
+					platform::Open("Logs");
+				}),
+				DropdownMenu::Option("View Config Directory", "", Asset("Open.png"), []() {
+					platform::Open(GetEditorConfigPath());
+				}),
+			}
+			},
 		}
 	);
 
@@ -494,7 +506,7 @@ void engine::editor::EditorUI::RegisterDefaultPanels()
 
 string engine::editor::EditorUI::GetLayoutConfigPath()
 {
-	return editor::GetEditorPath() + "/Config/Layout/";
+	return GetEditorConfigPath() + "/Layout";
 }
 
 engine::string engine::editor::EditorUI::CreateAsset(string Path, string Name, string Extension)

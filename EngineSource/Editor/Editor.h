@@ -15,6 +15,7 @@ namespace engine::editor
 
 	void SetRemoteProject(string Path);
 	void ClearRemoteProject();
+	string GetEditorConfigPath();
 
 #else
 	constexpr bool IsActive() { return false; }

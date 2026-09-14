@@ -76,3 +76,11 @@ void engine::editor::ServerAssetsProvider::SaveToFile(string Path, IBinaryStream
 {
 	Connection->SendFile(Path, Stream, Length);
 }
+
+void engine::editor::ServerAssetsProvider::RenameFile(string OldPath, string NewPath)
+{
+	Connection->SendMessage("renameFile", SerializedValue({
+		SerializedData("old", OldPath),
+		SerializedData("new", NewPath)
+		}));
+}

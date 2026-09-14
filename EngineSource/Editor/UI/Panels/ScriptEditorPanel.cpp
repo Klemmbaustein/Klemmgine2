@@ -2,6 +2,8 @@
 #include <Editor/UI/EditorUI.h>
 #include <Engine/MainThread.h>
 #include <Editor/UI/Windows/ScriptEditorWindow.h>
+#include <Editor/Server/EditorServerSubsystem.h>
+#include <Engine/Engine.h>
 
 using namespace kui;
 using namespace engine::editor;
@@ -15,6 +17,13 @@ engine::editor::ScriptEditorPanel::ScriptEditorPanel()
 		delete this;
 		new ScriptEditorWindow();
 	});
+
+	auto sys = Engine::GetSubsystem<EditorServerSubsystem>();
+
+	if (sys)
+	{
+		UI.LoadEditorServerConnection(sys->Connection);
+	}
 }
 
 engine::editor::ScriptEditorPanel::~ScriptEditorPanel()

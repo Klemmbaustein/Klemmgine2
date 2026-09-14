@@ -118,7 +118,7 @@ namespace engine::editor
 
 		static void SetStatusMessage(string NewMessage, StatusType Type);
 
-		EditorUI();
+		EditorUI(AssetListProvider* AssetsProvider = nullptr);
 		~EditorUI();
 
 		void LoadAssetProvider(AssetListProvider* Provider);

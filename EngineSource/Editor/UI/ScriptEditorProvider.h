@@ -35,6 +35,8 @@ namespace engine::editor
 		ScriptEditorProvider(const ScriptEditorProvider&) = delete;
 		~ScriptEditorProvider();
 
+		void LoadConnection(ServerConnection* NewConnection);
+
 		void GetHighlightsForRange(size_t Begin, size_t Length) override;
 		void RemoveLines(size_t Start, size_t Length) override;
 		void SetLine(size_t Index, const std::vector<kui::TextSegment>& NewLine) override;
@@ -50,7 +52,6 @@ namespace engine::editor
 		kui::Vec3f DebugBreakpointColor = 0;
 		kui::Vec3f BreakpointLineColor = 0;
 
-		ServerConnection* Connection = nullptr;
 		ScriptEditorContext* Context = nullptr;
 
 		void Commit() override;
@@ -96,11 +97,13 @@ namespace engine::editor
 		size_t DebugBreakpointLine = SIZE_MAX;
 
 		std::set<ScriptSyntaxHighlight> GetHighlightsFor(size_t Line);
+		void UpdateFileData(const std::set<size_t> Lines);
 
 	private:
 		thread::ThreadMessagesRef Queue;
 		std::set<size_t> Changed;
 		size_t CompletionUsingLine = 0;
+		ServerConnection* Connection = nullptr;
 
 		kui::Timer HoverTime;
 
@@ -111,7 +114,6 @@ namespace engine::editor
 		void UpdateLineColorization(size_t Line);
 
 		void UpdateFileContent();
-		void UpdateFileData(const std::set<size_t> Lines);
 		void UpdateSyntaxHighlight();
 
 		std::optional<HoverSymbolData> GetHoveredFunction(kui::EditorPosition Position, ds::ScannedFile& File);

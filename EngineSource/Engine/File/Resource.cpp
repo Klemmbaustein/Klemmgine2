@@ -81,7 +81,7 @@ bool engine::resource::FileExists(string EnginePath)
 		}
 	}
 
-	return kui::resource::FileExists(EnginePath) || (std::filesystem::exists(Converted) && AllowLocalFiles);
+	return kui::resource::FileExists(EnginePath) || (std::filesystem::exists(str::AsUnicode(Converted)) && AllowLocalFiles);
 }
 
 IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
@@ -121,8 +121,8 @@ IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 		// Allow loading local files belonging to the editor
 		AllowFiles = AllowLocalFiles || (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
 #endif
-		if (AllowFiles && std::filesystem::exists(FilePath)
-			&& !std::filesystem::is_directory(FilePath))
+		if (AllowFiles && std::filesystem::exists(str::AsUnicode(FilePath))
+			&& !std::filesystem::is_directory(str::AsUnicode(FilePath)))
 		{
 			return new FileStream(FilePath, true);
 		}

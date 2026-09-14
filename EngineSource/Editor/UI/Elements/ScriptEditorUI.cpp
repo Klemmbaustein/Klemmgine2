@@ -287,6 +287,15 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 	this->ScriptEditorContext::Initialize();
 
+	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
+		UpdateFilesList([this] {
+			for (auto& i : this->Tabs)
+			{
+				i.Provider->UpdateFileData({});
+			}
+		}, this->Queue);
+	});
+
 	if (GetSelectedTab())
 	{
 		// Make the initially selected editor loaded
@@ -299,6 +308,8 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 engine::editor::ScriptEditorUI::~ScriptEditorUI()
 {
+	EditorUI::Instance->AssetsProvider->OnChanged.Remove(this);
+
 	SaveLastOpenedFiles();
 	Settings::GetInstance()->Script.RemoveListener(this);
 
@@ -428,6 +439,16 @@ void engine::editor::ScriptEditorUI::HighlightLine(string File, size_t Line)
 
 	GetSelectedTab()->Provider->DebugBreakpointLine = Line;
 	GetSelectedTab()->Editor->RefreshHighlights();
+}
+
+void engine::editor::ScriptEditorUI::LoadEditorServerConnection(ServerConnection* Connection)
+{
+	this->EditorServer = Connection;
+
+	for (auto& i : Tabs)
+	{
+		i.Provider->LoadConnection(Connection);
+	}
 }
 
 void engine::editor::ScriptEditorUI::InsertBreakpoint(ScriptEditorTab* ToTab, size_t Line)
@@ -564,17 +585,20 @@ void engine::editor::ScriptEditorUI::RunSearch()
 	if (Next)
 	{
 		SearchGotAnyResults = true;
-		Tab->Provider->NavigateTo(*Next, EditorPosition(Next->Column + CurrentSearch->Query.size(), Next->Line), false);
+		Tab->Provider->NavigateTo(*Next, EditorPosition(Next->Column + CurrentSearch->Query.size(),
+			Next->Line), false);
 	}
 	else
 	{
 		if (SearchGotAnyResults)
 		{
-			app::MessageBox(str::Format("No more search results for '%s'", CurrentSearch->Query.c_str()), "Search", app::MessageType::Warn);
+			app::MessageBox(str::Format("No more search results for '%s'", CurrentSearch->Query.c_str()),
+				"Search", app::MessageType::Warn);
 		}
 		else
 		{
-			app::MessageBox(str::Format("No matches found for '%s'", CurrentSearch->Query.c_str()), "Search", app::MessageType::Warn);
+			app::MessageBox(str::Format("No matches found for '%s'", CurrentSearch->Query.c_str()),
+				"Search", app::MessageType::Warn);
 		}
 		delete this->CurrentSearch;
 		this->CurrentSearch = nullptr;
@@ -591,7 +615,8 @@ void engine::editor::ScriptEditorUI::UpdateSearchPosition()
 
 		if (Tab->Editor->EditorScrollBox->GetScrollBarBackground()->IsVisible)
 		{
-			Size = Size - SizeVec(UISize::Pixels(GetSelectedTab()->Editor->EditorScrollBox->ScrollBarWidth + 5), 0).GetScreen();
+			Size = Size - SizeVec(UISize::Pixels(GetSelectedTab()->Editor->EditorScrollBox->ScrollBarWidth + 5),
+				0).GetScreen();
 		}
 
 		SearchUI->SetMinWidth(Size.X);
@@ -752,12 +777,16 @@ void engine::editor::ScriptEditorUI::AddTab(string File)
 	}
 
 	EditorUI::Theme.CodeTheme.ApplyToScript(NewTab.Provider);
-	if (this->Loaded)
+	if (Loaded)
 	{
 		NewTab.Provider->ScanFile();
 	}
 	NewTab.Editor = new UITextEditor(NewTab.Provider, ScriptFont, this->Tabs.size() == 1);
 	NewTab.Editor->LeftMargin = 16;
+	if (EditorServer)
+	{
+		NewTab.Provider->LoadConnection(EditorServer);
+	}
 
 	if (Settings::GetInstance()->Script.GetSetting("miniMap", true).GetBool())
 	{

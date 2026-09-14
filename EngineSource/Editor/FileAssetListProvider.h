@@ -14,6 +14,7 @@ namespace engine::editor
 		void NewFile(string Path) override;
 		void NewDirectory(string Path) override;
 		IBinaryStream* GetFileSaveStream(string Path) override;
+		void RenameFile(string OldPath, string NewPath) override;
 
 		void Update() override;
 

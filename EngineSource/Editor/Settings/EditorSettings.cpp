@@ -47,7 +47,7 @@ engine::editor::Settings::~Settings()
 
 void engine::editor::Settings::Save()
 {
-	std::filesystem::create_directory(GetEditorPath() + "/Config/");
+	std::filesystem::create_directory(str::AsUnicode(GetEditorConfigPath()));
 	JsonSerializer::ToFile(Serialize(), GetSettingsPath(), JsonSerializer::WriteOptions(true));
 }
 
@@ -96,5 +96,5 @@ void engine::editor::Settings::AddCategory(SettingsCategory* NewCategory)
 
 string engine::editor::Settings::GetSettingsPath()
 {
-	return GetEditorPath() + "/Config/settings.json";
+	return GetEditorConfigPath() + "/settings.json";
 }

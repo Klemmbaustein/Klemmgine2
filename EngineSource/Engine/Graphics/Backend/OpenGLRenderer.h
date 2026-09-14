@@ -264,5 +264,6 @@ namespace engine::graphics
 		bool StencilWriteEnabled = false;
 		bool FaceCullEnabled = false;
 		bool VSyncEnabled = false;
+		bool SwapIntervalChangeSupported = true;
 	};
 }
