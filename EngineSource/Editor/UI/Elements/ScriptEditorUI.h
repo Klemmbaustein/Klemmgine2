@@ -59,6 +59,8 @@ namespace engine::editor
 
 		void HighlightLine(string File, size_t Line);
 
+		void LoadEditorServerConnection(ServerConnection* Connection);
+
 	private:
 		kui::Font* TextFont = nullptr;
 		kui::Font* ScriptFont = nullptr;
@@ -85,6 +87,7 @@ namespace engine::editor
 
 		std::vector<ScriptEditorTab> Tabs;
 		size_t SelectedTab = 0;
+		ServerConnection* EditorServer = nullptr;
 
 		ScriptEditorTab* GetSelectedTab();
 

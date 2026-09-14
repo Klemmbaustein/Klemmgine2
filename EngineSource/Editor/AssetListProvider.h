@@ -33,6 +33,16 @@ namespace engine::editor
 
 		/**
 		 * @brief
+		 * Renames a file from the old path to the new path
+		 * @param OldPath
+		 * The old path of the file.
+		 * @param NewPath
+		 * The new path to rename the file to.
+		 */
+		virtual void RenameFile(string OldPath, string NewPath) = 0;
+
+		/**
+		 * @brief
 		 * Removes a file or directory at the given location.
 		 *
 		 * This will call @ref OnChanged once the operation is done.
@@ -98,7 +108,7 @@ namespace engine::editor
 
 		virtual void Update()
 		{
-		};
+		}
 
 		/**
 		 * @brief

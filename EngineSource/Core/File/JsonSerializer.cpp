@@ -331,6 +331,25 @@ string engine::JsonSerializer::ReadString(std::istream& Stream)
 			LastWasBackslash = false;
 			continue;
 		}
+		if (LastWasBackslash && New == 't')
+		{
+			Out.push_back('\t');
+			LastWasBackslash = false;
+			continue;
+		}
+		if (LastWasBackslash && New == 'u')
+		{
+			string UnicodeVal;
+
+			for (int i = 0; i < 4; i++)
+			{
+				UnicodeVal.push_back(char(Stream.get()));
+			}
+
+			Out.push_back(char(std::stoi(UnicodeVal, nullptr, 16)));
+			LastWasBackslash = false;
+			continue;
+		}
 		if (New == '\\' && !LastWasBackslash)
 		{
 			LastWasBackslash = true;

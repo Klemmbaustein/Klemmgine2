@@ -29,6 +29,8 @@ namespace engine::platform
 
 	void CreateHiddenDirectory(string Path);
 
+	string GetConfigDir(string AppName);
+
 #if WINDOWS
 	std::wstring StrToWstr(const std::string& str);
 	std::string WstrToStr(const std::wstring& wstr);

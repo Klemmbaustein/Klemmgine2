@@ -10,6 +10,7 @@ namespace engine::editor
 
 		ServerAssetsProvider(ServerConnection* Connection);
 
+		// Inherited via AssetListProvider
 		std::vector<AssetFile> GetFiles(string Path) override;
 		void DeleteFile(string Path) override;
 		void NewFile(string Path) override;
@@ -19,6 +20,7 @@ namespace engine::editor
 			return nullptr;
 		}
 		void SaveToFile(string Path, IBinaryStream* Stream, size_t Length) override;
+		void RenameFile(string OldPath, string NewPath) override;
 
 	private:
 		ServerConnection* Connection;

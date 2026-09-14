@@ -280,11 +280,11 @@ void engine::graphics::OpenGLRenderer::RenderScreen(kui::Window* WithWindow, Ren
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	int Interval = 0;
-	if ((SDL_GL_GetSwapInterval(&Interval) && (VSync ? 1 : 0) != Interval) || VSyncEnabled != VSync)
+	if (SwapIntervalChangeSupported && (SDL_GL_GetSwapInterval(&Interval) && (VSync ? 1 : 0) != Interval) || VSyncEnabled != VSync)
 	{
 		if (!SDL_GL_SetSwapInterval(VSync ? 1 : 0))
 		{
-			Log::Error(SDL_GetError());
+			SwapIntervalChangeSupported = false;
 		}
 		VSyncEnabled = VSync;
 	}

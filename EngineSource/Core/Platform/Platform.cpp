@@ -166,6 +166,17 @@ engine::string engine::platform::GetSystemUserName()
 	return WstrToStr(std::wstring(UserName, Length));
 }
 
+string engine::platform::GetConfigDir(string AppName)
+{
+	PWSTR AppDataPath;
+
+	SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_NO_ALIAS, NULL, &AppDataPath);
+
+	string Result = WstrToStr(AppDataPath);
+	CoTaskMemFree(AppDataPath);
+	return Result + "\\" + AppName;
+}
+
 string engine::platform::GetSystemHomeDir()
 {
 	wchar_t PathBuffer[MAX_PATH + 1]{ 0 };
@@ -310,6 +321,25 @@ string engine::platform::GetSystemHomeDir()
 		HomeDir = getpwuid(getuid())->pw_dir;
 	}
 	return HomeDir;
+}
+
+string engine::platform::GetConfigDir(string AppName)
+{
+	// Use XDG base directories: https://specifications.freedesktop.org/basedir/latest/
+	const char* XdgConfigDor = getenv("XDG_CONFIG_HOME");
+
+	string ConfigDir;
+
+	if (!XdgConfigDor)
+	{
+		ConfigDir = GetSystemHomeDir() + "/.config";
+	}
+	else
+	{
+		ConfigDir = XdgConfigDor;
+	}
+	ConfigDir += "/" + AppName;
+	return ConfigDir;
 }
 
 engine::string engine::platform::GetThreadName()

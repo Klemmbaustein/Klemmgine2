@@ -53,6 +53,8 @@ namespace engine::editor
 			return IsCompiling;
 		}
 
+		void UpdateFilesList(std::function<void()> Callback, thread::ThreadMessagesRef CallbackContext);
+
 	private:
 		bool SendUpdateEvent = false;
 		bool IsCompiling = false;
@@ -75,8 +77,6 @@ namespace engine::editor
 		void PublishUIData(kui::markup::MarkupElement& For, string File);
 
 		void ClearErrorsForFile(string Name);
-
-		void UpdateFilesList();
 
 		void CompileUIFile(const std::string& Content, std::string Name, bool Update);
 

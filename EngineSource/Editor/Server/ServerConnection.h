@@ -2,6 +2,7 @@
 #include <Core/Networking/HttpWebSocket.h>
 #include <Core/File/SerializedData.h>
 #include <Core/Event.h>
+#include <Core/ThreadMessages.h>
 #include <map>
 #include <mutex>
 
@@ -16,7 +17,7 @@ namespace engine::editor
 	class ServerConnection
 	{
 	public:
-		ServerConnection(string Url);
+		ServerConnection(string Url, std::optional<string> Password);
 		~ServerConnection();
 
 		http::WebSocketConnection* Connection = nullptr;
@@ -51,12 +52,23 @@ namespace engine::editor
 
 		void GetFile(string Name, std::function<void(ReadOnlyBufferStream*)> Callback);
 
+		void ListenToLiveFile(string FileName, std::function<void(string, SerializedValue&)> Callback,
+			thread::ThreadMessagesRef OnContext);
+
 		std::mutex FilesMutex;
 
 		std::map<string, std::vector<std::function<void(ReadOnlyBufferStream*)>>> FileCallbacks;
 
 	private:
+		struct CallbackData
+		{
+			std::function<void(string, SerializedValue&)> Callback;
+			thread::ThreadMessagesRef OnContext;
+		};
 
+		std::optional<string> Password;
+		std::map<std::string, CallbackData> ListenedFiles;
+		void HandleFileChanged(string File);
 		void HandleFileList(std::vector<SerializedValue> Values);
 	};
 }

@@ -11,36 +11,37 @@
 #include <sstream>
 #include <fstream>
 
-engine::editor::ServerConnection::ServerConnection(string Url)
+engine::editor::ServerConnection::ServerConnection(string Url, std::optional<string> Password)
 {
 	this->Connection = new http::WebSocketConnection("ws://" + Url + "/ws");
+	this->Password = Password;
 	ConnectionName = Url;
 
 	this->Connection->OnOpened = [this] {
 		SendMessage("tryConnect", {});
 	};
 
-	this->Connection->OnMessage = [this] (const http::WebSocketMessage& msg) {
+	this->Connection->OnMessage = [this](const http::WebSocketMessage& msg) {
 		MessageType Type = msg.Data->Get<MessageType>();
 
 		switch (Type)
 		{
 		case engine::editor::ServerConnection::MessageType::JsonMessage:
 		{
+			std::stringstream String;
+			String << msg.Data->ReadString();
 			try
 			{
-				std::stringstream String;
-				String << msg.Data->ReadString();
 				auto Data = JsonSerializer::FromStream(String);
 				HandleMessage(Data);
 			}
 			catch (SerializeReadException& e)
 			{
-				Log::Warn(e.what());
+				Log::Warn(str::Format("%s (Message payload: %s)", e.what(), String.str().c_str()));
 			}
 			catch (SerializeException& e)
 			{
-				Log::Warn(e.what());
+				Log::Warn(str::Format("%s (Message payload: %s)", e.what(), String.str().c_str()));
 			}
 			break;
 		}
@@ -179,6 +180,10 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 		}
 		thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke, &OnUsersChanged));
 	}
+	else if (Type == "fileChanged")
+	{
+		HandleFileChanged(Json.At("data").At("file").GetString());
+	}
 	else if (Type == "connectDeny")
 	{
 		Log::Warn("Connection from server was denied.");
@@ -192,6 +197,20 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 		if (OnConnectionAcceptDeny)
 			OnConnectionAcceptDeny(true);
 	}
+	else if (Type == "openScript")
+	{
+		auto& v = Json.At("data");
+		auto& f = ListenedFiles[v.At("file").GetString()];
+
+		f.OnContext->Run([cb = f.Callback, v = v] {cb("openScript", *const_cast<SerializedValue*>(&v)); });
+	}
+	else if (Type == "scriptEdit")
+	{
+		auto& v = Json.At("data");
+		auto& f = ListenedFiles[v.At("file").GetString()];
+
+		f.OnContext->Run([cb = f.Callback, v = v] {cb("scriptEdit", *const_cast<SerializedValue*>(&v)); });
+	}
 	else
 	{
 		Log::Error("Unknown message received from server: " + Type);
@@ -203,12 +222,26 @@ void engine::editor::ServerConnection::HandleMessage(SerializedValue Json)
 	}
 }
 
+void engine::editor::ServerConnection::ListenToLiveFile(string FileName,
+	std::function<void(string, SerializedValue&)> Callback, thread::ThreadMessagesRef OnContext)
+{
+	ListenedFiles[FileName] = { Callback, OnContext };
+}
+
+void engine::editor::ServerConnection::HandleFileChanged(string File)
+{
+	Log::Note(str::Format("Remote file changed: %s", File.c_str()));
+	thread::ExecuteOnMainThread([File] {
+		EditorUI::Instance->AssetsProvider->OnModified.Invoke(File);
+	});
+}
+
 void engine::editor::ServerConnection::HandleConnectParams(SerializedValue Json)
 {
 	srand(time(NULL));
 	this->ThisUserName = "User " + std::to_string(std::rand() % 256);
 	SendMessage("connect", SerializedValue({
-		SerializedData("password", "hello"),
+		SerializedData("password", this->Password ? SerializedValue(*this->Password) : SerializedValue()),
 		SerializedData("version", VersionInfo::Get().VersionName),
 		SerializedData("userName", this->ThisUserName),
 		}));
@@ -227,7 +260,7 @@ void engine::editor::ServerConnection::HandleInitializedParams(SerializedValue J
 		this->Users.push_back(i.At("name").GetString());
 	}
 
-	thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke , &OnUsersChanged));
+	thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke, &OnUsersChanged));
 }
 
 void engine::editor::ServerConnection::GetFile(string Name, std::function<void(ReadOnlyBufferStream*)> Callback)

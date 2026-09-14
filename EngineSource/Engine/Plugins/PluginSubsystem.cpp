@@ -101,7 +101,8 @@ void engine::plugin::PluginSubsystem::UnloadPlugin(PluginInfo* Info)
 	debug::TimeLogger PluginLoadTime{ str::Format("Unloaded plugin: %s", Info->Name.c_str()), GetLogPrefixes() };
 	if (Info->PluginUnload)
 		Info->PluginUnload();
-	UnloadSharedLibrary(Info->PluginHandle);
+	if (Info->PluginHandle)
+		UnloadSharedLibrary(Info->PluginHandle);
 	Info->PluginHandle = nullptr;
 	Info->PluginUnload = nullptr;
 	Info->PluginUpdate = nullptr;

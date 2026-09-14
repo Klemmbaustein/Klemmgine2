@@ -1,6 +1,7 @@
 #pragma once
 #include "ServerConnection.h"
 #include <Editor/UI/Windows/IDialogWindow.h>
+#include <Common.kui.hpp>
 
 namespace engine::editor
 {
@@ -22,12 +23,14 @@ namespace engine::editor
 		void Destroy() override;
 
 	private:
-
 		bool ConnectionAccepted = false;
 
 		bool Accepted = false;
 
 		void TryConnect();
+
+		EditorTextField* Url = nullptr;
+		EditorTextField* Password = nullptr;
 
 		std::function<void(ConnectResult)> SubmitResult;
 	};

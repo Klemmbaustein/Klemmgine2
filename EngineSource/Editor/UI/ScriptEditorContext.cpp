@@ -4,6 +4,7 @@
 #include <Engine/MainThread.h>
 #include <Core/File/FileUtil.h>
 #include <Core/Error/EngineError.h>
+#include <Editor/UI/EditorUI.h>
 #include <Engine/File/Resource.h>
 
 using namespace ds;
@@ -27,7 +28,7 @@ engine::editor::ScriptEditorContext::ScriptEditorContext()
 
 	std::thread t = std::thread(&ScriptEditorContext::ContextCompilerThread, this);
 	t.detach();
-	UpdateFilesList();
+	UpdateFilesList(nullptr, nullptr);
 }
 
 engine::editor::ScriptEditorContext::~ScriptEditorContext()
@@ -68,9 +69,9 @@ void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Conte
 	ParsedUI[Name] = UIFiles.Parse(ScriptService->parser);
 }
 
-void engine::editor::ScriptEditorContext::UpdateFilesList()
+void engine::editor::ScriptEditorContext::UpdateFilesList(std::function<void()> Callback, thread::ThreadMessagesRef CallbackContext)
 {
-	ScheduleContextTask([this] {
+	ScheduleContextTask([this, Callback, CallbackContext] {
 		std::set<string> RemovedFiles = LoadedFiles;
 		std::set<string> NewFiles;
 
@@ -111,6 +112,11 @@ void engine::editor::ScriptEditorContext::UpdateFilesList()
 				CompileUIFile(resource::GetTextFile(Added), Added, false);
 			}
 			LoadedFiles.insert(Added);
+		}
+
+		if (NewFiles.size() || RemovedFiles.size())
+		{
+			Commit(Callback, CallbackContext);
 		}
 	});
 }
@@ -181,7 +187,7 @@ void engine::editor::ScriptEditorContext::ClearErrorsForFile(string Name)
 
 void engine::editor::ScriptEditorContext::RemoveFile(const string& Name)
 {
-	UpdateFilesList();
+	UpdateFilesList(nullptr, nullptr);
 }
 
 std::vector<ds::AutoCompleteResult> engine::editor::ScriptEditorContext::CompleteAt(const string& FileName,

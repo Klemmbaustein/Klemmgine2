@@ -1,6 +1,7 @@
 #include "Editor.h"
 #include "EditorSubsystem.h"
 #include <Engine/File/Resource.h>
+#include <Core/Platform/Platform.h>
 using namespace engine;
 using namespace engine::subsystem;
 
@@ -32,6 +33,15 @@ void engine::editor::ClearRemoteProject()
 {
 	resource::AllowLocalFiles = true;
 	RemoteProject = std::nullopt;
+}
+
+string engine::editor::GetEditorConfigPath()
+{
+	if (false)
+	{
+		return editor::GetEditorPath() + "/Config";
+	}
+	return platform::GetConfigDir("Klemmgine 2");
 }
 
 void engine::editor::OpenEditorAt(string Path)
