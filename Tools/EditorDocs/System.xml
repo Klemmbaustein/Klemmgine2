@@ -1,0 +1,9 @@
+<docs type="bindings" module="system">
+	<types>
+		<Map generic="K,V">
+			<description>
+				A generic Key-Value map.
+			</description>
+		</Map>
+	</types>
+</docs>

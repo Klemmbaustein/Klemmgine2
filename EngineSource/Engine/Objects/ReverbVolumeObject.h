@@ -34,7 +34,7 @@ namespace engine
 		PROPERTY(float, ModulationDepth, =, 0);
 		PROPERTY(float, HighFrequencyReference, =, 5000.0f);
 		PROPERTY(float, LowFrequencyReference, =, 250.0f);
-		PROPERTY(float, RoomRolloffFactor, =, 250.0f);
+		PROPERTY(float, RoomRolloffFactor, =, 1.0f);
 		PROPERTY(int32, DecayHighFrequencyLimit, =, 1);
 
 	private:

@@ -1,0 +1,705 @@
+<!DOCTYPE docs>
+<docs type="bindings" module="engine">
+	<functions>
+
+		<info>
+			<description>
+				Prints an info message to the log.
+			</description>
+			<argument name="message" type="string">
+				The message string to print.
+			</argument>
+		</info>
+
+		<warn>
+			<description>
+				Prints a warning message to the log
+			</description>
+			<argument name="message" type="string">
+				The message string to print.
+			</argument>
+		</warn>
+
+		<getMainScene>
+			<description>
+				Gets the engine's currently loaded main scene.
+				If there is no main scene loaded, or if the main scene is still being loaded asynchronously,
+				this function returns null instead. In most contexts, you probably want to pass around
+				references to the result of SceneObject.getScene() instead.
+			</description>
+			<return type="engine::Scene?">
+				The current main scene or null if no main scene is loaded.
+			</return>
+		</getMainScene>
+
+		<isPlaying>
+			<description>
+				Returns true if the game is running and false if the script is running in the editor.
+			</description>
+
+			<return type="bool" />
+		</isPlaying>
+
+		<getDelta>
+			<description>
+				Returns the frame delta time in seconds. This is the time it took for the last frame to be run.
+			</description>
+
+			<return type="float" />
+		</getDelta>
+
+		<wait>
+			<description>
+				Creates an asynchronous task that waits for a specified number of seconds.
+				If the time is 0, it will wait for a frame instead.
+			</description>
+
+			<argument name="timeInSeconds">
+				The time to wait for in seconds.
+			</argument>
+
+			<return type="task">
+				An await-able task object that is completed once the time runs out.
+			</return>
+		</wait>
+
+		<emptyAsset>
+			<description>
+				Creates an empty asset reference with the given file type.
+			</description>
+
+			<argument name="extension">
+				The file extension of the file type that is referenced.
+			</argument>
+
+			<return type="engine::AssetRef" />
+		</emptyAsset>
+
+	</functions>
+
+	<types>
+
+		<Vector3 kind="struct">
+			<description>
+				A struct for defining a position in 3D space.
+			</description>
+
+			<methods>
+				<projectToPlane>
+					<description>
+						Returns a copy of this vector onto an infinite 2D plane.
+					</description>
+
+					<argument name="planeOrigin">
+						The origin point of the plane.
+					</argument>
+					<argument name="planeNormal">
+						The normal vector of the plane.
+					</argument>
+					<return type="engine::Vector3" />
+				</projectToPlane>
+				<length>
+					<description>
+						Returns the length of this vector, calculated as sqrt(X^2 + Y^2 + Z^2).
+					</description>
+					<return type="float" />
+				</length>
+				<dot>
+					<description>
+						Calculates the dot product between this vector and another vector.
+					</description>
+					<return type="float" />
+				</dot>
+				<cross>
+					<description>
+						Calculates the cross product between this vector and another vector.
+					</description>
+					<return type="engine::Vector3" />
+				</cross>
+				<normalized>
+					<description>
+						Returns the normalized version of this vector, which always has a length of 1,
+						or X=0, Y=0, Z=0 if the vector already has a length of 0.
+					</description>
+					<return type="engine::Vector3" />
+				</normalized>
+				<toString>
+					<description>
+						Converts this vector to a string, following the format &quot;{X} {Y} {Z}&quot;
+					</description>
+					<return type="string" />
+				</toString>
+			</methods>
+
+			<members>
+				<x type="float">
+					<description>Vector X coordinate, usually left/right.</description>
+				</x>
+				<y type="float">
+					<description>Vector Y coordinate, usually down/up.</description>
+				</y>
+				<z type="float">
+					<description>Vector Z coordinate, usually forward/backward.</description>
+				</z>
+			</members>
+		</Vector3>
+
+		<Rotation3 kind="struct">
+			<description>
+				A struct containing an euler rotation.
+			</description>
+			<members>
+				<p type="float">
+					<description>Pitch value.</description>
+				</p>
+				<y type="float">
+					<description>Yaw value.</description>
+				</y>
+				<r type="float">
+					<description>Roll value.</description>
+				</r>
+			</members>
+			<methods>
+				<forward>
+					<description>Returns a vector pointing in the direction that is forward from this rotation.</description>
+					<return type="engine::Vector3" />
+				</forward>
+				<right>
+					<description>Returns a vector pointing in the direction that is right from this rotation.</description>
+					<return type="engine::Vector3" />
+				</right>
+				<up>
+					<description>Returns a vector pointing in the direction that is up from this rotation.</description>
+					<return type="engine::Vector3" />
+				</up>
+			</methods>
+		</Rotation3>
+
+		<Transform kind="struct">
+			<description>A type containing a transform in 3D space, including position, rotation and scale.</description>
+		</Transform>
+
+		<Scene>
+			<description>
+				A collection of objects, rendering, collision and sound information, forming a kind of &quot;World&quot;.
+			</description>
+			<methods>
+				<getName>
+					<description>
+						Returns the name of this scene. If this scene was loaded from a file, this is usually the filename.
+					</description>
+					<return type="string" />
+				</getName>
+				<getManager>
+					<description>
+						Gets the current manager of this scene or null if none is set.\nThe manager is an
+						instance of the engine::SceneManager class which is accessible to every other object
+						in the scene and should control global scene logic. To check if the scene manager has a
+						given type, use the is and as operators.
+					</description>
+					<return type="engine::SceneManager" />
+					<seeAlso class="engine::SceneManager" />
+				</getManager>
+				<createNewObject>
+					<description>
+						Creates a new scene object with the given type.
+					</description>
+					<return type="engine::SceneObject" />
+					<seeAlso class="engine::SceneObject" />
+				</createNewObject>
+				<getObjectByName generic="T">
+					<where type="T" is="engine::SceneObject" />
+					<description>
+						Searches for an object in this scene that has the given type and the given name.
+						If multiple objects match the criteria, a warning will be logged and only one of them will be returned.
+					</description>
+					<argument name="name">
+						The name of the object to search for.
+					</argument>
+					<return type="engine::SceneObject?">
+						The found object or null if no such object exists in this scene.
+					</return>
+				</getObjectByName>
+				<getPhysics>
+					<description>Returns the physics manager of this scene.</description>
+					<return type="engine::PhysicsManager"/>
+				</getPhysics>
+			</methods>
+		</Scene>
+
+		<AssetRef>
+			<description>
+				A reference to a project asset. Contains a type (extension) and file path.
+			</description>
+			<methods>
+				<new kind="constructor">
+					<description>
+						Creates a new asset reference from the given name or path.
+					</description>
+					<argument name="path">
+						The path or name of the asset file to reference, including the extension.
+						If a only a name is given, the loaded assets are searched for a matching file.
+					</argument>
+				</new>
+			</methods>
+		</AssetRef>
+
+		<SceneObject>
+			<description>
+				An object in a scene, made up of a tree of ObjectComponents.
+				An object can have a number of properties, marked with the [Export] attribute, that are saved in the scene file.
+			</description>
+
+			<methods>
+				<attach>
+					<description>
+						Attaches a component to this object.
+					</description>
+					<argument name="component">The component to attach to the object.</argument>
+				</attach>
+				<detach>
+					<description>
+						Detaches a component from the object and destroys it.
+					</description>
+					<argument name="component">The component to detach to the object.</argument>
+				</detach>
+				<onBegin virtual="true">
+					<description>
+						Virtual function, called when an object is created.
+					</description>
+				</onBegin>
+				<onBeginPlay virtual="true">
+					<description>
+						Virtual function, called when an object is created in game.
+					</description>
+					<see function="engine::isPlaying"/>
+				</onBeginPlay>
+				<update virtual="true">
+					<description>
+						Virtual function, called each frame while the game is running.
+					</description>
+				</update>
+				<onDestroyed virtual="true">
+					<description>
+						Virtual function, called when the object is destroyed (including when the entire scene being unloaded).
+					</description>
+				</onDestroyed>
+				<getScene>
+					<description>
+						Gets the scene that this object is in.
+					</description>
+					<return type="engine::Scene" />
+				</getScene>
+				<getName>
+					<description>
+						Gets the name of this object.
+					</description>
+					<return type="string" />
+				</getName>
+			</methods>
+			<members>
+				<position type="Vector3">
+					<description>The position of this object and its components in the scene.</description>
+				</position>
+				<rotation type="Rotation3">
+					<description>The rotation of this object and its components in the scene.</description>
+				</rotation>
+				<scale type="Vector3">
+					<description>The scale of this object and its components in the scene.</description>
+				</scale>
+				<objectTransform>
+					<description>
+						The transform of this object in the scene. It is derived from this object's position,
+						rotation and scale members. All components attached to this object will be transformed by this value.
+					</description>
+				</objectTransform>
+			</members>
+		</SceneObject>
+
+		<ObjectComponent>
+			<description>
+				A component of a SceneObject. It can be attached to a SceneObject either by calling SceneObject.attach() or
+				by attaching the component to another component that has been attached to a SceneObject. The component will
+				inherit the transform of the parent component or object.
+			</description>
+
+			<methods>
+				<attach>
+					<description>
+						Attaches a component to this component. It will inherit this component's transform.
+					</description>
+					<argument name="component">The component to attach to this component.</argument>
+				</attach>
+				<getWorldPosition>
+					<description>
+						Gets this component's position in world coordinates of the scene.
+					</description>
+					<return type="engine::Vector3" />
+				</getWorldPosition>
+			</methods>
+			<members>
+				<position type="engine::Vector3">
+					<description>
+						The position of this component relative to its parent.
+					</description>
+				</position>
+				<rotation type="engine::Rotation3">
+					<description>
+						The rotation of this component relative to its parent.
+					</description>
+				</rotation>
+				<scale type="engine::Vector3">
+					The scale of this component relative to its parent.
+				</scale>
+			</members>
+		</ObjectComponent>
+
+		<DrawableComponent super="engine::ObjectComponent">
+			<description>
+				Base class for all components that have a visual representation in the scene.
+			</description>
+
+			<members>
+				<isVisible type="bool">
+					<description>True if this object be rendered to the screen, false if not.</description>
+				</isVisible>
+				<castShadow type="bool">
+					<description>True if this object should cast a shadow.</description>
+				</castShadow>
+			</members>
+		</DrawableComponent>
+
+		<MeshComponent super="engine::DrawableComponent">
+			<description>
+				An object component that displays a 3D model.
+			</description>
+			<methods>
+				<load>
+					<description>
+						Loads and applies a 3D model (.kmdl file) to this component.
+					</description>
+					<argument name="asset">
+						The asset to load the 3D model from.
+					</argument>
+				</load>
+				<getModel>
+					<description>
+						Returns the currently loaded model data.
+					</description>
+					<return type="engine::graphics::ModelData">
+						The model data or null if no model is loaded.
+					</return>
+				</getModel>
+				<new kind="constructor">
+					<description>
+						Creates a new mesh component.
+					</description>
+				</new>
+			</methods>
+		</MeshComponent>
+
+		<CameraComponent super="engine::ObjectComponent">
+			<description>
+				A camera through which the scene is rendered.
+			</description>
+			<methods>
+				<setFov>
+					<description>
+						Sets the vertical field-of-view of this camera in degrees.
+					</description>
+				</setFov>
+				<use>
+					<description>
+						Uses this camera to be the scene's currently active camera.
+					</description>
+				</use>
+				<screenToWorldDirection>
+					<description>
+						Converts screen coordinates (X and Y from -1 to 1 for left/right and up/down) to a vector with a length of 1,
+						pointing in that direction from the camera.
+					</description>
+					<return type="engine::Vector3"/>
+				</screenToWorldDirection>
+				<worldPositionToScreen>
+					<description>
+						Projects 3D coordinates to the screen. Returns a 3D vector, where X and Y are 2D screen coordinates and Z is depth.
+					</description>
+					<return type="engine::Vector3"/>
+				</worldPositionToScreen>
+				<new kind="constructor">
+					<description>
+						Creates a new camera component.
+					</description>
+				</new>
+			</methods>
+		</CameraComponent>
+
+		<MoveComponent super="engine::ObjectComponent">
+			<description>
+				A component implementing a simple movement controller using the collide and slide algorithm,
+				moving it's parent object.
+			</description>
+			<methods>
+				<addInput>
+					<description>
+						Adds an input in this direction, telling movement to move in that direction.
+						Each frame, each input is combined together (with their length clamped) to control the movement velocity.
+					</description>
+				</addInput>
+				<jump>
+					<description>
+						Makes the movement do a jump, setting the velocity Y value to the jump height.
+					</description>
+				</jump>
+				<isOnGround>
+					<description>
+						Returns true if the controller is currently \"standing\" on any ground.
+					</description>
+				</isOnGround>
+				<getVelocity>
+					<description>
+						Gets the current velocity.
+					</description>
+					<return type="engine::Vector3" />
+				</getVelocity>
+				<setVelocity>
+					<description>
+						Sets the current velocity.
+					</description>
+				</setVelocity>
+			</methods>
+			<members>
+				<acceleration type="float">
+					<description>
+						The acceleration in units per second squared that is applied by addInput().
+					</description>
+				</acceleration>
+				<gravity type="float">
+					<description>
+						Force applied downwards (-Y) in units per second.
+					</description>
+				</gravity>
+				<maxSpeed type="float">
+					<description>
+						"Max speed the movement can accelerate to in units per second.
+					</description>
+				</maxSpeed>
+				<deceleration type="float">
+					<description>
+						The acceleration in units per second squared that is applied when no input is given.
+					</description>
+				</deceleration>
+				<active type="bool">
+					<description>
+						If false, the movement will not update the parent object's position in any way.
+					</description>
+				</active>
+				<canMoveUpSlopes type="bool">
+					<description>
+						If true, the movement can move up slopes > 45 degrees.
+					</description>
+				</canMoveUpSlopes>
+				<jumpHeight>
+					<description>
+						The speed in units per second applied when jump() is called.
+					</description>
+				</jumpHeight>
+			</members>
+		</MoveComponent>
+
+		<CollisionComponent super="engine::ObjectComponent">
+			<description>A collider using a 3D model.</description>
+			<methods>
+				<load>
+					<description>Loads a 3D model (.kmdl file) this component for collision.</description>
+					<argument name="file">
+						The 3D model asset to load.
+					</argument>
+				</load>
+				<setIsCollisionEnabled>
+					<description>
+						Enables or disables collision of this component. If collision is disabled,
+						no physics query will be able to interact with this collider.
+					</description>
+				</setIsCollisionEnabled>
+				<new>
+					<description>
+						Creates a new collision component.
+					</description>
+				</new>
+			</methods>
+		</CollisionComponent>
+		<Billboard super="engine::DrawableComponent">
+			<description>
+				A component rendering a plane 3D model always facing the camera, imitating a 2D space,
+				but appearing in the 3D world.
+			</description>
+			<methods>
+				<load>
+					<description>
+						Loads a new billboard image from the given image file.
+					</description>
+				</load>
+				<new>
+					<description>Creates a new billboard component.</description>
+				</new>
+			</methods>
+		</Billboard>
+		<LightComponent super="engine::ObjectComponent">
+			<description>A component emitting a light in the scene from it's origin point.</description>
+			<methods>
+				<setColor>
+					<description>Sets the color the light should shine in, in an RGB format from 0-1.</description>
+				</setColor>
+				<setIntensity>
+					<description>
+						Sets the intensity of the light, where a higher value means elements close to the
+						light will be illuminated more.
+					</description>
+				</setIntensity>
+				<setRange>
+					<description>
+						Sets the range of the light in units, where a higher value means the light will shine
+						for a larger distance. The light will stop shining entirely once the cutoff point has been
+						reached for performance reasons, even though this might not always look right.
+					</description>
+				</setRange>
+				<new>
+					<description>
+						Creates a new light component.
+					</description>
+				</new>
+			</methods>
+		</LightComponent>
+		<SoundComponent super="engine::ObjectComponent">
+			<description>
+				A component emitting a sound from it's origin point. The sound can be looped or positioned in 3D space.
+			</description>
+			<methods>
+				<load>
+					<description>
+						Loads a sound file (.wav) into this component.
+					</description>
+				</load>
+				<play>
+					<description>
+						Starts playback of the sound. Calling this function while the sound
+						is already playing will reset the sound.
+					</description>
+					<argument name="loop">
+						True if the sound should loop.
+					</argument>
+					<argument name="is3D">
+						True if the sound should be panned/attenuated as if it was in 3D space. If false,
+						the sound will always sound the same, no matter where the listener is.
+					</argument>
+				</play>
+				<stop>
+					<description>
+						Stops playback of the currently playing sound.
+					</description>
+				</stop>
+				<setVolume>
+					<description>
+						Sets the volume of the sound source. A volume of 1 means the sound is as loud as it was defined in the sound file.
+					</description>
+				</setVolume>
+				<setRange>
+					<description>
+						Sets the range of the sound in units. Sounds have a distance model of 1/distance, so they never become
+						fully unhearable, but past this point they become practically inaudible.
+					</description>
+				</setRange>
+				<new>
+					Creates a new sound component.
+				</new>
+			</methods>
+
+		</SoundComponent>
+
+		<PhysicsComponent super="engine::ObjectComponent">
+			<description>
+				A collider using simple geometric shapes than can simulate physics. This component's transform
+				will not be relative to the position/rotation/scale members after physics have been enabled,
+				instead the component will follow the position of the simulated body. Any components attached
+				to this component will follow this component.
+			</description>
+			<methods>
+				<createBox>
+					<description>Loads a box collider for this component.</description>
+					<argument name="motionType">
+						The motion type of the collider. If static, the collider will only move according
+						to this component's position value. If kinematic, it will move via velocity but
+						is not physics simulated. If dynamic, it is fully physics simulated.
+					</argument>
+					<argument name="layer">
+						The layer this component is on.
+					</argument>
+					<scale>
+						The scale of the collider, independent of this component's scale, so it won't
+						affect the scale of any child components.
+					</scale>
+				</createBox>
+				<createSphere>
+					<description>Loads a sphere collider for this component.</description>
+					<argument name="motionType">
+						The motion type of the collider. If static, the collider will only move according
+						to this component's position value. If kinematic, it will move via velocity but
+						is not physics simulated. If dynamic, it is fully physics simulated.
+					</argument>
+					<argument name="layer">
+						The layer this component is on.
+					</argument>
+					<scale>
+						The scale of the collider, independent of this component's scale, so it won't
+						affect the scale of any child components.
+					</scale>
+				</createSphere>
+				<shapeCast>
+					<description>
+						Casts this shape in a line from its current position to the given position.
+						This will always return collision results, even if the component does not
+						have collision enabled.
+					</description>
+					<argument name="targetPosition">
+						The position the cast should end at.
+					</argument>
+					<argument name="layer">
+						The layer the shape cast should query.
+					</argument>
+					<argument name="ignoredObjects">
+						A set of objects whose colliders should be skipped in the query.
+					</argument>
+					<return type="engine::physics::HitResult[]">
+						An array of hits containing the earliest hit in the shape cast,
+						or multiple if multiple hits occurred at once.
+					</return>
+				</shapeCast>
+				<setIsActive>
+					<description>
+						Sets the activeness of this component. If it is active, its physics are updated.
+						(On kinematic components it updates the positions according to velocity) This
+						has no effect on static components.
+					</description>
+					<argument name="isActive">
+						If this is true, the component becomes active.
+					</argument>
+				</setIsActive>
+				<setIsCollisionEnabled>
+					<description>
+						Enables or disables the collision of this component against other queries.
+					</description>
+				</setIsCollisionEnabled>
+				<collisionTest>
+					<description>
+						Does a collision test, checking for any overlapping colliders at this
+						component's position, rotation and scale.
+					</description>
+					<argument name="layer">
+						The layer to query.
+					</argument>
+				</collisionTest>
+			</methods>
+		</PhysicsComponent>
+	</types>
+</docs>

@@ -28,6 +28,7 @@ namespace engine::editor
 	struct DocumentationClass
 	{
 		string Description;
+		string SuperClass;
 		std::unordered_map<string, DocumentationMember*> Members;
 	};
 

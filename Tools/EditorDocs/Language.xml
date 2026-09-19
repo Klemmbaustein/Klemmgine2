@@ -1,0 +1,31 @@
+<docs type="bindings" module="">
+	<types>
+		<string>
+			<description>
+				Built in read only UTF-8 encoded string type. Any modifications to a string will create a new instance.
+			</description>
+		</string>
+		<float>
+			<description>
+				Built in IEEE-754 32 bit floating point type.
+			</description>
+		</float>
+		<int>
+			<description>
+				Built in 32-bit signed integer type.
+			</description>
+		</int>
+
+		<iterator generic="T">
+			<description>
+				Base iterator type
+			</description>
+		</iterator>
+		<task generic="T">
+			<description>
+				An object representing the completion of an asynchronous task that can be paused using
+				'await' and resumed later.
+			</description>
+		</task>
+	</types>
+</docs>

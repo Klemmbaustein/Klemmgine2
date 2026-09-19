@@ -83,7 +83,7 @@ using int32 = signed int;
 */
 using uint32 = unsigned int;
 
-#ifdef WINDOWS
+#ifdef _MSC_VER
 
 /**
 * @brief

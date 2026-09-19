@@ -54,11 +54,15 @@ void engine::editor::DocumentationDatabase::LoadDocumentationFile(string Path)
 		return;
 	}
 
+	auto PrependModule = [&CurrentModule](string Name) {
+		return CurrentModule.empty() ? Name : CurrentModule + "::" + Name;
+	};
+
 	if (Loaded.Contains("functions"))
 	{
 		for (auto& i : Loaded.At("functions").GetObject())
 		{
-			this->Functions.insert({ CurrentModule + "::" + i.Name, LoadFunction(i.Value)});
+			this->Functions.insert({ PrependModule(i.Name), LoadFunction(i.Value) });
 		}
 	}
 
@@ -66,24 +70,28 @@ void engine::editor::DocumentationDatabase::LoadDocumentationFile(string Path)
 	{
 		for (auto& Type : Loaded.At("types").GetObject())
 		{
+			auto& t = this->Classes[PrependModule(Type.Name)];
 			if (Type.Value.Contains("description"))
 			{
-				this->Classes[CurrentModule + "::" + Type.Name].Description = Type.At("description").GetString();
+				t.Description = Type.At("description").GetString();
 			}
 			if (Type.Value.Contains("methods"))
 			{
 				for (auto& i : Type.Value.At("methods").GetObject())
 				{
-					this->Functions.insert({ CurrentModule + "::" + Type.Name + "." + i.Name, LoadFunction(i.Value) });
+					this->Functions.insert({ PrependModule(Type.Name + "." + i.Name), LoadFunction(i.Value) });
 				}
 			}
 			if (Type.Value.Contains("members"))
 			{
 				for (auto& i : Type.Value.At("members").GetObject())
 				{
-					this->Classes[CurrentModule + "::" + Type.Name]
-						.Members.insert({ i.Name, LoadMember(i.Value) });
+					t.Members.insert({ i.Name, LoadMember(i.Value) });
 				}
+			}
+			if (Type.Value.Contains("super"))
+			{
+				t.SuperClass = Type.At("super").GetString();
 			}
 		}
 	}
@@ -112,6 +120,11 @@ DocumentationMember* engine::editor::DocumentationDatabase::GetTypeMember(string
 		if (member != found->second.Members.end())
 		{
 			return member->second;
+		}
+
+		if (!found->second.SuperClass.empty())
+		{
+			return GetTypeMember(found->second.SuperClass, FullName);
 		}
 	}
 

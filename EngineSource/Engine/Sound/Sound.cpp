@@ -9,11 +9,14 @@
 #include "Sources/FlacSoundFileSource.h"
 #include <Engine/Engine.h>
 #include <Engine/Stats.h>
+#include <Core/Error/EngineAssert.h>
 
 using namespace engine::subsystem;
 using namespace engine::sound;
 using namespace engine;
 using graphics::BvhNode;
+
+static std::mutex SoundUpdateMutex;
 
 static ALenum GetFormatFromSound(SoundData* Data)
 {
@@ -135,14 +138,14 @@ engine::sound::SoundContext::SoundContext(SoundDevice* Device)
 void engine::sound::SoundContext::Restart()
 {
 	StopAll();
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	alListenerf(AL_GAIN, 0.0f);
 	Initialized = false;
 }
 
 engine::sound::SoundContext::~SoundContext()
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	ThreadData->Stop = true;
 	MakeCurrent();
 	alcDestroyContext(this->SoundData->Context);
@@ -184,7 +187,7 @@ SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
 
 	NewBuffer->ALBuffer;
 
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alGenBuffers(1, &NewBuffer->ALBuffer);
 
@@ -199,7 +202,7 @@ SoundBuffer* engine::sound::SoundContext::LoadSoundEffect(string Path)
 
 SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 
 	ALuint Source;
@@ -221,7 +224,7 @@ SoundSource* engine::sound::SoundContext::CreateSoundSource(SoundBuffer* With)
 
 void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3 NewPosition)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	if (Source->Is3D)
 	{
 		MakeCurrent();
@@ -231,21 +234,21 @@ void engine::sound::SoundContext::SetSourcePosition(SoundSource* Source, Vector3
 
 void engine::sound::SoundContext::SetSourceVolume(SoundSource* Source, float Volume)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alSourcef(Source->ALSource, AL_GAIN, Volume);
 }
 
 void engine::sound::SoundContext::SetSourcePitch(SoundSource* Source, float Pitch)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alSourcef(Source->ALSource, AL_PITCH, Pitch);
 }
 
 void engine::sound::SoundContext::SetSourceRange(SoundSource* Source, float Falloff)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	float Factor = 10.0f / Falloff;
 	alSourcef(Source->ALSource, AL_ROLLOFF_FACTOR, Factor);
@@ -253,14 +256,14 @@ void engine::sound::SoundContext::SetSourceRange(SoundSource* Source, float Fall
 
 void engine::sound::SoundContext::SetSourceVelocity(SoundSource* Source, Vector3 NewVelocity)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alSource3f(Source->ALSource, AL_VELOCITY, NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
 }
 
 void engine::sound::SoundContext::PlaySource(SoundSource* Source, bool Loop, bool Is3D)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alSourcei(Source->ALSource, AL_LOOPING, Loop);
 	alSourcePlay(Source->ALSource);
@@ -294,7 +297,7 @@ void engine::sound::SoundContext::PlayBuffer(SoundEffectCache* Cache, float Volu
 	}
 	PlaySource(Source, false, Falloff != -1);
 
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	PlayingSounds.push_back(PlayedSound{
 		.Source = Source,
 		.Buffer = Cache->Buffer,
@@ -315,7 +318,7 @@ void engine::sound::SoundContext::OnSoundStopped(PlayedSound& Sound)
 
 void engine::sound::SoundContext::StopSource(SoundSource* Source)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alSourceStop(Source->ALSource);
 }
@@ -331,7 +334,7 @@ void engine::sound::SoundContext::StopAll()
 
 void engine::sound::SoundContext::SetVolume(float NewVolume)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alListenerf(AL_GAIN, NewVolume);
 	auto Error = alGetError();
@@ -347,7 +350,7 @@ void engine::sound::SoundContext::SetVolume(float NewVolume)
 
 float engine::sound::SoundContext::GetVolume()
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	ALfloat Volume = 0;
 	alGetListenerf(AL_GAIN, &Volume);
@@ -449,7 +452,7 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::De
 	}
 
 	ThreadPool::Main()->AddJob([this, Pos, Directions] {
-		std::lock_guard g{ ThreadData->SoundUpdateMutex };
+		std::lock_guard g{ SoundUpdateMutex };
 
 		MakeCurrent();
 		alListener3f(AL_POSITION, Pos.X, Pos.Y, Pos.Z);
@@ -481,9 +484,17 @@ void engine::sound::SoundContext::Update(graphics::Camera* FromCamera, debug::De
 
 void engine::sound::SoundContext::FreeSoundSource(SoundSource* Source)
 {
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	MakeCurrent();
 	alDeleteSources(1, &Source->ALSource);
+	for (auto it = PlayingSounds.begin(); it != PlayingSounds.end(); it++)
+	{
+		if (it->Source == Source)
+		{
+			PlayingSounds.erase(it);
+			break;
+		}
+	}
 	delete Source;
 }
 
@@ -496,7 +507,7 @@ void engine::sound::SoundContext::FreeSoundEffect(SoundBuffer* Buffer)
 
 	Buffer->References--;
 
-	std::lock_guard g{ ThreadData->SoundUpdateMutex };
+	std::lock_guard g{ SoundUpdateMutex };
 	if (Buffer->References == 0)
 	{
 		for (auto it = Device->Buffers.begin(); it != Device->Buffers.end(); it++)

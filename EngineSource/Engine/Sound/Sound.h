@@ -162,7 +162,6 @@ namespace engine::sound
 		{
 			bool Stop = false;
 			std::mutex TreeBuildMutex;
-			std::mutex SoundUpdateMutex;
 			std::list<SoundReverbVolume> CurrentReverbVolumes;
 		};
 

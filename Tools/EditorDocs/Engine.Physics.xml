@@ -1,0 +1,81 @@
+<!DOCTYPE docs>
+<docs type="bindings" module="engine::physics">
+	<functions>
+		<combineHits>
+			<description>
+				Combines an array of HitResults into a single HitResult with a single position and normal on which the hit occurred.
+			</description>
+
+			<return type="engine::physics::HitResult" />
+		</combineHits>
+	</functions>
+
+	<types>
+		<HitResult>
+			<description>
+				Contains data about a hit returned by a collision query.
+			</description>
+			<members>
+				<depth type="float">
+					<description>
+						For collisions checking for overlaps, this how much the hit overlapped.
+					</description>
+				</depth>
+				<distance type="float">
+					<description>
+						The distance in units before a hit occurred.
+					</description>
+				</distance>
+				<impactPoint type="engine::Vector3">
+					<description>
+						The point in 3D space where the hit occurred.
+					</description>
+				</impactPoint>
+				<normal type="engine::Vector3">
+					<description>
+						The normal of the point that was hit, pointing away from the hit surface.
+					</description>
+				</normal>
+			</members>
+			<methods>
+				<getHitObject>
+					<description>
+						Returns the object that was hit.
+					</description>
+					<return type="engine::SceneObject?" />
+				</getHitObject>
+			</methods>
+		</HitResult>
+
+		<PhysicsManager>
+			<description>
+				A physics context that represents the collision of a 3D scene
+			</description>
+
+			<members>
+				<isActive type="bool">
+					<description>
+						True if the physics manager is active and updating. When false, collision
+						and physics are disabled for this scene.
+					</description>
+				</isActive>
+			</members>
+
+			<methods>
+				<rayCast>
+					<description>
+						Does a ray collision check from the start point to the end point and returns the first hit that occurred.
+					</description>
+
+					<argument name="start">The start position of the ray.</argument>
+					<argument name="end">The end position of the ray.</argument>
+					<argument name="layer">THe layer on which the collision check occurs.</argument>
+					<argument name="ignoredObjects">Objects that should be ignored when casting the ray.</argument>
+					<return type="engine::physics::HitResult?">
+						Returns a HitResult describing the hit that occurred, or null if no collider was hit.
+					</return>
+				</rayCast>
+			</methods>
+		</PhysicsManager>
+	</types>
+</docs>

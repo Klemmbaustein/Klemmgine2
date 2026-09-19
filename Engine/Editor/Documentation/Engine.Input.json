@@ -1,46 +1,67 @@
 {
-	"type": "bindings",
-	"module": "engine::input",
-
-	"functions": {
-		"isKeyDown": {
-			"description": "Returns true if the given key was pressed this frame."
-		},
-		"isKeyHeld": {
-			"descriptino": "Returns true if the given key is being pressed currently."
-		},
-		"isKeyUp": {
-			"description": "Returns true if the given key was released this frame."
-		},
-		"isLMBDown": {
-			"description": "Returns true if the left mouse button is being held down."
-		},
-		"isLMBClicked": {
-			"description": "Returns true if the left mouse button was pressed this frame."
-		},
-		"isRMBDown": {
-			"description": "Returns true if the right mouse button is being held down."
-		},
-		"isRMBClicked": {
-			"description": "Returns true if the right mouse button was pressed this frame."
-		},
-		"getMouseMovement": {
-			"description": "Returns the amount the mouse has been moved by, if the mouse is not shown."
-		},
-		"getMousePosition": {
-			"description": "Returns the current position of the mouse cursor on the screen in a scale from -1 to 1, if the mouse is visible."
-		},
-		"setShowMouseCursor": {
-			"description": "Controls the visibility of the mouse cursor.",
-			"arguments": {
-				"newValue": "If the new value is true, the mouse cursor is shown. If it is false, the mouse cursor is invisible"
-			}
-		}
-	},
-
-	"enums": {
-		"Key": {
-			"description": "A key on a keyboard"
-		}
-	}
+  "types": {},
+  "functions": {
+    "isRMBClicked": {
+      "description": "Returns true if the right mouse button was pressed this frame.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "getMouseMovement": {
+      "description": "Returns the amount the mouse has been moved by, if the mouse is not shown.",
+      "return": null,
+      "returnType": "engine::Vector2",
+      "arguments": {}
+    },
+    "setShowMouseCursor": {
+      "description": "Controls the visibility of the mouse cursor.",
+      "arguments": {
+        "newValue": "If the new value is true, the mouse cursor is shown. If it is false, the mouse cursor is invisible."
+      }
+    },
+    "isLMBDown": {
+      "description": "Returns true if the left mouse button is being held down.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "isKeyUp": {
+      "description": "Returns true if the given key was released this frame.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "isLMBClicked": {
+      "description": "Returns true if the left mouse button was pressed this frame.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "isKeyHeld": {
+      "description": "Returns true if the given key is being pressed currently.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "isRMBDown": {
+      "description": "Returns true if the right mouse button is being held down.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "getMousePosition": {
+      "description": "Returns the current position of the mouse cursor on the screen in a scale from -1 to 1, if the mouse is visible.",
+      "return": null,
+      "returnType": "engine::Vector2",
+      "arguments": {}
+    },
+    "isKeyDown": {
+      "description": "Returns true if the given key was pressed this frame.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    }
+  },
+  "module": "",
+  "type": "bindings"
 }
