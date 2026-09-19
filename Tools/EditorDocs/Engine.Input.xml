@@ -1,0 +1,69 @@
+<!DOCTYPE docs>
+<docs type="bindings" module="">
+	<functions>
+		<isKeyDown>
+			<description>
+				Returns true if the given key was pressed this frame.
+			</description>
+			<return type="bool"/>
+		</isKeyDown>
+		<isKeyHeld>
+			<description>
+				Returns true if the given key is being pressed currently.
+			</description>
+			<return type="bool"/>
+		</isKeyHeld>
+		<isKeyUp>
+			<description>
+				Returns true if the given key was released this frame.
+			</description>
+			<return type="bool"/>
+		</isKeyUp>
+		<isLMBDown>
+			<description>
+				Returns true if the left mouse button is being held down.
+			</description>
+			<return type="bool" />
+		</isLMBDown>
+		<isLMBClicked>
+			<description>
+				Returns true if the left mouse button was pressed this frame.
+			</description>
+			<return type="bool" />
+		</isLMBClicked>
+		<isRMBDown>
+			<description>
+				Returns true if the right mouse button is being held down.
+			</description>
+			<return type="bool" />
+		</isRMBDown>
+		<isRMBClicked>
+			<description>
+				Returns true if the right mouse button was pressed this frame.
+			</description>
+			<return type="bool" />
+		</isRMBClicked>
+		<getMouseMovement>
+			<description>
+				Returns the amount the mouse has been moved by, if the mouse is not shown.
+			</description>
+			<return type="engine::Vector2" />
+		</getMouseMovement>
+		<getMousePosition>
+			<description>
+				Returns the current position of the mouse cursor on the screen in a scale from -1 to 1,
+				if the mouse is visible.
+			</description>
+			<return type="engine::Vector2" />
+		</getMousePosition>
+		<setShowMouseCursor>
+			<description>
+				Controls the visibility of the mouse cursor.
+			</description>
+			<argument name="newValue">
+				If the new value is true, the mouse cursor is shown. If it is false, the mouse cursor
+				is invisible.
+			</argument>
+		</setShowMouseCursor>
+	</functions>
+</docs>

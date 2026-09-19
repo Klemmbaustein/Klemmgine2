@@ -21,7 +21,7 @@ option(ENGINE_RUN_MSVC_CODE_ANALYSIS "Run MSVC code analysis when compiling" OFF
 option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripting only)" OFF)
 option(ENGINE_BUILD_ID "Build identifier" "")
 option(EDITOR_PLUGIN_SUPPORT "Enable experimental support for managing plugins in-editor" OFF)
-
+option(EDITOR_CONVERT_DOCUMENTATION "Convert documentation XML files into JSON for the editor to read (requires Powershell 7)" ON)
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
 
 if(WIN32)
@@ -122,7 +122,7 @@ set(OVERRIDE_CXX_FLAGS OFF)
 add_subdirectory("Dependencies/SDL" EXCLUDE_FROM_ALL)
 set(ALSOFT_UTILS OFF)
 set(OLD_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
-set(CMAKE_BUILD_TYPE "Release")
+#set(CMAKE_BUILD_TYPE "Release")
 set(ALSOFT_ENABLE_MODULES OFF)
 set(ALSOFT_BACKEND_WAVE OFF)
 add_subdirectory("Dependencies/openal-soft" EXCLUDE_FROM_ALL)
@@ -263,6 +263,10 @@ if (ENGINE_BUILD_TOOLS)
 	enable_testing()
 	add_subdirectory("Tools/Tests")
 	add_subdirectory("Tools/ProjCompiler")
+endif()
+
+if (EDITOR_CONVERT_DOCUMENTATION AND ENGINE_EDITOR)
+	add_subdirectory("Tools/EditorDocs")
 endif()
 
 add_subdirectory("Plugins/PluginInterface")

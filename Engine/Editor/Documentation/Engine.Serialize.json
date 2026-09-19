@@ -1,35 +1,58 @@
 {
-	"type": "bindings",
-	"module": "engine::serialize",
-
-	"functions": {
-		"parseJsonFile": {
-			"description": "Parses a file in the JavaScript Object Notation format, converting it to the engine's Serialization format types.\n\nNotes:\n- Vectors aren't supported.\n- All numeric values will be SerializedFloats, because JSON does not differentiate between number formats."
-		}
-	},
-
-	"types": {
-		"SerializedValue": {
-			"description": "A basic serialized value, base class for representing a serialized data hierarchy.",
-			"methods": {
-				"toJsonString": {
-					"description": "Converts this value to a string containing JSON data.\nThe JSON format does not support vectors. This function will fail if this value contains or is a vector.",
-					"arguments": {
-						"prettyPrint": "If false, the JSON will be written in a compact format. If true, it will be indented and each value will be put on a separate line."
-					},
-					"return": "The string containing the JSON data if the function succeeds. Otherwise it returns null."
-				}
-			}
-		},
-
-		"SerializedInt": {
-			"description": "A serialized integer value.",
-			"super": "engine::serialize::SerializedValue",
-			"members": {
-				"value": {
-					"description": "The integer value."
-				}
-			}
-		}
-	}
+  "types": {
+    "SerializedFloat": {
+      "super": "engine::serialize::SerializedValue",
+      "members": {
+        "value": {
+          "description": null,
+          "type": "float"
+        }
+      },
+      "methods": {},
+      "description": "A serialized float value."
+    },
+    "SerializedInt": {
+      "super": "engine::serialize::SerializedValue",
+      "members": {
+        "value": {
+          "description": null,
+          "type": "int"
+        }
+      },
+      "methods": {},
+      "description": "A serialized integer value."
+    },
+    "SerializedValue": {
+      "super": null,
+      "members": {},
+      "methods": {
+        "toSerializedString": {
+          "description": "Converts this value to the engine's string-based serialization format.",
+          "return": "The string containing the serialized data.",
+          "returnType": "string?",
+          "arguments": {}
+        },
+        "asInt": {
+          "description": "Will convert the value held in this SerializedValue to an int if it can be converted to one. If the conversion fails, this function will throw an error.",
+          "arguments": {}
+        },
+        "toJsonString": {
+          "description": "Converts this value to a string containing JSON data. The JSON format does not support vectors. This function will fail if this value contains or is a vector.",
+          "return": "The string containing the JSON data if the function succeeds. Otherwise it returns null.",
+          "returnType": "string?",
+          "arguments": {
+            "prettyPrint": "If false, the JSON will be written in a compact format. If true, it will be indented and each value will be put on a separate line."
+          }
+        },
+        "asFloat": {
+          "description": "Will convert the value held in this SerializedValue to a float if it can be converted to one. If the conversion fails, this function will throw an error.",
+          "arguments": {}
+        }
+      },
+      "description": "A basic serialized value, base class for representing a serializable data hierarchy."
+    }
+  },
+  "functions": {},
+  "module": "engine::serialize",
+  "type": "bindings"
 }

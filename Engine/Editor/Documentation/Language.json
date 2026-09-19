@@ -1,0 +1,37 @@
+{
+  "types": {
+    "string": {
+      "super": null,
+      "members": {},
+      "methods": {},
+      "description": "Built in read only UTF-8 encoded string type. Any modifications to a string will create a new instance."
+    },
+    "float": {
+      "super": null,
+      "members": {},
+      "methods": {},
+      "description": "Built in IEEE-754 32 bit floating point type."
+    },
+    "task": {
+      "super": null,
+      "members": {},
+      "methods": {},
+      "description": "An object representing the completion of an asynchronous task that can be paused using 'await' and resumed later."
+    },
+    "int": {
+      "super": null,
+      "members": {},
+      "methods": {},
+      "description": "Built in 32-bit signed integer type."
+    },
+    "iterator": {
+      "super": null,
+      "members": {},
+      "methods": {},
+      "description": "Base iterator type"
+    }
+  },
+  "functions": {},
+  "module": "",
+  "type": "bindings"
+}

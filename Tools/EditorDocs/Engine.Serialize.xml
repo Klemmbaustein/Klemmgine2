@@ -1,0 +1,69 @@
+<!DOCTYPE docs>
+<docs type="bindings" module="engine::serialize">
+	<functions>
+
+	</functions>
+	<types>
+		<SerializedValue>
+			<description>
+				A basic serialized value, base class for representing a serializable data hierarchy.
+			</description>
+			<methods>
+				<toJsonString>
+					<description>
+						Converts this value to a string containing JSON data.
+						The JSON format does not support vectors. This function will fail if this value
+						contains or is a vector.
+					</description>
+					<argument name="prettyPrint" type="bool">
+						If false, the JSON will be written in a compact format. If true,
+						it will be indented and each value will be put on a separate line.
+					</argument>
+					<return type="string?">
+						The string containing the JSON data if the function succeeds. Otherwise it returns null.
+					</return>
+				</toJsonString>
+				<toSerializedString>
+					<description>
+						Converts this value to the engine's string-based serialization format.
+					</description>
+					<return type="string?">
+						The string containing the serialized data.
+					</return>
+				</toSerializedString>
+				<asInt>
+					<description>
+						Will convert the value held in this SerializedValue to an int if it can be converted to one.
+						If the conversion fails, this function will throw an error.
+					</description>
+				</asInt>
+				<asFloat>
+					<description>
+						Will convert the value held in this SerializedValue to a float if it can be converted to one.
+						If the conversion fails, this function will throw an error.
+					</description>
+				</asFloat>
+			</methods>
+		</SerializedValue>
+		<SerializedInt super="engine::serialize::SerializedValue">
+			<description>
+				A serialized integer value.
+			</description>
+			<members>
+				<value type="int">
+					The integer value.
+				</value>
+			</members>
+		</SerializedInt>
+		<SerializedFloat super="engine::serialize::SerializedValue">
+			<description>
+				A serialized float value.
+			</description>
+			<members>
+				<value type="float">
+					The floating point value.
+				</value>
+			</members>
+		</SerializedFloat>
+	</types>
+</docs>

@@ -11,11 +11,10 @@ namespace engine
 	 * The arguments of the event.
 	 */
 	template<typename... Args>
-	struct Event
+	class Event
 	{
+	public:
 		using Function = std::function<void(Args...)>;
-
-		std::map<void*, Function> Callbacks;
 
 		/**
 		 * @brief
@@ -64,5 +63,7 @@ namespace engine
 		{
 			return Callbacks.contains(Listener);
 		}
+	private:
+		std::map<void*, Function> Callbacks;
 	};
 }
