@@ -147,6 +147,7 @@ engine::sound::SoundContext::~SoundContext()
 {
 	std::lock_guard g{ SoundUpdateMutex };
 	ThreadData->Stop = true;
+	Device->DeviceData->alDeleteAuxiliaryEffectSlots(1, &SoundData->Effects);
 	MakeCurrent();
 	alcDestroyContext(this->SoundData->Context);
 	delete this->SoundData;
