@@ -128,7 +128,7 @@ void engine::script::ScriptSubsystem::ApplyBreakpoint(string File, size_t Line)
 	if (FoundLine && this->Runtime->baseContext->setDebugBreakpoint(FoundLine->offset))
 	{
 		BreakpointLines.push_back({ *FoundLine, File });
-		Log::Note(str::Format("Set breakpoint at %s:%i -> instructions+%i", File.c_str(), Line + 1, FoundLine->offset));
+		Log::Note(str::Format("Set breakpoint at %s:%i -> instructions+%llu", File.c_str(), Line + 1, FoundLine->offset));
 	}
 	else
 	{
@@ -369,7 +369,7 @@ void engine::script::ScriptSubsystem::ReloadRuntime()
 void engine::script::ScriptSubsystem::InitializeBreakpointHandler()
 {
 #if EDITOR
-	Runtime->onDebugBreak = [this](InterpretContext* context, Pointer bytecodePosition, DebugState* state) {
+	Runtime->onDebugBreak = [this](InterpretContext* context, DebugState* state) {
 
 		if (Engine::Instance->ShouldQuit || !thread::IsMainThread)
 		{

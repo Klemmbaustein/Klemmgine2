@@ -1,43 +1,15 @@
 {
+  "module": "engine::physics",
   "types": {
-    "HitResult": {
-      "super": null,
-      "members": {
-        "impactPoint": {
-          "description": "The point in 3D space where the hit occurred.",
-          "type": "engine::Vector3"
-        },
-        "depth": {
-          "description": "For collisions checking for overlaps, this how much the hit overlapped.",
-          "type": "float"
-        },
-        "distance": {
-          "description": "The distance in units before a hit occurred.",
-          "type": "float"
-        },
-        "normal": {
-          "description": "The normal of the point that was hit, pointing away from the hit surface.",
-          "type": "engine::Vector3"
-        }
-      },
-      "methods": {
-        "getHitObject": {
-          "description": "Returns the object that was hit.",
-          "return": null,
-          "returnType": "engine::SceneObject?",
-          "arguments": {}
-        }
-      },
-      "description": "Contains data about a hit returned by a collision query."
-    },
     "PhysicsManager": {
-      "super": null,
       "members": {
         "isActive": {
           "description": "True if the physics manager is active and updating. When false, collision and physics are disabled for this scene.",
           "type": "bool"
         }
       },
+      "description": "A physics context that represents the collision of a 3D scene",
+      "super": null,
       "methods": {
         "rayCast": {
           "description": "Does a ray collision check from the start point to the end point and returns the first hit that occurred.",
@@ -50,10 +22,40 @@
             "ignoredObjects": "Objects that should be ignored when casting the ray."
           }
         }
+      }
+    },
+    "HitResult": {
+      "members": {
+        "normal": {
+          "description": "The normal of the point that was hit, pointing away from the hit surface.",
+          "type": "engine::Vector3"
+        },
+        "distance": {
+          "description": "The distance in units before a hit occurred.",
+          "type": "float"
+        },
+        "impactPoint": {
+          "description": "The point in 3D space where the hit occurred.",
+          "type": "engine::Vector3"
+        },
+        "depth": {
+          "description": "For collisions checking for overlaps, this how much the hit overlapped.",
+          "type": "float"
+        }
       },
-      "description": "A physics context that represents the collision of a 3D scene"
+      "description": "Contains data about a hit returned by a collision query.",
+      "super": null,
+      "methods": {
+        "getHitObject": {
+          "description": "Returns the object that was hit.",
+          "return": null,
+          "returnType": "engine::SceneObject?",
+          "arguments": {}
+        }
+      }
     }
   },
+  "type": "bindings",
   "functions": {
     "combineHits": {
       "description": "Combines an array of HitResults into a single HitResult with a single position and normal on which the hit occurred.",
@@ -61,7 +63,5 @@
       "returnType": "engine::physics::HitResult",
       "arguments": {}
     }
-  },
-  "module": "engine::physics",
-  "type": "bindings"
+  }
 }

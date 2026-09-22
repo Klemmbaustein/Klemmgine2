@@ -1,8 +1,10 @@
 {
+  "module": "engine::sound",
   "types": {
     "SoundContext": {
-      "super": null,
       "members": {},
+      "description": "A class for playing sound. Each sound context represents it's own 3D scene, with it's own reverb and sound parameters.",
+      "super": null,
       "methods": {
         "playSoundAt": {
           "description": "Plays a 3D sound, with attenuation and panning depending on where the listener is in the scene's 3D space.",
@@ -22,10 +24,10 @@
             "pitch": "The sound pitch, where a value of 1 is normal pitch."
           }
         }
-      },
-      "description": "A class for playing sound. Each sound context represents it's own 3D scene, with it's own reverb and sound parameters."
+      }
     }
   },
+  "type": "bindings",
   "functions": {
     "getMainSoundContext": {
       "description": "Returns the engine's main sound context. The main context will always have a listener position of 0,0,0. Will return null if the engine's sound functions are not enabled.",
@@ -33,7 +35,5 @@
       "returnType": "engine::sound::SoundContext?",
       "arguments": {}
     }
-  },
-  "module": "engine::sound",
-  "type": "bindings"
+  }
 }

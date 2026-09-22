@@ -1,5 +1,47 @@
 # Engine changelog
 
+## Klemmgine 2.0.0-dev3
+
+### Core
+
+- Improved Unicode support.
+- The engine is now properly long path aware on Windows.
+
+### Graphics
+
+- Updated LandscapeComponent to be properly editable, now loading data from .hmp files instead of placeholder
+  procedural meshes.
+- Updated LandscapeComponent to use a chunk LOD system to efficiently draw large landscape meshes.
+- Added a new console command graphics.shadow_resolution to set the resolution of the shadow maps in pixels.
+
+### Editor
+
+- Added a setting to enable JIT per project.
+- Added script debugger including breakpoints. The debugger is available when using the interpreter runtime or
+  the JIT runtime only on Windows.
+- Added a shader code editor with auto complete and syntax highlighting.
+- Script editor performance improvements.
+- Fixed the auto complete prompt not showing up if the script parser is still parsing in the background while typing.
+- Script and asset hot reloading when files are changed externally.
+- The engine now reloads assets instantly when they are changed in the editor.
+- Improved how different asset types are treated internally.
+- Changed the documentation format from JSON to XML. The files are still converted to JSON
+  for the editor to load them.
+- Optimized code related to the editor window layout.
+- Fixed the script minimap not showing syntax highlighting for text that is further scrolled down.
+- Bug fixes to Unicode support in the script editor.
+- The editor now saves in `%APPDATA%\Klemmgine 2` on Windows and `$XDG_CONFIG_HOME/Klemmgine 2` on Linux.
+
+### Sound
+
+- Fix "Invalid Value" errors appearing when placing ReverbVolumeObjects.
+
+### Script
+
+- Added the `engine::Icon` attribute, which can be added to SceneObjects to give them a custom icon in the editor.
+- *Many* fixed crashes, leaks and bugs.
+- Improved JIT compiler performance.
+
 ## Klemmgine 2.0.0-dev2
 
 ### Graphics
@@ -97,7 +139,6 @@
 - Added sound. Currently only WAV files are supported for playback.
 - Added reverb volumes.
 - Sounds can either be loaded using a SoundComponent, or played directly using playSound() and playSoundAt().
-- 
 
 ### Debugging
 

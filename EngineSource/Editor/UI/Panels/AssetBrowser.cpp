@@ -544,6 +544,14 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 				if (OnAddCallback)
 					OnAddCallback();
 				CreateLocalFile("Resource", "json");
+			} },
+			DropdownMenu::Option{
+			.Name = "New Height Map Resource",
+			.Icon = EditorUI::GetExtIconAndColor("json").first,
+			.OnClicked = [this, CreateLocalFile, OnAddCallback]() {
+				if (OnAddCallback)
+					OnAddCallback();
+				CreateLocalFile("Height Map", "hmp");
 			} }
 
 		},
