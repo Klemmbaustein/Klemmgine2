@@ -887,7 +887,7 @@ void engine::editor::ScriptEditorUI::Save()
 {
 	if (Engine::IsPaused)
 	{
-		EditorUI::SetStatusMessage("Cannot save scripts while the engine is paused.");
+		EditorUI::SetStatusMessage("Cannot save scripts while the engine is paused.", EditorUI::StatusType::Warning);
 		return;
 	}
 
