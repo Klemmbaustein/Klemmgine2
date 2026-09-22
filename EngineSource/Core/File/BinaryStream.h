@@ -1,7 +1,7 @@
 #pragma once
 #include <Core/Types.h>
 #include <Core/Event.h>
-#include <cstdio>
+#include <fstream>
 
 namespace engine
 {
@@ -48,7 +48,7 @@ namespace engine
 		bool ReadAll(string& ToString)
 		{
 			size_t PredictedSize = GetSize();
-			if (PredictedSize != 0)
+			if (PredictedSize != 0 || IsEmpty())
 			{
 				ToString.resize(PredictedSize);
 				return Read((uByte*)ToString.data(), PredictedSize);
@@ -117,7 +117,7 @@ namespace engine
 		virtual void Write(uByte* Buffer, size_t Size) override;
 
 	private:
-		FILE* FromFile = nullptr;
+		std::fstream FromFile;
 		bool ReadFile = false;
 		size_t ReadSize = 0;
 	};

@@ -33,12 +33,22 @@ engine::LandscapeData::LandscapeData(AssetRef Asset)
 	if (File->IsEmpty())
 	{
 		delete File;
+
+		Width = 16;
+		Height = 16;
+		Chunks.resize(Width * Height);
+
 		return;
 	}
 
 	if (File->ReadString() != "hmp/0")
 	{
 		delete File;
+
+		Width = 16;
+		Height = 16;
+		Chunks.resize(Width * Height);
+
 		return;
 	}
 

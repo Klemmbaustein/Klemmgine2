@@ -8,6 +8,8 @@
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/Closeable.h>
+#include <fstream>
+#include <Core/File/TextSerializer.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -74,6 +76,12 @@ void engine::ModelData::PreLoadMaterials(Scene* With)
 
 void engine::ModelData::ToFile(string FilePath)
 {
+	std::ofstream Out = std::ofstream(FilePath);
+
+	TextSerializer::ToStream({ SerializedData("meshes", Serialize()) }, Out);
+
+	return;
+
 	FileStream TargetFile = FileStream(FilePath, false);
 	ToBinary(&TargetFile);
 }

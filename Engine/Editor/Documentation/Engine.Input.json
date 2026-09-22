@@ -1,16 +1,12 @@
 {
+  "module": "",
   "types": {},
+  "type": "bindings",
   "functions": {
-    "isRMBClicked": {
-      "description": "Returns true if the right mouse button was pressed this frame.",
+    "isKeyUp": {
+      "description": "Returns true if the given key was released this frame.",
       "return": null,
       "returnType": "bool",
-      "arguments": {}
-    },
-    "getMouseMovement": {
-      "description": "Returns the amount the mouse has been moved by, if the mouse is not shown.",
-      "return": null,
-      "returnType": "engine::Vector2",
       "arguments": {}
     },
     "setShowMouseCursor": {
@@ -19,32 +15,14 @@
         "newValue": "If the new value is true, the mouse cursor is shown. If it is false, the mouse cursor is invisible."
       }
     },
-    "isLMBDown": {
-      "description": "Returns true if the left mouse button is being held down.",
+    "getMouseMovement": {
+      "description": "Returns the amount the mouse has been moved by, if the mouse is not shown.",
       "return": null,
-      "returnType": "bool",
-      "arguments": {}
-    },
-    "isKeyUp": {
-      "description": "Returns true if the given key was released this frame.",
-      "return": null,
-      "returnType": "bool",
+      "returnType": "engine::Vector2",
       "arguments": {}
     },
     "isLMBClicked": {
       "description": "Returns true if the left mouse button was pressed this frame.",
-      "return": null,
-      "returnType": "bool",
-      "arguments": {}
-    },
-    "isKeyHeld": {
-      "description": "Returns true if the given key is being pressed currently.",
-      "return": null,
-      "returnType": "bool",
-      "arguments": {}
-    },
-    "isRMBDown": {
-      "description": "Returns true if the right mouse button is being held down.",
       "return": null,
       "returnType": "bool",
       "arguments": {}
@@ -55,13 +33,35 @@
       "returnType": "engine::Vector2",
       "arguments": {}
     },
+    "isLMBDown": {
+      "description": "Returns true if the left mouse button is being held down.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "isKeyHeld": {
+      "description": "Returns true if the given key is being pressed currently.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
     "isKeyDown": {
       "description": "Returns true if the given key was pressed this frame.",
       "return": null,
       "returnType": "bool",
       "arguments": {}
+    },
+    "isRMBClicked": {
+      "description": "Returns true if the right mouse button was pressed this frame.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "isRMBDown": {
+      "description": "Returns true if the right mouse button is being held down.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
     }
-  },
-  "module": "",
-  "type": "bindings"
+  }
 }

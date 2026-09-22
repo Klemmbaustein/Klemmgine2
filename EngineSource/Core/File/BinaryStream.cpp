@@ -9,26 +9,28 @@ using namespace engine;
 
 FileStream::FileStream(string FilePath, bool Read)
 {
-	FromFile = fopen(FilePath.c_str(), Read ? "rb" : "wb");
-	if (!FromFile)
+	if (Read)
 	{
-		Log::Warn(FilePath + ": " + strerror(errno));
-		return;
+		FromFile = std::fstream(FilePath, std::ios::in | std::ios::binary);
+	}
+	else
+	{
+		FromFile = std::fstream(FilePath, std::ios::out | std::ios::binary);
 	}
 
 	ReadFile = Read;
 
 	if (ReadFile)
 	{
-		fseek(FromFile, 0, SEEK_END);
-		ReadSize = size_t(ftell(FromFile));
-		rewind(FromFile);
+		FromFile.seekg(0, std::ios::end);
+		ReadSize = size_t(FromFile.tellg());
+		FromFile.seekg(0, std::ios::beg);
 	}
 }
 
 FileStream::~FileStream()
 {
-	fclose(FromFile);
+	FromFile.close();
 }
 
 bool FileStream::IsReadOnly() const
@@ -43,22 +45,24 @@ bool FileStream::IsWriteOnly() const
 
 bool FileStream::IsEmpty() const
 {
-	return feof(FromFile);
+	return FromFile.eof() || ReadSize == 0;
 }
 
 bool FileStream::Read(uByte* To, size_t Size)
 {
 	if (!To)
 	{
-		return fseek(FromFile, Size, SEEK_CUR) == 0;
+		FromFile.seekg(Size, std::ios::cur);
+
+		return FromFile.eof();
 	}
 
-	size_t read = fread(To, Size, 1, FromFile);
-	if (read != 1)
+	FromFile.read(reinterpret_cast<char*>(To), Size);
+	if (FromFile.eof() || FromFile.bad() || FromFile.fail())
 	{
-		if (errno != 0)
+		if (FromFile.bad() || FromFile.fail())
 		{
-			Log::Error(str::Format("Read failed: %s, is empty: %i", strerror(errno), IsEmpty()));
+			Log::Error("Read failed");
 		}
 		return false;
 	}
@@ -68,12 +72,12 @@ bool FileStream::Read(uByte* To, size_t Size)
 
 void FileStream::Write(uByte* Buffer, size_t Size)
 {
-	fwrite(Buffer, Size, 1, FromFile);
+	FromFile.write(reinterpret_cast<char*>(Buffer), Size);
 }
 
 size_t FileStream::GetSize() const
 {
-	return ReadSize;
+	return ReadSize == SIZE_MAX ? 0 : ReadSize;
 }
 
 BufferStream::BufferStream()

@@ -55,17 +55,17 @@ namespace engine
 			Scale = NewScale;
 		}
 
-		const Vector3& GetPosition()
+		const Vector3& GetPosition() const
 		{
 			return Position;
 		}
 
-		const Rotation3& GetRotation()
+		const Rotation3& GetRotation() const
 		{
 			return Rotation;
 		}
 
-		const Vector3& GetScale()
+		const Vector3& GetScale() const
 		{
 			return Scale;
 		}

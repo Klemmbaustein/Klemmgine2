@@ -308,8 +308,10 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 
 engine::editor::ScriptEditorUI::~ScriptEditorUI()
 {
-	EditorUI::Instance->AssetsProvider->OnChanged.Remove(this);
-
+	if (EditorUI::Instance)
+	{
+		EditorUI::Instance->AssetsProvider->OnChanged.Remove(this);
+	}
 	SaveLastOpenedFiles();
 	Settings::GetInstance()->Script.RemoveListener(this);
 
@@ -883,6 +885,12 @@ void engine::editor::ScriptEditorUI::UpdateEditorTabs()
 
 void engine::editor::ScriptEditorUI::Save()
 {
+	if (Engine::IsPaused)
+	{
+		EditorUI::SetStatusMessage("Cannot save scripts while the engine is paused.");
+		return;
+	}
+
 	auto Tab = GetSelectedTab();
 
 	if (Tab)

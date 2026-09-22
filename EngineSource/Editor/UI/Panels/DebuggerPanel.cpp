@@ -144,7 +144,9 @@ void engine::editor::DebuggerPanel::UpdateFromState(ds::DebugState* State)
 	{
 		auto Item = new DebuggerCallStackEntry();
 
-		Item->SetName(DebugData.getSectionAt(i->getOffset())->name);
+		auto Section = DebugData.getSectionAt(i->getOffset());
+
+		Item->SetName(Section ? Section->name : "<Unknown>");
 
 		bool Selected = SelectedFrame == i;
 

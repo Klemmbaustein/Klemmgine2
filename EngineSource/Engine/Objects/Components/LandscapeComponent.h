@@ -69,11 +69,20 @@ namespace engine
 		size_t CalculateLodScale(size_t X, size_t Y, size_t Scale) const;
 	};
 
+	class LandscapeCollisionGenerator
+	{
+	public:
+		physics::HeightMapBody* NewCollider = nullptr;
+		bool IsDone = false;
+		bool ShouldStart = false;
+		bool IsGenerating = false;
+	};
+
 	class LandscapeComponent : public DrawableComponent
 	{
 	public:
 
-		physics::PhysicsBody* Collider = nullptr;
+		physics::HeightMapBody* Collider = nullptr;
 
 		void OnAttached() override;
 		void OnDetached() override;
@@ -90,6 +99,7 @@ namespace engine
 		graphics::Material* LandscapeMaterial = nullptr;
 		std::shared_ptr<LandscapeData> Data = nullptr;
 		std::shared_ptr<LandscapeMeshGenerator> Generator = nullptr;
+		std::shared_ptr<LandscapeCollisionGenerator> CollisionGenerator = nullptr;
 
 		LandscapeSegment* RootSegment = nullptr;
 

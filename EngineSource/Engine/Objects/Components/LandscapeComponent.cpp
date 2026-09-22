@@ -13,6 +13,17 @@ void engine::LandscapeComponent::OnAttached()
 {
 }
 
+static void UpdateCollisionThread(std::shared_ptr<LandscapeData> Data, std::shared_ptr<LandscapeCollisionGenerator> Generator,
+	physics::PhysicsManager* Physics, Transform MeshTransform, physics::MotionType ColliderMovability,
+	physics::Layer CollisionLayers, ObjectComponent* Parent)
+{
+	Generator->NewCollider = new physics::HeightMapBody(Data.get(), MeshTransform,
+		ColliderMovability, CollisionLayers, Parent);
+
+	Physics->PreLoadShape(Generator->NewCollider);
+	Generator->IsDone = true;
+}
+
 void engine::LandscapeComponent::Load(AssetRef HeightmapFile)
 {
 	if (Collider)
@@ -107,6 +118,24 @@ void engine::LandscapeComponent::SimpleDraw(graphics::Renderer* Render, graphics
 
 void engine::LandscapeComponent::Update()
 {
+	if (CollisionGenerator && CollisionGenerator->IsDone)
+	{
+		GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
+
+		bool IsDataCollider = Data->Collider == Collider;
+
+		delete this->Collider;
+		Collider = CollisionGenerator->NewCollider;
+		CollisionGenerator->IsGenerating = false;
+		CollisionGenerator->IsDone = false;
+
+		if (IsDataCollider)
+		{
+			Data->Collider = Collider;
+		}
+
+		GetRootObject()->GetScene()->Physics.AddBody(Collider, true, true);
+	}
 	if (Generator && Generator->IsDone)
 	{
 		Generator->IsDone = false;
@@ -132,6 +161,16 @@ void engine::LandscapeComponent::Update()
 		{
 			Generate();
 		}
+	}
+
+	if (CollisionGenerator && !CollisionGenerator->IsGenerating && CollisionGenerator->ShouldStart)
+	{
+		ThreadPool::Main()->AddJob(std::bind(UpdateCollisionThread, this->Data,
+			this->CollisionGenerator, &ParentObject->GetScene()->Physics, WorldTransform,
+			physics::MotionType::Static, physics::Layer::Static, this));
+		CollisionGenerator->IsDone = false;
+		CollisionGenerator->ShouldStart = false;
+		CollisionGenerator->IsGenerating = true;
 	}
 }
 
@@ -166,6 +205,11 @@ static void GenerateThread(std::shared_ptr<LandscapeMeshGenerator> Generator,
 
 void engine::LandscapeComponent::Generate()
 {
+	if (IsDirty)
+	{
+		CollisionGenerator->ShouldStart = true;
+	}
+
 	ThreadPool::Main()->AddJob(std::bind(GenerateThread, this->Generator, this->Data));
 	CanGenerate = false;
 	IsDirty = false;
@@ -195,6 +239,7 @@ bool engine::LandscapeComponent::CheckLod(LandscapeSegment* ForSegment)
 void engine::LandscapeComponent::InitializeMesh()
 {
 	Generator = std::make_shared<LandscapeMeshGenerator>();
+	CollisionGenerator = std::make_shared<LandscapeCollisionGenerator>();
 	Generator->Data = Data;
 
 	Generate();

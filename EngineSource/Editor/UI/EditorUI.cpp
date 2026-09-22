@@ -683,7 +683,7 @@ void engine::editor::EditorUI::Update()
 
 	DropdownMenu::UpdateDropdowns();
 
-	if (Window::GetActiveWindow()->HasFocus())
+	if (Window::GetActiveWindow()->HasFocus() && !Engine::IsPaused)
 	{
 		for (auto& i : this->ExternallyChangedAssets)
 		{
@@ -700,7 +700,6 @@ void engine::editor::EditorUI::Update()
 
 void engine::editor::EditorUI::UpdateBackgrounds()
 {
-	using namespace kui;
 	MainBackground->SetMinSize(Vec2f(
 		2,
 		2 - UISize::Pixels(StatusBarSize + MenuBarSize).GetScreen().Y));

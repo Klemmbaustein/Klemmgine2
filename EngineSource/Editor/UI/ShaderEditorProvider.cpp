@@ -81,7 +81,8 @@ void engine::editor::ShaderEditorProvider::Reload()
 		"#param",
 		"#export",
 		"#module",
-		"#using"
+		"#using",
+		"#unlit"
 	};
 
 	LoadedShader = graphics::ShaderLoader::Current->Modules.ParseShader(GetContent(),

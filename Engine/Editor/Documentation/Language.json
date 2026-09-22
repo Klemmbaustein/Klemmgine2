@@ -1,37 +1,37 @@
 {
+  "module": "",
   "types": {
-    "string": {
-      "super": null,
+    "task": {
       "members": {},
-      "methods": {},
-      "description": "Built in read only UTF-8 encoded string type. Any modifications to a string will create a new instance."
+      "description": "An object representing the completion of an asynchronous task that can be paused using 'await' and resumed later.",
+      "super": null,
+      "methods": {}
     },
     "float": {
-      "super": null,
       "members": {},
-      "methods": {},
-      "description": "Built in IEEE-754 32 bit floating point type."
-    },
-    "task": {
+      "description": "Built in IEEE-754 32 bit floating point type.",
       "super": null,
-      "members": {},
-      "methods": {},
-      "description": "An object representing the completion of an asynchronous task that can be paused using 'await' and resumed later."
+      "methods": {}
     },
     "int": {
-      "super": null,
       "members": {},
-      "methods": {},
-      "description": "Built in 32-bit signed integer type."
+      "description": "Built in 32-bit signed integer type.",
+      "super": null,
+      "methods": {}
+    },
+    "string": {
+      "members": {},
+      "description": "Built in read only UTF-8 encoded string type. Any modifications to a string will create a new instance.",
+      "super": null,
+      "methods": {}
     },
     "iterator": {
-      "super": null,
       "members": {},
-      "methods": {},
-      "description": "Base iterator type"
+      "description": "Base iterator type",
+      "super": null,
+      "methods": {}
     }
   },
-  "functions": {},
-  "module": "",
-  "type": "bindings"
+  "type": "bindings",
+  "functions": {}
 }
