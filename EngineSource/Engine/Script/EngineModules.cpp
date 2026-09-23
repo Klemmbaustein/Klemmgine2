@@ -474,6 +474,18 @@ static void MeshComponent_setMaterialUniformVector3(InterpretContext* context)
 	Component.getValue()->SetMaterialUniformVector3(Index, Name.ptr(), Value);
 }
 
+static void MeshComponent_setMaterialUniformFloat(InterpretContext* context)
+{
+	ClassRef<MeshComponent*> Component = context->popValue<RuntimeClass*>();
+
+	Float Value = context->popValue<Float>();
+	RuntimeStr Name = context->popRuntimeString();
+	Int Index = context->popValue<Int>();
+	CHECK_COMPONENT(Component);
+
+	Component.getValue()->SetMaterialUniformFloat(Index, Name.ptr(), Value);
+}
+
 static void DrawableComponent_getBounds(InterpretContext* context)
 {
 	ClassRef<DrawableComponent*> Component = context->popValue<RuntimeClass*>();
@@ -1206,6 +1218,11 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(IntInst, "index"),
 			FunctionArgument(StrType, "name"), FunctionArgument(Math.Vec3, "value") },
 			nullptr, "setMaterialUniformVector3", &MeshComponent_setMaterialUniformVector3));
+
+	EngineModule.addClassMethod(MeshComponentType,
+		NativeFunction({ FunctionArgument(IntInst, "index"),
+			FunctionArgument(StrType, "name"), FunctionArgument(FloatInst, "value") },
+			nullptr, "setMaterialUniformFloat", & MeshComponent_setMaterialUniformFloat));
 
 
 	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);

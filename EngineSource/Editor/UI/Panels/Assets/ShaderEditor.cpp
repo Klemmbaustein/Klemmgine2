@@ -56,16 +56,24 @@ void engine::editor::ShaderEditor::Update()
 	{
 		this->OnChanged();
 	}
+
+	if (!Visible && Editor->IsEdited)
+	{
+		Editor->StopEdit();
+	}
 }
 
 void engine::editor::ShaderEditor::Save()
 {
 	AssetEditor::Save();
-	std::ofstream out = std::ofstream(this->EditedAsset.FilePath);
+	string Content = this->Provider->GetContent();
 
-	out << this->Provider->GetContent();
+	ReadOnlyBufferStream Stream = ReadOnlyBufferStream(
+		reinterpret_cast<uByte*>(Content.data()), Content.size(), false);
+
+	EditorUI::Instance->AssetsProvider->SaveToFile(this->EditedAsset.FilePath, &Stream, Content.size());
+
 	Provider->IsChanged = false;
-	out.close();
 	EditorUI::Instance->OnProjectAssetChanged(this->EditedAsset);
 	Provider->Reload();
 	Editor->FullRefresh();

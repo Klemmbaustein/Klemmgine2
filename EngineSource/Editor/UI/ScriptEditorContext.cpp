@@ -71,25 +71,26 @@ void engine::editor::ScriptEditorContext::CompileUIFile(const std::string& Conte
 
 void engine::editor::ScriptEditorContext::UpdateFilesList(std::function<void()> Callback, thread::ThreadMessagesRef CallbackContext)
 {
-	ScheduleContextTask([this, Callback, CallbackContext] {
-		std::set<string> RemovedFiles = LoadedFiles;
-		std::set<string> NewFiles;
+	std::set<string> RemovedFiles = LoadedFiles;
+	std::set<string> NewFiles;
 
-		for (auto& [Name, Path] : resource::LoadedAssets)
+	for (auto& [Name, Path] : resource::LoadedAssets)
+	{
+		string Extension = file::Extension(Name);
+		if (Extension == "ds" || Extension == "kui")
 		{
-			string Extension = file::Extension(Name);
-			if (Extension == "ds" || Extension == "kui")
+			if (RemovedFiles.contains(Path))
 			{
-				if (RemovedFiles.contains(Path))
-				{
-					RemovedFiles.erase(Path);
-				}
-				else
-				{
-					NewFiles.insert(Path);
-				}
+				RemovedFiles.erase(Path);
+			}
+			else
+			{
+				NewFiles.insert(Path);
 			}
 		}
+	}
+
+	ScheduleContextTask([this, Callback, CallbackContext, NewFiles, RemovedFiles] {
 
 		for (auto& Removed : RemovedFiles)
 		{

@@ -1,8 +1,5 @@
 #include "AssetBrowser.h"
 #include "Viewport.h"
-#include "Assets/ModelEditor.h"
-#include "Assets/MaterialEditor.h"
-#include "ScriptEditorPanel.h"
 #include <Editor/ModelConverter.h>
 #include <Editor/UI/DropdownMenu.h>
 #include <Editor/UI/Panels/Assets/TextEditorPanel.h>
@@ -10,8 +7,6 @@
 #include <Editor/UI/Windows/ProgressBar.h>
 #include <Editor/UI/Windows/RenameWindow.h>
 #include <Editor/UI/Windows/MessageWindow.h>
-#include <Editor/UI/Windows/ScriptEditorWindow.h>
-#include <Editor/Settings/EditorSettings.h>
 #include <Core/File/FileUtil.h>
 #include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/Subsystem/SceneSubsystem.h>
@@ -32,7 +27,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 	: ItemBrowser("Assets", "AssetBrowser")
 {
 	EditorUI::Instance->AssetsProvider->OnChanged.Add(this, [this] {
-		UpdateItems();
+		ListChanged = true;
 	});
 
 	AddShortcut(kui::Key::F2, {}, [this] {
@@ -85,7 +80,6 @@ engine::editor::AssetBrowser::AssetBrowser()
 					{
 						EditorUI::Instance->AssetsProvider->DeleteFile(i.Path);
 					}
-					resource::ScanForAssets();
 				},
 				.IsAccept = true,
 			},
@@ -109,25 +103,20 @@ engine::editor::AssetBrowser::AssetBrowser()
 
 	AddShortcut(kui::Key::n, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts"));
-		resource::ScanForAssets();
 	});
 
 	AddShortcut(kui::Key::m, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt"));
-		resource::ScanForAssets();
 	});
 
 	AddShortcut(kui::Key::t, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag"));
-		resource::ScanForAssets();
 	});
 	AddShortcut(kui::Key::k, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "UIScript", "kui"));
-		resource::ScanForAssets();
 	});
 	AddShortcut(kui::Key::e, CtrlMod, [this] {
 		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds"));
-		resource::ScanForAssets();
 	});
 }
 
@@ -417,8 +406,6 @@ void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
 			{
 				EditorUI::Instance->AssetsProvider->DeleteFile(i->Path);
 			}
-			resource::ScanForAssets();
-			UpdateItems();
 		},
 	} }, MousePosition);
 
@@ -427,6 +414,18 @@ void engine::editor::AssetBrowser::OnItemsRightClick(kui::Vec2f MousePosition)
 engine::string engine::editor::AssetBrowser::GetPathDisplayName()
 {
 	return "Assets/" + Path;
+}
+
+void engine::editor::AssetBrowser::Update()
+{
+	ItemBrowser::Update();
+
+	if (this->ListChanged)
+	{
+		UpdateItems();
+		resource::ScanForAssets();
+		ListChanged = false;
+	}
 }
 
 void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
@@ -443,7 +442,7 @@ void engine::editor::AssetBrowser::DuplicateFile(string FilePath)
 				file::FileNameWithoutExt(FilePath) + " (Copy)." + file::Extension(FilePath));
 		}
 		resource::ScanForAssets();
-		UpdateItems();
+		ListChanged = true;
 	}
 }
 

@@ -60,7 +60,7 @@ bool FileStream::Read(uByte* To, size_t Size)
 	FromFile.read(reinterpret_cast<char*>(To), Size);
 	if (FromFile.eof() || FromFile.bad() || FromFile.fail())
 	{
-		if (FromFile.bad() || FromFile.fail())
+		if (!FromFile.eof() && (FromFile.bad() || FromFile.fail()))
 		{
 			Log::Error("Read failed");
 		}

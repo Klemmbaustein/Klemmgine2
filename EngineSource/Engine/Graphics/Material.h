@@ -65,6 +65,7 @@ namespace engine::graphics
 		ShaderObject* Shader = nullptr;
 
 		void SetVec3(string Name, Vector3 Value);
+		void SetFloat(string Name, float Value);
 
 		void ToFile(string Path);
 		void ToStream(std::ostream& Stream);

@@ -147,6 +147,24 @@ void engine::graphics::Material::SetVec3(string Name, Vector3 Value)
 	this->Fields.push_back(NewField);
 }
 
+void engine::graphics::Material::SetFloat(string Name, float Value)
+{
+	auto Found = FindField(Name, Field::Type::Float);
+
+	if (Found)
+	{
+		Found->Float = Value;
+		return;
+	}
+
+	Field NewField;
+
+	NewField.Name = Name;
+	NewField.FieldType = Field::Type::Float;
+	NewField.Float = Value;
+	this->Fields.push_back(NewField);
+}
+
 void engine::graphics::Material::ToFile(string Path)
 {
 	TextSerializer::ToFile(Serialize().GetObject(), Path);

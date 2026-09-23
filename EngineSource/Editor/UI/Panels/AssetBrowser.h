@@ -15,10 +15,14 @@ namespace engine::editor
 
 		string GetPathDisplayName() override;
 
+		void Update() override;
+
 	private:
 		void DuplicateFile(string FilePath);
 		void RenameFile(string FilePath, bool IsNew = false);
 
 		std::vector<DropdownMenu::Option> GetAddOptions(string WorkDir, std::function<void()> OnAddCallback);
+
+		bool ListChanged = false;
 	};
 }

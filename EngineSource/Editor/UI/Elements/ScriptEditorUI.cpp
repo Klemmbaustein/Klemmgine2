@@ -413,6 +413,10 @@ void engine::editor::ScriptEditorUI::Update()
 				}
 			}
 		}
+		else if (Selected->Editor->IsEdited)
+		{
+			Selected->Editor->StopEdit();
+		}
 	}
 
 	for (auto& Tab : Tabs)
