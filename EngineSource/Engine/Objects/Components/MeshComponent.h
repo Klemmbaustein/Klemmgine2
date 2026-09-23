@@ -24,6 +24,7 @@ namespace engine
 		void Load(AssetRef From, bool LoadMaterials = true);
 		void Load(GraphicsModel* From);
 
+		void SetMaterialUniformFloat(size_t MaterialIndex, string UniformName, float Value);
 		void SetMaterialUniformVector3(size_t MaterialIndex, string UniformName, Vector3 Value);
 
 		void OnAttached() override;

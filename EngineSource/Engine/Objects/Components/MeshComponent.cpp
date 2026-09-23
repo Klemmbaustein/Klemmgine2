@@ -40,6 +40,16 @@ void engine::MeshComponent::DrawTransparent(Renderer* Render, Camera* From, ::Gr
 	}
 }
 
+void engine::MeshComponent::SetMaterialUniformFloat(size_t MaterialIndex, string UniformName, float Value)
+{
+	if (Materials.size() <= MaterialIndex)
+	{
+		return;
+	}
+
+	Materials[MaterialIndex]->SetFloat(UniformName, Value);
+}
+
 void engine::MeshComponent::SetMaterialUniformVector3(size_t MaterialIndex, string UniformName, Vector3 Value)
 {
 	if (Materials.size() <= MaterialIndex)
