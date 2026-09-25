@@ -21,26 +21,30 @@
   the JIT runtime only on Windows.
 - Added a shader code editor with auto complete and syntax highlighting.
 - Script editor performance improvements.
-- Fixed the auto complete prompt not showing up if the script parser is still parsing in the background while typing.
+- Made the auto complete prompt show up if the script parser is still parsing in the background while typing.
 - Script and asset hot reloading when files are changed externally.
 - The engine now reloads assets instantly when they are changed in the editor.
 - Improved how different asset types are treated internally.
 - Changed the documentation format from JSON to XML. The files are still converted to JSON
   for the editor to load them.
 - Optimized code related to the editor window layout.
-- Fixed the script minimap not showing syntax highlighting for text that is further scrolled down.
-- Bug fixes to Unicode support in the script editor.
 - The editor now saves in `%APPDATA%\Klemmgine 2` on Windows and `$XDG_CONFIG_HOME/Klemmgine 2` on Linux.
-
-### Sound
-
-- Fix "Invalid Value" errors appearing when placing ReverbVolumeObjects.
 
 ### Script
 
 - Added the `engine::Icon` attribute, which can be added to SceneObjects to give them a custom icon in the editor.
-- *Many* fixed crashes, leaks and bugs.
 - Improved JIT compiler performance.
+
+### Fixes
+
+- *Many* fixed crashes, leaks and bugs for the scripting language.
+- Fixed a bug where the editor UI would sometimes flicker because of a bad internal window state.
+- Bug fixes to Unicode support in the script editor.
+- Fixed inconsistent parsing of brackets and statements on a single line.
+- Fixed the script minimap not showing syntax highlighting for text that is further scrolled down.
+- Fixed "Invalid Value" errors appearing when placing ReverbVolumeObjects.
+- Fixed some graphical issues occurring on some drivers due to global variables shared between shader sources.
+- Fixed issues with VSync on some GPUs.
 
 ## Klemmgine 2.0.0-dev2
 

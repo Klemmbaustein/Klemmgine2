@@ -177,10 +177,13 @@ engine::editor::Viewport::Viewport()
 		Engine::GetSubsystem<EditorSubsystem>()->StopProject();
 		input::ShowMouseCursor = true;
 		Viewport::Current->RedrawStats = true;
-		Viewport::Current->SetName(Viewport::Current->UnsavedChanges
-			? "Viewport*" : "Viewport");
-		ClearSelected();
-		OnSelectionChanged.Invoke(nullptr);
+		if (!Engine::IsPaused)
+		{
+			Viewport::Current->SetName(Viewport::Current->UnsavedChanges
+				? "Viewport*" : "Viewport");
+			ClearSelected();
+			OnSelectionChanged.Invoke(nullptr);
+		}
 	}, ShortcutOptions::AllowInText);
 
 	AddShortcut(Key::ESCAPE, { .Shift = true }, [this] {
@@ -261,6 +264,7 @@ engine::editor::Viewport::Viewport()
 void engine::editor::Viewport::ClearOverlay()
 {
 	CurrentEditor = nullptr;
+	LastIsPaused = false;
 	ViewportBackground->DeleteChildren();
 }
 
@@ -543,7 +547,7 @@ void engine::editor::Viewport::Update()
 		UpdateSceneControls(Current, Win);
 	}
 	else if (ViewportBackground == Win->UI.HoveredBox && Current
-		 && !Translate->HasGrabbedClick)
+		&& !Translate->HasGrabbedClick)
 	{
 		if (input::IsLMBDown)
 		{
