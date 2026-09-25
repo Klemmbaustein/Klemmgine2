@@ -117,6 +117,10 @@ void engine::editor::EditorSubsystem::Update()
 
 void engine::editor::EditorSubsystem::StartProject()
 {
+	if (Engine::IsPaused)
+	{
+		return;
+	}
 	if (!Scene::GetMain())
 	{
 		EditorUI::SetStatusMessage("Cannot start project, no scene loaded!", editor::EditorUI::StatusType::Error);
@@ -124,7 +128,6 @@ void engine::editor::EditorSubsystem::StartProject()
 	}
 
 	Engine::GameHasFocus = true;
-	//Unload();
 
 	bool ClearConsole = Settings::GetInstance()->Console.GetSetting("clearLogWhenGameStarts", false).GetBool();
 
@@ -148,6 +151,11 @@ void engine::editor::EditorSubsystem::StartProject()
 
 void engine::editor::EditorSubsystem::StopProject()
 {
+	if (Engine::IsPaused)
+	{
+		return;
+	}
+
 	script::ScriptSubsystem::Instance->ClearTasks();
 	if (LastScene.GetType() != SerializedData::DataType::Null)
 	{

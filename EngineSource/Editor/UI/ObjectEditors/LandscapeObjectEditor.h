@@ -15,6 +15,7 @@ namespace engine::editor
 
 		LandscapeObjectEditor();
 
+	private:
 		enum class LandscapeEditMode
 		{
 			Select,
@@ -28,5 +29,10 @@ namespace engine::editor
 
 		float BrushSize = 5.0f;
 		float Intensity = 1.0f;
+
+		float FlattenHeight = 0;
+
+		void GrowArea(Vector3 RelativeCoordinates);
+		void FlattenArea(Vector3 RelativeCoordinates, bool Held);
 	};
 }

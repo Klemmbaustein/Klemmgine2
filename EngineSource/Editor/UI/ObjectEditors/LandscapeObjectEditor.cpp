@@ -103,12 +103,30 @@ bool engine::editor::LandscapeObjectEditor::HandleMouseClick(Viewport* View, boo
 	{
 		return true;
 	}
-
+	Vector3 RelativeCoordinates = Edited->Component->WorldTransform.Inverse().ApplyTo(hit.ImpactPoint);
 	View->SceneChanged();
 
-	float Direction = input::IsKeyHeld(input::Key::SHIFT) ? -1.0f : 1.0f;
+	switch (Mode)
+	{
+	case LandscapeEditMode::Shape:
+		GrowArea(RelativeCoordinates);
+		break;
+	case LandscapeEditMode::Flatten:
+		FlattenArea(RelativeCoordinates, Held);
+		break;
+	}
 
-	Vector3 RelativeCoordinates = Edited->Component->WorldTransform.Inverse().ApplyTo(hit.ImpactPoint);
+	return true;
+}
+
+engine::editor::LandscapeObjectEditor::LandscapeObjectEditor()
+{
+	this->Type = LandscapeObject::ObjectType;
+}
+
+void engine::editor::LandscapeObjectEditor::GrowArea(Vector3 RelativeCoordinates)
+{
+	float Direction = input::IsKeyHeld(input::Key::SHIFT) ? -1.0f : 1.0f;
 
 	int64 x = std::round(RelativeCoordinates.X);
 	int64 y = std::round(RelativeCoordinates.Z);
@@ -142,11 +160,61 @@ bool engine::editor::LandscapeObjectEditor::HandleMouseClick(Viewport* View, boo
 
 	Edited->Component->IsDirty = true;
 	Edited->Component->Data->Changed = true;
-
-	return true;
 }
 
-engine::editor::LandscapeObjectEditor::LandscapeObjectEditor()
+void engine::editor::LandscapeObjectEditor::FlattenArea(Vector3 RelativeCoordinates, bool Held)
 {
-	this->Type = LandscapeObject::ObjectType;
+	int64 x = std::round(RelativeCoordinates.X);
+	int64 y = std::round(RelativeCoordinates.Z);
+
+	std::lock_guard g{ Edited->Component->Data->Lock };
+
+	int64 IntRange = std::ceil(this->BrushSize);
+
+	float InitialHeight = Held ? FlattenHeight : Edited->Component->Data->GetPointAt(x, y).Height;
+
+	for (int64 ix = x - IntRange; ix < x + IntRange; ix++)
+	{
+		for (int64 iy = y - IntRange; iy < y + IntRange; iy++)
+		{
+			if (ix < 0 || iy < 0)
+			{
+				continue;
+			}
+
+			auto& p = Edited->Component->Data->GetPointAt(ix, iy);
+
+			float DistanceIntensity = std::max(this->BrushSize - Vector3::Distance(Vector3(x, y, 0), Vector3(ix, iy, 0)), 0.0f) / BrushSize;
+
+			DistanceIntensity = DistanceIntensity * DistanceIntensity * (3.0f - 2.0 * DistanceIntensity);
+
+			float Difference = p.Height - InitialHeight;
+
+			float ChangeAmount = stats::DeltaTime * DistanceIntensity * Intensity;
+
+			if (Difference > ChangeAmount)
+			{
+				p.Height -= ChangeAmount;
+
+			}
+			else if (Difference < -ChangeAmount)
+			{
+				p.Height += ChangeAmount;
+			}
+			else
+			{
+				p.Height = InitialHeight;
+			}
+		}
+	}
+
+	FlattenHeight = InitialHeight;
+
+	Edited->Component->Data->InitializeNormalForRange(
+		RelativeCoordinates.X - IntRange - 1, RelativeCoordinates.Z - IntRange - 1,
+		IntRange * 2 + 2, IntRange * 2 + 2);
+
+	Edited->Component->IsDirty = true;
+	Edited->Component->Data->Changed = true;
+
 }
