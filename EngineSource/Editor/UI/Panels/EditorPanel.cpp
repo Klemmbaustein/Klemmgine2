@@ -4,7 +4,7 @@
 #include <kui/UI/UIScrollBox.h>
 #include <Editor/UI/EditorUI.h>
 #include <Core/Error/EngineError.h>
-#include <Engine/Input.h>
+#include <Editor/UI/DropdownMenu.h>
 using namespace kui;
 using namespace engine::editor;
 using namespace engine;
@@ -42,6 +42,11 @@ bool engine::editor::EditorPanel::HasKeyboardFocus()
 
 engine::editor::EditorPanel::~EditorPanel()
 {
+	if (EditorUI::Instance->RootPanel == this && EditorUI::Instance->MainRootPanel != this)
+	{
+		EditorUI::Instance->RestoreMaximizedPanel();
+	}
+
 	if (EditorUI::FocusedPanel == this)
 	{
 		EditorUI::FocusedPanel = nullptr;
@@ -346,7 +351,7 @@ void engine::editor::EditorPanel::GenerateTabs()
 		ChildrenList = &Parent->Children;
 		Selected = Parent->SelectedTab;
 	}
-	else if (Parent && Children.empty())
+	else if (Children.empty())
 	{
 		AddTabFor(this, true);
 		return;
@@ -361,6 +366,11 @@ void engine::editor::EditorPanel::SetFocused()
 {
 	if (EditorUI::FocusedPanel == this)
 		return;
+
+	if (EditorUI::Instance->RootPanel != this)
+	{
+		EditorUI::Instance->RestoreMaximizedPanel();
+	}
 
 	if (Parent)
 	{
@@ -728,7 +738,11 @@ void engine::editor::EditorPanel::UpdateAllPanels()
 void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 {
 	EditorPanelTab* NewTab = new EditorPanelTab();
-	NewTab->SetTitle(Target->Name);
+
+	bool IsMaximized = Target == EditorUI::Instance->RootPanel
+		&& Target != EditorUI::Instance->EditorUI::MainRootPanel;
+
+	NewTab->SetTitle(IsMaximized ? Target->Name	+ " (Maximized)" : Target->Name);
 
 	if (Target != this)
 	{
@@ -759,9 +773,41 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 			delete Target;
 	};
 
-	NewTab->mainButton->OnDragged = [Target](int) {
-		Target->MovePanel();
+	NewTab->mainButton->OnRightClicked = [Target] {
+		bool IsMaximized = Target == EditorUI::Instance->RootPanel
+			&& Target != EditorUI::Instance->EditorUI::MainRootPanel;
+
+		if (IsMaximized)
+		{
+			new DropdownMenu({
+				DropdownMenu::Option{
+					.Name = "Restore",
+					.OnClicked = [] {
+						EditorUI::Instance->RestoreMaximizedPanel();
+					},
+				},
+				}, Window::GetActiveWindow()->Input.MousePosition);
+		}
+		else
+		{
+			new DropdownMenu({
+				DropdownMenu::Option{
+					.Name = "Maximize",
+					.OnClicked = [Target] {
+						EditorUI::Instance->MaximizePanel(Target);
+					},
+				},
+				}, Window::GetActiveWindow()->Input.MousePosition);
+		}
+
 	};
+
+	if (IsMaximized)
+	{
+		NewTab->mainButton->OnDragged = [Target](int) {
+			Target->MovePanel();
+		};
+	}
 
 	if (Selected)
 	{
@@ -781,7 +827,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 		NewTab->SetPaddingSize(0_px);
 	}
 
-	if (!Target->CanClose)
+	if (!Target->CanClose || IsMaximized)
 		NewTab->closeButton->IsCollapsed = true;
 	PanelElement->tabBox->AddChild(NewTab);
 	TabElements.push_back(NewTab);

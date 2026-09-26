@@ -29,6 +29,7 @@
   for the editor to load them.
 - Optimized code related to the editor window layout.
 - The editor now saves in `%APPDATA%\Klemmgine 2` on Windows and `$XDG_CONFIG_HOME/Klemmgine 2` on Linux.
+- Editor panels can be maximized, taking up the entire editor window temporarily.
 
 ### Script
 

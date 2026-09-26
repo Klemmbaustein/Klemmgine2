@@ -147,6 +147,7 @@ namespace engine::editor
 
 		void DeSerialize(SerializedValue* FromData) override;
 		bool Visible = true;
+		void ClearParent();
 
 	protected:
 
@@ -196,7 +197,6 @@ namespace engine::editor
 		static MoveOperation Move;
 
 	private:
-		void ClearParent();
 		void HandleResizing();
 		void HandleResizeDrag();
 		void MovePanel();

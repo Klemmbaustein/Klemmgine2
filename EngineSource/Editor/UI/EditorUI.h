@@ -193,6 +193,11 @@ namespace engine::editor
 
 		string GetProjectDataPath();
 		EditorPanel* RootPanel = nullptr;
+		EditorPanel* MainRootPanel = nullptr;
+		EditorPanel* OldRootEditorPanel = nullptr;
+
+		void MaximizePanel(EditorPanel* p);
+		void RestoreMaximizedPanel();
 
 		void LoadDefaultLayout();
 

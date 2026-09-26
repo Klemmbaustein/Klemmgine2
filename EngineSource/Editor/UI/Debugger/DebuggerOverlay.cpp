@@ -1,12 +1,13 @@
 #include "DebuggerOverlay.h"
 #include <Editor/EditorSubsystem.h>
+#include <Editor/Settings/EditorSettings.h>
+#include <Editor/UI/Panels/ConsolePanel.h>
+#include <Editor/UI/Panels/DebuggerPanel.h>
+#include <Editor/UI/Panels/Viewport.h>
 #include <Engine/Engine.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/MainThread.h>
 #include <Engine/Subsystem/InputSubsystem.h>
-#include <Editor/UI/Panels/DebuggerPanel.h>
-#include <Editor/UI/Panels/ConsolePanel.h>
-#include <Editor/Settings/EditorSettings.h>
 
 using namespace kui;
 
@@ -41,11 +42,29 @@ engine::editor::DebuggerOverlay::DebuggerOverlay(script::ScriptSubsystem* Script
 
 		if (!Found)
 		{
+			EditorUI::Instance->RestoreMaximizedPanel();
+
+			EditorUI::ForEachPanel<DebuggerPanel>([&Found](DebuggerPanel* i) {
+				i->SetFocused();
+				Found = true;
+			});
+		}
+
+		if (!Found)
+		{
 			ConsolePanel* ToPanel = nullptr;
 			EditorUI::ForEachPanel<ConsolePanel>([&ToPanel](ConsolePanel* i) {
 				ToPanel = i;
 			});
-			ToPanel->AddChild(new DebuggerPanel(), EditorPanel::Align::Tabs, true);
+
+			if (ToPanel)
+			{
+				ToPanel->AddChild(new DebuggerPanel(), EditorPanel::Align::Tabs, true);
+			}
+			else
+			{
+				Viewport::Current->AddChild(new DebuggerPanel(), EditorPanel::Align::Tabs, true);
+			}
 		}
 	});
 
