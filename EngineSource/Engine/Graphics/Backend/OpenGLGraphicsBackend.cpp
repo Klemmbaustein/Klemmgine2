@@ -1,7 +1,6 @@
 #include "OpenGLGraphicsBackend.h"
 #include <Engine/Graphics/Backend/OpenGLRenderer.h>
 #include <Core/LaunchArgs.h>
-#include <Engine/Graphics/OpenGL.h>
 #include <Core/Log.h>
 
 using namespace engine;
@@ -17,11 +16,11 @@ engine::graphics::OpenGLGraphicsBackend::OpenGLGraphicsBackend()
 
 		if (VersionString == "4.3")
 		{
-			openGL::VersionOverride = openGL::Version::GL430;
+			GLVersion = Version::GL430;
 		}
 		else if (VersionString == "3.3")
 		{
-			openGL::VersionOverride = openGL::Version::GL330;
+			GLVersion = Version::GL330;
 		}
 		else
 		{
@@ -32,7 +31,7 @@ engine::graphics::OpenGLGraphicsBackend::OpenGLGraphicsBackend()
 		Log::Info(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
 	}
 
-	if (openGL::GetGLVersion() < openGL::Version::GL430)
+	if (GLVersion < Version::GL430)
 	{
 		Log::Warn("Using OpenGL 3.3 instead of 4.3. Some graphics effects might not work.");
 		OpenGLMode = "OpenGL 3.3";
@@ -45,7 +44,7 @@ engine::graphics::OpenGLGraphicsBackend::OpenGLGraphicsBackend()
 
 Renderer* engine::graphics::OpenGLGraphicsBackend::CreateRenderer()
 {
-	return new OpenGLRenderer();
+	return new OpenGLRenderer(GLVersion == Version::GL430);
 }
 
 string engine::graphics::OpenGLGraphicsBackend::GetBackendIdentifier()

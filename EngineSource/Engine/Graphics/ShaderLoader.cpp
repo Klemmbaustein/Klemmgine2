@@ -27,7 +27,8 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 		return Found->second.Object;
 	}
 
-	ShaderObject* New = new ShaderObject(resource::GetTextFile(Vertex), resource::GetTextFile(Fragment));
+	ShaderObject* New = new ShaderObject(resource::GetTextFile(Vertex), resource::GetTextFile(Fragment),
+		"", VideoSubsystem::Current->Renderer);
 	Loaded.insert({ Vertex + ";" + Fragment, ShaderLoadData{
 		.Object = New,
 		.VertexSource = Vertex,
@@ -57,6 +58,7 @@ void engine::graphics::ShaderLoader::ReloadAll()
 	Modules.ScanModules(VideoSubsystem::Current->Renderer);
 	for (auto& [_, i] : Loaded)
 	{
-		i.Object->ReCompile(resource::GetTextFile(i.VertexSource), resource::GetTextFile(i.FragmentSource));
+		i.Object->ReCompile(resource::GetTextFile(i.VertexSource), resource::GetTextFile(i.FragmentSource),
+			VideoSubsystem::Current->Renderer);
 	}
 }

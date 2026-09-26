@@ -1,10 +1,8 @@
 #include "Viewport.h"
 #include <Editor/UI/EditorUI.h>
-#include <Editor/UI/Effects/Outline.h>
 #include <Editor/UI/Elements/DroppableBox.h>
 #include <Editor/UI/Windows/MessageWindow.h>
 #include <Engine/Engine.h>
-#include <Engine/Graphics/Effects/PostProcess.h>
 #include <Editor/UI/ObjectEditors/LandscapeObjectEditor.h>
 #include <Core/Platform/Platform.h>
 #include <Engine/Input.h>
@@ -615,7 +613,7 @@ void engine::editor::Viewport::UpdateSceneControls(Scene* Current, kui::Window* 
 		- Vector3(input::MouseMovement.Y, input::MouseMovement.X, 0) * 1.5f;
 }
 
-void engine::editor::Viewport::OnGameFocus()
+void engine::editor::Viewport::OnGameFocus() const
 {
 	auto Scn = Scene::GetMain();
 	if (Scn)

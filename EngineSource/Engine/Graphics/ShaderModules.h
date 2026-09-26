@@ -63,7 +63,8 @@ namespace engine::graphics
 		};
 
 		[[nodiscard]]
-		Result ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type);
+		Result ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type,
+			Renderer* Render);
 
 		void ScanModules(Renderer* Render);
 	private:

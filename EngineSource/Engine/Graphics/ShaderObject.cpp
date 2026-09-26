@@ -1,11 +1,10 @@
 #include "ShaderObject.h"
 #include "ShaderLoader.h"
-#include <Engine/Graphics/VideoSubsystem.h>
-#include <Engine/File/Resource.h>
 
-engine::graphics::ShaderObject::ShaderObject(string VertexFile, string FragmentFile, string GeometryFile)
+engine::graphics::ShaderObject::ShaderObject(string VertexFile, string FragmentFile,
+	string GeometryFile, Renderer* Render)
 {
-	Compile(VertexFile, FragmentFile, GeometryFile);
+	Compile(VertexFile, FragmentFile, GeometryFile, Render);
 }
 
 engine::graphics::ShaderObject::~ShaderObject()
@@ -14,14 +13,16 @@ engine::graphics::ShaderObject::~ShaderObject()
 		Clear();
 }
 
-void engine::graphics::ShaderObject::ReCompile(string VertexFile, string FragmentFile)
+void engine::graphics::ShaderObject::ReCompile(string VertexFile, string FragmentFile,
+	Renderer* Render)
 {
 	Uniforms.clear();
 	UniformBlocks.clear();
-	Compile(VertexFile, FragmentFile);
+	Compile(VertexFile, FragmentFile, "", Render);
 }
 
-void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentFile, string GeometryFile)
+void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentFile, string GeometryFile,
+	Renderer* Render)
 {
 	this->VertexFile = VertexFile;
 	this->FragmentFile = FragmentFile;
@@ -35,7 +36,8 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 
 	std::vector<ShaderProgramObject*> ResultModules;
 
-	auto VertexResult = ShaderLoader::Current->Modules.ParseShader(VertexFile, ShaderModule::ShaderType::Vertex);
+	auto VertexResult = ShaderLoader::Current->Modules.ParseShader(VertexFile, ShaderModule::ShaderType::Vertex,
+		Render);
 	VertexFile = VertexResult.ResultSource;
 	for (auto& mod : VertexResult.DependencyModules)
 	{
@@ -46,7 +48,8 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 		}
 	}
 
-	auto FragmentResult = ShaderLoader::Current->Modules.ParseShader(FragmentFile, ShaderModule::ShaderType::Fragment);
+	auto FragmentResult = ShaderLoader::Current->Modules.ParseShader(FragmentFile, ShaderModule::ShaderType::Fragment,
+		Render);
 	this->Unlit = FragmentResult.IsUnlit;
 	FragmentFile = FragmentResult.ResultSource;
 	for (auto& mod : FragmentResult.DependencyModules)
@@ -57,8 +60,6 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 			ResultModules.push_back(dep);
 		}
 	}
-
-	auto Render = VideoSubsystem::Current->Renderer;
 
 	Valid = true;
 
@@ -71,7 +72,8 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 
 	if (!GeometryFile.empty())
 	{
-		auto GeometryResult = ShaderLoader::Current->Modules.ParseShader(GeometryFile, ShaderModule::ShaderType::Geometry);
+		auto GeometryResult = ShaderLoader::Current->Modules.ParseShader(GeometryFile, ShaderModule::ShaderType::Geometry,
+			Render);
 		GeometryFile = GeometryResult.ResultSource;
 		const char* GeometryCString = GeometryFile.c_str();
 		for (auto& mod : GeometryResult.DependencyModules)

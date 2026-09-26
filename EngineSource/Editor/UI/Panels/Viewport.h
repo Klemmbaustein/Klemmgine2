@@ -89,7 +89,7 @@ namespace engine::editor
 		bool LastCursorVisible = false;
 		float LastVolume = 1.0f;
 
-		void OnGameFocus();
+		void OnGameFocus() const;
 		void OnEditorFocus();
 
 		void HighlightObject(SceneObject* Target, bool Highlighted);
