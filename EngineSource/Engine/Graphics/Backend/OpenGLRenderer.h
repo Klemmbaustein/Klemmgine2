@@ -207,7 +207,7 @@ namespace engine::graphics
 	class OpenGLRenderer : public Renderer
 	{
 	public:
-		OpenGLRenderer();
+		OpenGLRenderer(bool SupportsGL430);
 
 		// Inherited via Renderer
 		void RenderScreen(kui::Window* WithWindow, RendererTexture* Texture, bool VSync) final override;
@@ -228,6 +228,7 @@ namespace engine::graphics
 		ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) final override;
 		ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) final override;
 		bool SupportsUniformBuffer() final override;
+		bool SupportsGLSL430() override;
 
 		OpenGLDrawCommand CurrentCommand = OpenGLDrawCommand(this);
 
@@ -265,5 +266,7 @@ namespace engine::graphics
 		bool FaceCullEnabled = false;
 		bool VSyncEnabled = false;
 		bool SwapIntervalChangeSupported = true;
+		bool SupportsGL430 = false;
+
 	};
 }

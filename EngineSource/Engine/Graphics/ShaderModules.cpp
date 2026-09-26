@@ -3,7 +3,6 @@
 #include <array>
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
-#include <Engine/Graphics/OpenGL.h>
 using namespace engine::graphics;
 
 ShaderModuleLoader::ShaderModuleLoader()
@@ -14,7 +13,8 @@ ShaderModuleLoader::~ShaderModuleLoader()
 {
 }
 
-ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type)
+ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource,
+	ShaderModule::ShaderType Type, Renderer* Render)
 {
 	std::stringstream SourceStream;
 	SourceStream << ShaderSource, '\r';
@@ -46,16 +46,19 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 		Line++;
 		};
 
-	if (openGL::GetGLVersion() >= openGL::Version::GL430)
+	if (Render)
 	{
-		OutStream << "#version 430\n";
-		OutStream << "#define ENGINE_GL_430 1\n";
-		OutStream << "#define ENGINE_GL_330 1\n";
-	}
-	else
-	{
-		OutStream << "#version 330\n";
-		OutStream << "#define ENGINE_GL_330 1\n";
+		if (Render->SupportsGLSL430())
+		{
+			OutStream << "#version 430\n";
+			OutStream << "#define ENGINE_GL_430 1\n";
+			OutStream << "#define ENGINE_GL_330 1\n";
+		}
+		else
+		{
+			OutStream << "#version 330\n";
+			OutStream << "#define ENGINE_GL_330 1\n";
+		}
 	}
 	OutStream << "#line 1\n";
 
@@ -233,7 +236,8 @@ void engine::graphics::ShaderModuleLoader::ScanModules(Renderer* Render)
 
 		auto Type = IsVertex ? ShaderModule::ShaderType::Vertex : ShaderModule::ShaderType::Fragment;
 
-		Result Res = ParseShader(resource::GetTextFile(m), Type);
+		Result Res = ParseShader(resource::GetTextFile(m), Type,
+			Render);
 		LoadModule(Res.ResultSource, Res.ThisModule);
 		LoadedModules.insert({ Res.ThisModule.Name + (IsVertex ? ":vert" : ":frag"), Res.ThisModule});
 	}

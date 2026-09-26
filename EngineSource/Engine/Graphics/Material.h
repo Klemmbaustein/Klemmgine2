@@ -18,7 +18,6 @@ namespace engine::graphics
 		Material(const Material&) = delete;
 		~Material();
 
-		[[nodiscard]]
 		Material& operator=(const Material&) = delete;
 
 		struct MatTexture

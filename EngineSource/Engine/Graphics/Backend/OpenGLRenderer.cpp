@@ -5,7 +5,6 @@
 #include <Engine/Internal/SystemWM_SDL3.h>
 #include <Engine/Graphics/ShaderObject.h>
 #include <Engine/Graphics/VideoSubsystem.h>
-#include <Engine/Graphics/OpenGL.h>
 
 #ifdef EDITOR
 #include <Editor/EditorSubsystem.h>
@@ -75,8 +74,7 @@ ShaderProgram* engine::graphics::OpenGLRenderer::LinkShaderProgram(std::vector<S
 
 bool engine::graphics::OpenGLRenderer::SupportsUniformBuffer()
 {
-	return openGL::GetGLVersion() >= openGL::Version::GL430
-		|| glewIsSupported("GL_ARB_uniform_buffer_object");
+	return SupportsGL430 || glewIsSupported("GL_ARB_uniform_buffer_object");
 }
 
 void engine::graphics::OpenGLRenderer::ActivateFramebuffer(uint32 BufferObject)
@@ -211,6 +209,11 @@ void engine::graphics::OpenGLRenderer::UseProgram(uint32 NewProgram)
 	}
 }
 
+bool engine::graphics::OpenGLRenderer::SupportsGLSL430()
+{
+	return SupportsGL430;
+}
+
 static void GLAPIENTRY MessageCallback(
 	GLenum source, GLenum type, GLuint id, GLenum severity,
 	GLsizei length, const GLchar* message, const void* userParam)
@@ -223,8 +226,9 @@ static void GLAPIENTRY MessageCallback(
 	}
 }
 
-engine::graphics::OpenGLRenderer::OpenGLRenderer()
+engine::graphics::OpenGLRenderer::OpenGLRenderer(bool SupportsGL430)
 {
+	this->SupportsGL430 = SupportsGL430;
 	glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, VideoSubsystem::Current);
@@ -530,11 +534,11 @@ engine::graphics::OpenGLVertexBuffer::OpenGLVertexBuffer(const std::vector<Verte
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, UV));
 
-	//glEnableVertexAttribArray(2);
-	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
-
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+
+	//glEnableVertexAttribArray(3);
+	//glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 
 	glBindVertexArray(0);
 

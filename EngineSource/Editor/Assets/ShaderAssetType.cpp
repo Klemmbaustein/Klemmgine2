@@ -3,6 +3,7 @@
 #include <Engine/File/Resource.h>
 #include <Editor/UI/Panels/Assets/ShaderEditor.h>
 #include <Editor/UI/Panels/Viewport.h>
+#include <Engine/Graphics/VideoSubsystem.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -13,7 +14,8 @@ void engine::editor::ShaderAssetType::ReloadAsset(AssetRef Asset)
 
 	for (auto& i : Found)
 	{
-		i.Object->ReCompile(resource::GetTextFile(i.VertexSource), resource::GetTextFile(i.FragmentSource));
+		i.Object->ReCompile(resource::GetTextFile(i.VertexSource), resource::GetTextFile(i.FragmentSource),
+			VideoSubsystem::Current->Renderer);
 	}
 }
 

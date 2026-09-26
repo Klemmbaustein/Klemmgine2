@@ -10,11 +10,11 @@ namespace engine::graphics
 	class ShaderObject
 	{
 	public:
-		ShaderObject(string VertexFile, string FragmentFile, string GeometryFile = "");
+		ShaderObject(string VertexFile, string FragmentFile, string GeometryFile, Renderer* Render);
 		~ShaderObject();
 
-		void ReCompile(string VertexFile, string FragmentFile);
-		void Compile(string VertexFile, string FragmentFile, string GeometryFile = "");
+		void ReCompile(string VertexFile, string FragmentFile, Renderer* Render);
+		void Compile(string VertexFile, string FragmentFile, string GeometryFile, Renderer* Render);
 
 		void Bind();
 

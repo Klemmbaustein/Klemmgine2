@@ -8,5 +8,6 @@ namespace engine::graphics
 		Vector3 Position;
 		Vector2 UV;
 		Vector3 Normal;
+		Vector3 Color = 1;
 	};
 }

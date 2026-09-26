@@ -158,6 +158,7 @@ namespace engine::graphics
 		virtual ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) = 0;
 		virtual ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) = 0;
 
+		virtual bool SupportsGLSL430() = 0;
 		virtual bool SupportsUniformBuffer() = 0;
 	};
 }

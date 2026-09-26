@@ -31,11 +31,10 @@ vec3 vertex();
 
 void main()
 {
-	vec3 pos = vertex();
-	v_position = pos;
+	v_position = vertex();
 	v_normal = normalize(mat3(u_model) * a_normal);
 	v_screenNormal = normalize(mat3(u_view) * v_normal);
 	v_texCoord = a_uv;
-	v_screenPosition = (u_view * vec4(pos, 1)).xyz;
+	v_screenPosition = (u_view * vec4(v_position, 1)).xyz;
 	gl_Position = u_projection * vec4(v_screenPosition, 1);
 }

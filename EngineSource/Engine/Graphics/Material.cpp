@@ -6,6 +6,7 @@
 #include <Core/File/BinarySerializer.h>
 #include <Engine/MainThread.h>
 #include <sstream>
+#include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/File/FileUtil.h>
 
 using namespace engine;
@@ -427,7 +428,8 @@ void engine::graphics::Material::ApplySimple(graphics::DrawCommand* Pass, graphi
 
 void engine::graphics::Material::VerifyUniforms()
 {
-	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader), ShaderModule::ShaderType::Fragment);
+	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader), ShaderModule::ShaderType::Fragment,
+		VideoSubsystem::Current->Renderer);
 
 	bool FoundTexture = false;
 	std::vector<Field> NewFields;

@@ -35,7 +35,8 @@ void CascadedShadows::Init(Renderer* Render)
 	ShadowShader = new ShaderObject(
 		resource::GetTextFile("res:shader/internal/shadow.vert"),
 		resource::GetTextFile("res:shader/internal/shadow.frag"),
-		resource::GetTextFile("res:shader/internal/shadow.geom")
+		resource::GetTextFile("res:shader/internal/shadow.geom"),
+		Render
 	);
 
 	LoadShadowMapBuffer(Render);
