@@ -43,7 +43,7 @@ void engine::editor::InterfaceSettingsPage::Generate(PropertyMenu* Target, Setti
 	Target->AddDropdownEntry("Theme", Options, [Target, TargetWindow](UIDropdown::Option o) {
 		Settings::GetInstance()->Interface.SetSetting("theme", o.Name);
 	}, std::distance(Options.begin(), Index));
-	Target->AddBooleanEntry("Show \"In development\" warning on startup", ShowDevWarning, [this]() {
+	Target->AddBooleanEntry("Show \"In Development\" Warning on Startup", ShowDevWarning, [this]() {
 		Settings::GetInstance()->Interface.SetSetting("showDevWarning", ShowDevWarning);
 	});
 }

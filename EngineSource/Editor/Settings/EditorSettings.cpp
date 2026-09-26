@@ -10,6 +10,7 @@ using namespace engine::editor;
 engine::editor::Settings::Settings()
 {
 	Instance = this;
+	AddCategory(&Editor);
 	AddCategory(&Interface);
 	AddCategory(&Script);
 	AddCategory(&Console);
@@ -49,6 +50,20 @@ void engine::editor::Settings::Save()
 {
 	std::filesystem::create_directory(str::AsUnicode(GetEditorConfigPath()));
 	JsonSerializer::ToFile(Serialize(), GetSettingsPath(), JsonSerializer::WriteOptions(true));
+}
+
+void engine::editor::Settings::Reload()
+{
+	try
+	{
+		auto Settings = JsonSerializer::FromFile(GetSettingsPath());
+
+		DeSerialize(&Settings);
+	}
+	catch (SerializeException& e)
+	{
+		Log::Note(str::Format("%s\nUsing default editor settings", e.what()));
+	}
 }
 
 Settings* engine::editor::Settings::GetInstance()

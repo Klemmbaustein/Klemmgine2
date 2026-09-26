@@ -15,7 +15,7 @@ void engine::editor::ConsoleSettingsPage::Generate(PropertyMenu* Target, Setting
 {
 	VerboseLog = Log::IsVerbose;
 	ClearLogWhenGameStarts = Settings::GetInstance()->Console.GetSetting("clearLogWhenGameStarts", false).GetBool();
-	
+
 	Target->CreateNewHeading("Console");
 	Target->AddBooleanEntry("Verbose log", VerboseLog, [this]() {
 		Settings::GetInstance()->Console.SetSetting("verboseLog", SerializedValue(VerboseLog));

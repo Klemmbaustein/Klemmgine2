@@ -1,13 +1,14 @@
 #include "SettingsWindow.h"
+#include <Editor/Settings/EditorSettings.h>
+#include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Elements/PropertyMenu.h>
+#include <Editor/UI/Settings/ConsoleSettingsPage.h>
+#include <Editor/UI/Settings/EditorSettingsPage.h>
 #include <Editor/UI/Settings/GraphicsSettingsPage.h>
 #include <Editor/UI/Settings/InterfaceSettingsPage.h>
 #include <Editor/UI/Settings/ScriptEditorSettingsPage.h>
-#include <Editor/UI/Settings/ConsoleSettingsPage.h>
-#include <Editor/UI/Elements/PropertyMenu.h>
 #include <kui/UI/UIButton.h>
 #include <kui/UI/UIText.h>
-#include <Editor/Settings/EditorSettings.h>
-#include <Editor/UI/EditorUI.h>
 
 using namespace kui;
 
@@ -33,6 +34,7 @@ void engine::editor::SettingsWindow::Begin()
 {
 	IDialogWindow::Begin();
 
+	Pages.push_back(new EditorSettingsPage());
 	Pages.push_back(new InterfaceSettingsPage());
 	Pages.push_back(new ScriptEditorSettingsPage());
 	Pages.push_back(new GraphicsSettingsPage());

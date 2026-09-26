@@ -28,8 +28,10 @@
 - Changed the documentation format from JSON to XML. The files are still converted to JSON
   for the editor to load them.
 - Optimized code related to the editor window layout.
-- The editor now saves in `%APPDATA%\Klemmgine 2` on Windows and `$XDG_CONFIG_HOME/Klemmgine 2` on Linux.
+- The editor now saves settings in `%APPDATA%\Klemmgine 2` on Windows and `$XDG_CONFIG_HOME/Klemmgine 2` on Linux.
+  This can be changed to the old behavior in the editor settings under "Editor > Use Global Settings Path".
 - Editor panels can be maximized, taking up the entire editor window temporarily.
+- Added a setting for mouse sensitivity for the 3D view in the editor.
 
 ### Script
 
@@ -40,8 +42,7 @@
 
 - *Many* fixed crashes, leaks and bugs for the scripting language.
 - Fixed a bug where the editor UI would sometimes flicker because of a bad internal window state.
-- Bug fixes to Unicode support in the script editor.
-- Fixed inconsistent parsing of brackets and statements on a single line.
+- Fixed inconsistent parsing of scripts with brackets and statements on a single line.
 - Fixed the script minimap not showing syntax highlighting for text that is further scrolled down.
 - Fixed "Invalid Value" errors appearing when placing ReverbVolumeObjects.
 - Fixed some graphical issues occurring on some drivers due to global variables shared between shader sources.
