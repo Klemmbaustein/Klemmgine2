@@ -5,15 +5,19 @@
 #include "ScriptSettings.h"
 #include "ConsoleSettings.h"
 #include "GraphicsSettings.h"
+#include "EditorSettingsCategory.h"
 
 namespace engine::editor
 {
-	struct Settings : ISerializable
+	class Settings : ISerializable
 	{
+	public:
 		Settings();
 		~Settings();
 
 		void Save();
+
+		void Reload();
 
 		static Settings* GetInstance();
 		static void CloseInstance();
@@ -23,6 +27,7 @@ namespace engine::editor
 
 		void AddCategory(SettingsCategory* NewCategory);
 
+		EditorSettings Editor;
 		InterfaceSettings Interface;
 		ScriptSettings Script;
 		ConsoleSettings Console;

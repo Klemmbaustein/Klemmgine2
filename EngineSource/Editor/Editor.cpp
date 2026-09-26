@@ -2,6 +2,7 @@
 #include "EditorSubsystem.h"
 #include <Engine/File/Resource.h>
 #include <Core/Platform/Platform.h>
+#include <filesystem>
 using namespace engine;
 using namespace engine::subsystem;
 
@@ -37,7 +38,7 @@ void engine::editor::ClearRemoteProject()
 
 string engine::editor::GetEditorConfigPath()
 {
-	if (false)
+	if (std::filesystem::exists(editor::GetEditorPath() + "/Config/useLocalSettings"))
 	{
 		return editor::GetEditorPath() + "/Config";
 	}

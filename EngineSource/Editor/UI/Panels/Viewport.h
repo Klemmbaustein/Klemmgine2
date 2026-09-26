@@ -27,6 +27,7 @@ namespace engine::editor
 		uint64 FameCount = 0;
 
 		static Viewport* Current;
+		static float MouseSensitivity;
 
 		void OnResized() override;
 		void Update() override;
