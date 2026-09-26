@@ -177,7 +177,7 @@ void engine::editor::EditorUI::SaveEditorStateConfig()
 	string LayoutPath = GetLayoutConfigPath();
 
 	std::filesystem::create_directories(GetLayoutConfigPath());
-	layout::LayoutToFile(RootPanel, LayoutPath + "/lastLayout.k2b");
+	layout::LayoutToFile(MainRootPanel, LayoutPath + "/lastLayout.k2b");
 
 	try
 	{
@@ -306,6 +306,8 @@ engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 	{
 		layout::LoadLayout(RootPanel, LayoutFile, &Panels);
 	}
+
+	MainRootPanel = RootPanel;
 
 	FocusedPanel = Viewport::Current;
 
@@ -696,6 +698,46 @@ void engine::editor::EditorUI::Update()
 	{
 		ScriptsChanged = false;
 	}
+}
+
+void engine::editor::EditorUI::MaximizePanel(EditorPanel* p)
+{
+	if (MainRootPanel != RootPanel)
+	{
+		RestoreMaximizedPanel();
+	}
+
+	MainRootPanel = RootPanel;
+	RootPanel = p;
+	std::swap(p->Parent, OldRootEditorPanel);
+	MainRootPanel->ForEachPanel<EditorPanel>([p](EditorPanel* p2) {
+		if (p != p2)
+		{
+			p2->Visible = false;
+			if (p2->PanelElement)
+			{
+				p2->PanelElement->IsVisible = false;
+			}
+			p2->Update();
+		}
+	});
+
+	p->Visible = true;
+	p->PanelElement->IsVisible = true;
+	p->UpdateLayout();
+}
+
+void engine::editor::EditorUI::RestoreMaximizedPanel()
+{
+	if (MainRootPanel == RootPanel)
+	{
+		return;
+	}
+
+	auto p = RootPanel;
+	RootPanel = MainRootPanel;
+	std::swap(p->Parent, OldRootEditorPanel);
+	RootPanel->UpdateLayout();
 }
 
 void engine::editor::EditorUI::UpdateBackgrounds()

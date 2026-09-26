@@ -14,6 +14,7 @@
 #include <Editor/Server/EditorServerSubsystem.h>
 #include <Editor/Server/ServerAssetsProvider.h>
 #include <filesystem>
+#include <Editor/UI/Panels/Viewport.h>
 
 using namespace engine::editor;
 using namespace engine;
@@ -130,7 +131,10 @@ void engine::editor::EditorSubsystem::StartProject()
 	Engine::GameHasFocus = true;
 
 	bool ClearConsole = Settings::GetInstance()->Console.GetSetting("clearLogWhenGameStarts", false).GetBool();
-
+	if (EditorUI::Instance->RootPanel != Viewport::Current)
+	{
+		EditorUI::Instance->RestoreMaximizedPanel();
+	}
 	if (ClearConsole)
 	{
 		Log::Clear();

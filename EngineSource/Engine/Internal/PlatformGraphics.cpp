@@ -10,9 +10,8 @@
 
 #if WINDOWS
 #include <ShObjIdl_core.h>
-#include <functiondiscoverykeys.h>
+#include <propkey.h>
 #include <dwmapi.h>
-#include <kui/StringReplace.h>
 #pragma comment(lib, "Dwmapi.lib")
 
 static std::string WstrToStr(const std::wstring& wstr)

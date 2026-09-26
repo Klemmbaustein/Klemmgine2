@@ -932,7 +932,7 @@ void engine::editor::Viewport::UndoChange(Change& Target, Scene* Current)
 			}
 		}
 	}
-	catch (SerializeException e)
+	catch (SerializeException& e)
 	{
 		Log::Warn(str::Format("Failed to undo change: serialize error: %s", e.what()));
 		EditorUI::SetStatusMessage("Undo failed", EditorUI::StatusType::Error);

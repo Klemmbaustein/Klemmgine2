@@ -2,6 +2,7 @@
 #include <Engine/Graphics/Backend/OpenGLRenderer.h>
 #include <Core/LaunchArgs.h>
 #include <Core/Log.h>
+#include <GL/glew.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -29,6 +30,17 @@ engine::graphics::OpenGLGraphicsBackend::OpenGLGraphicsBackend()
 		}
 
 		Log::Info(str::Format("OpenGL version set through command line: '%s'", VersionString.c_str()));
+	}
+	else
+	{
+		if (GLEW_VERSION_4_3)
+		{
+			GLVersion = Version::GL430;
+		}
+		else
+		{
+			GLVersion = Version::GL330;
+		}
 	}
 
 	if (GLVersion < Version::GL430)
