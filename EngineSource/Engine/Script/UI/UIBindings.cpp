@@ -633,7 +633,14 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color") },
 			nullptr, "UIBlurBackground.new", &UIBlurBackground_new));
 
-	// UICanvasBoxr
+	// UIScrollBox
+	auto UIScrollBoxType = To.createClass<UIScrollBox*>("UIScrollBox", UIBoxType);
+
+	To.addClassConstructor(UIScrollBoxType, NativeFunction(
+		{ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(BoolInst, "showScrollBar") },
+		nullptr, "UIScrollBox.new", &UIScrollBox_new));
+
+	// UICanvasBox
 	auto UICanvasBoxType = To.createClass<UICanvasBox*>("UICanvasBox", UIBoxType);
 
 	To.addClassConstructor(UICanvasBoxType, NativeFunction(

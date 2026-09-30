@@ -79,8 +79,8 @@ void engine::editor::TranslateGizmo::Update(Viewport* With)
 	graphics::Camera* Cam = Current->Graphics.UsedCamera;
 
 	Vector3 Direction = With->GetCursorDirection();
-	Vector3 EndPosition = Cam->Position + Direction * 3000000;
-	auto h = Physics.RayCast(Cam->Position, EndPosition, physics::Layer::Static);
+	Vector3 EndPosition = Cam->GetPosition() + Direction * 30000;
+	auto h = Physics.RayCast(Cam->GetPosition(), EndPosition, physics::Layer::Static);
 
 	Vector3 Dir = (h.ImpactPoint - GizmoMesh->GetPosition()).Normalize();
 

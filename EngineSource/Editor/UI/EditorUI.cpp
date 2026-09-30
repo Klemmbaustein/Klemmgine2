@@ -254,7 +254,7 @@ engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 	VideoSystem->OnResizedCallbacks.Add(this, [this](Vec2ui NewSize) {
 		UpdateBackgrounds();
 		RootPanel->ShouldUpdate = true;
-		RootPanel->UpdatePanel();
+		RootPanel->UpdateLayout();
 	});
 
 	Documentation.Initialize(GetEditorPath());

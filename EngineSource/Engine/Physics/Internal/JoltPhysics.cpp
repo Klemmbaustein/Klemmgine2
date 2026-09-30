@@ -100,7 +100,7 @@ public:
 		}
 
 		auto j = new Job(inName, inColor, this, inJobFunction, inNumDependencies);
-		Jobs.emplace(j, inJobFunction);
+		j->AddRef();
 
 		if (inNumDependencies == 0)
 			QueueJob(j);
@@ -110,7 +110,10 @@ public:
 
 	void QueueJob(Job* inJob)
 	{
-		Pool->AddJob(std::bind(&Job::Execute, inJob));
+		Pool->AddJob([inJob] {
+			inJob->Execute();
+			inJob->Release();
+		});
 	}
 
 	void QueueJobs(Job** inJobs, JPH::uint inNumJobs)
@@ -123,8 +126,7 @@ public:
 
 	void FreeJob(Job* inJob)
 	{
-		Jobs.erase(inJob);
-		delete inJob;
+		inJob->Release();
 	}
 };
 
