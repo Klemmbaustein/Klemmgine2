@@ -64,10 +64,15 @@ Vector3 engine::graphics::Camera::GetPosition() const
 
 Vector3 engine::graphics::Camera::ScreenToWorld(Vector2 Screen) const
 {
-	glm::mat4 InvProjectionView = glm::inverse(Projection * View);
-	glm::vec4 Translated = InvProjectionView * glm::vec4(Screen.X, Screen.Y, 1, 1);
+	glm::vec4 RayClip = glm::vec4(Screen.X, Screen.Y, -1.f, 1);
 
-	return Vector3(Translated.x, Translated.y, Translated.z);
+	glm::vec4 RayEye = glm::inverse(Projection) * RayClip;
+	RayEye = glm::vec4(RayEye.x, RayEye.y, -1.f, 1.f);
+
+	glm::vec3 RayWorld = glm::vec3(glm::inverse(View) * RayEye);
+
+	RayWorld -= glm::vec3(Position.X, Position.Y, Position.Z);
+	return Vector3(RayWorld.x, RayWorld.y, RayWorld.z).Normalize();
 }
 
 Vector3 engine::graphics::Camera::WorldToScreen(Vector3 World) const
