@@ -802,7 +802,7 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 
 	};
 
-	if (IsMaximized)
+	if (!IsMaximized)
 	{
 		NewTab->mainButton->OnDragged = [Target](int) {
 			Target->MovePanel();
