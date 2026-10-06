@@ -249,7 +249,7 @@ if(ENGINE_RUN_MSVC_CODE_ANALYSIS)
 	endif()
 endif()
 
-target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI)
+target_link_libraries(Klemmgine PUBLIC KlemmgineLib KlemmUI KlemmgineLib)
 
 if(NOT "${CXX_COMPILER_ID}" STREQUAL "MSVC" AND ENGINE_EDITOR)
 	target_link_libraries(Klemmgine PUBLIC KlemmgineEditor)
