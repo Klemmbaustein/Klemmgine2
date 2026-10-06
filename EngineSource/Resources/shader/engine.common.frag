@@ -1,13 +1,13 @@
 // Common shading functions
-
 //? #version 430
-#module "engine.common" //!
-#using "engine.base" //! #include "engine.base.frag"
 
 #if !ENGINE_GL_430
 #extension GL_ARB_uniform_buffer_object : enable
 #extension GL_ARB_arrays_of_arrays : enable
 #endif
+
+#module "engine.common" //!
+#using "engine.base" //! #include "engine.base.frag"
 
 #export //!
 uniform vec3 u_lightDirection = vec3(0, 1, 0);
