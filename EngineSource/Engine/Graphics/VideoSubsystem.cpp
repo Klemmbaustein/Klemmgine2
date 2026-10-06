@@ -2,6 +2,7 @@
 #include <Engine/Subsystem/SceneSubsystem.h>
 #include <Engine/Subsystem/ConsoleSubsystem.h>
 #include <kui/App.h>
+#include <kui/LibraryContext.h>
 #include <SDL3/SDL.h>
 #include <Engine/Internal/WMOptions.h>
 #include <Engine/Engine.h>
@@ -15,6 +16,7 @@
 #include <Engine/File/Resource.h>
 #include <Engine/Graphics/Effects/CascadedShadows.h>
 #include <Engine/Graphics/Backend/OpenGLGraphicsBackend.h>
+#include <Engine/UI/EngineUIResource.h>
 
 using namespace kui;
 using namespace engine;
@@ -34,6 +36,8 @@ engine::VideoSubsystem::VideoSubsystem()
 			Fatal ? app::MessageBoxType::Error : app::MessageBoxType::Warn);
 		Print("kui error: " + Message, Fatal ? LogType::Critical : LogType::Error);
 	});
+
+	UIContext::Get()->Resources.push_back(new EngineUIResource());
 
 	Print("Initializing SDL", LogType::Note);
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
@@ -203,6 +207,7 @@ void engine::VideoSubsystem::RegisterCommands(ConsoleSubsystem* System)
 
 engine::VideoSubsystem::~VideoSubsystem()
 {
+	UIContext::Get()->Resources.clear();
 	Current = nullptr;
 	GraphicsModel::ClearAll();
 	graphics::CascadedShadows::UnloadShadows();

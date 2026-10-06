@@ -39,7 +39,7 @@ namespace engine
 		 * @param New
 		 * The listener callback to add to the event.
 		 */
-		void Add(void* Listener, Function New)
+		void Add(const void* Listener, Function New)
 		{
 			Callbacks[Listener] = New;
 		}
@@ -50,7 +50,7 @@ namespace engine
 		 * @param Listener
 		 * A unique pointer identifying the listener that was given to the event with the Add function.
 		 */
-		void Remove(void* Listener)
+		void Remove(const void* Listener)
 		{
 			auto Found = Callbacks.find(Listener);
 			if (Found != Callbacks.end())
@@ -59,11 +59,11 @@ namespace engine
 			}
 		}
 
-		bool IsListener(void* Listener)
+		bool IsListener(const void* Listener)
 		{
 			return Callbacks.contains(Listener);
 		}
 	private:
-		std::map<void*, Function> Callbacks;
+		std::map<const void*, Function> Callbacks;
 	};
 }

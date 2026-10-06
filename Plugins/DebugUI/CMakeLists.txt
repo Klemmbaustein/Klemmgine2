@@ -23,6 +23,10 @@ if(WIN32)
 	set(CMAKE_RC_STANDARD_INCLUDE_DIRECTORIES ${CUSTOM_INCLUDE_DIRECTORIES})
 endif()
 
+# GNU ld is the worst thing ever.
 target_link_libraries(${PLUGIN_NAME} PUBLIC KlemmginePlugin)
+target_link_libraries(${PLUGIN_NAME} PUBLIC KlemmUI)
+target_link_libraries(${PLUGIN_NAME} PUBLIC PluginWM)
 
 add_dependencies(KlemmgineLib ${PLUGIN_NAME})
+klemmui_markup(${PLUGIN_NAME} "ui")

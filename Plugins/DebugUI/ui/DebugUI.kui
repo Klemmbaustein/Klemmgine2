@@ -1,0 +1,60 @@
+element PluginDebugOverlay
+{
+	width = 100%;
+	height = 100%;
+	position = -1;
+
+	padding = 5px;
+
+	orientation = vertical;
+
+	child UIText fpsText
+	{
+		color = (1, 1, 0.2);
+		size = 15px;
+	}
+}
+
+element PluginDebugConsole
+{
+	position = -1;
+	size = 100%;
+
+	verticalAlign = default;
+	orientation = vertical;
+
+	child UITextField field
+	{
+		textColor = 1;
+		color = 0.1;
+		width = 100%;
+		textSize = 12px;
+		font = "mono";
+	}
+
+	child UIBackground bg
+	{
+		border = 1px;
+		borderColor = 0.5;
+		leftBorder = false;
+		rightBorder = false;
+
+		width = 100%;
+		color = 0;
+		height = 500px;
+		opacity = 0.8;
+		orientation = vertical;
+		verticalAlign = default;
+	}
+}
+
+element PluginDebugConsoleEntry
+{
+	child UIText text
+	{
+		size = 11px;
+		color = 1;
+		font = "mono";
+		downPadding = 2px;
+	}
+}
