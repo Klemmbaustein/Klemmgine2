@@ -81,51 +81,31 @@ bool engine::resource::FileExists(string EnginePath)
 		}
 	}
 
-	return kui::resource::FileExists(EnginePath) || (std::filesystem::exists(str::AsUnicode(Converted)) && AllowLocalFiles);
+	return kui::resource::ResourceExists(EnginePath) || (std::filesystem::exists(str::AsUnicode(Converted)) && AllowLocalFiles);
 }
 
 IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 {
-	string FoundPrefix;
+	std::string FilePath = EnginePath;
 
-	for (const auto& [Prefix, Convert] : KnownFilePaths)
+	for (auto& i : Sources)
 	{
-		if (EnginePath.substr(0, Prefix.size()) != Prefix)
+		if (i->FileExists(EnginePath))
 		{
-			continue;
+			return i->GetFile(EnginePath);
 		}
-		FoundPrefix = Prefix;
 	}
 
-	if (FoundPrefix == "res:")
-	{
-		auto res = kui::resource::GetBinaryResource(EnginePath.substr(FoundPrefix.size()));
-
-		return new ReadOnlyBufferStream((const uByte*)res.Data, res.FileSize, false);
-	}
-	if (FoundPrefix.empty())
-	{
-		std::string FilePath = EnginePath;
-
-		for (auto& i : Sources)
-		{
-			if (i->FileExists(EnginePath))
-			{
-				return i->GetFile(EnginePath);
-			}
-		}
-
-		bool AllowFiles = AllowLocalFiles;
+	bool AllowFiles = AllowLocalFiles;
 
 #ifdef EDITOR
-		// Allow loading local files belonging to the editor
-		AllowFiles = AllowLocalFiles || (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
+	// Allow loading local files belonging to the editor
+	AllowFiles = AllowLocalFiles || (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
 #endif
-		if (AllowFiles && std::filesystem::exists(str::AsUnicode(FilePath))
-			&& !std::filesystem::is_directory(str::AsUnicode(FilePath)))
-		{
-			return new FileStream(FilePath, true);
-		}
+	if (AllowFiles && std::filesystem::exists(str::AsUnicode(FilePath))
+		&& !std::filesystem::is_directory(str::AsUnicode(FilePath)))
+	{
+		return new FileStream(FilePath, true);
 	}
 
 	return nullptr;

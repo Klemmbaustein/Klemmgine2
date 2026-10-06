@@ -214,6 +214,7 @@ engine::string engine::platform::GetExecutablePath()
 #include <sys/types.h>
 #include <pwd.h>
 #include <spawn.h>
+#include <unistd.h>
 
 void engine::platform::CreateHiddenDirectory(string Path)
 {

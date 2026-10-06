@@ -23,4 +23,4 @@ Saved/
 *.pdb
 /Engine/Remote
 /Logs
-/Engine/Editor/Documentation
+/Engine/Editor/Documentation/*.xml

@@ -4,6 +4,7 @@
 #include <Core/Transform.h>
 #include <Core/Vector.h>
 #include <Core/Log.h>
+#include <kui/LibraryContext.h>
 #include "PluginCanvas.hpp"
 
 namespace engine
@@ -23,10 +24,6 @@ namespace engine::plugin
 	*
 	*
 	*/
-
-	class kuiUIBox;
-	class PluginUICanvas;
-
 
 	using CallbackFn = void(*)(void* UserData);
 

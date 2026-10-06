@@ -15,6 +15,7 @@
 #include <Engine/Stats.h>
 #include <Engine/Plugins/PluginSubsystem.h>
 #include <kui/KlemmUI.h>
+#include <kui/LibraryContext.h>
 #include <filesystem>
 #include <InterfaceStruct.hpp>
 

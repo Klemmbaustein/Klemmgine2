@@ -74,5 +74,4 @@ else()
 	target_link_libraries(${PLUGIN_NAME} PRIVATE "${KLEMMGINE_PLUGIN_DIR}/libnethost.so")
 	target_link_options(${PLUGIN_NAME} PRIVATE "-Wl,-rpath,$ORIGIN")
 endif()
-
 add_dependencies(KlemmgineLib ${PLUGIN_NAME})

@@ -37,40 +37,15 @@ STRUCT_MEMBER(InputIsKeyDown, bool, (int KeyCode), return input::IsKeyHeld(input
 STRUCT_MEMBER(InputIsKeyPressed, bool, (int KeyCode), return input::IsKeyPressed(input::Key(KeyCode)))
 
 // UI
-STRUCT_MEMBER(CreateUICanvas, void*, (const char* Name, const char* Source, engine::plugin::PluginCanvasInterface * Canvas), \
-{ auto c = engine::UICanvas::CreateNew<PluginUICanvas>(); if (c) { c->LoadElement(Name, Source, Canvas); } return c; })
 
-STRUCT_MEMBER(CreateUIBox, kuiUIBox*, (const char* Name, void* UICanvas), \
-{ return (kuiUIBox*)((PluginUICanvas*)UICanvas)->CreateElement(Name); })
+STRUCT_MEMBER(GetUIContext, kui::UIContext*, (), \
+{ return kui::UIContext::Get(); })
 
-STRUCT_MEMBER(DeleteUIBox, void, (kuiUIBox * Target), delete (kui::UIBox*)Target)
-STRUCT_MEMBER(DeleteUIBoxChildren, void, (kuiUIBox * Target), ((kui::UIBox*)Target)->DeleteChildren())
+STRUCT_MEMBER(GetMainWindow, kui::Window*, (), \
+{ return kui::Window::GetActiveWindow(); })
 
-STRUCT_MEMBER(GetDynamicChild, kuiUIBox*, (kuiUIBox * Target, const char* Name), \
-{ auto c = (kui::markup::UIDynMarkupBox*)Target; return (kuiUIBox*)c->NamedChildren[Name]; })
-STRUCT_MEMBER(GetCanvasChild, kuiUIBox*, (void* UICanvas, const char* Name), \
-{ auto c = (PluginUICanvas*)UICanvas; return (kuiUIBox*)c->GetElement(Name); })
-
-STRUCT_MEMBER(GetCanvasRootBox, kuiUIBox*, (void* UICanvas), \
-{ auto c = (PluginUICanvas*)UICanvas; return (kuiUIBox*)c->GetRootBox(); })
-
-STRUCT_MEMBER(AddChild, void, (kuiUIBox * Parent, kuiUIBox * Child), \
-{ ((kui::UIBox*)Parent)->AddChild((kui::UIBox*)Child); })
-
-STRUCT_MEMBER(UITextSetText, void, (kuiUIBox * UIElement, const char* Text), \
-{ auto c = (kui::UIText*)UIElement; c->SetText(Text); })
-
-STRUCT_MEMBER(UITextFieldEdit, void, (kuiUIBox * UIElement), \
-{ auto c = (kui::UITextField*)UIElement; c->Edit(); })
-
-STRUCT_MEMBER(UITextFieldGetText, const char*, (kuiUIBox * UIElement), \
-{ auto c = (kui::UITextField*)UIElement; return c->GetText().c_str(); })
-
-STRUCT_MEMBER(UITextFieldSetText, void, (kuiUIBox * UIElement, const char* Text), \
-{ auto c = (kui::UITextField*)UIElement; c->SetText(Text); })
-
-STRUCT_MEMBER(UITextFieldOnChanged, void, (kuiUIBox * UIElement, CallbackFn Callback, void* UserData), \
-{ auto c = (kui::UITextField*)UIElement; c->OnChanged = ([Callback, UserData]() {Callback(UserData); }); })
+STRUCT_MEMBER(CreateUICanvas, void*, (engine::plugin::PluginCanvasInterface * Canvas), \
+{ auto c = engine::UICanvas::CreateNew<PluginUICanvas>(); if (c) { c->LoadPluginCanvas(Canvas); } return c; })
 
 STRUCT_MEMBER_CALL_DIRECT(GetLogSize, size_t, (), \
 	Log::GetLogMessagesCount)

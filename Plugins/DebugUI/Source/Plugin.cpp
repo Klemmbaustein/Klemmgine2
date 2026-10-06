@@ -1,5 +1,6 @@
 #include <KlemmginePlugin.hpp>
 #include <Engine/Input.h>
+#include <DebugUI.kui.hpp>
 
 using namespace engine;
 
@@ -10,39 +11,38 @@ static bool UpdateFPS = false;
 
 class DebugUICanvas : public plugin::PluginCanvasInterface
 {
-	plugin::kuiUIBox* ConsoleBox = nullptr;
 	size_t LastLogSize = 0;
-	plugin::kuiUIBox* ConsoleBackground = nullptr;
+	PluginDebugOverlay* Overlay = nullptr;
+	PluginDebugConsole* Console = nullptr;
 
 	void Begin() override
 	{
+		Overlay = new PluginDebugOverlay();
+		UIObject->AddChild(Overlay);
 	}
 
 	~DebugUICanvas() override
 	{
-		auto Interface = plugin::GetInterface();
-		Interface->DeleteUIBox(ConsoleBox);
 	}
 
 	void UpdateLogEntries(plugin::EnginePluginInterface* Interface)
 	{
 		size_t MessageSize = 0;
 		plugin::LogEntry* Entries = Interface->GetLogMessages(&MessageSize);
-		Interface->DeleteUIBoxChildren(ConsoleBackground);
+		Console->bg->DeleteChildren();
 		for (int64 i = int64(MessageSize) - 1; i >= std::max(int64(0), int64(MessageSize - 29)); i--)
 		{
 			string Displayed;
 
-				for (size_t j = 0; j < Entries[i].PrefixSize; j++)
-				{
-					Displayed.append(str::Format("[%s]: ", Entries[i].Prefixes[j].Text));
-				}
+			for (size_t j = 0; j < Entries[i].PrefixSize; j++)
+			{
+				Displayed.append(str::Format("[%s]: ", Entries[i].Prefixes[j].Text));
+			}
 
-				Displayed.append(Entries[i].Message);
+			Displayed.append(Entries[i].Message);
 
-			auto Text = Interface->CreateUIBox("ConsoleEntry", UIObject);
-			Interface->UITextSetText(Interface->GetDynamicChild(Text, "text"), Displayed.c_str());
-			Interface->AddChild(ConsoleBackground, Text);
+			Console->bg->AddChild(new kui::UIText(12_px, 1, Displayed,
+				Overlay->GetParentWindow()->Markup.GetFont("mono")));
 		}
 		LastLogSize = MessageSize;
 	}
@@ -53,30 +53,24 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 
 		if (UpdateFPS && !Interface->IsEditorActive())
 		{
-			Interface->UITextSetText(
-				Interface->GetCanvasChild(UIObject, "fpsText"),
-				str::Format("FPS: %i", int(FPS)).c_str());
+			Overlay->fpsText->SetText(str::Format("FPS: %i", int(FPS)));
 			UpdateFPS = false;
 		}
 
-		if (Interface->GameHasFocus() && Interface->InputIsKeyPressed(int(input::Key::RETURN)) && !ConsoleBox)
+		if (Interface->GameHasFocus() && Interface->InputIsKeyPressed(int(input::Key::RETURN)) && !Console)
 		{
-			ConsoleBox = Interface->CreateUIBox("Console", UIObject);
-			ConsoleBackground = Interface->GetDynamicChild(ConsoleBox, "bg");
-			Interface->AddChild(Interface->GetCanvasRootBox(UIObject), ConsoleBox);
+			Console = new PluginDebugConsole();
+			UIObject->AddChild(Console);
 
-			auto TextField = Interface->GetDynamicChild(ConsoleBox, "field");
+			Console->field->Edit();
+			Console->field->OnChanged = [this] {
+				ProcessCommand();
+			};
 
-			Interface->UITextFieldEdit(TextField);
-			Interface->UITextFieldOnChanged(TextField, [](void* UserData)
-				{
-					DebugUICanvas* Canvas = (DebugUICanvas*)UserData;
-					Canvas->ProcessCommand();
-				}, this);
 			UpdateLogEntries(Interface);
 		}
 
-		if (ConsoleBox && LastLogSize != Interface->GetLogSize())
+		if (Console && LastLogSize != Interface->GetLogSize())
 		{
 			UpdateLogEntries(Interface);
 		}
@@ -85,19 +79,18 @@ class DebugUICanvas : public plugin::PluginCanvasInterface
 	void ProcessCommand()
 	{
 		auto Interface = plugin::GetInterface();
-		auto TextField = Interface->GetDynamicChild(ConsoleBox, "field");
-		string Text = Interface->UITextFieldGetText(TextField);
+		string Text = Console->field->GetText();
 
 		if (Text.empty() || !Interface->InputIsKeyDown(int(input::Key::RETURN)))
 		{
-			Interface->DeleteUIBox(ConsoleBox);
-			ConsoleBox = nullptr;
+			delete Console;
+			Console = nullptr;
 			return;
 		}
 
 		log::Info("> " + Text);
-		Interface->UITextFieldSetText(TextField, "");
-		Interface->UITextFieldEdit(TextField);
+		Console->field->SetText("");
+		Console->field->Edit();
 		Interface->ConsoleExecuteCommand(Text.c_str());
 	}
 };
@@ -108,70 +101,10 @@ ENGINE_EXPORT void RegisterTypes()
 
 ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
 {
-	plugin::GetInterface()->CreateUICanvas("Overlay", R"(
-element Overlay
-{
-	width = 100%;
-	height = 100%;
-	position = -1;
+	kui::UIContext::SetActive(plugin::GetInterface()->GetUIContext());
 
-	padding = 5px;
-
-	orientation = vertical;
-
-	child UIText fpsText
-	{
-		text = "";
-		color = (1, 1, 0.2);
-		size = 15px;
-	}
-}
-
-element Console
-{
-	position = -1;
-	size = 100%;
-
-	verticalAlign = default;
-	orientation = vertical;
-
-	child UITextField field
-	{
-		textColor = 1;
-		color = 0.1;
-		width = 100%;
-		textSize = 12px;
-		font = "mono";
-	}
-
-	child UIBackground bg
-	{
-		border = 1px;
-		borderColor = 0.5;
-		leftBorder = false;
-		rightBorder = false;
-
-		width = 100%;
-		color = 0;
-		height = 500px;
-		opacity = 0.8;
-		orientation = vertical;
-		verticalAlign = default;
-	}
-}
-
-element ConsoleEntry
-{
-	child UIText text
-	{
-		size = 11px;
-		color = 1;
-		font = "mono";
-		downPadding = 2px;
-	}
-}
-
-)", new DebugUICanvas());
+	plugin::GetInterface()->GetMainWindow()->SetWindowActive();
+	plugin::GetInterface()->CreateUICanvas(new DebugUICanvas());
 }
 
 ENGINE_EXPORT void Update(float Delta)

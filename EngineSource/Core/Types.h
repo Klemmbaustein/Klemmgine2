@@ -119,9 +119,3 @@ using int64 = signed long;
 using uint64 = unsigned long;
 
 #endif
-
-#if WINDOWS
-#define ENGINE_INTERFACE class __declspec(novtable)
-#else
-#define ENGINE_INTERFACE class
-#endif

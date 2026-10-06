@@ -30,3 +30,12 @@ macro(klemmgine_plugin_dirs)
 	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins$<0:>")
 	set(KLEMMGINE_PLUGIN_DIR "${CMAKE_BINARY_DIR}/bin/plugins")
 endmacro()
+
+add_library(PluginWM
+	"Source/SystemWM_Plugin.cpp"
+)
+target_include_directories(PluginWM PRIVATE "../../Dependencies/KlemmUI/Source/SystemWM")
+target_link_libraries(PluginWM PUBLIC KlemmUI)
+
+klemmui_resources(KlemmginePlugin "res/")
+target_link_libraries(KlemmginePlugin PUBLIC PluginWM)

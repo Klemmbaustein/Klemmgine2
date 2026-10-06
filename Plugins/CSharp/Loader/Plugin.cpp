@@ -44,14 +44,14 @@ namespace engine::cSharp
 		string Category = Dot != string::npos ? FullName.substr(0, Dot) : "";
 
 		engine::RegisterObject(FullName.substr(Dot + 1), [TypeId]() -> engine::SceneObject*
-			{
-				return new CSharpObject(TypeId);
-			}, Category);
+		{
+			return new CSharpObject(TypeId);
+		}, Category);
 	}
 
 #define GET_SET_FN(name, type) \
 static void SetObject ## name (SceneObject* Target, type name) {Target->name = name;} \
-static type GetObject ## name (SceneObject* Target) {return Target->name;} \
+static type GetObject ## name (SceneObject* Target) {return Target->name;}
 
 #define STR(x) # x
 #define REGISTER_GET_SET(fnName) \
@@ -62,11 +62,11 @@ Functions.push_back(NativeFunction{ \
 Functions.push_back(NativeFunction{ \
 	.Name = STR(GetObject ## fnName), \
 	.FunctionPointer = (void*)&GetObject ## fnName \
-});
+})
 
-	GET_SET_FN(Position, Vector3)
-	GET_SET_FN(Rotation, Rotation3)
-	GET_SET_FN(Scale, Vector3)
+	GET_SET_FN(Position, Vector3);
+	GET_SET_FN(Rotation, Rotation3);
+	GET_SET_FN(Scale, Vector3);
 
 	static void LoadRuntime()
 	{

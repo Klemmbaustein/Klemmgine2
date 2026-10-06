@@ -81,12 +81,6 @@ void engine::cSharp::CSharpLoaderRuntime::LoadHostFxr()
 {
 	char_t buffer[4096];
 	size_t buffer_size = sizeof(buffer) / sizeof(char_t);
-	//	get_hostfxr_parameters parameters =
-	//	{
-	//		sizeof(hostfxr_initialize_parameters),
-	//		nullptr,
-	//		"Path"
-	//	};
 	int rc = get_hostfxr_path(buffer, &buffer_size, nullptr);
 	if (rc != 0)
 	{
@@ -105,8 +99,6 @@ void engine::cSharp::CSharpLoaderRuntime::LoadHostFxr()
 void* engine::cSharp::CSharpLoaderRuntime::LoadCSharpFunction(string Function, string Namespace, string Delegate)
 {
 	void* OutFunction = nullptr;
-
-	//ENGINE_ASSERT(pos != netString::npos, "Root path isn't valid");
 
 	string Path = plugin::GetInterface()->PluginPath;
 

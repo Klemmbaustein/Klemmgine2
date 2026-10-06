@@ -239,7 +239,6 @@ target_link_libraries(KlemmgineLib PUBLIC OpenAL)
 target_link_libraries(KlemmgineCore PUBLIC glm)
 target_link_libraries(KlemmgineCore PUBLIC miniz)
 target_link_libraries(KlemmgineCore PUBLIC DSharp)
-target_link_libraries(KlemmUI PUBLIC KlemmgineLib)
 
 if(ENGINE_RUN_MSVC_CODE_ANALYSIS)
 	target_compile_definitions(KlemmgineCore PUBLIC	ENGINE_RUN_CODE_ANALYSIS)
