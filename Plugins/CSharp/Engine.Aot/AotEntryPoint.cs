@@ -30,8 +30,8 @@ internal class AotEntryPoint
 			NativeFunctionStruct func = Marshal.PtrToStructure<NativeFunctionStruct>(ptr);
 			engineFunctions.Add(new NativeFunctionInfo
 			{
-				Name = func.Name,
-				FunctionPointer = func.FunctionPointer
+				name = func.Name,
+				functionPointer = func.FunctionPointer
 			});
 		}
 

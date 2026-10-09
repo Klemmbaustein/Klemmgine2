@@ -8,26 +8,26 @@ namespace Engine.Aot;
 
 internal partial class AotObjects
 {
-	public delegate void RegisterObject([MarshalAs(UnmanagedType.LPUTF8Str)] string Name, IntPtr Type);
-	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr Type);
-	public delegate void RemoveObjectInstanceDelegate(IntPtr Type);
+	public delegate void RegisterObject([MarshalAs(UnmanagedType.LPUTF8Str)] string name, IntPtr type);
+	public delegate IntPtr CreateObjectInstanceDelegate(IntPtr type);
+	public delegate void RemoveObjectInstanceDelegate(IntPtr type);
 
 	struct ObjectTypeInfo
 	{
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-		public Type ObjectType;
-		public string Name;
+		public Type objectType;
+		public string name;
 	}
 
-	static IntPtr TypeIdIndex = 0;
-	static IntPtr ObjectIdIndex = 1;
+	static IntPtr typeIdIndex = 0;
+	static IntPtr objectIdIndex = 1;
 
-	readonly static Dictionary<IntPtr, ObjectTypeInfo> LoadedTypes = [];
-	readonly static Dictionary<IntPtr, SceneObject> LoadedObjects = [];
+	readonly static Dictionary<IntPtr, ObjectTypeInfo> loadedTypes = [];
+	readonly static Dictionary<IntPtr, SceneObject> loadedObjects = [];
 
 	public static Delegate? GetFunction<T>(string Name)
 	{
-		return Marshal.GetDelegateForFunctionPointer<T>(NativeFunctions.LoadedFunctions[Name]) as Delegate;
+		return Marshal.GetDelegateForFunctionPointer<T>(NativeFunctions.loadedFunctions[Name]) as Delegate;
 	}
 
 	const string ObjectReflectionReason = "Uses reflection to dynamically get object types";
@@ -40,42 +40,42 @@ internal partial class AotObjects
 	[RequiresUnreferencedCode(ObjectReflectionReason)]
 	internal static void LoadObjects()
 	{
-		var SceneObjectTypes = GetAllObjectTypes();
+		var sceneObjectTypes = GetAllObjectTypes();
 
-		var RegisterObjectFunc = GetFunction<RegisterObject>("RegisterCSharpObject")!;
+		var registerObjectFunc = GetFunction<RegisterObject>("RegisterCSharpObject")!;
 
-		foreach (Type ObjectType in SceneObjectTypes)
+		foreach (Type objectType in sceneObjectTypes)
 		{
-			LoadedTypes.Add(TypeIdIndex, new ObjectTypeInfo
+			loadedTypes.Add(typeIdIndex, new ObjectTypeInfo
 			{
-				ObjectType = ObjectType,
-				Name = ObjectType.ToString(),
+				objectType = objectType,
+				name = objectType.ToString(),
 			});
 
-			RegisterObjectFunc.DynamicInvoke(ObjectType.ToString(), TypeIdIndex);
-			TypeIdIndex++;
+			registerObjectFunc.DynamicInvoke(objectType.ToString(), typeIdIndex);
+			typeIdIndex++;
 		}
 	}
 
 
 	public static void UpdateObjects()
 	{
-		foreach (var i in LoadedObjects)
+		foreach (var i in loadedObjects)
 		{
 			i.Value.Update();
 		}
 	}
 
 	[UnmanagedCallersOnly(EntryPoint = "Aot_RemoveObjectInstance")]
-	internal static void RemoveObjectInstance(IntPtr ObjectID, IntPtr NativeObject)
+	internal static void RemoveObjectInstance(IntPtr objectID, IntPtr _)
 	{
 		try
 		{
-			SceneObject DestroyedObject = LoadedObjects[ObjectID]!;
+			SceneObject destroyedObject = loadedObjects[objectID]!;
 
-			DestroyedObject.OnDestroyedInternal();
-			DestroyedObject.NativePointer = 0;
-			LoadedObjects.Remove(ObjectID);
+			destroyedObject.OnDestroyedInternal();
+			destroyedObject.nativePointer = 0;
+			loadedObjects.Remove(objectID);
 		}
 		catch (Exception e)
 		{
@@ -84,24 +84,24 @@ internal partial class AotObjects
 	}
 
 	[UnmanagedCallersOnly(EntryPoint = "Aot_CreateObjectInstance")]
-	internal static IntPtr CreateObjectInstance(IntPtr Type, IntPtr NativeObject)
+	internal static IntPtr CreateObjectInstance(IntPtr type, IntPtr nativeObject)
 	{
-		ObjectTypeInfo Loaded = LoadedTypes[Type];
+		ObjectTypeInfo loaded = loadedTypes[type];
 
-		SceneObject? New = Activator.CreateInstance(Loaded.ObjectType) as SceneObject;
+		SceneObject? newObject = Activator.CreateInstance(loaded.objectType) as SceneObject;
 
-		if (New != null)
+		if (newObject != null)
 		{
-			New.CSharpType = Type;
-			New.NativePointer = NativeObject;
+			newObject.CSharpType = type;
+			newObject.nativePointer = nativeObject;
 		}
 
-		if (New == null)
+		if (newObject == null)
 			return IntPtr.Zero;
 
-		New.BeginInternal();
+		newObject.BeginInternal();
 
-		LoadedObjects.Add(ObjectIdIndex, New);
-		return ObjectIdIndex++;
+		loadedObjects.Add(objectIdIndex, newObject);
+		return objectIdIndex++;
 	}
 }

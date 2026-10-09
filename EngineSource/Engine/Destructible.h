@@ -7,7 +7,10 @@ namespace engine
 	{
 	public:
 
-		virtual ~Destructible();
+		virtual ~Destructible()
+		{
+			this->OnDestroyedEvent.Invoke();
+		}
 
 		Event<> OnDestroyedEvent;
 	};

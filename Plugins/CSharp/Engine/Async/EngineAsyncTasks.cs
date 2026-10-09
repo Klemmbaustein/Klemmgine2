@@ -8,7 +8,7 @@ public static class EngineAsyncTasks
 
 	public static void Queue(SendOrPostCallback callBack, object? state, bool instant)
 	{
-		if (EngineAsync.IsMainThread && instant)
+		if (EngineAsync.isMainThread && instant)
 		{
 			callBack(state);
 		}

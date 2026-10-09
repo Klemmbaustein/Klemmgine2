@@ -4,5 +4,5 @@ namespace Engine;
 
 public static class Stats
 {
-	public static float DeltaTime => EngineInternal.frameDelta;
+	public static float deltaTime => EngineInternal.frameDelta;
 }

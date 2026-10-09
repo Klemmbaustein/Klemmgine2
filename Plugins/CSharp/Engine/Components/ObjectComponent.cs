@@ -5,7 +5,7 @@ namespace Engine.Components;
 [DependsOnNative]
 public class ObjectComponent
 {
-	public IntPtr NativePointer = 0;
+	public IntPtr nativePointer = 0;
 
 	delegate void AttachComponentDelegate(IntPtr Parent, IntPtr Comp);
 
@@ -18,6 +18,6 @@ public class ObjectComponent
 
 	public void Attach(ObjectComponent NewChild)
 	{
-		AttachComponent!(NativePointer, NewChild.NativePointer);
+		AttachComponent!(nativePointer, NewChild.nativePointer);
 	}
 }

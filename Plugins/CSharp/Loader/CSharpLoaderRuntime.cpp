@@ -1,21 +1,23 @@
 #include "CSharpLoaderRuntime.h"
-#include "Utils.h"
+#include "XmlProjectWriter.h"
 #include "KlemmginePlugin.hpp"
+#include <Core/Platform/Platform.h>
 #include <filesystem>
+#include <Windows.h>
 
-engine::cSharp::netString RuntimeString(std::string From)
+static engine::cSharp::NetString RuntimeString(std::string From)
 {
-#if _WIN32
-	return engine::cSharp::StrToWstr(From);
+#if WINDOWS
+	return engine::platform::StrToWstr(From);
 #else
 	return From;
 #endif
 }
 
-std::string FromRuntimeString(engine::cSharp::netString From)
+static std::string FromRuntimeString(engine::cSharp::NetString From)
 {
-#if _WIN32
-	return engine::cSharp::WstrToStr(From);
+#if WINDOWS
+	return engine::platform::WstrToStr(From);
 #else
 	return From;
 #endif
@@ -23,11 +25,34 @@ std::string FromRuntimeString(engine::cSharp::netString From)
 
 engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<NativeFunction>& Functions)
 {
-	LoadHostFxr();
-
 	string Path = plugin::GetInterface()->PluginPath;
 
-	LoadFunction = LoadDotNetAssembly(RuntimeString(Path) + NET_STR("/bin/net8.0/") + RuntimeString(ASSEMBLY_NAME) + NET_STR(".runtimeconfig.json"));
+	XmlProjectWriter Project = XmlProjectWriter("Microsoft.NET.Sdk");
+
+	auto& BasePropGroup = Project.AddPropertyGroup(std::nullopt);
+
+	BasePropGroup.Children.push_back(XmlNode("TargetFramework", "net10.0"));
+
+	auto& ReferenceGroup = Project.AddItemGroup();
+
+	ReferenceGroup.Children.push_back(XmlNode{
+		.Name = "ProjectReference",
+		.Tags = {XmlTag("Include", Path + "/Engine/Engine.csproj")}
+		});
+
+	std::filesystem::create_directories("GameAssembly");
+
+	Project.Write("GameAssembly/GameAssembly.csproj");
+
+	LoadHostFxr();
+
+	LoadFunction = LoadDotNetAssembly(RuntimeString(Path) + NET_STR("/bin/net10.0/")
+		+ RuntimeString(ASSEMBLY_NAME) + NET_STR(".runtimeconfig.json"));
+
+	if (!LoadFunction)
+	{
+		return;
+	}
 
 	LoadFunctions(Functions);
 	void* LoadEngineFunction = LoadCSharpFunction(
@@ -35,7 +60,7 @@ engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<Nativ
 		"Engine.Core.Native",
 		"");
 
-	StaticCall<void>(LoadEngineFunction);
+	StaticCall<void, const char*>(LoadEngineFunction, "GameAssembly/bin/Debug/net10.0");
 
 	CreateObjectFunction = LoadCSharpFunction(
 		"CreateObjectInstance",
@@ -53,7 +78,7 @@ engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<Nativ
 		"");
 }
 
-load_assembly_and_get_function_pointer_fn engine::cSharp::CSharpLoaderRuntime::LoadDotNetAssembly(netString config_path)
+load_assembly_and_get_function_pointer_fn engine::cSharp::CSharpLoaderRuntime::LoadDotNetAssembly(NetString config_path)
 {
 	// Load .NET Core
 	void* LoadAssemblyGetFunctionPointer = nullptr;
@@ -84,16 +109,20 @@ void engine::cSharp::CSharpLoaderRuntime::LoadHostFxr()
 	int rc = get_hostfxr_path(buffer, &buffer_size, nullptr);
 	if (rc != 0)
 	{
-		log::Info("Could not get hostfxr path - Error code: " + std::to_string(rc) + " : " + std::to_string(buffer_size));
+		log::Info("Could not get hostfxr path - Error code: "
+			+ std::to_string(rc) + " : " + std::to_string(buffer_size));
 		return;
 	}
 	log::Info("Using .NET runtime: '" + FromRuntimeString(buffer) + "'");
 
 	// Load hostfxr and get desired exports
-	HostFxrLibrary = LoadShared(FromRuntimeString(buffer));
-	InitDotNetFunction = (hostfxr_initialize_for_runtime_config_fn)GetSharedExport(HostFxrLibrary, "hostfxr_initialize_for_runtime_config");
-	GetDelegateFunction = (hostfxr_get_runtime_delegate_fn)GetSharedExport(HostFxrLibrary, "hostfxr_get_runtime_delegate");
-	CloseDotNetFunction = (hostfxr_close_fn)GetSharedExport(HostFxrLibrary, "hostfxr_close");
+	HostFxrLibrary = platform::LoadSharedLibrary(FromRuntimeString(buffer));
+	InitDotNetFunction = (hostfxr_initialize_for_runtime_config_fn)
+		platform::GetLibraryFunction(HostFxrLibrary, "hostfxr_initialize_for_runtime_config");
+	GetDelegateFunction = (hostfxr_get_runtime_delegate_fn)
+		platform::GetLibraryFunction(HostFxrLibrary, "hostfxr_get_runtime_delegate");
+	CloseDotNetFunction = (hostfxr_close_fn)
+		platform::GetLibraryFunction(HostFxrLibrary, "hostfxr_close");
 }
 
 void* engine::cSharp::CSharpLoaderRuntime::LoadCSharpFunction(string Function, string Namespace, string Delegate)
@@ -102,8 +131,8 @@ void* engine::cSharp::CSharpLoaderRuntime::LoadCSharpFunction(string Function, s
 
 	string Path = plugin::GetInterface()->PluginPath;
 
-	netString LibraryPath = RuntimeString(Path) + NET_STR("/bin/net8.0/") + RuntimeString(ASSEMBLY_NAME) + RuntimeString(ASSEMBLY_EXT);
-	netString NamespacePath = RuntimeString(Namespace) + NET_STR(", ") + RuntimeString(ASSEMBLY_NAME);
+	NetString LibraryPath = RuntimeString(Path) + NET_STR("/bin/net10.0/") + RuntimeString(ASSEMBLY_NAME) + RuntimeString(ASSEMBLY_EXT);
+	NetString NamespacePath = RuntimeString(Namespace) + NET_STR(", ") + RuntimeString(ASSEMBLY_NAME);
 
 	int rc = LoadFunction(
 		LibraryPath.c_str(),
@@ -147,5 +176,8 @@ void engine::cSharp::CSharpLoaderRuntime::LoadFunctions(const std::vector<Native
 
 void engine::cSharp::CSharpLoaderRuntime::Update(float Delta)
 {
-	StaticCall<void, float>(UpdateEngineFunction, Delta);
+	if (LoadFunction)
+	{
+		StaticCall<void, float>(UpdateEngineFunction, Delta);
+	}
 }
