@@ -6,85 +6,87 @@ namespace Engine.Core;
 
 public class Native
 {
-	public delegate void RegisterFunctionDelegate([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] Target, int _);
-	public delegate void LogFunction([MarshalAs(UnmanagedType.LPUTF8Str)] string Text);
+	public delegate void RegisterFunctionDelegate([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] target, int _);
+	public delegate void LogFunction([MarshalAs(UnmanagedType.LPUTF8Str)] string text);
 
-	public static LogFunction? Log;
-	readonly static Dictionary<string, IntPtr> LoadedFunctions = [];
+	public static LogFunction? log;
+	readonly static Dictionary<string, IntPtr> loadedFunctions = [];
 
-	private static MethodInfo? UpdateFunction = null;
+	private static MethodInfo? updateFunction = null;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct NativeFunction
 	{
 		[MarshalAs(UnmanagedType.LPUTF8Str)]
-		public string Name;
-		public IntPtr FunctionPointer;
+		public string name;
+		public IntPtr functionPointer;
 	}
 
-	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] Target, int _)
+	public static void RegisterFunctions([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] NativeFunction[] target, int _)
 	{
-		foreach (var Function in Target)
+		foreach (var function in target)
 		{
-			LoadedFunctions.Add(Function.Name, Function.FunctionPointer);
+			loadedFunctions.Add(function.name, function.functionPointer);
 		}
 	}
 
-	public static Delegate? GetFunction<T>(string Name)
+	public static Delegate? GetFunction<T>(string name)
 	{
-		return Marshal.GetDelegateForFunctionPointer<T>(LoadedFunctions[Name]) as Delegate;
+		return Marshal.GetDelegateForFunctionPointer<T>(loadedFunctions[name]) as Delegate;
 	}
 
 	static void NativeFunctionsToEngine(Assembly Target)
 	{
-		Type? ArrayType = Target.GetType("Engine.Native.NativeFunctionInfo");
+		Type? arrayType = Target.GetType("Engine.Native.NativeFunctionInfo");
 
-		Array NativeArray = Array.CreateInstance(ArrayType!, LoadedFunctions.Count);
-		var NameField = ArrayType!.GetField("Name", BindingFlags.Instance | BindingFlags.Public)!;
-		var PointerField = ArrayType!.GetField("FunctionPointer", BindingFlags.Instance | BindingFlags.Public)!;
+		Array nativeArray = Array.CreateInstance(arrayType!, loadedFunctions.Count);
+		var nameField = arrayType!.GetField("Name", BindingFlags.Instance | BindingFlags.Public)!;
+		var pointerField = arrayType!.GetField("FunctionPointer", BindingFlags.Instance | BindingFlags.Public)!;
 
 		int i = 0;
-		foreach (var fn in LoadedFunctions)
+		foreach (var fn in loadedFunctions)
 		{
-			var NewElement = Activator.CreateInstance(ArrayType);
-			NameField.SetValue(NewElement, fn.Key);
-			PointerField.SetValue(NewElement, fn.Value);
+			var NewElement = Activator.CreateInstance(arrayType);
+			nameField.SetValue(NewElement, fn.Key);
+			pointerField.SetValue(NewElement, fn.Value);
 
-			NativeArray.SetValue(NewElement, i++);
+			nativeArray.SetValue(NewElement, i++);
 		}
 
 		Target.GetType("Engine.Native.NativeFunctions")!
 			.GetMethod("RegisterFunctions", BindingFlags.Static | BindingFlags.Public)!
-			.Invoke(null, [NativeArray, 0]);
+			.Invoke(null, [nativeArray, 0]);
 	}
 
 	[UnmanagedCallersOnly]
-	public static void LoadEngine()
+	public static void LoadEngine(IntPtr assemblyPath)
 	{
+		string assemblyString = Marshal.PtrToStringUTF8(assemblyPath)!;
+
 		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 		Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-		Log = GetFunction<LogFunction>("Log")! as LogFunction;
+		log = GetFunction<LogFunction>("Log")! as LogFunction;
 
 		try
 		{
-			Assembly Engine = Assembly.LoadFrom(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/Klemmgine.CSharp.dll"); ;
-			Assembly ProjectAssembly = Assembly.LoadFile(Directory.GetCurrentDirectory() + "/Script/bin/net8.0/CSharpAssembly.dll");
-			Engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Initialize")!.Invoke(null, []);
-			UpdateFunction = Engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Update")!;
-			ObjectTypes.LoadObjects(ProjectAssembly, Engine);
-			NativeFunctionsToEngine(Engine);
+			Assembly engine = Assembly.LoadFrom(Path.Combine(assemblyString, "Klemmgine.CSharp.dll"));
+			Assembly projectAssembly = Assembly.LoadFile(Path.Combine(assemblyString, "GameAssembly.dll"));
+			engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Initialize")!.Invoke(null, []);
+			updateFunction = engine.GetType("Engine.Internal.EngineInternal")!.GetMethod("Update")!;
+			ObjectTypes.LoadObjects(projectAssembly, engine);
+			NativeFunctionsToEngine(engine);
 		}
 		catch (Exception e)
 		{
-			Log!(e.ToString());
+			log!(e.ToString());
 		}
 	}
 
 	[UnmanagedCallersOnly]
 	public static void UpdateEngine(float delta)
 	{
-		UpdateFunction!.Invoke(null, [delta]);
+		updateFunction!.Invoke(null, [delta]);
 		ObjectTypes.UpdateObjects();
 	}
 }

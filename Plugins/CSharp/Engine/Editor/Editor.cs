@@ -12,16 +12,16 @@ public static class Editor
 	[return: MarshalAs(UnmanagedType.U1)]
 	delegate bool EditorBoolFunction();
 
-	static EditorBoolFunction? IsEditorActiveFunction;
+	static EditorBoolFunction? isEditorActiveFunction;
 
 	public static bool IsEditorActive()
 	{
-		return IsEditorActiveFunction != null && IsEditorActiveFunction();
+		return isEditorActiveFunction != null && isEditorActiveFunction();
 	}
 
 	internal static void OnNativeLoaded()
 	{
-		IsEditorActiveFunction = NativeFunctions.GetFunction<EditorBoolFunction>("Log");
+		isEditorActiveFunction = NativeFunctions.GetFunction<EditorBoolFunction>("Log");
 	}
 
 }

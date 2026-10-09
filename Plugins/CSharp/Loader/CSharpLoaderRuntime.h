@@ -5,16 +5,17 @@
 #include <hostfxr.h>
 #include <coreclr_delegates.h>
 #include "Functions.h"
+#include <Core/Platform/Platform.h>
 
 namespace engine::cSharp
 {
 
 #if _WIN32
-	using netString = std::wstring;
+	using NetString = std::wstring;
 #define fs_string() wstring()
 #define NET_STR(x) L ## x
 #else
-	using netString = std::string;
+	using NetString = std::string;
 #define fs_string() string()
 #define NET_STR(x) x
 #endif
@@ -26,7 +27,7 @@ namespace engine::cSharp
 		static inline const string ASSEMBLY_EXT = ".dll";
 
 		CSharpLoaderRuntime(const std::vector<NativeFunction>& Functions);
-		load_assembly_and_get_function_pointer_fn LoadDotNetAssembly(netString config_path);
+		load_assembly_and_get_function_pointer_fn LoadDotNetAssembly(NetString config_path);
 		void LoadHostFxr();
 		void* LoadCSharpFunction(string Function, string Namespace, string Delegate);
 
@@ -51,7 +52,7 @@ namespace engine::cSharp
 		hostfxr_get_runtime_delegate_fn GetDelegateFunction = nullptr;
 		hostfxr_close_fn CloseDotNetFunction = nullptr;
 		hostfxr_handle HostFxrContext = nullptr;
-		void* HostFxrLibrary = nullptr;
+		platform::SharedLibrary* HostFxrLibrary = nullptr;
 
 		void* CreateObjectFunction = nullptr;
 		void* DestroyObjectFunction = nullptr;

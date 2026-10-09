@@ -3,11 +3,11 @@
 public static class EngineAsync
 {
 	[ThreadStatic]
-	public static bool IsMainThread;
+	public static bool isMainThread;
 
 	static EngineAsync()
 	{
-		IsMainThread = false;
+		isMainThread = false;
 	}
 
 	public class NotOnMainThreadException : Exception
@@ -17,7 +17,7 @@ public static class EngineAsync
 
 	public static void ThrowIfNotOnMainThread()
 	{
-		if (!IsMainThread)
+		if (!isMainThread)
 			throw new NotOnMainThreadException();
 	}
 }

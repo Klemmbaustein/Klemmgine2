@@ -11,22 +11,22 @@ public class MeshComponent : ObjectComponent
 	delegate IntPtr NewMeshComponent();
 	delegate void MeshLoadFunction(IntPtr Comp, [MarshalAs(UnmanagedType.LPUTF8Str)] string Str);
 
-	static NewMeshComponent? NewMesh = null;
-	static MeshLoadFunction? MeshLoad = null;
+	static NewMeshComponent? newMesh = null;
+	static MeshLoadFunction? meshLoad = null;
 
 	public MeshComponent()
 	{
-		NativePointer = NewMesh!();
+		nativePointer = newMesh!();
 	}
 
 	public void Load(string MeshFile)
 	{
-		MeshLoad!(NativePointer, MeshFile);
+		meshLoad!(nativePointer, MeshFile);
 	}
 
 	internal static new void OnNativeLoaded()
 	{
-		NewMesh = NativeFunctions.GetFunction<NewMeshComponent>("NewMeshComponent");
-		MeshLoad = NativeFunctions.GetFunction<MeshLoadFunction>("MeshComponentLoad");
+		newMesh = NativeFunctions.GetFunction<NewMeshComponent>("NewMeshComponent");
+		meshLoad = NativeFunctions.GetFunction<MeshLoadFunction>("MeshComponentLoad");
 	}
 }

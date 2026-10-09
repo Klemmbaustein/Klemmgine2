@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Engine.Components;
 using Engine.Native;
@@ -20,20 +21,20 @@ public abstract class SceneObject
 	delegate void SetVecDelegate(IntPtr Obj, Vector3 Value);
 	delegate Vector3 GetVecDelegate(IntPtr Obj);
 
-	static GetNameDelegate? GetNativeName = null;
+	static GetNameDelegate? getNativeName = null;
 
-	static SetVecDelegate? SetPosition = null;
-	static SetVecDelegate? SetRotation = null;
-	static SetVecDelegate? SetScale = null;
+	static SetVecDelegate? setPosition = null;
+	static SetVecDelegate? setRotation = null;
+	static SetVecDelegate? setScale = null;
 
-	static GetVecDelegate? GetPosition = null;
-	static GetVecDelegate? GetRotation = null;
-	static GetVecDelegate? GetScale = null;
+	static GetVecDelegate? getPosition = null;
+	static GetVecDelegate? getRotation = null;
+	static GetVecDelegate? getScale = null;
 
 	static ObjectAttachComponent? AttachComponent = null;
 
 	public IntPtr CSharpType;
-	public IntPtr NativePointer;
+	public IntPtr nativePointer;
 
 	private readonly CancellationTokenSource objCancellationSource = new();
 
@@ -49,34 +50,46 @@ public abstract class SceneObject
 	{
 		get
 		{
-			return GetPosition!(NativePointer);
+			return getPosition!(nativePointer);
 		}
 
 		set
 		{
-			SetPosition!(NativePointer, value);
+			setPosition!(nativePointer, value);
 		}
 	}
 	public Vector3 Rotation
 	{
 		get
 		{
-			return GetRotation!(NativePointer);
+			return getRotation!(nativePointer);
 		}
 
 		set
 		{
-			SetRotation!(NativePointer, value);
+			setRotation!(nativePointer, value);
 		}
 	}
 
+	public Vector3 Scale
+	{
+		get
+		{
+			return getScale!(nativePointer);
+		}
+
+		set
+		{
+			setScale!(nativePointer, value);
+		}
+	}
 
 	public string Name
 	{
 		get
 		{
 			ThrowIfInvalid();
-			return Marshal.PtrToStringUTF8(GetNativeName!(NativePointer)) ?? "Unknown";
+			return Marshal.PtrToStringUTF8(getNativeName!(nativePointer)) ?? "Unknown";
 		}
 	}
 
@@ -84,7 +97,7 @@ public abstract class SceneObject
 	public void BeginInternal()
 	{
 		Begin();
-		BeginAsync();
+		BeginAsync().Start();
 	}
 
 	public virtual void Begin()
@@ -102,7 +115,7 @@ public abstract class SceneObject
 	public void OnDestroyedInternal()
 	{
 		OnDestroyed();
-		OnDestroyedAsync();
+		OnDestroyedAsync().Start();
 		objCancellationSource.Cancel();
 	}
 
@@ -115,29 +128,30 @@ public abstract class SceneObject
 		return Task.CompletedTask;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void ThrowIfInvalid()
 	{
-		if (NativePointer == 0)
+		if (nativePointer == 0)
 			throw new InvalidObjectException();
 	}
 
 	public void Attach(ObjectComponent NewComponent)
 	{
-		AttachComponent!(NativePointer, NewComponent.NativePointer);
+		AttachComponent!(nativePointer, NewComponent.nativePointer);
 	}
 
 	internal static void OnNativeLoaded()
 	{
-		GetNativeName = NativeFunctions.GetFunction<GetNameDelegate>("GetObjName");
+		getNativeName = NativeFunctions.GetFunction<GetNameDelegate>("GetObjName");
 		AttachComponent = NativeFunctions.GetFunction<ObjectAttachComponent>("ObjectAttachComponent");
 
-		SetPosition = NativeFunctions.GetFunction<SetVecDelegate>("SetObjectPosition");
-		SetRotation = NativeFunctions.GetFunction<SetVecDelegate>("SetObjectRotation");
-		SetScale = NativeFunctions.GetFunction<SetVecDelegate>("SetObjectScale");
+		setPosition = NativeFunctions.GetFunction<SetVecDelegate>("SetObjectPosition");
+		setRotation = NativeFunctions.GetFunction<SetVecDelegate>("SetObjectRotation");
+		setScale = NativeFunctions.GetFunction<SetVecDelegate>("SetObjectScale");
 
-		GetPosition = NativeFunctions.GetFunction<GetVecDelegate>("GetObjectPosition");
-		GetRotation = NativeFunctions.GetFunction<GetVecDelegate>("GetObjectRotation");
-		GetScale = NativeFunctions.GetFunction<GetVecDelegate>("GetObjectScale");
+		getPosition = NativeFunctions.GetFunction<GetVecDelegate>("GetObjectPosition");
+		getRotation = NativeFunctions.GetFunction<GetVecDelegate>("GetObjectRotation");
+		getScale = NativeFunctions.GetFunction<GetVecDelegate>("GetObjectScale");
 
 	}
 }

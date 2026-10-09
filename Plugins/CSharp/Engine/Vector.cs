@@ -5,26 +5,26 @@ namespace Engine;
 [StructLayout(LayoutKind.Sequential)]
 public struct Vector3
 {
-	public float X = 0;
-	public float Y = 0;
-	public float Z = 0;
+	public float X { get; set; } = 0;
+	public float Y { get; set; } = 0;
+	public float Z { get; set; } = 0;
 
 	public Vector3()
 	{
 
 	}
 
-	public Vector3(float XYZ)
+	public Vector3(float xyz)
 	{
-		X = XYZ;
-		Y = XYZ;
-		Z = XYZ;
+		X = xyz;
+		Y = xyz;
+		Z = xyz;
 	}
 
-	public Vector3(float X, float Y, float Z)
+	public Vector3(float x, float y, float z)
 	{
-		this.X = X;
-		this.Y = Y;
-		this.Z = Z;
+		X = x;
+		Y = y;
+		Z = z;
 	}
 }

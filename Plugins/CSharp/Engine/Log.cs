@@ -9,15 +9,15 @@ namespace Engine;
 public static class Log
 {
 	delegate void LogFunction([MarshalAs(UnmanagedType.LPUTF8Str)] string Text);
-	static LogFunction? InfoFunction = null;
+	static LogFunction? infoFunction = null;
 
 	internal static void OnNativeLoaded()
 	{
-		InfoFunction = NativeFunctions.GetFunction<LogFunction>("Log");
+		infoFunction = NativeFunctions.GetFunction<LogFunction>("Log");
 	}
 
-	public static void Info(string Message)
+	public static void Info(string message)
 	{
-		InfoFunction!(Message);
+		infoFunction!(message);
 	}
 }

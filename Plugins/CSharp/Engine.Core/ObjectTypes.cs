@@ -17,94 +17,94 @@ internal static class ObjectTypes
 		public string Name;
 	}
 
-	static FieldInfo? SceneObjectTypeID;
-	static FieldInfo? SceneObjectNativePointer;
-	static Type? SceneObjectType;
-	static MethodInfo? SceneObjectBegin = null;
-	static MethodInfo? SceneObjectUpdate = null;
-	static MethodInfo? SceneObjectOnDestroyed = null;
+	static FieldInfo? sceneObjectTypeID;
+	static FieldInfo? sceneObjectNativePointer;
+	static Type? sceneObjectType;
+	static MethodInfo? sceneObjectBegin = null;
+	static MethodInfo? sceneObjectUpdate = null;
+	static MethodInfo? sceneObjectOnDestroyed = null;
 
-	static IntPtr TypeIdIndex = 0;
-	static IntPtr ObjectIdIndex = 1;
+	static IntPtr typeIdIndex = 0;
+	static IntPtr objectIdIndex = 1;
 
-	readonly static Dictionary<IntPtr, ObjectTypeInfo> LoadedTypes = [];
-	readonly static Dictionary<IntPtr, object> LoadedObjects = [];
+	readonly static Dictionary<IntPtr, ObjectTypeInfo> loadedTypes = [];
+	readonly static Dictionary<IntPtr, object> loadedObjects = [];
 
 	public static Delegate CreateDelegate(this MethodInfo methodInfo, object target)
 	{
-		Func<Type[], Type> GetType;
-		var IsAction = methodInfo.ReturnType.Equals((typeof(void)));
-		var Types = methodInfo.GetParameters().Select(p => p.ParameterType);
+		Func<Type[], Type> getType;
+		var isAction = methodInfo.ReturnType.Equals((typeof(void)));
+		var types = methodInfo.GetParameters().Select(p => p.ParameterType);
 
-		if (IsAction)
+		if (isAction)
 		{
-			GetType = Expression.GetActionType;
+			getType = Expression.GetActionType;
 		}
 		else
 		{
-			GetType = Expression.GetFuncType;
-			Types = Types.Concat([methodInfo.ReturnType]);
+			getType = Expression.GetFuncType;
+			types = types.Concat([methodInfo.ReturnType]);
 		}
 
 		if (methodInfo.IsStatic)
 		{
-			return Delegate.CreateDelegate(GetType([.. Types]), methodInfo);
+			return Delegate.CreateDelegate(getType([.. types]), methodInfo);
 		}
 
-		return Delegate.CreateDelegate(GetType([.. Types]), target, methodInfo.Name);
+		return Delegate.CreateDelegate(getType([.. types]), target, methodInfo.Name);
 	}
 
 	public static void UpdateObjects()
 	{
-		foreach (var i in LoadedObjects)
+		foreach (var i in loadedObjects)
 		{
-			SceneObjectUpdate!.Invoke(i.Value, []);
+			sceneObjectUpdate!.Invoke(i.Value, []);
 		}
 	}
 
-	public static void LoadObjects(Assembly TargetAssembly, Assembly EngineAssembly)
+	public static void LoadObjects(Assembly targetAssembly, Assembly engineAssembly)
 	{
-		SceneObjectType = EngineAssembly.GetType("Engine.SceneObject");
+		sceneObjectType = engineAssembly.GetType("Engine.SceneObject");
 
-		if (SceneObjectType == null)
+		if (sceneObjectType == null)
 			return;
 
-		SceneObjectBegin = SceneObjectType.GetMethod("BeginInternal", BindingFlags.Public | BindingFlags.Instance)!;
-		SceneObjectUpdate = SceneObjectType.GetMethod("Update")!;
-		SceneObjectOnDestroyed = SceneObjectType.GetMethod("OnDestroyedInternal")!;
+		sceneObjectBegin = sceneObjectType.GetMethod("BeginInternal", BindingFlags.Public | BindingFlags.Instance)!;
+		sceneObjectUpdate = sceneObjectType.GetMethod("Update")!;
+		sceneObjectOnDestroyed = sceneObjectType.GetMethod("OnDestroyedInternal")!;
 
-		SceneObjectNativePointer = SceneObjectType.GetField("NativePointer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-		SceneObjectTypeID = SceneObjectType.GetField("CSharpType", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+		sceneObjectNativePointer = sceneObjectType.GetField("NativePointer", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+		sceneObjectTypeID = sceneObjectType.GetField("CSharpType", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-		var RegisterObject = GetFunction<RegisterObject>("RegisterCSharpObject")!;
+		var registerObject = GetFunction<RegisterObject>("RegisterCSharpObject")!;
 
-		foreach (var Exported in TargetAssembly.ExportedTypes)
+		foreach (var exported in targetAssembly.ExportedTypes)
 		{
-			if (!Exported.IsSubclassOf(SceneObjectType))
+			if (!exported.IsSubclassOf(sceneObjectType))
 				return;
 
-			LoadedTypes.Add(TypeIdIndex, new ObjectTypeInfo
+			loadedTypes.Add(typeIdIndex, new ObjectTypeInfo
 			{
-				ObjectType = Exported,
-				Name = Exported.ToString(),
+				ObjectType = exported,
+				Name = exported.ToString(),
 			});
 
-			RegisterObject.DynamicInvoke(Exported.ToString(), TypeIdIndex);
-			TypeIdIndex++;
+			registerObject.DynamicInvoke(exported.ToString(), typeIdIndex);
+			typeIdIndex++;
 		}
 	}
 
-	public delegate void ObjectFunction(IntPtr Target);
+	public delegate void ObjectFunction(IntPtr target);
 
-	public static void RemoveObjectInstance(IntPtr ObjectID)
+	public static void RemoveObjectInstance(IntPtr objectID)
 	{
 		try
 		{
-			object DestroyedObject = LoadedObjects[ObjectID]!;
+			object destroyedObject = loadedObjects[objectID]!;
 
-			SceneObjectOnDestroyed!.Invoke(DestroyedObject, []);
-			SceneObjectNativePointer!.SetValue(DestroyedObject, IntPtr.Zero);
-			LoadedObjects.Remove(ObjectID);
+			sceneObjectOnDestroyed!.Invoke(destroyedObject, []);
+			sceneObjectNativePointer!.SetValue(destroyedObject, IntPtr.Zero);
+			loadedObjects.Remove(objectID);
 		}
 		catch (Exception e)
 		{
@@ -112,31 +112,31 @@ internal static class ObjectTypes
 		}
 	}
 
-	public static IntPtr CreateObjectInstance(IntPtr Type, IntPtr NativeObject)
+	public static IntPtr CreateObjectInstance(IntPtr type, IntPtr nativeObject)
 	{
 		try
 		{
-			ObjectTypeInfo Loaded = LoadedTypes[Type];
+			ObjectTypeInfo loaded = loadedTypes[type];
 
-			object? New = Activator.CreateInstance(Loaded.ObjectType);
+			object? newObject = Activator.CreateInstance(loaded.ObjectType);
 
-			if (New != null)
+			if (newObject != null)
 			{
-				SceneObjectTypeID!.SetValue(New, Type);
-				SceneObjectNativePointer!.SetValue(New, NativeObject);
+				sceneObjectTypeID!.SetValue(newObject, type);
+				sceneObjectNativePointer!.SetValue(newObject, nativeObject);
 			}
 
-			if (New == null)
+			if (newObject == null)
 				return IntPtr.Zero;
 
-			SceneObjectBegin!.Invoke(New, []);
+			sceneObjectBegin!.Invoke(newObject, []);
 
-			LoadedObjects.Add(ObjectIdIndex, New);
-			return ObjectIdIndex++;
+			loadedObjects.Add(objectIdIndex, newObject);
+			return objectIdIndex++;
 		}
 		catch (Exception ex)
 		{
-			Log!.Invoke(ex.ToString());
+			log!.Invoke(ex.ToString());
 		}
 		return 0;
 	}
