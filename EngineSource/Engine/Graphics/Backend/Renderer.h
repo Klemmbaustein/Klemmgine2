@@ -87,6 +87,7 @@ namespace engine::graphics
 		virtual ~VertexBuffer() = default;
 
 		virtual void Draw() = 0;
+		virtual void DrawInstanced(uint32 Count) = 0;
 	};
 
 	class DrawCommand

@@ -559,6 +559,13 @@ void engine::graphics::OpenGLVertexBuffer::Draw()
 	glDrawElements(GL_TRIANGLES, IndicesSize, GL_UNSIGNED_INT, 0);
 }
 
+void engine::graphics::OpenGLVertexBuffer::DrawInstanced(uint32 Count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindVertexArray(VAO);
+	glDrawElementsInstanced(GL_TRIANGLES, IndicesSize, GL_UNSIGNED_INT, 0, GLsizei(Count));
+}
+
 engine::graphics::OpenGLDrawCommand::OpenGLDrawCommand(OpenGLRenderer* Renderer)
 {
 	this->Render = Renderer;
