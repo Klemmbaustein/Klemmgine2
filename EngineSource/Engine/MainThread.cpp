@@ -26,4 +26,3 @@ void engine::thread::MainThreadUpdate()
 
 	MainThreadQueue->Update();
 }
-

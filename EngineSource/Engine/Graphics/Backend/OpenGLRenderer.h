@@ -95,6 +95,7 @@ namespace engine::graphics
 
 		// Inherited via VertexBuffer
 		void Draw() override;
+		void DrawInstanced(uint32 Count) override;
 
 		uint32 VAO = 0u, VBO = 0u, EBO = 0u, IndicesSize = 0u;
 	};

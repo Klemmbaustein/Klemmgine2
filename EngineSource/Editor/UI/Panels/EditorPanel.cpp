@@ -799,7 +799,6 @@ void engine::editor::EditorPanel::AddTabFor(EditorPanel* Target, bool Selected)
 				},
 				}, Window::GetActiveWindow()->Input.MousePosition);
 		}
-
 	};
 
 	if (!IsMaximized)
