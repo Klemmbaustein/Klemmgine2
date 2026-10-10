@@ -18,9 +18,11 @@ engine::graphics::ShaderLoader::~ShaderLoader()
 	Loaded.clear();
 }
 
-ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment)
+ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment, ShaderAttributes Attributes)
 {
-	auto Found = Loaded.find(Vertex + ";" + Fragment);
+	string Suffix = Attributes.IsInstanced ? ":inst" : "";
+
+	auto Found = Loaded.find(Vertex + ";" + Fragment + Suffix);
 
 	if (Found != Loaded.end())
 	{
@@ -28,8 +30,8 @@ ShaderObject* engine::graphics::ShaderLoader::Get(string Vertex, string Fragment
 	}
 
 	ShaderObject* New = new ShaderObject(resource::GetTextFile(Vertex), resource::GetTextFile(Fragment),
-		"", VideoSubsystem::Current->Renderer);
-	Loaded.insert({ Vertex + ";" + Fragment, ShaderLoadData{
+		"", Attributes, VideoSubsystem::Current->Renderer);
+	Loaded.insert({ Vertex + ";" + Fragment + Suffix, ShaderLoadData{
 		.Object = New,
 		.VertexSource = Vertex,
 		.FragmentSource = Fragment,

@@ -7,11 +7,11 @@ void engine::LandscapeObject::Begin()
 {
 	Component = new LandscapeComponent();
 
-	Component->LandscapeMaterial = new graphics::Material(Material.Value);
+	Component->LandscapeMaterial = new graphics::Material(Material.Value, { });
 
 	Material.OnChanged = [this] {
 		delete Component->LandscapeMaterial;
-		Component->LandscapeMaterial = new graphics::Material(Material.Value);
+		Component->LandscapeMaterial = new graphics::Material(Material.Value, {});
 	};
 
 	Component->LodFalloff = LodFalloff.Value;

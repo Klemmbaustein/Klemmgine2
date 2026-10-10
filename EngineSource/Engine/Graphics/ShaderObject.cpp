@@ -2,8 +2,9 @@
 #include "ShaderLoader.h"
 
 engine::graphics::ShaderObject::ShaderObject(string VertexFile, string FragmentFile,
-	string GeometryFile, Renderer* Render)
+	string GeometryFile, ShaderAttributes Attributes, Renderer* Render)
 {
+	this->Attributes = Attributes;
 	Compile(VertexFile, FragmentFile, GeometryFile, Render);
 }
 
@@ -37,7 +38,7 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	std::vector<ShaderProgramObject*> ResultModules;
 
 	auto VertexResult = ShaderLoader::Current->Modules.ParseShader(VertexFile, ShaderModule::ShaderType::Vertex,
-		Render);
+		Attributes, Render);
 	VertexFile = VertexResult.ResultSource;
 	for (auto& mod : VertexResult.DependencyModules)
 	{
@@ -49,7 +50,7 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	}
 
 	auto FragmentResult = ShaderLoader::Current->Modules.ParseShader(FragmentFile, ShaderModule::ShaderType::Fragment,
-		Render);
+		Attributes, Render);
 	this->Unlit = FragmentResult.IsUnlit;
 	FragmentFile = FragmentResult.ResultSource;
 	for (auto& mod : FragmentResult.DependencyModules)
@@ -73,7 +74,7 @@ void engine::graphics::ShaderObject::Compile(string VertexFile, string FragmentF
 	if (!GeometryFile.empty())
 	{
 		auto GeometryResult = ShaderLoader::Current->Modules.ParseShader(GeometryFile, ShaderModule::ShaderType::Geometry,
-			Render);
+			Attributes, Render);
 		GeometryFile = GeometryResult.ResultSource;
 		const char* GeometryCString = GeometryFile.c_str();
 		for (auto& mod : GeometryResult.DependencyModules)

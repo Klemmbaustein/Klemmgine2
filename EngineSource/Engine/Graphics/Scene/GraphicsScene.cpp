@@ -417,3 +417,33 @@ void engine::graphics::GraphicsScene::DeSerialize(SerializedValue* From)
 	}
 
 }
+
+void engine::graphics::GraphicsScene::ApplyToPass(DrawCommand* Pass, Camera* With,
+	const Transform& At, const BoundingBox& Bounds, Material* UsedMaterial, bool DrawStencil)
+{
+	ShaderObject* Used = UsedMaterial->Shader;
+
+	if (Used == nullptr)
+		return;
+
+	UsedMaterial->Apply(Pass);
+	Used->Bind();
+
+	if (!Used->Unlit)
+	{
+		Lights.ApplyToShader(Used, Bounds);
+	}
+	Shadows.BindUniforms(Pass, Used);
+	With->UsedEnvironment->ApplyTo(Used);
+
+	if (UsedMaterial->StencilValue != 0)
+		Pass->SetStencilValue(DrawStencil, UsedMaterial->StencilValue);
+	else
+		Pass->SetStencilValue(DrawStencil, 1);
+
+	// TODO: Replace camera params with Uniform buffers
+	Used->SetMatrix(Used->ModelUniform, At.Matrix);
+	Used->SetMatrix(Used->GetUniformLocation("u_view"), With->View);
+	Used->SetMatrix(Used->GetUniformLocation("u_projection"), With->Projection);
+	Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), With->GetPosition());
+}

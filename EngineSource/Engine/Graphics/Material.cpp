@@ -12,8 +12,9 @@
 using namespace engine;
 using namespace engine::graphics;
 
-engine::graphics::Material::Material(AssetRef File)
+engine::graphics::Material::Material(AssetRef File, ShaderAttributes Attributes)
 {
+	this->Attributes = Attributes;
 	Load(File);
 
 	resource::AssetListeners[File.FilePath].Add(this, [this, File] {
@@ -75,9 +76,9 @@ void engine::graphics::Material::Load(AssetRef File)
 
 }
 
-Material* engine::graphics::Material::MakeDefault()
+Material* engine::graphics::Material::MakeDefault(ShaderAttributes Attributes)
 {
-	auto* Result = new Material();
+	auto* Result = new Material(Attributes);
 
 	Result->SetToDefault();
 
@@ -86,7 +87,7 @@ Material* engine::graphics::Material::MakeDefault()
 
 Material* engine::graphics::Material::MakeBillboard(string BillboardIcon)
 {
-	auto* Result = new Material();
+	auto* Result = new Material({});
 
 	Result->VertexShader = "res:shader/basic.vert";
 	Result->FragmentShader = "res:shader/billboard.frag";
@@ -120,8 +121,9 @@ Material* engine::graphics::Material::MakeBillboard(string BillboardIcon)
 	return Result;
 }
 
-engine::graphics::Material::Material()
+engine::graphics::Material::Material(ShaderAttributes Attributes)
 {
+	this->Attributes = Attributes;
 }
 
 engine::graphics::Material::~Material()
@@ -428,8 +430,8 @@ void engine::graphics::Material::ApplySimple(graphics::DrawCommand* Pass, graphi
 
 void engine::graphics::Material::VerifyUniforms()
 {
-	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader), ShaderModule::ShaderType::Fragment,
-		VideoSubsystem::Current->Renderer);
+	auto Result = ShaderLoader::Current->Modules.ParseShader(resource::GetTextFile(FragmentShader),
+		ShaderModule::ShaderType::Fragment, Attributes, VideoSubsystem::Current->Renderer);
 
 	bool FoundTexture = false;
 	std::vector<Field> NewFields;
@@ -533,7 +535,8 @@ void engine::graphics::Material::UpdateShader()
 
 	Shader = ShaderLoader::Current->Get(
 		VertexShader,
-		FragmentShader
+		FragmentShader,
+		Attributes
 	);
 
 	// Don't try to use an invalid shader.

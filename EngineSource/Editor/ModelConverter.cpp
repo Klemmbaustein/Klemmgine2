@@ -84,7 +84,7 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 		return;
 	}
 
-	Material* NewMaterial = Material::MakeDefault();
+	Material* NewMaterial = Material::MakeDefault({});
 
 	auto TextureField = NewMaterial->FindField("u_texture", Material::Field::Type::Texture);
 

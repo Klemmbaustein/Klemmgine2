@@ -16,6 +16,7 @@ std::vector<float> ShadowCascadeLevels = { CAMERA_FAR_PLANE / 30.0f, CAMERA_FAR_
 
 RendererDrawTarget* CascadedShadows::ShadowBuffer = nullptr;
 graphics::ShaderObject* CascadedShadows::ShadowShader = nullptr;
+graphics::ShaderObject* CascadedShadows::InstancedShadowShader = nullptr;
 DrawUniformBuffer* CascadedShadows::ShadowMatrices = nullptr;
 
 CascadedShadows::CascadedShadows()
@@ -36,6 +37,15 @@ void CascadedShadows::Init(Renderer* Render)
 		resource::GetTextFile("res:shader/internal/shadow.vert"),
 		resource::GetTextFile("res:shader/internal/shadow.frag"),
 		resource::GetTextFile("res:shader/internal/shadow.geom"),
+		{ false },
+		Render
+	);
+
+	InstancedShadowShader = new ShaderObject(
+		resource::GetTextFile("res:shader/internal/shadow.vert"),
+		resource::GetTextFile("res:shader/internal/shadow.frag"),
+		resource::GetTextFile("res:shader/internal/shadow.geom"),
+		{ true },
 		Render
 	);
 
@@ -110,7 +120,8 @@ void CascadedShadows::Draw(GraphicsScene* With)
 		}
 
 		if (i.Component->CastShadow)
-			i.Component->SimpleDraw(With->Render, ShadowShader);
+			i.Component->SimpleDraw(With->Render,
+				i.Component->InstancedShadows ? InstancedShadowShader : ShadowShader);
 	}
 }
 

@@ -81,6 +81,18 @@ namespace engine::graphics
 		virtual void Write(size_t Offset, void* Data, size_t DataSize) = 0;
 	};
 
+	class VertexArrayData
+	{
+	public:
+		enum class BufferType
+		{
+			PerVertex,
+			PerInstance,
+		};
+
+		virtual ~VertexArrayData() = default;
+	};
+
 	class VertexBuffer
 	{
 	public:
@@ -88,6 +100,7 @@ namespace engine::graphics
 
 		virtual void Draw() = 0;
 		virtual void DrawInstanced(uint32 Count) = 0;
+		virtual void AttachArrayData(size_t Index, VertexArrayData* Data, VertexArrayData::BufferType Type) = 0;
 	};
 
 	class DrawCommand
@@ -110,6 +123,7 @@ namespace engine::graphics
 
 		virtual void DrawVertices(size_t Count) = 0;
 		virtual void DrawVertexBuffer(VertexBuffer* Buffer) = 0;
+		virtual void DrawVertexBufferInstanced(VertexBuffer* Buffer, uint32 Count) = 0;
 		virtual void ResetTextures() = 0;
 	};
 
@@ -158,6 +172,7 @@ namespace engine::graphics
 		virtual DrawUniformBuffer* CreateUniformBuffer(size_t Size) = 0;
 		virtual ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) = 0;
 		virtual ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) = 0;
+		virtual VertexArrayData* CreateTransformVertexData(Transform* Data, size_t Count) = 0;
 
 		virtual bool SupportsGLSL430() = 0;
 		virtual bool SupportsUniformBuffer() = 0;

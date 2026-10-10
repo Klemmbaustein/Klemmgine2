@@ -85,18 +85,7 @@ void engine::LandscapeComponent::Draw(graphics::Renderer* Render, graphics::Came
 		return;
 	}
 
-	if (!Used->Unlit)
-	{
-		In->Lights.ApplyToShader(Used, DrawBoundingBox);
-		In->Shadows.BindUniforms(Pass, Used);
-	}
-	From->UsedEnvironment->ApplyTo(Used);
-
-	Used->SetMatrix(Used->ModelUniform, WorldTransform.Matrix);
-	Used->SetMatrix(Used->GetUniformLocation("u_view"), From->View);
-	Used->SetMatrix(Used->GetUniformLocation("u_projection"), From->Projection);
-	Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), From->GetPosition());
-	Pass->SetStencilValue(DrawStencil, 1);
+	In->ApplyToPass(Pass, From, WorldTransform, DrawBoundingBox, LandscapeMaterial, DrawStencil);
 
 	if (RootSegment)
 	{

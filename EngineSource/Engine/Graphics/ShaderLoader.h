@@ -23,7 +23,7 @@ namespace engine::graphics
 
 		ShaderModuleLoader Modules;
 
-		ShaderObject* Get(string Vertex, string Fragment);
+		ShaderObject* Get(string Vertex, string Fragment, ShaderAttributes Attributes = {});
 		std::vector<ShaderLoadData> GetAllUsing(string Shader);
 		void ReloadAll();
 

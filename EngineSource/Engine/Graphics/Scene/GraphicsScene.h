@@ -125,6 +125,9 @@ namespace engine::graphics
 
 		void DeSerialize(SerializedValue* From) override;
 
+		void ApplyToPass(DrawCommand* Pass, Camera* With, const Transform& At, const BoundingBox& Bounds,
+			Material* UsedMaterial, bool DrawStencil);
+
 	private:
 
 		RendererTexture* SceneTexture = nullptr;
