@@ -21,6 +21,7 @@ namespace engine
 		bool CastShadow = true;
 		bool IsOpaque = true;
 		bool IsTransparent = false;
+		bool InstancedShadows = false;
 		virtual void Draw(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In) = 0;
 		virtual void DrawTransparent(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
 		{

@@ -31,38 +31,28 @@ void engine::graphics::Model::Draw(Renderer* Render, GraphicsScene* In, const Tr
 		}
 		Pass->SetBlendEnabled(IsTransparent);
 
-		UsedMaterials[i]->Apply(Pass);
-		ShaderObject* Used = UsedMaterials[i]->Shader;
-
-		if (Used == nullptr)
-			continue;
-		Used->Bind();
-
-		if (In)
-		{
-			if (!Used->Unlit)
-			{
-				In->Lights.ApplyToShader(Used, Bounds);
-			}
-			In->Shadows.BindUniforms(Pass, Used);
-		}
-		if (In)
-		{
-			With->UsedEnvironment->ApplyTo(Used);
-		}
-
-		if (!In)
-			Pass->SetStencilValue(Stencil, i + 2);
-		else
-			Pass->SetStencilValue(Stencil, 1);
-
-		// TODO: Replace camera params with Uniform buffers
-		Used->SetMatrix(Used->ModelUniform, At.Matrix);
-		Used->SetMatrix(Used->GetUniformLocation("u_view"), With->View);
-		Used->SetMatrix(Used->GetUniformLocation("u_projection"), With->Projection);
-		Used->SetVec3(Used->GetUniformLocation("u_cameraPos"), With->GetPosition());
+		In->ApplyToPass(Pass, With, At, Bounds, UsedMaterials[i], Stencil);
 
 		Pass->DrawVertexBuffer(ModelVertexBuffers[i]);
+	}
+}
+
+void engine::graphics::Model::DrawInstanced(Renderer* Render, GraphicsScene* In,
+	const Transform& At, Camera* With, std::vector<Material*>& UsedMaterials,
+	const BoundingBox& Bounds, bool Stencil, bool IsTransparent, size_t Count)
+{
+	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
+	{
+		auto Pass = Render->StartRender();
+		if (IsTransparent != UsedMaterials[i]->IsTransparent)
+		{
+			continue;
+		}
+		Pass->SetBlendEnabled(IsTransparent);
+
+		In->ApplyToPass(Pass, With, At, Bounds, UsedMaterials[i], Stencil);
+
+		Pass->DrawVertexBufferInstanced(ModelVertexBuffers[i], Count);
 	}
 }
 
@@ -80,5 +70,21 @@ void engine::graphics::Model::SimpleDraw(Renderer* Render, const Transform& At, 
 		UsedMaterials[i]->ApplySimple(Pass, Shader);
 		Shader->SetMatrix(Shader->ModelUniform, At.Matrix);
 		Pass->DrawVertexBuffer(ModelVertexBuffers[i]);
+	}
+}
+
+void engine::graphics::Model::SimpleDrawInstanced(Renderer* Render, const Transform& At, ShaderObject* Shader, std::vector<Material*>& UsedMaterials, size_t Count)
+{
+	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
+	{
+		if (UsedMaterials[i]->IsTransparent)
+		{
+			continue;
+		}
+
+		auto Pass = Render->StartRender();
+		UsedMaterials[i]->ApplySimple(Pass, Shader);
+		Shader->SetMatrix(Shader->ModelUniform, At.Matrix);
+		Pass->DrawVertexBufferInstanced(ModelVertexBuffers[i], Count);
 	}
 }

@@ -15,6 +15,7 @@
 #include <Engine/Objects/Components/CameraComponent.h>
 #include <Engine/Objects/Components/CollisionComponent.h>
 #include <Engine/Objects/Components/MeshComponent.h>
+#include <Engine/Objects/Components/InstancedMeshComponent.h>
 #include <Engine/Objects/Components/MoveComponent.h>
 #include <Engine/Objects/Components/PhysicsComponent.h>
 #include <Engine/Objects/SceneObject.h>
@@ -426,6 +427,14 @@ static void ObjectComponent_attach(InterpretContext* context)
 	}
 
 	Component.getValue()->Attach(*SubComponent);
+}
+
+static void InstancedMeshComponent_new(InterpretContext* context)
+{
+	ClassRef<InstancedMeshComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new InstancedMeshComponent();
+	script::RegisterComponent(Component.classPtr);
+	context->pushValue(Component);
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -1222,8 +1231,13 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(MeshComponentType,
 		NativeFunction({ FunctionArgument(IntInst, "index"),
 			FunctionArgument(StrType, "name"), FunctionArgument(FloatInst, "value") },
-			nullptr, "setMaterialUniformFloat", & MeshComponent_setMaterialUniformFloat));
+			nullptr, "setMaterialUniformFloat", &MeshComponent_setMaterialUniformFloat));
 
+	auto InstancedMeshComponentType = EngineModule.createClass<MeshComponent*>("InstancedMeshComponent", MeshComponentType);
+
+	EngineModule.addClassConstructor(InstancedMeshComponentType,
+		NativeFunction({ },
+			nullptr, "InstancedMeshComponent.new", &InstancedMeshComponent_new));
 
 	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);
 

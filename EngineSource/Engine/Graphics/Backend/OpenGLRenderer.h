@@ -87,6 +87,16 @@ namespace engine::graphics
 		OpenGLRenderer* Render = nullptr;
 	};
 
+	class OpenGLVertexArrayData : public VertexArrayData
+	{
+	public:
+		OpenGLVertexArrayData(Transform* TransformData, size_t Count);
+		~OpenGLVertexArrayData();
+
+		uint32 Buffer = 0;
+		uint32 GlType = 0;
+	};
+
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
@@ -96,6 +106,7 @@ namespace engine::graphics
 		// Inherited via VertexBuffer
 		void Draw() override;
 		void DrawInstanced(uint32 Count) override;
+		void AttachArrayData(size_t Index, VertexArrayData* Data, VertexArrayData::BufferType Type) override;
 
 		uint32 VAO = 0u, VBO = 0u, EBO = 0u, IndicesSize = 0u;
 	};
@@ -118,6 +129,7 @@ namespace engine::graphics
 		void SetBlendEnabled(bool NewEnabled) final override;
 		void SetStencilValue(bool Enabled, uint8 Value) final override;
 		void BindUniformBlock(const string& UniformBlockName, DrawUniformBuffer* Target) final override;
+		void DrawVertexBufferInstanced(VertexBuffer* Buffer, uint32 Count) final override;
 
 		void Reset();
 
@@ -229,7 +241,8 @@ namespace engine::graphics
 		ShaderProgramObject* CreateShaderProgramObject(const string& Source, ShaderProgramType Type) final override;
 		ShaderProgram* LinkShaderProgram(std::vector<ShaderProgramObject*> Objects) final override;
 		bool SupportsUniformBuffer() final override;
-		bool SupportsGLSL430() override;
+		bool SupportsGLSL430() final override;
+		VertexArrayData* CreateTransformVertexData(Transform* Data, size_t Count) final override;
 
 		OpenGLDrawCommand CurrentCommand = OpenGLDrawCommand(this);
 

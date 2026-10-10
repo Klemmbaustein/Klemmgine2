@@ -26,7 +26,7 @@ void engine::MeshComponent::Draw(Renderer* Render, Camera* From, GraphicsScene* 
 			}
 		}
 
-		DrawnModel->Drawable->Draw(Render, DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
+		DrawnModel->Drawable->Draw(Render, In, WorldTransform,
 			From, Materials, DrawBoundingBox, DrawStencil, false);
 	}
 }
@@ -35,7 +35,7 @@ void engine::MeshComponent::DrawTransparent(Renderer* Render, Camera* From, ::Gr
 {
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
-		DrawnModel->Drawable->Draw(Render, DrawAsOpaqueStencil ? nullptr : In, WorldTransform,
+		DrawnModel->Drawable->Draw(Render, In, WorldTransform,
 			From, Materials, DrawBoundingBox, DrawStencil, true);
 	}
 }
@@ -68,7 +68,7 @@ void engine::MeshComponent::LoadMaterial(size_t MaterialIndex, AssetRef Material
 		delete Previous;
 	}
 
-	this->Materials[MaterialIndex] = new Material(MaterialFile);
+	this->Materials[MaterialIndex] = new Material(MaterialFile, { this->InstancedShadows });
 }
 
 void engine::MeshComponent::SimpleDraw(graphics::Renderer* Render, ShaderObject* With)
@@ -105,17 +105,17 @@ void engine::MeshComponent::Load(GraphicsModel* From)
 			{
 				if (m.Material.empty())
 				{
-					Materials.push_back(graphics::Material::MakeDefault());
+					Materials.push_back(graphics::Material::MakeDefault({ this->InstancedShadows }));
 					continue;
 				}
 				AssetRef Ref = AssetRef::FromName(m.Material, "kmt");
 
 				if (Ref.Exists())
-					Materials.push_back(new graphics::Material(Ref));
+					Materials.push_back(new graphics::Material(Ref, { this->InstancedShadows }));
 				else
 				{
 					Ref = AssetRef::FromName(m.Material, "kbm");
-					Materials.push_back(new graphics::Material(Ref));
+					Materials.push_back(new graphics::Material(Ref, {this->InstancedShadows}));
 				}
 			}
 		};

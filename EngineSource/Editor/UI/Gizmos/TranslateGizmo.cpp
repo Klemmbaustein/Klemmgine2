@@ -14,7 +14,9 @@ engine::editor::TranslateGizmo::TranslateGizmo()
 	GizmoMesh->SetRotation(Rotation3(0, -90, 0));
 	GizmoMesh->DrawStencil = true;
 	GizmoMesh->CastShadow = false;
-	GizmoMesh->DrawAsOpaqueStencil = true;
+	GizmoMesh->Materials[0]->StencilValue = 2;
+	GizmoMesh->Materials[0]->StencilValue = 3;
+	GizmoMesh->Materials[0]->StencilValue = 4;
 
 	this->Physics.Init();
 

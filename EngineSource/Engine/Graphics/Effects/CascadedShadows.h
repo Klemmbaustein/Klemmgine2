@@ -41,6 +41,7 @@ namespace engine::graphics
 
 		float BiasModifier = 0;
 		static ShaderObject* ShadowShader;
+		static ShaderObject* InstancedShadowShader;
 		static DrawUniformBuffer* ShadowMatrices;
 		static RendererDrawTarget* ShadowBuffer;
 

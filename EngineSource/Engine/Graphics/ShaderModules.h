@@ -4,6 +4,7 @@
 #include <map>
 #include "Material.h"
 #include <Engine/Graphics/Backend/Renderer.h>
+#include <Engine/Graphics/ShaderObject.h>
 
 namespace engine::graphics
 {
@@ -64,7 +65,7 @@ namespace engine::graphics
 
 		[[nodiscard]]
 		Result ParseShader(const string& ShaderSource, ShaderModule::ShaderType Type,
-			Renderer* Render);
+			ShaderAttributes Attributes, Renderer* Render);
 
 		void ScanModules(Renderer* Render);
 	private:

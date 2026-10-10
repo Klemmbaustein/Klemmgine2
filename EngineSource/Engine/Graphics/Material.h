@@ -1,20 +1,20 @@
 #pragma once
 #include <Core/File/SerializedData.h>
+#include <Engine/Graphics/ShaderObject.h>
 #include "Texture.h"
 
 namespace engine::graphics
 {
-	class ShaderObject;
 	class Material : public ISerializable
 	{
 	public:
 
-		Material(AssetRef File);
+		Material(AssetRef File, ShaderAttributes Attributes);
 
-		static Material* MakeDefault();
+		static Material* MakeDefault(ShaderAttributes Attributes);
 		static Material* MakeBillboard(string BillboardIcon);
 
-		Material();
+		Material(ShaderAttributes Attributes);
 		Material(const Material&) = delete;
 		~Material();
 
@@ -87,7 +87,8 @@ namespace engine::graphics
 		bool UseTexture = false;
 		bool IsTransparent = false;
 		bool IsTwoSided = false;
-
+		uint8 StencilValue = 0;
+		ShaderAttributes Attributes;
 	private:
 		size_t TextureField = SIZE_MAX;
 		bool IsDefault = false;

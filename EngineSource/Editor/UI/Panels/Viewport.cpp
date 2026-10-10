@@ -210,7 +210,7 @@ engine::editor::Viewport::Viewport()
 	Grid = new MeshComponent();
 
 	Grid->Load(GraphicsModel::UnitPlane());
-	Grid->Materials[0] = new graphics::Material(AssetRef::FromPath(EditorUI::Asset("Models/Grid.kmt")));
+	Grid->Materials[0] = new graphics::Material(AssetRef::FromPath(EditorUI::Asset("Models/Grid.kmt")), {});
 	Grid->IsTransparent = true;
 	Grid->CastShadow = false;
 	Grid->SetScale(1000);

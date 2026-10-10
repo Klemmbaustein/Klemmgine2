@@ -52,7 +52,7 @@ void engine::ModelData::PreLoadMaterials(Scene* With)
 			Asset = AssetRef::FromName(i.Material, "kbm");
 		}
 
-		Material Mat = graphics::Material(Asset);
+		Material Mat = graphics::Material(Asset, {});
 		for (auto& f : Mat.Fields)
 		{
 			if (f.FieldType != Material::Field::Type::Texture)

@@ -214,6 +214,11 @@ bool engine::graphics::OpenGLRenderer::SupportsGLSL430()
 	return SupportsGL430;
 }
 
+VertexArrayData* engine::graphics::OpenGLRenderer::CreateTransformVertexData(Transform* Data, size_t Count)
+{
+	return new OpenGLVertexArrayData(Data, Count);
+}
+
 static void GLAPIENTRY MessageCallback(
 	GLenum source, GLenum type, GLuint id, GLenum severity,
 	GLsizei length, const GLchar* message, const void* userParam)
@@ -566,6 +571,25 @@ void engine::graphics::OpenGLVertexBuffer::DrawInstanced(uint32 Count)
 	glDrawElementsInstanced(GL_TRIANGLES, IndicesSize, GL_UNSIGNED_INT, 0, GLsizei(Count));
 }
 
+void engine::graphics::OpenGLVertexBuffer::AttachArrayData(size_t Index, VertexArrayData* Data,
+	VertexArrayData::BufferType Type)
+{
+	auto GlData = static_cast<OpenGLVertexArrayData*>(Data);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, GlData->Buffer);
+
+	if (GlData->GlType == 0)
+	{
+		for (size_t i = 0; i < 4; i++)
+		{
+			glEnableVertexAttribArray(Index + i);
+			glVertexAttribPointer(Index + i, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(i * sizeof(glm::vec4)));
+			glVertexAttribDivisor(Index + i, Type == VertexArrayData::BufferType::PerInstance ? 1 : 0);
+		}
+	}
+}
+
 engine::graphics::OpenGLDrawCommand::OpenGLDrawCommand(OpenGLRenderer* Renderer)
 {
 	this->Render = Renderer;
@@ -608,6 +632,12 @@ void engine::graphics::OpenGLDrawCommand::BindUniformBlock(const string& Uniform
 
 	glUniformBlockBinding(GLShader->ProgramObject,
 		CurrentShader->GetUniformBlockLocation(UniformBlockName), GLUniformBlock->BufferId);
+}
+
+void engine::graphics::OpenGLDrawCommand::DrawVertexBufferInstanced(VertexBuffer* Buffer, uint32 Count)
+{
+	Apply();
+	Buffer->DrawInstanced(Count);
 }
 
 void engine::graphics::OpenGLDrawCommand::DrawVertices(size_t Count)
@@ -926,4 +956,17 @@ engine::graphics::OpenGLShaderProgramObject::OpenGLShaderProgramObject(const str
 engine::graphics::OpenGLShaderProgramObject::~OpenGLShaderProgramObject()
 {
 	glDeleteShader(CompiledObject);
+}
+
+engine::graphics::OpenGLVertexArrayData::OpenGLVertexArrayData(Transform* TransformData, size_t Count)
+{
+	glGenBuffers(1, &Buffer);
+
+	glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+	glBufferData(GL_ARRAY_BUFFER, Count * sizeof(glm::mat4), TransformData, GL_STATIC_DRAW);
+}
+
+engine::graphics::OpenGLVertexArrayData::~OpenGLVertexArrayData()
+{
+	glDeleteBuffers(1, &Buffer);
 }

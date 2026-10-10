@@ -87,7 +87,7 @@ void engine::editor::ShaderEditorProvider::Reload()
 
 	LoadedShader = graphics::ShaderLoader::Current->Modules.ParseShader(GetContent(),
 		IsFragment ? graphics::ShaderModule::ShaderType::Fragment : graphics::ShaderModule::ShaderType::Vertex,
-		nullptr);
+		{}, nullptr);
 
 	for (auto& i : LoadedShader.ShaderUniforms)
 	{

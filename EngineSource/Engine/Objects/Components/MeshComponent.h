@@ -13,7 +13,6 @@ namespace engine
 
 		std::vector<graphics::Material*> Materials;
 		GraphicsModel* DrawnModel = nullptr;
-		bool DrawAsOpaqueStencil = false;
 
 		virtual void Update() override;
 

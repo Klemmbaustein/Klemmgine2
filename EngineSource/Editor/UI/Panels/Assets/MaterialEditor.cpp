@@ -21,7 +21,7 @@ using namespace engine::graphics;
 engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	: AssetEditor("Material: %s", MaterialFile)
 {
-	LoadedMaterial = new graphics::Material(MaterialFile);
+	LoadedMaterial = new graphics::Material(MaterialFile, {});
 
 	if (LoadedMaterial->VertexShader == DEFAULT_VERTEX_SHADER)
 	{

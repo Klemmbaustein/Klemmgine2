@@ -7,10 +7,15 @@
 
 namespace engine::graphics
 {
+	struct ShaderAttributes
+	{
+		bool IsInstanced = false;
+	};
+
 	class ShaderObject
 	{
 	public:
-		ShaderObject(string VertexFile, string FragmentFile, string GeometryFile, Renderer* Render);
+		ShaderObject(string VertexFile, string FragmentFile, string GeometryFile, ShaderAttributes Attributes, Renderer* Render);
 		~ShaderObject();
 
 		void ReCompile(string VertexFile, string FragmentFile, Renderer* Render);
@@ -67,7 +72,7 @@ namespace engine::graphics
 	private:
 		mutable std::unordered_map<size_t, uint32> Uniforms;
 		mutable std::unordered_map<string, uint32> UniformBlocks;
-
+		ShaderAttributes Attributes;
 		string VertexFile, FragmentFile, GeometryFile;
 		void Clear();
 	};

@@ -14,7 +14,7 @@ ShaderModuleLoader::~ShaderModuleLoader()
 }
 
 ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderSource,
-	ShaderModule::ShaderType Type, Renderer* Render)
+	ShaderModule::ShaderType Type, ShaderAttributes Attributes, Renderer* Render)
 {
 	std::stringstream SourceStream;
 	SourceStream << ShaderSource, '\r';
@@ -39,12 +39,12 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			.Text = "Shader Modules",
 			.Color = Log::LogColor::Cyan,
 			} });
-		};
+	};
 
 	auto NextLine = [&OutStream, &Line](string Content) {
 		OutStream << Content << std::endl;
 		Line++;
-		};
+	};
 
 	if (Render)
 	{
@@ -58,6 +58,11 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 		{
 			OutStream << "#version 330\n";
 			OutStream << "#define ENGINE_GL_330 1\n";
+		}
+
+		if (Attributes.IsInstanced)
+		{
+			OutStream << "#define ENGINE_INSTANCED 1\n";
 		}
 	}
 	OutStream << "#line 1\n";
@@ -173,7 +178,14 @@ ShaderModuleLoader::Result ShaderModuleLoader::ParseShader(const string& ShaderS
 			}
 			string ModuleFile = Statement[1];
 
-			ShaderModule& Found = LoadedModules.at(ModuleFile + (Type == ShaderModule::ShaderType::Vertex ? ":vert" : ":frag"));
+			string Suffix = (Type == ShaderModule::ShaderType::Vertex ? ":vert" : ":frag");
+
+			if (Attributes.IsInstanced)
+			{
+				Suffix += ":inst";
+			}
+
+			ShaderModule& Found = LoadedModules.at(ModuleFile + Suffix);
 
 			FoundModules.push_back(Found);
 
@@ -230,16 +242,27 @@ void engine::graphics::ShaderModuleLoader::ScanModules(Renderer* Render)
 		"res:shader/engine.common.frag",
 	};
 
-	for (const auto& m : EngineDefaultModules)
+	for (int i = 0; i < 2; i++)
 	{
-		bool IsVertex = m.substr(m.find_last_of(".") + 1) == "vert";
+		for (const auto& m : EngineDefaultModules)
+		{
+			bool IsVertex = m.substr(m.find_last_of(".") + 1) == "vert";
+			bool IsInstanced = i == 1;
 
-		auto Type = IsVertex ? ShaderModule::ShaderType::Vertex : ShaderModule::ShaderType::Fragment;
+			string Suffix = (IsVertex ? ":vert" : ":frag");
 
-		Result Res = ParseShader(resource::GetTextFile(m), Type,
-			Render);
-		LoadModule(Res.ResultSource, Res.ThisModule);
-		LoadedModules.insert({ Res.ThisModule.Name + (IsVertex ? ":vert" : ":frag"), Res.ThisModule});
+			if (IsInstanced)
+			{
+				Suffix += ":inst";
+			}
+
+			auto Type = IsVertex ? ShaderModule::ShaderType::Vertex : ShaderModule::ShaderType::Fragment;
+
+			Result Res = ParseShader(resource::GetTextFile(m), Type,
+				{ IsInstanced }, Render);
+			LoadModule(Res.ResultSource, Res.ThisModule);
+			LoadedModules.insert({ Res.ThisModule.Name + Suffix, Res.ThisModule });
+		}
 	}
 }
 
