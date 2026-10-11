@@ -15,8 +15,8 @@ engine::editor::TranslateGizmo::TranslateGizmo()
 	GizmoMesh->DrawStencil = true;
 	GizmoMesh->CastShadow = false;
 	GizmoMesh->Materials[0]->StencilValue = 2;
-	GizmoMesh->Materials[0]->StencilValue = 3;
-	GizmoMesh->Materials[0]->StencilValue = 4;
+	GizmoMesh->Materials[1]->StencilValue = 3;
+	GizmoMesh->Materials[2]->StencilValue = 4;
 
 	this->Physics.Init();
 
