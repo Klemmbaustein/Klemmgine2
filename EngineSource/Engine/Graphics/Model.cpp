@@ -73,7 +73,8 @@ void engine::graphics::Model::SimpleDraw(Renderer* Render, const Transform& At, 
 	}
 }
 
-void engine::graphics::Model::SimpleDrawInstanced(Renderer* Render, const Transform& At, ShaderObject* Shader, std::vector<Material*>& UsedMaterials, size_t Count)
+void engine::graphics::Model::SimpleDrawInstanced(Renderer* Render, const Transform& At, ShaderObject* Shader,
+	std::vector<Material*>& UsedMaterials, size_t Count)
 {
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{

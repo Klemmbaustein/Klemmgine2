@@ -4,6 +4,7 @@
 #include <Engine/Graphics/Camera.h>
 #include <Engine/Graphics/Backend/Renderer.h>
 #include <Engine/Graphics/ShaderObject.h>
+#include <atomic>
 
 namespace engine::graphics
 {
@@ -30,7 +31,7 @@ namespace engine
 		virtual void SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With) {};
 
 	private:
-		static inline uint64 IdCounter = 0;
+		static inline std::atomic<uint64> IdCounter = 0;
 	public:
 
 		const uint64 UniqueId = IdCounter++;

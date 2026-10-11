@@ -16,6 +16,7 @@ namespace engine
 		void SimpleDraw(graphics::Renderer* Render, graphics::ShaderObject* With) override;
 
 		bool UpdateTransform(bool IsDirty) override;
+		void InitializeModel() override;
 
 		std::vector<Transform> Instances;
 
@@ -25,6 +26,7 @@ namespace engine
 		BoundingBox InstancesBounds;
 
 		bool Attached = false;
+		graphics::Model* InstancedModel = nullptr;
 		graphics::VertexArrayData* InstanceArray = nullptr;
 	};
 }

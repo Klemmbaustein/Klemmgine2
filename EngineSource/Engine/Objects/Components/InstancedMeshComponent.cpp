@@ -13,17 +13,19 @@ engine::InstancedMeshComponent::InstancedMeshComponent()
 
 engine::InstancedMeshComponent::~InstancedMeshComponent()
 {
-	delete InstanceArray;
+	if (InstanceArray)
+	{
+		delete InstanceArray;
+	}
+	if (InstancedModel)
+	{
+		delete InstancedModel;
+	}
 }
 
 void engine::InstancedMeshComponent::OnAttached()
 {
 	MeshComponent::OnAttached();
-
-	if (RootObject)
-	{
-		InstanceArray = RootObject->GetScene()->Graphics.Render->CreateTransformVertexData(Instances.data(), Instances.size());
-	}
 }
 
 void engine::InstancedMeshComponent::Draw(graphics::Renderer* Render,
@@ -32,15 +34,10 @@ void engine::InstancedMeshComponent::Draw(graphics::Renderer* Render,
 	if (!Attached)
 	{
 		InitBounds();
-
-		for (auto& model : DrawnModel->Drawable->ModelVertexBuffers)
-		{
-			model->AttachArrayData(3, InstanceArray, graphics::VertexArrayData::BufferType::PerInstance);
-		}
 		Attached = true;
 	}
 
-	DrawnModel->Drawable->DrawInstanced(Render, In, this->WorldTransform, From, Materials,
+	InstancedModel->DrawInstanced(Render, In, this->WorldTransform, From, Materials,
 		DrawBoundingBox, DrawStencil, IsTransparent, Instances.size());
 }
 
@@ -49,14 +46,9 @@ void engine::InstancedMeshComponent::SimpleDraw(graphics::Renderer* Render, grap
 	if (!Attached)
 	{
 		InitBounds();
-
-		for (auto& model : DrawnModel->Drawable->ModelVertexBuffers)
-		{
-			model->AttachArrayData(3, InstanceArray, graphics::VertexArrayData::BufferType::PerInstance);
-		}
 		Attached = true;
 	}
-	DrawnModel->Drawable->SimpleDrawInstanced(Render, WorldTransform, With, Materials, Instances.size());
+	InstancedModel->SimpleDrawInstanced(Render, WorldTransform, With, Materials, Instances.size());
 }
 
 bool engine::InstancedMeshComponent::UpdateTransform(bool IsDirty)
@@ -67,7 +59,25 @@ bool engine::InstancedMeshComponent::UpdateTransform(bool IsDirty)
 		DrawBoundingBox = InstancesBounds.Translate(WorldTransform);
 	}
 	return Result;
+}
 
+void engine::InstancedMeshComponent::InitializeModel()
+{
+	if (RootObject)
+	{
+		InstanceArray = RootObject->GetScene()->Graphics.Render->CreateTransformVertexData(
+			Instances.data(), Instances.size());
+	}
+
+	InstancedModel = new graphics::Model(DrawnModel->Data);
+
+	for (auto& model : InstancedModel->ModelVertexBuffers)
+	{
+		model->AttachArrayData(3, InstanceArray, graphics::VertexArrayData::BufferType::PerInstance);
+	}
+
+	auto RootScene = GetRootObject()->GetScene();
+	RootScene->Graphics.AddDrawnComponent(this);
 }
 
 void engine::InstancedMeshComponent::InitBounds()
@@ -80,9 +90,10 @@ void engine::InstancedMeshComponent::InitBounds()
 
 	for (auto& i : Instances)
 	{
-		Vector3 Pos = i.ApplyTo(MinBounds);
-		Min = Min.Min(Pos);
-		Max = Max.Max(Pos);
+		Vector3 MinPos = i.ApplyTo(MinBounds);
+		Vector3 MaxPos = i.ApplyTo(MaxBounds);
+		Min = Min.Min(MinPos);
+		Max = Max.Max(MaxPos);
 	}
 	InstancesBounds = BoundingBox::FromMinMax(Min, Max);
 }

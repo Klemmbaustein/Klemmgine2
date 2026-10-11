@@ -35,11 +35,10 @@ namespace engine
 		bool UpdateTransform(bool IsDirty) override;
 
 		void ClearModel(bool RemoveDrawnComponent);
+		virtual void InitializeModel();
+
 	private:
-
 		debug::DebugBox* Debug = nullptr;
-
-		void InitializeModel();
 
 		bool IsRegistered = false;
 	};
