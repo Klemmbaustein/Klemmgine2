@@ -3,7 +3,6 @@
 #include "KlemmginePlugin.hpp"
 #include <Core/Platform/Platform.h>
 #include <filesystem>
-#include <Windows.h>
 
 static engine::cSharp::NetString RuntimeString(std::string From)
 {
@@ -27,11 +26,9 @@ engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<Nativ
 {
 	string Path = plugin::GetInterface()->PluginPath;
 
-	XmlProjectWriter Project = XmlProjectWriter("Microsoft.NET.Sdk");
+	XmlProjectWriter Project = XmlProjectWriter(std::nullopt);
 
 	auto& BasePropGroup = Project.AddPropertyGroup(std::nullopt);
-
-	BasePropGroup.Children.push_back(XmlNode("TargetFramework", "net10.0"));
 
 	auto& ReferenceGroup = Project.AddItemGroup();
 
@@ -42,7 +39,7 @@ engine::cSharp::CSharpLoaderRuntime::CSharpLoaderRuntime(const std::vector<Nativ
 
 	std::filesystem::create_directories("GameAssembly");
 
-	Project.Write("GameAssembly/GameAssembly.csproj");
+	Project.Write("GameAssembly/Directory.Build.props");
 
 	LoadHostFxr();
 

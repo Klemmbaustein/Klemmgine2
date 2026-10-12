@@ -27,11 +27,11 @@ void engine::cSharp::XmlProjectWriter::Write(string Path)
 	RootNode.Write(Out, 0);
 }
 
-engine::cSharp::XmlProjectWriter::XmlProjectWriter(string SdkVersion)
+engine::cSharp::XmlProjectWriter::XmlProjectWriter(std::optional<string> SdkVersion)
 {
 	RootNode = XmlNode{
 		.Name = "Project",
-		.Tags = {XmlTag("Sdk", SdkVersion)},
+		.Tags = SdkVersion ? std::vector{XmlTag("Sdk", *SdkVersion)} : std::vector<XmlTag>(),
 	};
 }
 

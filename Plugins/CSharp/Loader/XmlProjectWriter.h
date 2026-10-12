@@ -26,7 +26,7 @@ namespace engine::cSharp
 	class XmlProjectWriter
 	{
 	public:
-		XmlProjectWriter(string SdkVersion);
+		XmlProjectWriter(std::optional<string> SdkVersion);
 
 		XmlNode& AddPropertyGroup(std::optional<string> Condition);
 		XmlNode& AddItemGroup();
