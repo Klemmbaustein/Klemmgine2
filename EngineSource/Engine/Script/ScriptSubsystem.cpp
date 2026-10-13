@@ -165,7 +165,7 @@ void engine::script::ScriptSubsystem::ApplyScriptCommands(ConsoleSubsystem* Cons
 					}
 				}
 
-				Runtime->baseContext->run(function.codePosition);
+				(void)Runtime->baseContext->run(function.codePosition);
 			},
 			});
 		OldCommands.insert(Name);
