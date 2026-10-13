@@ -129,6 +129,8 @@ namespace engine::script
 		ds::DebugState* CurrentBreakpointState = nullptr;
 
 	private:
+		void ApplyScriptCommands(ConsoleSubsystem* ConsoleSystem);
+		std::set<string> OldCommands;
 		void ApplyBreakpoint(string File, size_t Line);
 
 		bool DoingHotReload = false;

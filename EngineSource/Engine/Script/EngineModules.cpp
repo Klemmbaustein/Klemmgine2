@@ -78,6 +78,16 @@ public:
 	}
 };
 
+class ConsoleCommandAttribute : public EntryPointAttribute
+{
+public:
+	ConsoleCommandAttribute()
+	{
+		name = "ConsoleCommand";
+		attributeParameters = { "name" };
+	}
+};
+
 static void Object_empty(InterpretContext* context)
 {
 	context->popValue<RuntimeClass*>();
@@ -1536,6 +1546,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModuleData OutData;
 	OutData.ExportAttributeType = EngineModule.addAttribute(new ExportAttribute());
 	OutData.IconAttributeType = EngineModule.addAttribute(new IconAttribute());
+	OutData.ConsoleCommandAttribute = EngineModule.addAttribute(new ConsoleCommandAttribute());
 
 	ToContext->addNativeModule(EngineModule);
 	ToContext->addNativeModule(EngineInputModule);

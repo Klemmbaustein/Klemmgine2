@@ -137,7 +137,7 @@ void engine::ConsoleSubsystem::Update()
 
 void engine::ConsoleSubsystem::AddCommand(const console::Command& NewCommand)
 {
-	Commands.insert({ NewCommand.Name, NewCommand });
+	Commands[NewCommand.Name] = NewCommand;
 }
 
 void engine::ConsoleSubsystem::RemoveCommand(const string& CommandName)

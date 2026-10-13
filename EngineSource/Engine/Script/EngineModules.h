@@ -21,6 +21,7 @@ namespace engine::script
 		ds::TypeId AssetRefType = 0;
 		ds::TypeId ExportAttributeType = 0;
 		ds::TypeId IconAttributeType = 0;
+		ds::TypeId ConsoleCommandAttribute = 0;
 
 		ds::TypeId UITextType = 0;
 	};

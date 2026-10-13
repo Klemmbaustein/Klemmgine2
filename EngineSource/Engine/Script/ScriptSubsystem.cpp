@@ -121,6 +121,57 @@ void engine::script::ScriptSubsystem::RemoveBreakpoint(string File, size_t Line)
 	this->Breakpoints[File].erase(Line);
 }
 
+void engine::script::ScriptSubsystem::ApplyScriptCommands(ConsoleSubsystem* ConsoleSystem)
+{
+	for (auto& old : OldCommands)
+	{
+		ConsoleSystem->RemoveCommand(old);
+	}
+	OldCommands.clear();
+
+	for (auto& function : ScriptInstructions->reflect.entryPoints)
+	{
+		if (function.attribute.type != ScriptEngine.ConsoleCommandAttribute)
+		{
+			continue;
+		}
+		auto NameAttrib = function.attribute.getParameterValue("name");
+
+		string Name = NameAttrib ? *NameAttrib : function.name;
+
+		std::vector<console::Command::Argument> CommandArguments;
+
+		for (auto& i : function.arguments)
+		{
+			CommandArguments.push_back(console::Command::Argument{
+				.Name = "_",
+				.Required = true,
+				});
+		}
+
+		ConsoleSystem->AddCommand(console::Command{
+			.Name = Name,
+			.Args = CommandArguments,
+			.OnCalled = [this, function = function](console::Command::CallContext ctx) {
+				size_t it = 0;
+				for (auto& i : function.arguments)
+				{
+					switch (i)
+					{
+					case StringType::STRING_ID:
+						auto str = ctx.ProvidedArguments[it++];
+						Runtime->baseContext->pushRuntimeString({ str.data(), str.size()});
+						break;
+					}
+				}
+
+				Runtime->baseContext->run(function.codePosition);
+			},
+			});
+		OldCommands.insert(Name);
+	}
+}
+
 void engine::script::ScriptSubsystem::ApplyBreakpoint(string File, size_t Line)
 {
 	auto FoundLine = this->Runtime->debug->getLineAt(File, Line);
@@ -128,7 +179,8 @@ void engine::script::ScriptSubsystem::ApplyBreakpoint(string File, size_t Line)
 	if (FoundLine && this->Runtime->baseContext->setDebugBreakpoint(FoundLine->offset))
 	{
 		BreakpointLines.push_back({ *FoundLine, File });
-		Log::Note(str::Format("Set breakpoint at %s:%i -> instructions+%llu", File.c_str(), Line + 1, FoundLine->offset));
+		Log::Note(str::Format("Set breakpoint at %s:%i -> instructions+%llu",
+			File.c_str(), Line + 1, FoundLine->offset));
 	}
 	else
 	{
@@ -294,6 +346,13 @@ bool engine::script::ScriptSubsystem::Reload()
 		}
 #endif
 		ScriptObjectIds[Id] = ObjectId;
+	}
+
+	auto Console = Engine::GetSubsystem<ConsoleSubsystem>();
+
+	if (Console)
+	{
+		ApplyScriptCommands(Console);
 	}
 
 	for (auto& [file, breakpoints] : this->Breakpoints)
