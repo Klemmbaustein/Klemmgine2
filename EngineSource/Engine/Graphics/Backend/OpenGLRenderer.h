@@ -93,6 +93,8 @@ namespace engine::graphics
 		OpenGLVertexArrayData(Transform* TransformData, size_t Count);
 		~OpenGLVertexArrayData();
 
+		void SetTransformData(Transform* Data, size_t Count) override;
+
 		uint32 Buffer = 0;
 		uint32 GlType = 0;
 	};

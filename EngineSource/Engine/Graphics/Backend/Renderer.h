@@ -90,6 +90,8 @@ namespace engine::graphics
 			PerInstance,
 		};
 
+		virtual void SetTransformData(Transform* Data, size_t Count) = 0;
+
 		virtual ~VertexArrayData() = default;
 	};
 

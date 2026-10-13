@@ -4,10 +4,6 @@
 
 engine::InstancedMeshComponent::InstancedMeshComponent()
 {
-	for (size_t i = 0; i < 100000; i++)
-	{
-		Instances.push_back(Transform(Vector3(std::rand() % 300, std::rand() % 300, std::rand() % 300) - 150, 0, 1));
-	}
 	InstancedShadows = true;
 }
 
@@ -37,7 +33,7 @@ void engine::InstancedMeshComponent::Draw(graphics::Renderer* Render,
 		Attached = true;
 	}
 
-	InstancedModel->DrawInstanced(Render, In, this->WorldTransform, From, Materials,
+	InstancedModel->DrawInstanced(Render, In, WorldTransform, From, Materials,
 		DrawBoundingBox, DrawStencil, IsTransparent, Instances.size());
 }
 
@@ -78,6 +74,11 @@ void engine::InstancedMeshComponent::InitializeModel()
 
 	auto RootScene = GetRootObject()->GetScene();
 	RootScene->Graphics.AddDrawnComponent(this);
+}
+
+void engine::InstancedMeshComponent::RefreshInstances()
+{
+	InstanceArray->SetTransformData(Instances.data(), Instances.size());
 }
 
 void engine::InstancedMeshComponent::InitBounds()

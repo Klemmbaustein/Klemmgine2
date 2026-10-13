@@ -970,3 +970,9 @@ engine::graphics::OpenGLVertexArrayData::~OpenGLVertexArrayData()
 {
 	glDeleteBuffers(1, &Buffer);
 }
+
+void engine::graphics::OpenGLVertexArrayData::SetTransformData(Transform* Data, size_t Count)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+	glBufferData(GL_ARRAY_BUFFER, Count * sizeof(glm::mat4), Data, GL_STATIC_DRAW);
+}

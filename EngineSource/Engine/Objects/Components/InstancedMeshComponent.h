@@ -20,6 +20,8 @@ namespace engine
 
 		std::vector<Transform> Instances;
 
+		void RefreshInstances();
+
 	private:
 		void InitBounds();
 
