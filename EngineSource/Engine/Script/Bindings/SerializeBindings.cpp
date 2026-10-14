@@ -482,25 +482,28 @@ static void Serializable_serialize(InterpretContext* context)
 			continue;
 		}
 
+		auto NameAttribute = i.attribute.getParameterValue("name");
+		string Name = NameAttribute.has_value() ? *NameAttribute : i.name;
+
 		if (i.type == StringType::STRING_ID)
 		{
-			ResultValue.Append(SerializedData(i.name, i.getFromInstance<RuntimeStrRef>(serializableValue).ptr()));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<RuntimeStrRef>(serializableValue).ptr()));
 		}
 		if (i.type == IntType::INT_ID)
 		{
-			ResultValue.Append(SerializedData(i.name, i.getFromInstance<Int>(serializableValue)));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<Int>(serializableValue)));
 		}
 		if (i.type == FloatType::FLOAT_ID)
 		{
-			ResultValue.Append(SerializedData(i.name, i.getFromInstance<Float>(serializableValue)));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<Float>(serializableValue)));
 		}
 		if (i.type == ScriptSubsystem::Instance->ScriptEngine.Vector3Type)
 		{
-			ResultValue.Append(SerializedData(i.name, i.getFromInstance<Vector3>(serializableValue)));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<Vector3>(serializableValue)));
 		}
 		if (i.type == ScriptSubsystem::Instance->ScriptEngine.AssetRefType)
 		{
-			ResultValue.Append(SerializedData(i.name,
+			ResultValue.Append(SerializedData(Name,
 				i.getFromInstance<AssetRef*>(serializableValue)->FilePath));
 		}
 	}
@@ -525,28 +528,36 @@ static void Serializable_deSerialize(InterpretContext* context)
 			continue;
 		}
 
+		auto NameAttribute = i.attribute.getParameterValue("name");
+		string Name = NameAttribute.has_value() ? *NameAttribute : i.name;
+
+		if (!Marshalled.Contains(Name))
+		{
+			continue;
+		}
+
 		if (i.type == StringType::STRING_ID)
 		{
-			auto NewStringValue = Marshalled.At(i.name).GetString();
+			auto NewStringValue = Marshalled.At(Name).GetString();
 
 			RuntimeStrRef NewString = RuntimeStrRef(NewStringValue.data(), NewStringValue.size());
 			i.setClassToInstance(serializableValue, NewString.classPtr, context);
 		}
 		if (i.type == IntType::INT_ID)
 		{
-			i.setToInstance<Int>(serializableValue, Marshalled.At(i.name).GetInt());
+			i.setToInstance<Int>(serializableValue, Marshalled.At(Name).GetInt());
 		}
 		if (i.type == FloatType::FLOAT_ID)
 		{
-			i.setToInstance<Float>(serializableValue, Marshalled.At(i.name).GetFloat());
+			i.setToInstance<Float>(serializableValue, Marshalled.At(Name).GetFloat());
 		}
 		if (i.type == ScriptSubsystem::Instance->ScriptEngine.Vector3Type)
 		{
-			i.setToInstance<Vector3>(serializableValue, Marshalled.At(i.name).GetVector3());
+			i.setToInstance<Vector3>(serializableValue, Marshalled.At(Name).GetVector3());
 		}
 		if (i.type == ScriptSubsystem::Instance->ScriptEngine.AssetRefType)
 		{
-			auto Value = NativeModule::makeClass(new AssetRef(AssetRef::Convert(Marshalled.At(i.name).GetString())));
+			auto Value = NativeModule::makeClass(new AssetRef(AssetRef::Convert(Marshalled.At(Name).GetString())));
 			i.setClassToInstance(serializableValue, Value, context);
 		}
 	}
