@@ -14,7 +14,7 @@
 
 namespace engine::graphics
 {
-	class GraphicsScene : ISerializable
+	class GraphicsScene : Serializable
 	{
 	public:
 
@@ -120,7 +120,7 @@ namespace engine::graphics
 
 		Renderer* Render = nullptr;
 
-		// Inherited via ISerializable
+		// Inherited via Serializable
 		SerializedValue Serialize() override;
 
 		void DeSerialize(SerializedValue* From) override;

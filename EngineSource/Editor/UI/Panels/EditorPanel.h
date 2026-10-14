@@ -9,7 +9,7 @@
 
 namespace engine::editor
 {
-	class EditorPanel : ISerializable, public KeyboardShortcuts
+	class EditorPanel : Serializable, public KeyboardShortcuts
 	{
 	public:
 		/**

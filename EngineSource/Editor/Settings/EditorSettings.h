@@ -9,7 +9,7 @@
 
 namespace engine::editor
 {
-	class Settings : ISerializable
+	class Settings : Serializable
 	{
 	public:
 		Settings();

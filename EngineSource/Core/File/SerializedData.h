@@ -57,7 +57,7 @@ namespace engine
 	*
 	* @see BinarySerializer
 	* @see TextSerializer
-	* @see ISerializable
+	* @see Serializable
 	* @see DataValue
 	*/
 	class SerializedData
@@ -426,7 +426,7 @@ namespace engine
 	*
 	* @ingroup serialize
 	*/
-	class ISerializable
+	class Serializable
 	{
 	public:
 

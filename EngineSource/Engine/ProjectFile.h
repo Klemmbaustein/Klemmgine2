@@ -4,13 +4,13 @@
 
 namespace engine
 {
-	class ProjectFile : public ISerializable
+	class ProjectFile : public Serializable
 	{
 	public:
 		ProjectFile(string Path);
 		ProjectFile();
 
-		// Inherited via ISerializable
+		// Inherited via Serializable
 		SerializedValue Serialize() override;
 		void DeSerialize(SerializedValue* From) override;
 

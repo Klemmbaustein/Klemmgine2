@@ -15,9 +15,9 @@ namespace engine
 {
 	class Scene;
 
-	struct ModelData : ISerializable
+	struct ModelData : Serializable
 	{
-		struct Mesh : ISerializable
+		struct Mesh : Serializable
 		{
 			Mesh(bool LoadMaterials)
 			{

@@ -6,7 +6,7 @@
 
 namespace engine::editor
 {
-	class SettingsCategory : ISerializable
+	class SettingsCategory : Serializable
 	{
 	public:
 
@@ -17,7 +17,7 @@ namespace engine::editor
 
 		string Name;
 
-		// Inherited via ISerializable
+		// Inherited via Serializable
 		SerializedValue Serialize() override;
 		void DeSerialize(SerializedValue* From) override;
 

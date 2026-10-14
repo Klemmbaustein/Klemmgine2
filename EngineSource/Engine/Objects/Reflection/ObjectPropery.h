@@ -47,7 +47,7 @@ namespace engine
 		AssetEmptyIsDefault = 1 << 2
 	};
 
-	struct ObjPropertyBase : ISerializable
+	struct ObjPropertyBase : Serializable
 	{
 		virtual ~ObjPropertyBase() = default;
 
@@ -75,9 +75,9 @@ namespace engine
 	* @brief
 	* An object property with an unknown serializable type.
 	*
-	* T must derive from ISerializable.
+	* T must derive from Serializable.
 	*
-	* @see ISerializable
+	* @see Serializable
 	*/
 	template<typename T>
 	struct ObjProperty : public ObjPropertyBase

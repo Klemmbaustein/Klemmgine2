@@ -5,7 +5,7 @@
 
 namespace engine::graphics
 {
-	class Material : public ISerializable
+	class Material : public Serializable
 	{
 	public:
 
