@@ -124,11 +124,12 @@ void engine::script::ScriptSceneObject::LoadProperties()
 
 		if (i.type == Script->ScriptEngine.AssetRefType)
 		{
-			auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
+			auto member = i.getFromInstance<RuntimeClass*>(ScriptData);
 
 			if (!member)
 			{
 				member = script::CreateAssetRef();
+				i.setClassToInstance(ScriptData, member, nullptr);
 			}
 
 			ClassRef<AssetRef*> MemberValue = member;
@@ -138,36 +139,32 @@ void engine::script::ScriptSceneObject::LoadProperties()
 			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
-				auto& member = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
-				if (!member)
-				{
-					member = script::CreateAssetRef();
-				}
+				ClassRef<AssetRef*> newRef = script::CreateAssetRef();
+				*newRef.getValue() = p->Value;
 
-				ClassRef<AssetRef*> MemberValue = member;
-				*MemberValue.getValue() = p->Value;
+				i.setClassToInstance(ScriptData, newRef.classPtr, Interpreter);
 			};
 		}
 		else if (i.type == Script->ScriptEngine.Vector3Type)
 		{
-			auto& member = *reinterpret_cast<Vector3*>(this->ScriptData->getBody() + i.offset);
+			Vector3 Value = i.getFromInstance<Vector3>(ScriptData);
 
-			auto p = new ObjProperty<Vector3>(Name, member, this);
+			auto p = new ObjProperty<Vector3>(Name, Value, this);
 			p->IsHidden = !Visible;
 			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
-				auto& member = *reinterpret_cast<Vector3*>(this->ScriptData->getBody() + i.offset);
-				member = p->Value;
+				i.setToInstance(ScriptData, p->Value);
 			};
 		}
 		else if (i.type == StringType::STRING_ID)
 		{
-			RuntimeStrRef str = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
+			auto str = i.getFromInstance<RuntimeStrRef>(ScriptData);
 
 			if (!str.classPtr)
 			{
 				str = RuntimeStrRef("", 0);
+				i.setClassToInstance(ScriptData, str.classPtr, nullptr);
 			}
 
 			auto p = new ObjProperty<string>(Name, string(str.ptr(), str.length()), this);
@@ -175,54 +172,45 @@ void engine::script::ScriptSceneObject::LoadProperties()
 			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
-				auto& memberPtr = *reinterpret_cast<RuntimeClass**>(this->ScriptData->getBody() + i.offset);
-
-				this->Interpreter->destruct(memberPtr);
 				RuntimeStrRef str = RuntimeStrRef(p->Value.c_str(), p->Value.size());
 
-				memberPtr = str.classPtr;
+				i.setClassToInstance(ScriptData, str.classPtr, Interpreter);
 			};
 		}
 		else if (i.type == IntType::INT_ID)
 		{
-			ds::Int Value = *reinterpret_cast<ds::Int*>(this->ScriptData->getBody() + i.offset);
+			ds::Int Value = i.getFromInstance<Int>(ScriptData);
 
 			auto p = new ObjProperty<int32>(Name, Value, this);
 			p->IsHidden = !Visible;
 			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
-				ds::Int& Value = *reinterpret_cast<ds::Int*>(this->ScriptData->getBody() + i.offset);
-
-				Value = p->Value;
+				i.setToInstance(ScriptData, p->Value);
 			};
 		}
 		else if (i.type == FloatType::FLOAT_ID)
 		{
-			ds::Float Value = *reinterpret_cast<ds::Float*>(this->ScriptData->getBody() + i.offset);
+			ds::Float Value = i.getFromInstance<Int>(ScriptData);
 
 			auto p = new ObjProperty<float>(Name, Value, this);
 			p->IsHidden = !Visible;
 			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
-				ds::Float& Value = *reinterpret_cast<ds::Float*>(this->ScriptData->getBody() + i.offset);
-
-				Value = p->Value;
+				i.setToInstance(ScriptData, p->Value);
 			};
 		}
 		else if (i.type == BoolType::BOOL_ID)
 		{
-			ds::Bool Value = *reinterpret_cast<ds::Bool*>(this->ScriptData->getBody() + i.offset);
+			ds::Bool Value = i.getFromInstance<Bool>(ScriptData);
 
 			auto p = new ObjProperty<bool>(Name, Value, this);
 			p->IsHidden = !Visible;
 			InitializePropertyFlags(p, Hints);
 
 			p->OnChanged = [this, i, p] {
-				Bool& Value = *reinterpret_cast<Bool*>(this->ScriptData->getBody() + i.offset);
-
-				Value = p->Value;
+				i.setToInstance<Bool>(ScriptData, p->Value);
 			};
 		}
 		else

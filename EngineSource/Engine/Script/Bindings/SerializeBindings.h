@@ -73,6 +73,8 @@ namespace engine::script
 	{
 		ds::ClassType* SerializedKeyValue = nullptr;
 		ds::ClassType* SerializedValue = nullptr;
+		ds::ClassType* Serializable = nullptr;
+		ds::TypeId SerializeAttributeTypeId = 0;
 	};
 
 	SerializeBindings AddSerializeModule(ds::NativeModule& To, ds::LanguageContext* ToContext);

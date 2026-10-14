@@ -1557,6 +1557,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	OutData.SceneManagerType = EngineModule.getType("SceneManager")->id;
 	OutData.AssetRefType = EngineModule.getType("AssetRef")->id;
 	OutData.UITextType = EngineUIModule.getType("UIText")->id;
+	OutData.SerializeAttributeType = Serialize.SerializeAttributeTypeId;
 
 	return OutData;
 }

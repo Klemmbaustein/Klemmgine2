@@ -9,10 +9,21 @@
 #include <Core/Log.h>
 #include <Engine/File/Resource.h>
 #include <Engine/File/AssetRef.h>
+#include <Engine/Script/ScriptSubsystem.h>
 
 using namespace engine::script;
 using namespace engine;
 using namespace ds;
+
+class SerializeAttribute : public modules::system::ReflectAttribute
+{
+public:
+	SerializeAttribute()
+	{
+		this->name = "Serialize";
+		this->attributeParameters = { "name" };
+	}
+};
 
 static void SerializedKeyValue_delete(InterpretContext* context)
 {
@@ -450,8 +461,94 @@ static void SerializedValue_asFloat(InterpretContext* context)
 		break;
 	}
 	default:
-		context->runtimePanic("Failed to convert serialized value to int using asFloat()");
+		context->runtimePanic("Failed to convert serialized value to float using asFloat()");
 		break;
+	}
+}
+
+static void Serializable_serialize(InterpretContext* context)
+{
+	auto serializableValue = context->popValue<RuntimeClass*>();
+
+	auto& reflectionData = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
+		serializableValue->type);
+
+	SerializedValue ResultValue = std::vector<SerializedData>();
+
+	for (auto& i : reflectionData.members)
+	{
+		if (i.attribute.type != ScriptSubsystem::Instance->ScriptEngine.SerializeAttributeType)
+		{
+			continue;
+		}
+
+		if (i.type == StringType::STRING_ID)
+		{
+			ResultValue.Append(SerializedData(i.name, i.getFromInstance<RuntimeStrRef>(serializableValue).ptr()));
+		}
+		if (i.type == IntType::INT_ID)
+		{
+			ResultValue.Append(SerializedData(i.name, i.getFromInstance<Int>(serializableValue)));
+		}
+		if (i.type == FloatType::FLOAT_ID)
+		{
+			ResultValue.Append(SerializedData(i.name, i.getFromInstance<Float>(serializableValue)));
+		}
+		if (i.type == ScriptSubsystem::Instance->ScriptEngine.Vector3Type)
+		{
+			ResultValue.Append(SerializedData(i.name, i.getFromInstance<Vector3>(serializableValue)));
+		}
+		if (i.type == ScriptSubsystem::Instance->ScriptEngine.AssetRefType)
+		{
+			ResultValue.Append(SerializedData(i.name,
+				i.getFromInstance<AssetRef*>(serializableValue)->FilePath));
+		}
+	}
+
+	context->pushValue(MarshalSerializedValue(ResultValue));
+}
+
+static void Serializable_deSerialize(InterpretContext* context)
+{
+	auto serializableValue = context->popValue<RuntimeClass*>();
+	auto inValue = context->popPtr<ScriptSerializedValue>();
+
+	auto Marshalled = UnMarshalSerializedValue(inValue.classPtr);
+
+	auto& reflectionData = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
+		serializableValue->type);
+
+	for (auto& i : reflectionData.members)
+	{
+		if (i.attribute.type != ScriptSubsystem::Instance->ScriptEngine.SerializeAttributeType)
+		{
+			continue;
+		}
+
+		if (i.type == StringType::STRING_ID)
+		{
+			auto NewStringValue = Marshalled.At(i.name).GetString();
+
+			RuntimeStrRef NewString = RuntimeStrRef(NewStringValue.data(), NewStringValue.size());
+			i.setClassToInstance(serializableValue, NewString.classPtr, context);
+		}
+		if (i.type == IntType::INT_ID)
+		{
+			i.setToInstance<Int>(serializableValue, Marshalled.At(i.name).GetInt());
+		}
+		if (i.type == FloatType::FLOAT_ID)
+		{
+			i.setToInstance<Float>(serializableValue, Marshalled.At(i.name).GetFloat());
+		}
+		if (i.type == ScriptSubsystem::Instance->ScriptEngine.Vector3Type)
+		{
+			i.setToInstance<Vector3>(serializableValue, Marshalled.At(i.name).GetVector3());
+		}
+		if (i.type == ScriptSubsystem::Instance->ScriptEngine.AssetRefType)
+		{
+			auto Value = NativeModule::makeClass(new AssetRef(AssetRef::Convert(Marshalled.At(i.name).GetString())));
+			i.setClassToInstance(serializableValue, Value, context);
+		}
 	}
 }
 
@@ -484,7 +581,8 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addClassMethod(out.SerializedValue, NativeFunction({},
 		FloatInst, "asFloat", &SerializedValue_asFloat));
 
-	Serialize.addClassMethod(out.SerializedValue, NativeFunction({ FunctionArgument(StrType, "fileName"), FunctionArgument(StrType, "formatIdentifier") },
+	Serialize.addClassMethod(out.SerializedValue, NativeFunction({
+		FunctionArgument(StrType, "fileName"), FunctionArgument(StrType, "formatIdentifier") },
 		nullptr, "writeBinaryFile", &SerializedValue_writeBinaryFile));
 
 	Serialize.addClassMethod(out.SerializedValue, NativeFunction(
@@ -500,17 +598,27 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	auto Vec3Value = Serialize.createClass<ScriptSerializedVector3>("SerializedVector3", out.SerializedValue);
 	out.SerializedKeyValue = Serialize.createClass<ScriptSerializedKeyValue>("SerializedKeyValue");
 
+	out.Serializable = Serialize.createInterface("Serializable");
+	out.Serializable->isInterface = true;
+	out.SerializeAttributeTypeId = Serialize.addAttribute(new SerializeAttribute());
+
+	Serialize.addClassVirtualMethod(out.Serializable, NativeFunction({}, out.SerializedValue->nullable,
+		"serialize", &Serializable_serialize), 1);
+
+	Serialize.addClassVirtualMethod(out.Serializable, NativeFunction({ FunctionArgument(out.SerializedValue, "value") },
+		nullptr, "deSerialize", &Serializable_deSerialize), 2);
+
 	auto KeyValueArrayType = ToContext->registry->getArray(out.SerializedKeyValue);
 	auto ValueArrayType = ToContext->registry->getArray(out.SerializedValue);
 
 	Serialize.setClassDestructor(out.SerializedKeyValue, NativeFunction(
-		{ }, nullptr, "SerializedKeyValue.delete", &SerializedKeyValue_delete));
+		{}, nullptr, "SerializedKeyValue.delete", &SerializedKeyValue_delete));
 
 	Serialize.setClassDestructor(ArrayValue, NativeFunction(
-		{ }, nullptr, "SerializedArray.delete", &SerializedArray_delete));
+		{}, nullptr, "SerializedArray.delete", &SerializedArray_delete));
 
 	Serialize.setClassDestructor(ObjectValue, NativeFunction(
-		{ }, nullptr, "SerializedObject.delete", &SerializedObject_delete));
+		{}, nullptr, "SerializedObject.delete", &SerializedObject_delete));
 
 	Serialize.addClassConstructor(out.SerializedKeyValue, NativeFunction(
 		{ FunctionArgument(StrType, "name"), FunctionArgument(out.SerializedValue, "value") },
