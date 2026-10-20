@@ -28,6 +28,7 @@ namespace engine::editor
 		string File;
 	};
 
+	// TODO: Load fonts from the local thread instead of using the main thread ones, this is unsafe!
 	class ScriptEditorProvider : public EngineTextEditorProvider
 	{
 	public:
