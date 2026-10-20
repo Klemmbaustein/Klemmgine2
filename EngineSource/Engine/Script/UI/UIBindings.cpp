@@ -8,6 +8,7 @@
 #include <Engine/Script/ScriptSubsystem.h>
 #include <kui/KlemmUI.h>
 #include <Core/Error/EngineError.h>
+#include <kui/UI/UIStackBox.h>
 
 using namespace engine;
 using namespace engine::script::ui;
@@ -271,6 +272,17 @@ static void UIBackground_new(InterpretContext* context)
 	Bool Horizontal = context->popValue<Bool>();
 
 	cls.getValue() = new UIBackground(Horizontal, 0, Color);
+
+	context->pushValue(cls);
+}
+
+static void UIStackBox_new(InterpretContext* context)
+{
+	ClassRef<UIStackBox*> cls = context->popValue<RuntimeClass*>();
+	UISize Size = context->popValue<UISize>();
+	Vec2f Position = context->popValue<Vec2f>();
+
+	cls.getValue() = new UIStackBox(Position, Size);
 
 	context->pushValue(cls);
 }
@@ -646,6 +658,13 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassConstructor(UICanvasBoxType, NativeFunction(
 		{ FunctionArgument(SizeType, "size") },
 		nullptr, "UICanvasBox.new", &UICanvasBox_new));
+
+	// UIStackBox
+	auto UIStackBoxType = To.createClass<UICanvasBox*>("UIStackBox", UIBoxType);
+
+	To.addClassConstructor(UIStackBoxType, NativeFunction(
+		{ FunctionArgument(Vec2Type, "position"), FunctionArgument(SizeType, "size") },
+		nullptr, "UIStackBox.new", &UIStackBox_new));
 
 	// UITextField
 	auto UITextFieldType = To.createClass<UIText*>("UITextField", UIBackgroundType);

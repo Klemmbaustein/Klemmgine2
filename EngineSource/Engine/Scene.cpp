@@ -12,10 +12,6 @@
 #include <Engine/Sound/SoundSubsystem.h>
 #include <Engine/Script/ScriptSubsystem.h>
 
-#if EDITOR
-#include <Editor/UI/Panels/Viewport.h>
-#endif
-
 using namespace engine::graphics;
 using namespace engine;
 
