@@ -61,11 +61,13 @@ namespace engine::editor
 		 * Should the window be resizable.
 		 * @param Resizable
 		 * Should the window be closable.
+		 * @param IsTransient
+		 * Should the window be transient. If it is, it is ignored when checking for only a single popup being open at once.
 		 *
 		 * When overriding this constructor, call Open() to start the popup's thread
 		 * after you're done initializing it's variables from the main thread.
 		 */
-		IPopupWindow(string Name, kui::Vec2ui Size, bool Resizable, bool Closable);
+		IPopupWindow(string Name, kui::Vec2ui Size, bool Resizable, bool Closable, bool IsTransient = false);
 		void Close();
 
 		/**
@@ -73,13 +75,14 @@ namespace engine::editor
 		 */
 		kui::Font* DefaultFont = nullptr;
 		thread::ThreadMessagesRef Queue;
+		bool CanClose = false;
 
 	private:
 		string Name;
 		kui::Vec2ui Size;
 		bool Resizable = false;
 		bool ShouldClose = false;
-		bool CanClose = false;
+		bool IsTransient = false;
 		void WindowThread(string Name, kui::Vec2ui Size);
 	};
 }

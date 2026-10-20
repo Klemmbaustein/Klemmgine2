@@ -4,6 +4,7 @@
 #include <thread>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Engine/Engine.h>
+#include <Engine/Internal/PlatformGraphics.h>
 #include <Core/Error/EngineError.h>
 
 using namespace engine::editor;
@@ -16,13 +17,16 @@ void engine::editor::IPopupWindow::OnThemeChanged()
 
 void engine::editor::IPopupWindow::Open()
 {
-	if (OpenPopup)
+	if (!OpenPopup && !Resizable)
 	{
-		delete this;
-		return;
+		if (OpenPopup)
+		{
+			delete this;
+			return;
+		}
+		OpenPopup = this;
 	}
 
-	OpenPopup = this;
 	std::thread ThreadObject = std::thread(&IPopupWindow::WindowThread, this, Name, Size);
 	ThreadObject.detach();
 }
@@ -32,12 +36,14 @@ void engine::editor::IPopupWindow::SetTitle(string NewTitle)
 	Popup->SetTitle(NewTitle);
 }
 
-engine::editor::IPopupWindow::IPopupWindow(string Name, kui::Vec2ui Size, bool Resizable, bool Closable)
+engine::editor::IPopupWindow::IPopupWindow(string Name, kui::Vec2ui Size, bool Resizable, bool Closable,
+	bool IsTransient)
 {
 	this->Name = Name;
 	this->Size = Size;
 	this->Resizable = Resizable;
 	this->CanClose = Closable;
+	this->IsTransient = IsTransient;
 	Queue = std::make_shared<thread::ThreadMessageQueue>();
 }
 
@@ -57,6 +63,11 @@ void engine::editor::IPopupWindow::WindowThread(string Name, kui::Vec2ui Size)
 	if (!Resizable)
 	{
 		Flags = Flags | Window::WindowFlag::Popup;
+
+		if (!CanClose)
+		{
+			Flags = Flags | Window::WindowFlag(platform::EngineWindowFlag::NonClosable);
+		}
 	}
 	else
 	{

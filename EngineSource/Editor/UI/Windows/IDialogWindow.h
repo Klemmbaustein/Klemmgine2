@@ -3,6 +3,8 @@
 #include <kui/UI/UIBackground.h>
 #include <functional>
 
+class DialogWindowMainElement;
+
 namespace engine::editor
 {
 	/**
@@ -44,8 +46,16 @@ namespace engine::editor
 		 * Like with IPopupWindow, when overriding this constructor, call Open() to start the dialog window's thread
 		 * after you're done initializing it's variables from the main thread.
 		 */
-		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size);
+		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size, bool Resizable = false);
 		virtual void Begin() override;
+
+		inline static std::vector<Option> DefaultOkCancelOptions(std::function<void()> OnAccept)
+		{
+			return {
+				Option("Ok", OnAccept, true, true, false, false),
+				Option("Cancel", nullptr, true, false, true, false),
+			};
+		}
 
 	protected:
 
@@ -66,7 +76,7 @@ namespace engine::editor
 	private:
 
 		void PressButton(const Option& o);
-
+		DialogWindowMainElement* MainElement;
 		std::vector<Option> Options;
 		kui::UIBox* ButtonBackground = nullptr;
 	};

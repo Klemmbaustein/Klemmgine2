@@ -49,7 +49,14 @@ void engine::platform::InitWindow(kui::systemWM::SysWindow* Target, int Flags)
 
 	if (Flags & int(kui::Window::WindowFlag::Popup))
 	{
-		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION);
+		if (Flags & int(EngineWindowFlag::NonClosable))
+		{
+			SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION);
+		}
+		else
+		{
+			SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_CAPTION | WS_SYSMENU);
+		}
 	}
 }
 

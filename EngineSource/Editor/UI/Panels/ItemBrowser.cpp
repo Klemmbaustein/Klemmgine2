@@ -151,10 +151,6 @@ void engine::editor::ItemBrowser::Update()
 
 	auto Win = Background->GetParentWindow();
 
-	ItemsScrollBox->SetMinSize(Background->GetUsedSize().GetScreen() - Vec2f(0, Heading->GetUsedSize().GetScreen().Y)
-		- SizeVec(1_px, 25_px).GetScreen());
-	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
-
 	bool ScrollBoxHovered = Win->UI.HoveredBox != nullptr && (Win->UI.HoveredBox == ItemsScrollBox
 		|| Win->UI.HoveredBox->IsChildOf(ItemsScrollBox));
 
@@ -194,6 +190,10 @@ void engine::editor::ItemBrowser::Update()
 void engine::editor::ItemBrowser::OnResized()
 {
 	Background->UpdateElement();
+	
+	ItemsScrollBox->SetMinSize(Background->GetUsedSize().GetScreen() - Vec2f(0, Heading->GetUsedSize().GetScreen().Y)
+		- SizeVec(1_px, 25_px).GetScreen());
+	ItemsScrollBox->SetMaxSize(ItemsScrollBox->GetMinSize());
 
 	float Width = Background->GetUsedSize().GetPixels().X;
 

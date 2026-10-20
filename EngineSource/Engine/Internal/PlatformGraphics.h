@@ -11,6 +11,11 @@ namespace kui::systemWM
 
 namespace engine::platform
 {
+	enum class EngineWindowFlag
+	{
+		NonClosable = 1 << 20,
+	};
+
 	struct FileDialogFilter
 	{
 		string Name;

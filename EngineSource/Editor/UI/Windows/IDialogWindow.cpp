@@ -6,15 +6,26 @@
 
 using namespace kui;
 
-engine::editor::IDialogWindow::IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size)
-	: IPopupWindow(Title, Size, false, false)
+engine::editor::IDialogWindow::IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size,
+	bool Resizable)
+	: IPopupWindow(Title, Size, Resizable, false)
 {
 	this->Options = Options;
+	bool HasDefaultClose = false;
+
+	for (auto& i : this->Options)
+	{
+		if (i.IsClose)
+		{
+			HasDefaultClose = true;
+		}
+	}
+	this->CanClose = HasDefaultClose;
 }
 
 void engine::editor::IDialogWindow::Begin()
 {
-	auto MainElement = new DialogWindowMainElement();
+	MainElement = new DialogWindowMainElement();
 
 	MainElement->SetMainBackgroundSize(UISize::Screen(UISize::Screen(2).GetScreen().Y - (40_px).GetScreen().Y));
 	MainElement->SetButtonBackgroundSize(40_px);
@@ -23,6 +34,11 @@ void engine::editor::IDialogWindow::Begin()
 	ButtonBackground = MainElement->buttonBox;
 
 	SetButtons(Options);
+
+	Popup->OnResizedCallback = [this](Window*) {
+		MainElement->SetMainBackgroundSize(UISize::Screen(UISize::Screen(2).GetScreen().Y - (40_px).GetScreen().Y));
+		MainElement->SetButtonBackgroundSize(40_px);
+	};
 
 	Popup->Input.RegisterOnKeyDownCallback(Key::ESCAPE, this, [this] {
 		if (Popup->Input.PollForText)

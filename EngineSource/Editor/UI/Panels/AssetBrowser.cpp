@@ -1,22 +1,22 @@
 #include "AssetBrowser.h"
 #include "Viewport.h"
-#include <Editor/ModelConverter.h>
+#include <Core/File/FileUtil.h>
+#include <Core/Platform/Platform.h>
 #include <Editor/UI/DropdownMenu.h>
-#include <Editor/UI/Panels/Assets/TextEditorPanel.h>
 #include <Editor/UI/EditorUI.h>
+#include <Editor/UI/Panels/Assets/TextEditorPanel.h>
+#include <Editor/UI/Windows/MessageWindow.h>
+#include <Editor/UI/Windows/ModelImportWindow.h>
 #include <Editor/UI/Windows/ProgressBar.h>
 #include <Editor/UI/Windows/RenameWindow.h>
-#include <Editor/UI/Windows/MessageWindow.h>
-#include <Core/File/FileUtil.h>
-#include <Engine/Internal/PlatformGraphics.h>
-#include <Engine/Subsystem/SceneSubsystem.h>
-#include <Core/Platform/Platform.h>
 #include <Engine/File/Resource.h>
+#include <Engine/Internal/PlatformGraphics.h>
 #include <Engine/MainThread.h>
-#include <kui/Window.h>
-#include <filesystem>
-#include <thread>
+#include <Engine/Subsystem/SceneSubsystem.h>
 #include <algorithm>
+#include <filesystem>
+#include <kui/Window.h>
+#include <thread>
 
 using namespace engine::editor;
 using namespace engine;
@@ -278,16 +278,24 @@ void engine::editor::AssetBrowser::Back()
 	UpdateItems();
 }
 
-static std::vector<engine::string> ModelExtensions = { "glb", "gltf", "obj", "fbx", "ply",
-	"blend", "raw", "stl", "3ds", "amf", "assbin", "b3d", "dfx" };
-
-static void ImportItem(engine::string File, engine::string CurrentPath)
+static void ImportItem(engine::string File, engine::string CurrentPath, string Extension)
 {
 	using namespace engine;
 	using namespace engine::editor;
 
-	string Extension = str::Lower(File.substr(File.find_last_of(".") + 1));
+	string Out = CurrentPath + "/" + file::FileName(File);
+	std::filesystem::copy(File, Out);
+	thread::ExecuteOnMainThread([Out]() {
+		resource::ScanForAssets();
+		EditorUI::Instance->OnProjectAssetChanged(AssetRef::FromPath(Out));
+		EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
+			Browser->UpdateItems();
+		});
+	});
+}
 
+static void ImportThread(string CurrentPath)
+{
 	auto Contains = [](string Value, const std::vector<string>& Values) -> bool {
 		bool Found = false;
 		for (auto& Current : Values)
@@ -298,47 +306,10 @@ static void ImportItem(engine::string File, engine::string CurrentPath)
 		return Found;
 	};
 
-	if (Contains(Extension, ModelExtensions))
-	{
-		EditorUI::SetStatusMessage(str::Format("Importing file: '%s'", File.c_str()), EditorUI::StatusType::Info);
-		auto* Progress = new ProgressBar("Importing " + Extension + " file");
-		Progress->Progress = -1;
-		string Out = modelConverter::ConvertModel(File, CurrentPath, modelConverter::ConvertOptions{
-			.OnLoadStatusChanged = [Progress](string NewMessage) {
-				Progress->SetMessage("Importing model: " + NewMessage);
-			}
-			});
-		EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", File.c_str(), Out.c_str()), EditorUI::StatusType::Info);
-		Progress->Close();
-
-		thread::ExecuteOnMainThread([Out]() {
-			resource::ScanForAssets();
-			EditorUI::Instance->OnProjectAssetChanged(AssetRef::FromPath(Out));
-			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
-				Browser->UpdateItems();
-			});
-		});
-	}
-	else
-	{
-		string Out = CurrentPath + "/" + file::FileName(File);
-		std::filesystem::copy(File, Out);
-		thread::ExecuteOnMainThread([Out]() {
-			resource::ScanForAssets();
-			EditorUI::Instance->OnProjectAssetChanged(AssetRef::FromPath(Out));
-			EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
-				Browser->UpdateItems();
-			});
-		});
-	}
-}
-
-static bool ImportThread(engine::string CurrentPath)
-{
 	std::vector Files = platform::OpenFileDialog({
 		platform::FileDialogFilter{
 			.Name = "3D Models",
-			.FileTypes = ModelExtensions,
+			.FileTypes = ModelImporterWindow::ModelExtensions,
 		},
 		platform::FileDialogFilter{
 			.Name = "Images",
@@ -360,18 +331,30 @@ static bool ImportThread(engine::string CurrentPath)
 			.FileTypes = { "*" }
 		} });
 
+	std::vector<string> ModelFiles;
+
 	for (auto& i : Files)
 	{
 		try
 		{
-			ImportItem(i, CurrentPath);
+			string Extension = file::Extension(i);
+			if (Contains(Extension, ModelImporterWindow::ModelExtensions))
+			{
+				ModelFiles.push_back(i);
+				continue;
+			}
+			ImportItem(i, CurrentPath, Extension);
 		}
 		catch (std::filesystem::filesystem_error& e)
 		{
 			Log::Error(e.what());
 		}
 	}
-	return !Files.empty();
+
+	if (!ModelFiles.empty())
+	{
+		new ModelImporterWindow(ModelFiles, CurrentPath);
+	}
 }
 
 static void Import(engine::string CurrentPath)

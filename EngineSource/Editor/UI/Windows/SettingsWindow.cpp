@@ -20,7 +20,7 @@ engine::editor::SettingsWindow::SettingsWindow()
 
 engine::editor::SettingsWindow::SettingsWindow(string OpenPageName)
 	: IDialogWindow("Editor Settings", {
-		Option{.Name = "Close", .Close = true, .IsClose = true } }, Vec2ui(640, 480))
+		Option{.Name = "Close", .Close = true, .IsClose = true } }, Vec2ui(640, 480), true)
 {
 	this->OpenPageName = OpenPageName;
 	this->Open();
@@ -68,6 +68,10 @@ void engine::editor::SettingsWindow::Begin()
 
 void engine::editor::SettingsWindow::Update()
 {
+	float Pixels = Window::GetActiveWindow()->GetSize().X;
+	Pixels -= 560;
+
+	SettingsMenu->SetLeftPadding(UISize::Pixels(Pixels / 2.0f));
 }
 
 void engine::editor::SettingsWindow::Destroy()
@@ -113,4 +117,5 @@ void engine::editor::SettingsWindow::ShowPage(SettingsPage* Page)
 	GenerateTabs();
 	SettingsMenu->Clear();
 	Page->Generate(SettingsMenu, this);
+	SettingsMenu->UpdateElement();
 }

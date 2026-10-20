@@ -10,7 +10,7 @@ engine::editor::RenameWindow::RenameWindow(string File, std::function<void(strin
 	: IDialogWindow(IsNewFile ? "Create file" : "Rename",
 		{
 			Option{.Name = IsNewFile ? "Create" : "Rename", .OnClicked = [this]() { Confirm(); Close(); }, .OnMainThread = false,},
-			Option{ .Name = "Cancel", .Close = true, },
+			Option{ .Name = "Cancel", .Close = true, .IsClose = true, },
 		}, Vec2ui(300, 130))
 {
 	this->IsNewFile = IsNewFile;

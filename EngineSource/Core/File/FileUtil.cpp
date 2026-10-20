@@ -48,5 +48,5 @@ string engine::file::Extension(string FromPath)
 	{
 		return "";
 	}
-	return FromPath.substr(Found + 1);
+	return str::Lower(FromPath.substr(Found + 1));
 }
