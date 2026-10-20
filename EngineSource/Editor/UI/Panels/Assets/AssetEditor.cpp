@@ -57,6 +57,7 @@ bool engine::editor::AssetEditor::OnClosed()
 		}},
 		IDialogWindow::Option{
 			.Name = "Cancel",
+			.IsClose = true, 
 		} });
 	return false;
 }

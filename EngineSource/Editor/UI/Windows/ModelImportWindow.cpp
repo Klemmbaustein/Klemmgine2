@@ -9,7 +9,7 @@ using namespace kui;
 
 engine::editor::ModelImporterWindow::ModelImporterWindow(std::vector<string> ModelFiles, const string& ToPath)
 	: IDialogWindow("Import model file",
-		DefaultOkCancelOptions(std::bind(&ModelImporterWindow::DoImport, this)), Vec2ui(300, 400)),
+		DefaultOkCancelOptions(std::bind(&ModelImporterWindow::DoImport, this)), Vec2ui(340, 400)),
 	ModelFiles(std::move(ModelFiles)),
 	ToPath(std::move(ToPath))
 {
@@ -22,6 +22,7 @@ void engine::editor::ModelImporterWindow::Begin()
 
 	auto Properties = new PropertyMenu();
 	Properties->SetSize(UISize::Parent(1));
+	Properties->SetPadding(0, 0, 10_px, 10_px);
 
 	Background->AddChild(Properties);
 	if (ModelFiles.size() > 1)
