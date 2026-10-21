@@ -17,7 +17,7 @@ void engine::editor::IPopupWindow::OnThemeChanged()
 
 void engine::editor::IPopupWindow::Open()
 {
-	if (!OpenPopup && !Resizable)
+	if (!IsTransient && !Resizable)
 	{
 		if (OpenPopup)
 		{
