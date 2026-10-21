@@ -4,6 +4,7 @@
 #include <Engine/Debug/TimeLogger.h>
 #include <Engine/Plugins/PluginFunctions.h>
 #include <Engine/Stats.h>
+#include <Engine/File/Resource.h>
 #include <Core/Platform/Platform.h>
 #include <Core/File/TextSerializer.h>
 
@@ -48,6 +49,11 @@ void engine::plugin::PluginSubsystem::LoadPluginData(string Path)
 	New.Name = File.At("name").GetString();
 	New.LibraryName = File.At("binary").GetString();
 	New.IsDev = File.Contains("devOnly") && File.At("devOnly").GetBool();
+
+	if (!resource::AllowLocalFiles && File.Contains("allowRemote") && !File.At("allowRemote").GetBool())
+	{
+		return;
+	}
 
 	InitializePlugin(&New, this, PluginDir);
 

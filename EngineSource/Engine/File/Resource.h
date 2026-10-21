@@ -36,6 +36,7 @@ namespace engine::resource
 
 	void LoadSceneFiles(string ScenePath);
 	void ScanForAssets();
+	void DestroyResourceProviders();
 	void AddResourceSource(ResourceSource* Source);
 	void RemoveResourceSource(ResourceSource* Source);
 }

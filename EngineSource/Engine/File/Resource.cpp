@@ -23,6 +23,7 @@ static std::map<string, std::function<string(string, string)>> KnownFilePaths =
 };
 
 static std::set<ResourceSource*> Sources;
+static bool ArchiveProviderLoaded = false;
 
 string engine::resource::GetTextFile(string EnginePath)
 {
@@ -71,8 +72,6 @@ string engine::resource::ConvertFilePath(string EnginePath, bool AllowFile)
 
 bool engine::resource::FileExists(string EnginePath)
 {
-	string Converted = EnginePath;
-
 	for (auto& i : Sources)
 	{
 		if (i->FileExists(EnginePath))
@@ -81,12 +80,24 @@ bool engine::resource::FileExists(string EnginePath)
 		}
 	}
 
-	return kui::resource::ResourceExists(EnginePath) || (std::filesystem::exists(str::AsUnicode(Converted)) && AllowLocalFiles);
+	bool AllowFiles = AllowLocalFiles;
+
+#ifdef EDITOR
+	// Allow loading local files belonging to the editor
+	AllowFiles = AllowLocalFiles
+		|| (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
+#endif
+
+	return kui::resource::ResourceExists(EnginePath)
+		|| (std::filesystem::exists(str::AsUnicode(EnginePath)) && AllowFiles);
 }
 
 IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 {
-	std::string FilePath = EnginePath;
+	if (EnginePath.empty())
+	{
+		return nullptr;
+	}
 
 	for (auto& i : Sources)
 	{
@@ -100,12 +111,13 @@ IBinaryStream* engine::resource::GetBinaryFile(string EnginePath)
 
 #ifdef EDITOR
 	// Allow loading local files belonging to the editor
-	AllowFiles = AllowLocalFiles || (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
+	AllowFiles = AllowLocalFiles
+		|| (EnginePath.starts_with(editor::GetEditorPath()) && EnginePath.find("..") == string::npos);
 #endif
-	if (AllowFiles && std::filesystem::exists(str::AsUnicode(FilePath))
-		&& !std::filesystem::is_directory(str::AsUnicode(FilePath)))
+	if (AllowFiles && std::filesystem::exists(str::AsUnicode(EnginePath))
+		&& !std::filesystem::is_directory(str::AsUnicode(EnginePath)))
 	{
-		return new FileStream(FilePath, true);
+		return new FileStream(EnginePath, true);
 	}
 
 	return nullptr;
@@ -133,16 +145,18 @@ void resource::ScanForAssets()
 
 	LoadedAssets.clear();
 
-	static bool ArchiveProviderLoaded = false;
-
-	if (AllowLocalFiles && !ArchiveProviderLoaded)
+	if (!ArchiveProviderLoaded)
 	{
 		ArchiveProviderLoaded = true;
 
 		AddResourceSource(new EmbeddedResourceSource());
-		if (std::filesystem::exists("Assets/archmap.bin"))
+
+		if (AllowLocalFiles)
 		{
-			AddResourceSource(new ArchiveResourceSource());
+			if (std::filesystem::exists("Assets/archmap.bin"))
+			{
+				AddResourceSource(new ArchiveResourceSource());
+			}
 		}
 	}
 
@@ -160,13 +174,25 @@ void resource::ScanForAssets()
 		for (const auto& i : recursive_directory_iterator("Assets/"))
 		{
 			if (i.is_regular_file())
+			{
 				LoadedAssets.insert(
 					{
 						str::ConvertUnicode(i.path().filename().u8string()),
 						str::ReplaceChar(str::ConvertUnicode(i.path().u8string()), '\\', '/')
 					});
+			}
 		}
 	}
+}
+
+void engine::resource::DestroyResourceProviders()
+{
+	for (const auto& i : Sources)
+	{
+		delete i;
+	}
+	Sources.clear();
+	ArchiveProviderLoaded = false;
 }
 
 void resource::AddResourceSource(ResourceSource* Source)

@@ -7,10 +7,14 @@
 #include <Core/Log.h>
 #include <Engine/File/ModelData.h>
 #include <fstream>
+#include <sstream>
 #include <Engine/File/Resource.h>
 #include <Editor/EditorSubsystem.h>
+
 using namespace engine;
 using namespace engine::editor::modelConverter;
+using namespace engine::graphics;
+using namespace engine::editor;
 
 struct ConvertContext
 {
@@ -77,8 +81,6 @@ static void ProcessScene(const aiNode* Node, ConvertContext Context, string OutD
 
 static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 {
-	using namespace graphics;
-
 	if (resource::FileExists(Path) && !Context.Options.ReplaceMaterials)
 	{
 		return;
@@ -100,7 +102,26 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 		UseTextureField->Int = Texture.empty() ? 0 : 1;
 	}
 
-	NewMaterial->ToFile(Path);
+	std::stringstream StringStream;
+	NewMaterial->ToStream(StringStream);
+	string StreamString = StringStream.str();
+
+	auto Stream = EditorUI::Instance->AssetsProvider->GetFileSaveStream(Path);
+
+	if (Stream)
+	{
+		Stream->Write((uByte*)StreamString.data(), StreamString.size());
+		delete Stream;
+	}
+	else
+	{
+		BufferStream OutStream;
+		OutStream.Write((uByte*)StreamString.data(), StreamString.size());
+		OutStream.ResetStreamPosition();
+		EditorUI::Instance->AssetsProvider->SaveToFile(Path, &OutStream, OutStream.GetSize());
+	}
+
+
 	delete NewMaterial;
 }
 

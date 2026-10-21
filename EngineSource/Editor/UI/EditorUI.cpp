@@ -164,8 +164,14 @@ void engine::editor::EditorUI::LoadEditorStateConfig()
 	{
 		auto LastState = JsonSerializer::FromFile(GetProjectDataPath() + "/editorState.json");
 
-		string SceneName = LastState.At("scene").GetString();
-		SceneSubsystem::Current->LoadSceneAsync(SceneName);
+		if (LastState.Contains("scene"))
+		{
+			string SceneName = LastState.At("scene").GetString();
+			if (!SceneName.empty())
+			{
+				SceneSubsystem::Current->LoadSceneAsync(SceneName);
+			}
+		}
 	}
 	catch (SerializeException& e)
 	{
@@ -182,7 +188,7 @@ void engine::editor::EditorUI::SaveEditorStateConfig()
 	try
 	{
 		SerializedValue FileData = std::vector<SerializedData>({
-			SerializedData("scene", Scene::GetMain() ? Scene::GetMain()->Name : "")
+			SerializedData("scene", Scene::GetMain() ? Scene::GetMain()->Name : SerializedValue())
 			});
 		JsonSerializer::ToFile(FileData, GetProjectDataPath() + "/editorState.json");
 	}
