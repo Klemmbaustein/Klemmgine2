@@ -12,6 +12,7 @@
 #include <Editor/UI/CodeEditorTheme.h>
 #include <Engine/MainThread.h>
 #include <kui/App.h>
+#include <algorithm>
 
 using namespace kui;
 using namespace engine;
