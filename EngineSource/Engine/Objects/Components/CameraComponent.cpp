@@ -18,9 +18,9 @@ engine::CameraComponent::CameraComponent()
 
 engine::CameraComponent::~CameraComponent()
 {
-	Scene* ObjScene = GetRootObject()->GetScene();
+	Scene* ObjScene = RootObject ? RootObject->GetScene() : nullptr;
 
-	if (ObjScene->Graphics.UsedCamera == &ComponentCamera)
+	if (ObjScene && ObjScene->Graphics.UsedCamera == &ComponentCamera)
 	{
 		ObjScene->Graphics.UsedCamera = ObjScene->Graphics.SceneCamera;
 	}
@@ -34,7 +34,7 @@ void engine::CameraComponent::Update()
 	}
 
 	ComponentCamera.CameraTransform = WorldTransform;
-	ComponentCamera.Aspect = GetRootObject()->GetScene()->Graphics.SceneCamera->Aspect;
+	ComponentCamera.Aspect = RootObject->GetScene()->Graphics.SceneCamera->Aspect;
 	ComponentCamera.Update();
 }
 
