@@ -110,6 +110,7 @@ namespace engine::editor
 		bool Saved = true;
 		bool UseVerticalTabs = true;
 		bool IsFloating = false;
+		bool ShouldUpdateTabs = false;
 		void UpdateEditorTabs();
 		void Save();
 
@@ -126,5 +127,7 @@ namespace engine::editor
 
 		// Inherited via KeyboardShortcuts
 		bool HasKeyboardFocus() override;
+
+		void SortTabs();
 	};
 }

@@ -284,6 +284,7 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 	{
 		AddTab(i);
 	}
+	SortTabs();
 
 	this->ScriptEditorContext::Initialize();
 
@@ -347,6 +348,11 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 
 void engine::editor::ScriptEditorUI::Update()
 {
+	if (ShouldUpdateTabs)
+	{
+		UpdateEditorTabs();
+	}
+
 	if (Switcher)
 	{
 		Window::GetActiveWindow()->UI.KeyboardFocusBox = Switcher;
@@ -464,7 +470,7 @@ void engine::editor::ScriptEditorUI::InsertBreakpoint(ScriptEditorTab* ToTab, si
 	Icon->SetCurrentScrollObject(ToTab->Editor->EditorScrollBox);
 	Icon->SetPosition(GetBreakpointPosition(ToTab->Editor, Line));
 
-	ToTab->Breakpoints.insert({ Line, EditorBreakpoint{.Line = Line, .Icon = Icon} });
+	ToTab->Breakpoints.insert({ Line, EditorBreakpoint{ .Line = Line, .Icon = Icon } });
 
 	thread::MainThreadQueue->Run([this, File = ToTab->Provider->EditedFile, Line = Line] {
 		ScriptSubsystem::Instance->AddBreakpoint(File, Line);
@@ -549,7 +555,8 @@ void engine::editor::ScriptEditorUI::CloseTab(size_t Index)
 	delete Tabs[Index].Provider;
 
 	Tabs.erase(Tabs.begin() + Index);
-	UpdateEditorTabs();
+	SortTabs();
+	ShouldUpdateTabs = true;
 	if (auto Tab = GetSelectedTab())
 	{
 		Tab->Editor->Reload();
@@ -799,7 +806,6 @@ void engine::editor::ScriptEditorUI::AddTab(string File)
 		NewTab.MiniMap = new ScriptMiniMap(NewTab.Editor, NewTab.Provider, Queue);
 		NewTab.MiniMap->BackgroundColor = EditorUI::Theme.Background;
 	}
-
 	UpdateEditorTabs();
 }
 
@@ -821,12 +827,13 @@ void engine::editor::ScriptEditorUI::OpenTab(size_t Tab)
 	CloseSearch();
 	SelectedTab = Tab;
 	GetSelectedTab()->Editor->Reload();
-	UpdateEditorTabs();
+	ShouldUpdateTabs = true;
 	OnResized(Size);
 }
 
 void engine::editor::ScriptEditorUI::UpdateEditorTabs()
 {
+	ShouldUpdateTabs = false;
 	VerticalTabBox->DeleteChildren();
 	HorizontalTabBox->DeleteChildren();
 	VerticalTabBox->IsCollapsed = !UseVerticalTabs;
@@ -850,7 +857,7 @@ void engine::editor::ScriptEditorUI::UpdateEditorTabs()
 		t.TabName = new UIText(12_px, EditorUI::Theme.Text, Name, TextFont);
 		if (!Tabs[i].IsSaved)
 		{
-			t.TabName->SetText(file::FileName(Name) + "*");
+			t.TabName->SetText(Name + "*");
 		}
 
 		if (UseVerticalTabs)
@@ -995,6 +1002,22 @@ bool engine::editor::ScriptEditorUI::HasKeyboardFocus()
 	return HasFocus;
 }
 
+void engine::editor::ScriptEditorUI::SortTabs()
+{
+	auto Selected = GetSelectedTab()->Provider;
+
+	std::sort(Tabs.begin(), Tabs.end(), [](const ScriptEditorTab& a, const ScriptEditorTab& b) {
+		string AName = file::FileName(a.Provider->EditedFile);
+		string BName = file::FileName(b.Provider->EditedFile);
+		return AName < BName;
+	});
+
+	SelectedTab = std::distance(Tabs.begin(), std::find_if(Tabs.begin(), Tabs.end(),
+		[Selected](const ScriptEditorTab& t) {
+		return t.Provider == Selected;
+	}));
+}
+
 void engine::editor::ScriptEditorUI::NavigateTo(string File, std::optional<ds::TokenPos> At)
 {
 	for (size_t i = 0; i < Tabs.size(); i++)
@@ -1027,6 +1050,10 @@ void engine::editor::ScriptEditorUI::NavigateTo(string File, std::optional<ds::T
 
 	AddTab(File);
 	OpenTab(Tabs.size() - 1);
+	SortTabs();
+	GetSelectedTab()->Provider->NavigateTo(EditorPosition(At->startPos, At->line),
+		EditorPosition(At->endPos, At->line));
+	ShouldUpdateTabs = true;
 }
 
 void engine::editor::ScriptEditorUI::OnChange(const string& Name)
