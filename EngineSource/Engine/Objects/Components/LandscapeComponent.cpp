@@ -4,7 +4,6 @@
 #include <Engine/Physics/Physics.h>
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/ThreadPool.h>
-#include <Engine/Debug/TimeLogger.h>
 #include <Core/Error/EngineAssert.h>
 
 using namespace engine::graphics;
@@ -63,8 +62,12 @@ void engine::LandscapeComponent::Load(AssetRef HeightmapFile)
 
 void engine::LandscapeComponent::OnDetached()
 {
-	std::lock_guard g1{ Data->GenerateLock };
-	std::lock_guard g2{ Data->CollisionLock };
+	if (Data)
+	{
+		Data->GenerateLock.lock();
+		Data->CollisionLock.lock();
+	}
+
 	if (Collider)
 	{
 		GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
@@ -74,6 +77,11 @@ void engine::LandscapeComponent::OnDetached()
 	if (RootSegment)
 	{
 		delete RootSegment;
+	}
+	if (Data)
+	{
+		Data->GenerateLock.unlock();
+		Data->CollisionLock.unlock();
 	}
 }
 
