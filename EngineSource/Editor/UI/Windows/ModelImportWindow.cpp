@@ -3,6 +3,7 @@
 #include <Editor/ModelConverter.h>
 #include <Core/File/FileUtil.h>
 #include <Engine/MainThread.h>
+#include <Engine/File/Resource.h>
 #include <Editor/UI/Panels/AssetBrowser.h>
 
 using namespace kui;
@@ -81,6 +82,7 @@ void engine::editor::ModelImporterWindow::ImportFile(const string& FilePath, Pro
 	EditorUI::SetStatusMessage(str::Format("Imported '%s' to '%s'", FilePath.c_str(), Out.c_str()), EditorUI::StatusType::Info);
 
 	thread::ExecuteOnMainThread([Out] {
+		resource::ScanForAssets();
 		EditorUI::Instance->OnProjectAssetChanged(AssetRef::FromPath(Out));
 		EditorUI::ForEachPanel<AssetBrowser>([](AssetBrowser* Browser) {
 			Browser->UpdateItems();

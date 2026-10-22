@@ -3,7 +3,7 @@
 #include <algorithm>
 
 engine::editor::ProgressBar::ProgressBar(string Title)
-	: IPopupWindow(Title, kui::Vec2ui(350, 70), false, false)
+	: IPopupWindow(Title, kui::Vec2ui(350, 70), false, false, true)
 {
 	Open();
 }

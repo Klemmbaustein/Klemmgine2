@@ -69,6 +69,8 @@ namespace engine
 		size_t Height = 0;
 
 		std::mutex Lock;
+		std::mutex CollisionLock;
+		std::mutex GenerateLock;
 		physics::HeightMapBody* Collider = nullptr;
 
 		bool Changed = false;

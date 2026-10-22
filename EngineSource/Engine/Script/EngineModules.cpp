@@ -95,10 +95,10 @@ static void Object_empty(InterpretContext* context)
 
 RuntimeFunction engine::script::SceneObject_vTable[] = {
 	{},
-	RuntimeFunction{.nativeFn = &Object_empty},
-	RuntimeFunction{.nativeFn = &Object_empty},
-	RuntimeFunction{.nativeFn = &Object_empty},
-	RuntimeFunction{.nativeFn = &Object_empty},
+	RuntimeFunction{ .nativeFn = &Object_empty },
+	RuntimeFunction{ .nativeFn = &Object_empty },
+	RuntimeFunction{ .nativeFn = &Object_empty },
+	RuntimeFunction{ .nativeFn = &Object_empty },
 };
 
 #pragma region Scene
@@ -445,6 +445,20 @@ static void InstancedMeshComponent_new(InterpretContext* context)
 	Component.getValue() = new InstancedMeshComponent();
 	script::RegisterComponent(Component.classPtr);
 	context->pushValue(Component);
+}
+
+static void InstancedMeshComponent_setInstances(InterpretContext* context)
+{
+	ClassRef<InstancedMeshComponent*> Component = context->popValue<RuntimeClass*>();
+	ClassPtr<ArrayData> InstanceArray = context->popPtr<ArrayData>();;
+	std::vector<Transform>& Instances = Component.getValue()->Instances;
+	Instances.resize(InstanceArray->length);
+
+	for (Int i = 0; i < InstanceArray->length; i++)
+	{
+		Instances[i] = InstanceArray->at<Transform>(i);
+	}
+	Component.getValue()->RefreshInstances();
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -1053,10 +1067,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		NativeFunction({ FunctionArgument(StrType, "newName") }, nullptr, "setName", &Scene_setName));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeFunction({ }, Sound.SoundContext, "getSoundContext", &Scene_getSoundContext));
+		NativeFunction({}, Sound.SoundContext, "getSoundContext", &Scene_getSoundContext));
 
 	EngineModule.addClassMethod(SceneType,
-		NativeFunction({ }, nullptr, "setAsMain", &Scene_setAsMain));
+		NativeFunction({}, nullptr, "setAsMain", &Scene_setAsMain));
 
 	EngineModule.addClassMethod(SceneType,
 		NativeGenericFunction({}, { GenericArgument("T", ObjectType) },
@@ -1097,7 +1111,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		});
 
 	EngineModule.addClassConstructor(ComponentType,
-		NativeFunction({ }, nullptr,
+		NativeFunction({}, nullptr,
 			"ObjectComponent.new", &ObjectComponent_new));
 
 	EngineModule.addClassMethod(ComponentType,
@@ -1160,15 +1174,15 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			"detach", &SceneObject_detach));
 
 	EngineModule.addClassMethod(ObjectType,
-		NativeFunction({ }, nullptr,
+		NativeFunction({}, nullptr,
 			"destroy", &SceneObject_destroy));
 
 	EngineModule.addClassMethod(ObjectType,
-		NativeFunction({ }, SceneType->nullable,
+		NativeFunction({}, SceneType->nullable,
 			"getScene", &SceneObject_getScene));
 
 	EngineModule.addClassMethod(ObjectType,
-		NativeFunction({ }, StrType,
+		NativeFunction({}, StrType,
 			"getName", &SceneObject_getName));
 
 	EngineModule.addFunction(
@@ -1196,7 +1210,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			TaskType::getInstance(nullptr, ToContext->registry), "wait", &Wait));
 
 	EngineModule.addFunction(
-		NativeFunction({ },
+		NativeFunction({},
 			FloatInst, "getDelta", &Stats_getDelta));
 
 	EngineModule.addClassMethod(ComponentType, NativeFunction({}, Math.Vec3, "getWorldPosition",
@@ -1219,10 +1233,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.type = BoolInst,
 		});
 
+	DrawableComponentType->makePointerClass();
+
 	auto MeshComponentType = EngineModule.createClass<MeshComponent*>("MeshComponent", DrawableComponentType);
 
 	EngineModule.addClassConstructor(MeshComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "MeshComponent.new", &MeshComponent_new));
 
 	EngineModule.addClassMethod(MeshComponentType,
@@ -1246,8 +1262,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	auto InstancedMeshComponentType = EngineModule.createClass<MeshComponent*>("InstancedMeshComponent", MeshComponentType);
 
 	EngineModule.addClassConstructor(InstancedMeshComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "InstancedMeshComponent.new", &InstancedMeshComponent_new));
+
+	EngineModule.addClassMethod(InstancedMeshComponentType,
+		NativeFunction({ FunctionArgument(ToContext->registry->getArray(Math.Transform), "instanceTransforms"),},
+			nullptr, "setInstances", &InstancedMeshComponent_setInstances));
 
 	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);
 
@@ -1323,7 +1343,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	auto MoveComponentType = EngineModule.createClass<MoveComponent*>("MoveComponent", ComponentType);
 
 	EngineModule.addClassConstructor(MoveComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "MoveComponent.new", &MoveComponent_new));
 
 	EngineModule.addClassMethod(MoveComponentType,
@@ -1331,15 +1351,15 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			nullptr, "addInput", &MoveComponent_addInput));
 
 	EngineModule.addClassMethod(MoveComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "jump", &MoveComponent_jump));
 
 	EngineModule.addClassMethod(MoveComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			BoolInst, "isOnGround", &MoveComponent_isOnGround));
 
 	EngineModule.addClassMethod(MoveComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			Math.Vec3, "getVelocity", &MoveComponent_getVelocity));
 
 	EngineModule.addClassMethod(MoveComponentType,
@@ -1354,7 +1374,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(BoolInst, "loop"), FunctionArgument(BoolInst, "is3D") },
 		nullptr, "play", &SoundComponent_play));
 
-	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ },
+	EngineModule.addClassMethod(SoundComponentType, NativeFunction({},
 		nullptr, "stop", &SoundComponent_stop));
 
 	EngineModule.addClassMethod(SoundComponentType, NativeFunction({ FunctionArgument(FloatInst, "newVolume") },
@@ -1442,19 +1462,17 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.type = FloatInst
 		});
 
-	MeshComponentType->makePointerClass();
 	PhysicsComponentType->makePointerClass();
 	MoveComponentType->makePointerClass();
-	DrawableComponentType->makePointerClass();
 
 	auto CameraComponentType = EngineModule.createClass<MoveComponent*>("CameraComponent", ComponentType);
 
 	EngineModule.addClassConstructor(CameraComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "CameraComponent.new", &CameraComponent_new));
 
 	EngineModule.addClassMethod(CameraComponentType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "use", &CameraComponent_use));
 
 	EngineModule.addClassMethod(CameraComponentType,
@@ -1470,7 +1488,7 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			Math.Vec3, "worldPositionToScreen", &CameraComponent_worldPositionToScreen));
 
 	EngineModule.addFunction(
-		NativeFunction({ },
+		NativeFunction({},
 			BoolInst, "isPlaying", &engine_isPlaying));
 
 	NativeModule EngineInputModule;
@@ -1534,10 +1552,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineInputModule.addFunction(NativeFunction({},
 		BoolInst, "isRMBClicked", &Input_IsRMBClicked));
 
-	EngineInputModule.addFunction(NativeFunction({ },
+	EngineInputModule.addFunction(NativeFunction({},
 		Math.Vec2, "getMouseMovement", &Input_getMouseMovement));
 
-	EngineInputModule.addFunction(NativeFunction({ },
+	EngineInputModule.addFunction(NativeFunction({},
 		Math.Vec2, "getMousePosition", &Input_getMousePosition));
 
 	EngineInputModule.addFunction(NativeFunction({ FunctionArgument(BoolInst, "newValue") }, nullptr,

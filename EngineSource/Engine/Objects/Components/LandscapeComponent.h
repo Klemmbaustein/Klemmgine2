@@ -17,6 +17,11 @@ namespace engine
 
 		~LandscapeSegment()
 		{
+			if (PlaceholderChunk)
+			{
+				delete PlaceholderChunk;
+			}
+
 			if (SegmentMesh)
 			{
 				delete SegmentMesh;
@@ -54,6 +59,17 @@ namespace engine
 	class LandscapeMeshGenerator
 	{
 	public:
+
+		LandscapeMeshGenerator() = default;
+		LandscapeMeshGenerator(const LandscapeMeshGenerator&) = delete;
+		~LandscapeMeshGenerator()
+		{
+			if (RootSegment)
+			{
+				delete RootSegment;
+			}
+		}
+
 		LandscapeSegment* RootSegment = nullptr;
 		std::shared_ptr<LandscapeData> Data = nullptr;
 		bool IsDone = false;

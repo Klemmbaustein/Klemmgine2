@@ -78,7 +78,10 @@ void engine::InstancedMeshComponent::InitializeModel()
 
 void engine::InstancedMeshComponent::RefreshInstances()
 {
-	InstanceArray->SetTransformData(Instances.data(), Instances.size());
+	if (InstanceArray)
+	{
+		InstanceArray->SetTransformData(Instances.data(), Instances.size());
+	}
 }
 
 void engine::InstancedMeshComponent::InitBounds()

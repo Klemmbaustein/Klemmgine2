@@ -5,6 +5,7 @@
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/ThreadPool.h>
 #include <Engine/Debug/TimeLogger.h>
+#include <Core/Error/EngineAssert.h>
 
 using namespace engine::graphics;
 using namespace engine;
@@ -17,6 +18,7 @@ static void UpdateCollisionThread(std::shared_ptr<LandscapeData> Data, std::shar
 	physics::PhysicsManager* Physics, Transform MeshTransform, physics::MotionType ColliderMovability,
 	physics::Layer CollisionLayers, ObjectComponent* Parent)
 {
+	std::lock_guard g{ Data->CollisionLock };
 	Generator->NewCollider = new physics::HeightMapBody(Data.get(), MeshTransform,
 		ColliderMovability, CollisionLayers, Parent);
 
@@ -61,6 +63,8 @@ void engine::LandscapeComponent::Load(AssetRef HeightmapFile)
 
 void engine::LandscapeComponent::OnDetached()
 {
+	std::lock_guard g1{ Data->GenerateLock };
+	std::lock_guard g2{ Data->CollisionLock };
 	if (Collider)
 	{
 		GetRootObject()->GetScene()->Physics.RemoveBody(Collider);
@@ -133,6 +137,7 @@ void engine::LandscapeComponent::Update()
 			delete this->RootSegment;
 		}
 		this->RootSegment = Generator->RootSegment;
+		Generator->RootSegment = nullptr;
 		this->RootSegment->CreateVertexBuffer(this->WorldTransform);
 		this->DrawBoundingBox = RootSegment->Bounds;
 		CanGenerate = true;
@@ -186,6 +191,9 @@ bool engine::LandscapeComponent::UpdateTransform(bool Dirty)
 static void GenerateThread(std::shared_ptr<LandscapeMeshGenerator> Generator,
 	std::shared_ptr<LandscapeData> Data)
 {
+	std::lock_guard g1{ Data->GenerateLock };
+	ENGINE_ASSERT(!Generator->RootSegment);
+
 	Generator->RootSegment = Generator->BuildSegment(0, 0, Generator->Data->Width);
 	Generator->MergeSegments(Generator->RootSegment, nullptr, nullptr);
 	Generator->BuildSegments(Generator->RootSegment, 0, 0, Generator->Data->Width);
@@ -589,7 +597,8 @@ void engine::LandscapeSegment::Draw(graphics::DrawCommand* Pass, ShaderObject* W
 	}
 }
 
-void engine::LandscapeSegment::Draw(graphics::DrawCommand* Pass, graphics::ShaderObject* WithShader, graphics::Camera* Cam)
+void engine::LandscapeSegment::Draw(graphics::DrawCommand* Pass,
+	graphics::ShaderObject* WithShader, graphics::Camera* Cam)
 {
 	if (Cam->Collider.OverlapsBounds(this->Bounds))
 	{
@@ -627,5 +636,6 @@ void engine::LandscapeSegment::CreateVertexBuffer(const Transform& WithTransform
 	Vector3 SegmentPosition = Vector3(ChunkX, 0.0f, ChunkY) * LANDSCAPE_CHUNK_SIZE;
 	float SegmentScale = float(Scale * LANDSCAPE_CHUNK_SIZE) / 2.0f;
 
-	this->Bounds = BoundingBox(SegmentPosition + Vector3(SegmentScale, 0, SegmentScale), Vector3(SegmentScale, 100.0f, SegmentScale)).Translate(WithTransform);
+	this->Bounds = BoundingBox(SegmentPosition + Vector3(SegmentScale, 0, SegmentScale),
+		Vector3(SegmentScale, 100.0f, SegmentScale)).Translate(WithTransform);
 }
