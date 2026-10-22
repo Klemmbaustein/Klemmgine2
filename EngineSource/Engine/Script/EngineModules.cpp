@@ -450,7 +450,7 @@ static void InstancedMeshComponent_new(InterpretContext* context)
 static void InstancedMeshComponent_setInstances(InterpretContext* context)
 {
 	ClassRef<InstancedMeshComponent*> Component = context->popValue<RuntimeClass*>();
-	ClassPtr<ArrayData> InstanceArray = context->popPtr<ArrayData>();;
+	ClassPtr<ArrayData> InstanceArray = context->popPtr<ArrayData>();
 	std::vector<Transform>& Instances = Component.getValue()->Instances;
 	Instances.resize(InstanceArray->length);
 
@@ -459,6 +459,22 @@ static void InstancedMeshComponent_setInstances(InterpretContext* context)
 		Instances[i] = InstanceArray->at<Transform>(i);
 	}
 	Component.getValue()->RefreshInstances();
+}
+
+static void InstancedMeshComponent_getInstances(InterpretContext* context)
+{
+	ClassRef<InstancedMeshComponent*> Component = context->popValue<RuntimeClass*>();
+	std::vector<Transform>& Instances = Component.getValue()->Instances;
+
+	context->pushValue(modules::system::createArray<Transform>(Instances.data(), Instances.size(), false));
+}
+
+static void InstancedMeshComponent_addInstance(InterpretContext* context)
+{
+	ClassRef<InstancedMeshComponent*> Component = context->popValue<RuntimeClass*>();
+	Transform NewInstance = context->popValue<Transform>();
+
+	Component.getValue()->Instances.push_back(NewInstance);
 }
 
 static void MeshComponent_new(InterpretContext* context)
@@ -1259,15 +1275,20 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			FunctionArgument(StrType, "name"), FunctionArgument(FloatInst, "value") },
 			nullptr, "setMaterialUniformFloat", &MeshComponent_setMaterialUniformFloat));
 
-	auto InstancedMeshComponentType = EngineModule.createClass<MeshComponent*>("InstancedMeshComponent", MeshComponentType);
+	auto InstancedMeshComponentType = EngineModule.createClass<InstancedMeshComponent*>(
+		"InstancedMeshComponent", MeshComponentType);
 
 	EngineModule.addClassConstructor(InstancedMeshComponentType,
 		NativeFunction({},
 			nullptr, "InstancedMeshComponent.new", &InstancedMeshComponent_new));
 
 	EngineModule.addClassMethod(InstancedMeshComponentType,
-		NativeFunction({ FunctionArgument(ToContext->registry->getArray(Math.Transform), "instanceTransforms"),},
+		NativeFunction({ FunctionArgument(ToContext->registry->getArray(Math.Transform), "instanceTransforms"), },
 			nullptr, "setInstances", &InstancedMeshComponent_setInstances));
+
+	EngineModule.addClassMethod(InstancedMeshComponentType,
+		NativeFunction({}, ToContext->registry->getArray(Math.Transform),
+			"getInstances", &InstancedMeshComponent_getInstances));
 
 	auto PhysicsComponentType = EngineModule.createClass<PhysicsComponent*>("PhysicsComponent", ComponentType);
 
