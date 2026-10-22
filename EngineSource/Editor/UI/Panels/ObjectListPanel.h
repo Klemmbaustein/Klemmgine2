@@ -33,8 +33,6 @@ namespace engine::editor
 		};
 
 		size_t LastLength = SIZE_MAX;
-		size_t LastSelectedLength = 0;
-		SceneObject* LastSelectedObj = nullptr;
 		string Filter;
 
 		Viewport* CurrentViewport = nullptr;

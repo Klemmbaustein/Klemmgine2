@@ -7,6 +7,7 @@
 #include <Editor/UI/EditorUI.h>
 #include <Engine/Objects/MeshObject.h>
 #include <Engine/Objects/SoundObject.h>
+
 using namespace kui;
 
 engine::editor::ObjectListPanel::ObjectListPanel()
@@ -119,25 +120,11 @@ void engine::editor::ObjectListPanel::Update()
 	if (!Current && LastLength != SIZE_MAX)
 	{
 		LastLength = SIZE_MAX;
-		LastSelectedLength = 0;
 		DisplayList();
 	}
 	else if (Current && LastLength != Current->Objects.size())
 	{
 		LastLength = Current->Objects.size();
-		LastSelectedLength = Viewport::Current->SelectedObjects.size();
-		DisplayList();
-	}
-
-	if (LastSelectedLength != Viewport::Current->SelectedObjects.size())
-	{
-		LastSelectedLength = Viewport::Current->SelectedObjects.size();
-		LastSelectedObj = LastSelectedLength ? *Viewport::Current->SelectedObjects.begin() : nullptr;
-		DisplayList();
-	}
-	else if (LastSelectedLength && *Viewport::Current->SelectedObjects.begin() != LastSelectedObj)
-	{
-		LastSelectedObj = *Viewport::Current->SelectedObjects.begin();
 		DisplayList();
 	}
 }
@@ -163,7 +150,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 	std::map<string, ListObject> ObjectTree;
 
 	auto& SceneMap = ObjectTree.insert(
-		{ Name, ListObject{.Name = Name, .FromScene = Current} }
+		{ Name, ListObject{ .Name = Name, .FromScene = Current } }
 	).first->second;
 
 	size_t Number = 0;
@@ -192,8 +179,7 @@ void engine::editor::ObjectListPanel::DisplayList()
 
 	bool LastWasSelected = false;
 	AddListObjects(ObjectTree, 0, LastWasSelected);
-	Heading->UpdateElement();
-	Heading->RedrawElement();
+	Background->RedrawElement();
 }
 
 void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, ListObject>& Objects, size_t Depth, bool& LastWasSelected)
@@ -266,7 +252,6 @@ void engine::editor::ObjectListPanel::AddListObjects(const std::map<string, List
 					Collapsed.insert(Obj.Name);
 				}
 			}
-			DisplayList();
 		};
 		Heading->listBox->AddChild(Elem);
 
