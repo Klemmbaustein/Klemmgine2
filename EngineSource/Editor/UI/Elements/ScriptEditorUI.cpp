@@ -1052,8 +1052,11 @@ void engine::editor::ScriptEditorUI::NavigateTo(string File, std::optional<ds::T
 	AddTab(File);
 	OpenTab(Tabs.size() - 1);
 	SortTabs();
-	GetSelectedTab()->Provider->NavigateTo(EditorPosition(At->startPos, At->line),
-		EditorPosition(At->endPos, At->line));
+	if (At)
+	{
+		GetSelectedTab()->Provider->NavigateTo(EditorPosition(At->startPos, At->line),
+			EditorPosition(At->endPos, At->line));
+	}
 	ShouldUpdateTabs = true;
 }
 
