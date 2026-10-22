@@ -1005,7 +1005,7 @@ bool engine::editor::ScriptEditorUI::HasKeyboardFocus()
 
 void engine::editor::ScriptEditorUI::SortTabs()
 {
-	auto Selected = GetSelectedTab()->Provider;
+	auto Selected = GetSelectedTab() ? GetSelectedTab()->Provider : nullptr;
 
 	std::sort(Tabs.begin(), Tabs.end(), [](const ScriptEditorTab& a, const ScriptEditorTab& b) {
 		string AName = file::FileName(a.Provider->EditedFile);
