@@ -42,7 +42,6 @@ void engine::InstancedMeshComponent::SimpleDraw(graphics::Renderer* Render, grap
 	if (!Attached)
 	{
 		InitBounds();
-		Attached = true;
 	}
 	InstancedModel->SimpleDrawInstanced(Render, WorldTransform, With, Materials, Instances.size());
 }
@@ -74,6 +73,11 @@ void engine::InstancedMeshComponent::InitializeModel()
 
 	auto RootScene = GetRootObject()->GetScene();
 	RootScene->Graphics.AddDrawnComponent(this);
+
+	if (!Attached)
+	{
+		InitBounds();
+	}
 }
 
 void engine::InstancedMeshComponent::RefreshInstances()
@@ -81,6 +85,7 @@ void engine::InstancedMeshComponent::RefreshInstances()
 	if (InstanceArray)
 	{
 		InstanceArray->SetTransformData(Instances.data(), Instances.size());
+		InitBounds();
 	}
 }
 
@@ -100,4 +105,5 @@ void engine::InstancedMeshComponent::InitBounds()
 		Max = Max.Max(MaxPos);
 	}
 	InstancesBounds = BoundingBox::FromMinMax(Min, Max);
+	Attached = true;
 }
