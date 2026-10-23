@@ -682,6 +682,13 @@ public:
 	Layer ObjLayer = Layer::Static;
 	virtual bool ShouldCollide(JPH::ObjectLayer inLayer) const override
 	{
+		if (LayerMask(ObjLayer, Layer::Dynamic) && LayerMask(Layer(inLayer), Layer::Dynamic))
+		{
+			JPH::ObjectLayer Other = inLayer & 0x3F;
+
+			return LayerMask(ObjLayer, Layer(Other));
+		}
+
 		return ObjectLayerPairFilterImpl::ShouldLayersCollide(JPH::ObjectLayer(ObjLayer), inLayer);
 	}
 };

@@ -4,6 +4,7 @@
 #include "LandscapeObject.h"
 #include "LightObject.h"
 #include "SoundObject.h"
+#include "ParticleObject.h"
 #include "ReverbVolumeObject.h"
 #include <Engine/Scene.h>
 #include <Core/Error/EngineAssert.h>
@@ -34,6 +35,7 @@ SerializedValue engine::SceneObject::Serialize()
 	&LightObject::Begin;
 	&SoundObject::Begin;
 	&ReverbVolumeObject::Begin;
+	&ParticleObject::Begin;
 }
 
 void engine::SceneObject::DeSerialize(SerializedValue* From)

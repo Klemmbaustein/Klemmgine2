@@ -11,21 +11,21 @@ void engine::MeshComponent::Update()
 {
 	if (DrawnModel && DrawnModel->Data)
 		DrawnModel->Data->CastShadow = CastShadow;
+
+	IsTransparent = false;
+	for (auto& i : this->Materials)
+	{
+		if (i->IsTransparent)
+		{
+			IsTransparent = true;
+		}
+	}
 }
 
 void engine::MeshComponent::Draw(Renderer* Render, Camera* From, GraphicsScene* In)
 {
 	if (this->IsVisible && DrawnModel && DrawnModel->Drawable)
 	{
-		IsTransparent = false;
-		for (auto& i : this->Materials)
-		{
-			if (i->IsTransparent)
-			{
-				IsTransparent = true;
-			}
-		}
-
 		DrawnModel->Drawable->Draw(Render, In, WorldTransform,
 			From, Materials, DrawBoundingBox, DrawStencil, false);
 	}

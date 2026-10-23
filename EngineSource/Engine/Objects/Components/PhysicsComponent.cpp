@@ -83,7 +83,6 @@ void engine::PhysicsComponent::CreateBox(physics::MotionType Movability, physics
 
 	IsPhysicsSimulated = Movability == physics::MotionType::Dynamic;
 
-
 	if (StartEnabled && Root)
 	{
 		Root->GetScene()->Physics.AddBody(Body, true, true);

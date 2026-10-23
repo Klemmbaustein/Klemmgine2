@@ -56,6 +56,8 @@ namespace engine
 
 		const uint32 MoveMaxDepth = 5;
 
+		physics::Layer MovementLayer = physics::Layer::Dynamic;
+
 		/// The size of the collider used by the movement. X is the capsule width, Y is the capsule height.
 		Vector2 ColliderSize = Vector2(0.5f, 0.5f);
 

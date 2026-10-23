@@ -63,6 +63,6 @@ void engine::BillboardComponent::DrawTransparent(graphics::Renderer* Render, gra
 
 	Transform AtTransform = Transform(Position, 0, Scale * 0.25f).Combine(Transform(From->View).Rotation().Inverse());
 
-	this->Model->Drawable->Draw(Render, &GetRootObject()->GetScene()->Graphics, AtTransform,
+	this->Model->Drawable->Draw(Render, In, AtTransform,
 		From, this->Materials, this->DrawBoundingBox, this->DrawStencil, true);
 }

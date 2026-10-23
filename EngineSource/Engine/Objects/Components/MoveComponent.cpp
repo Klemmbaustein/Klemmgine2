@@ -103,7 +103,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 	auto Hits = Collider->ShapeCast(
 		Transform(Pos, 0, 1),
 		Pos + Direction.Normalize() * Distance,
-		physics::Layer::Static,
+		MovementLayer,
 		{ RootObject }
 	);
 
@@ -171,7 +171,7 @@ MoveComponent::MoveResult engine::MoveComponent::TryMove(Vector3 Direction, Vect
 		Hits = Collider->ShapeCast(
 			Transform(TestPos, 0, Vector3(ColliderSize.X, ColliderSize.Y, ColliderSize.X)),
 			TestPos + NewDir,
-			physics::Layer::Static,
+			MovementLayer,
 			{ RootObject }
 		);
 
