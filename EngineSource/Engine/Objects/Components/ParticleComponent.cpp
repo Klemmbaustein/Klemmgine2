@@ -54,11 +54,10 @@ void engine::ParticleComponent::Update()
 void engine::ParticleComponent::Draw(graphics::Renderer* Render, graphics::Camera* From,
 	graphics::GraphicsScene* In)
 {
-
-	std::vector<graphics::Material*> Materials = { Data->Emitters[0].Data.Material };
-
 	for (auto& i : Data->Emitters)
 	{
+		std::vector<graphics::Material*> Materials = { i.Data.Material };
+
 		i.InstancesModel->DrawInstanced(Render, In, WorldTransform, From, Materials,
 			DrawBoundingBox, DrawStencil, false, i.MainThreadInstanceCount);
 	}

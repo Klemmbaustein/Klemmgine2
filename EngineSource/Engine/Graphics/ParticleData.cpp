@@ -2,8 +2,11 @@
 #include <Core/File/TextSerializer.h>
 #include <Engine/File/Resource.h>
 #include <sstream>
+#include <random>
 
 using namespace engine;
+
+std::default_random_engine RandomGenerator;
 
 engine::graphics::ParticleData::ParticleData(AssetRef FromFile)
 {
@@ -43,6 +46,12 @@ void engine::graphics::ParticleEmitterData::DeSerialize(SerializedValue* From)
 {
 	Material = new graphics::Material(AssetRef::Convert(From->At("material").GetString()),
 		ShaderAttributes{ .IsInstanced = true });
+
+	VelocityRandom = From->At("velocityRandom").GetVector3();
+	Velocity = From->At("velocity").GetVector3();
+	StartScale = From->At("startScale").GetFloat();
+	EndScale = From->At("endScale").GetFloat();
+	Lifetime = From->At("lifetime").GetFloat();
 }
 
 void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTransform)
@@ -52,32 +61,53 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 	Vector3 Min = INFINITY;
 	Vector3 Max = -INFINITY;
 
-	for (auto& i : Instances)
+	GetInactiveInstances().clear();
+
+	for (auto& i : GetInstances())
 	{
 		i.Velocity += Data.Acceleration;
 		i.Position += i.Velocity * Delta;
+		i.Scale = std::lerp(Data.EndScale, Data.StartScale, i.Lifetime / Data.Lifetime);
 		i.Lifetime -= Delta;
+		i.Rotation += i.RotationVelocity * Delta;
 
 		Min = Min.Min(i.Position - i.Scale);
 		Max = Max.Max(i.Position + i.Scale);
 
-		Transforms.push_back(Transform(i.Position, Rotation3(0, 0, i.Rotation), i.Scale)
-			.Combine(ViewTransform));
+		Transform t = Transform(i.Position, Rotation3(), i.Scale)
+			.Combine(ViewTransform);
+
+		t.RotateAround(Vector3(0, 0, 1), i.Rotation);
+
+		Transforms.push_back(t);
+		if (i.Lifetime > 0)
+		{
+			GetInactiveInstances().push_back(i);
+		}
 	}
 
 	Bounds = BoundingBox::FromMinMax(Min, Max);
 
 	NewParticleTimer -= Delta;
+	CurrentActiveInstances = !CurrentActiveInstances;
+
+	auto RandomVec = [](Vector3 Range) {
+		std::uniform_real_distribution<float> X{ -Range.X, Range.X };
+		std::uniform_real_distribution<float> Y{ -Range.Y, Range.Y };
+		std::uniform_real_distribution<float> Z{ -Range.Z, Range.Z };
+		return Vector3(X(RandomGenerator), Y(RandomGenerator), Z(RandomGenerator));
+	};
 
 	if (NewParticleTimer <= 0)
 	{
-		Instances.push_back(ParticleInstance{
+		GetInstances().push_back(ParticleInstance{
 			.Position = Data.StartPosition,
-			.Velocity = Data.Velocity,
+			.Velocity = Data.Velocity + RandomVec(Data.VelocityRandom),
 			.Rotation = Data.Rotation,
+			.RotationVelocity = Data.RotationVelocity,
 			.Scale = Data.StartScale,
 			.Lifetime = Data.Lifetime,
 			});
-		NewParticleTimer = 0.25f;
+		NewParticleTimer = 0.1f;
 	}
 }

@@ -18,8 +18,8 @@ namespace engine::graphics
 
 		Vector3 Acceleration;
 
-		float Rotation = 0;
-		float RotationVelocity = 0;
+		float Rotation = 45.0f;
+		float RotationVelocity = 360.0f;
 
 		float StartScale = 0.25f;
 		float EndScale = 1.0f;
@@ -47,13 +47,11 @@ namespace engine::graphics
 	{
 	public:
 		ParticleEmitterData Data;
-		std::vector<ParticleInstance> Instances;
+
 		graphics::Model* InstancesModel = nullptr;
 		graphics::VertexArrayData* InstancesArray = nullptr;
 
 		std::vector<Transform> Transforms;
-
-		float NewParticleTimer = 0;
 
 		bool IsRunning = false;
 
@@ -62,6 +60,22 @@ namespace engine::graphics
 		BoundingBox Bounds;
 
 		void RunStep(float Delta, Transform ViewTransform);
+
+		std::vector<ParticleInstance>& GetInstances()
+		{
+			return CurrentActiveInstances ? Instances1 : Instances2;
+		}
+
+	private:
+		float NewParticleTimer = 0;
+		bool CurrentActiveInstances = false;
+		std::vector<ParticleInstance>& GetInactiveInstances()
+		{
+			return CurrentActiveInstances ? Instances2 : Instances1;
+		}
+
+		std::vector<ParticleInstance> Instances1;
+		std::vector<ParticleInstance> Instances2;
 	};
 
 	class ParticleData : Serializable
