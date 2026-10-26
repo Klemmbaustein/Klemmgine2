@@ -110,6 +110,27 @@ static void Transform_decompose(InterpretContext* context)
 	context->pushValue(Result);
 }
 
+static void Transform_inverse(InterpretContext* context)
+{
+	context->pushValue(context->popValue<Transform>().Inverse());
+}
+
+static void Transform_applyTo(InterpretContext* context)
+{
+	auto t = context->popValue<Transform>();
+	auto Result = t.ApplyTo(context->popValue<Vector3>());
+
+	context->pushValue(Result);
+}
+
+static void Transform_applyRotationTo(InterpretContext* context)
+{
+	auto t = context->popValue<Transform>();
+	auto Result = t.ApplyRotationTo(context->popValue<Vector3>());
+
+	context->pushValue(Result);
+}
+
 static void Transform_translate(InterpretContext* context)
 {
 	auto Value = context->popValue<Transform>();
@@ -194,31 +215,31 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 
 	Math.Vec3->operators.push_back({
 		Operator::add,
-		To.addFunction(NativeFunction({FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b")},
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b") },
 			Math.Vec3, "Vector3.add", &Vector3_add))
 		});
 
 	Math.Vec3->operators.push_back({
 		Operator::multiply,
-		To.addFunction(NativeFunction({FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b")},
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b") },
 			Math.Vec3, "Vector3.multiply", &Vector3_multiply))
 		});
 
 	Math.Vec3->operators.push_back({
 		Operator::subtract,
-		To.addFunction(NativeFunction({FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b")},
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b") },
 			Math.Vec3, "Vector3.subtract", &Vector3_subtract))
 		});
 
 	Math.Vec3->operators.push_back({
 		Operator::divide,
-		To.addFunction(NativeFunction({FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b")},
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec3, "a"), FunctionArgument(Math.Vec3, "b") },
 			Math.Vec3, "Vector3.divide", &Vector3_divide))
 		});
 
 	Math.Vec3->operators.push_back({
 		Operator::unaryMinus,
-		To.addFunction(NativeFunction({FunctionArgument(Math.Vec3, "a")},
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec3, "a") },
 			Math.Vec3, "Vector3.unaryMinus", &Vector3_unaryMinus))
 		});
 
@@ -258,36 +279,46 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 	})));
 
 	To.addClassMethod(Math.Rot,
-		NativeFunction({ },
+		NativeFunction({},
 			Math.Vec3, "forward", &Rotation3_forward));
 
 	To.addClassMethod(Math.Rot,
-		NativeFunction({ },
+		NativeFunction({},
 			Math.Vec3, "right", &Rotation3_right));
 
 	To.addClassMethod(Math.Rot,
-		NativeFunction({ },
+		NativeFunction({},
 			Math.Vec3, "up", &Rotation3_up));
 
 	To.addClassMethod(Math.Transform, NativeFunction({},
 		DecomposeResultType, "decompose", &Transform_decompose));
 
+	To.addClassMethod(Math.Transform, NativeFunction({},
+		Math.Transform, "inverse", &Transform_inverse));
+
+	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "rotation") },
+		Math.Vec3, "applyTo", &Transform_applyTo));
+
+	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "rotation") },
+		Math.Vec3, "applyRotationTo", &Transform_applyRotationTo));
+
 	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "value") },
-		DecomposeResultType, "translate", &Transform_translate));
+		Math.Transform, "translate", &Transform_translate));
 
 	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Rot, "value") },
-		DecomposeResultType, "rotate", &Transform_rotate));
+		Math.Transform, "rotate", &Transform_rotate));
 
 	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Rot, "axis"), FunctionArgument(FloatInst, "value") },
-		DecomposeResultType, "rotate", &Transform_rotateAround));
+		Math.Transform, "rotate", &Transform_rotateAround));
 
 	To.addClassMethod(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "value") },
-		DecomposeResultType, "scale", Transform_scale));
+		Math.Transform, "scale", Transform_scale));
 
-	To.addClassConstructor(Math.Transform, NativeFunction({ },
+	To.addClassConstructor(Math.Transform, NativeFunction({},
 		nullptr, "Transform.new.identity", Transform_identity));
 
-	To.addClassConstructor(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "position"), FunctionArgument(Math.Rot, "rotation"), FunctionArgument(Math.Vec3, "scale") },
+	To.addClassConstructor(Math.Transform, NativeFunction({ FunctionArgument(Math.Vec3, "position"),
+		FunctionArgument(Math.Rot, "rotation"), FunctionArgument(Math.Vec3, "scale") },
 		nullptr, "Transform.new", Transform_new));
 
 	auto Rot3Function = To.addFunction(

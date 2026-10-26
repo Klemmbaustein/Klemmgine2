@@ -7,7 +7,6 @@ namespace engine
 	class ParticleObject : SceneObject
 	{
 	public:
-
 		ENGINE_OBJECT(ParticleObject, "Engine/SceneObject", "Engine");
 
 		void Begin() override;

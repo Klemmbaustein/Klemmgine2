@@ -32,6 +32,11 @@ bool engine::ParticleComponent::UpdateTransform(bool IsDirty)
 
 void engine::ParticleComponent::Update()
 {
+	if (!Data)
+	{
+		return;
+	}
+
 	auto CameraView = Transform(RootObject->GetScene()->Graphics.UsedCamera->View).Rotation().Inverse();
 
 	for (auto& i : Data->Emitters)
@@ -54,6 +59,11 @@ void engine::ParticleComponent::Update()
 void engine::ParticleComponent::Draw(graphics::Renderer* Render, graphics::Camera* From,
 	graphics::GraphicsScene* In)
 {
+	if (!Data)
+	{
+		return;
+	}
+
 	for (auto& i : Data->Emitters)
 	{
 		std::vector<graphics::Material*> Materials = { i.Data.Material };
@@ -65,18 +75,25 @@ void engine::ParticleComponent::Draw(graphics::Renderer* Render, graphics::Camer
 
 void engine::ParticleComponent::Load(AssetRef File)
 {
-	Data = std::make_shared<graphics::ParticleData>(File);
-
-	auto Render = RootObject->GetScene()->Graphics.Render;
-
-	for (auto& i : Data->Emitters)
+	try
 	{
-		i.InstancesArray = Render->CreateTransformVertexData(nullptr, 0);
-		i.InstancesModel = new graphics::Model(GraphicsModel::Billboard()->Data);
+		Data = std::make_shared<graphics::ParticleData>(File);
 
-		for (auto& model : i.InstancesModel->ModelVertexBuffers)
+		auto Render = RootObject->GetScene()->Graphics.Render;
+
+		for (auto& i : Data->Emitters)
 		{
-			model->AttachArrayData(3, i.InstancesArray, graphics::VertexArrayData::BufferType::PerInstance);
+			i.InstancesArray = Render->CreateTransformVertexData(nullptr, 0);
+			i.InstancesModel = new graphics::Model(GraphicsModel::Billboard()->Data);
+
+			for (auto& model : i.InstancesModel->ModelVertexBuffers)
+			{
+				model->AttachArrayData(3, i.InstancesArray, graphics::VertexArrayData::BufferType::PerInstance);
+			}
 		}
+	}
+	catch (SerializeException& e)
+	{
+		Log::Error(e.what());
 	}
 }
