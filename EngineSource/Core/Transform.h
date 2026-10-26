@@ -19,6 +19,7 @@ namespace engine
 		Vector3 EulerVector(bool Radians = false) const;
 
 		static Rotation3 LookAt(Vector3 Position);
+		static Rotation3 LookAtZY(Vector3 Forward, Vector3 Up);
 
 		static constexpr float PI = 3.14159265359f;
 

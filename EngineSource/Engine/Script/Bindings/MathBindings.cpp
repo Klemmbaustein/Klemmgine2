@@ -102,6 +102,13 @@ static void Engine_lookAtRotation(InterpretContext* context)
 	context->pushValue(Rotation3::LookAt(Pos));
 }
 
+static void Engine_lookAtRotationZY(InterpretContext* context)
+{
+	Vector3 Up = context->popValue<Vector3>();
+	Vector3 Forward = context->popValue<Vector3>();
+	context->pushValue(Rotation3::LookAtZY(Forward, Up));
+}
+
 static void Transform_decompose(InterpretContext* context)
 {
 	script::DecomposeResult Result{};
@@ -337,6 +344,10 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 		NativeFunction({
 			FunctionArgument(Math.Vec3, "position"), },
 			Math.Rot, "getLookAtRotation", &Engine_lookAtRotation));
+
+	To.addFunction(
+		NativeFunction({ FunctionArgument(Math.Vec3, "forward"), FunctionArgument(Math.Vec3, "up") },
+			Math.Rot, "getLookAtRotationZY", & Engine_lookAtRotationZY));
 
 	To.addType(Math.Rot);
 	To.addType(Math.Vec3);

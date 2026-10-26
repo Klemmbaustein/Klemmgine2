@@ -2,6 +2,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
+#include <iostream>
 
 using namespace engine;
 
@@ -13,6 +14,16 @@ Rotation3 engine::Rotation3::LookAt(Vector3 Position)
 
 	return Rotation3(Euler.x, Euler.y, Euler.z, true);
 }
+
+Rotation3 engine::Rotation3::LookAtZY(Vector3 Forward, Vector3 Up)
+{
+	Forward = -Forward.Normalize();
+	glm::quat quat = glm::quatLookAtLH(glm::vec3(Forward.X, Forward.Y, Forward.Z), glm::vec3(Up.X, Up.Y, Up.Z));
+	glm::vec3 Euler = glm::eulerAngles(quat);
+
+	return Rotation3(Euler.x, Euler.y, Euler.z, true);
+}
+
 engine::Transform::Transform(Vector3 Position, Rotation3 Rotation, Vector3 Scale)
 	: Transform()
 {
