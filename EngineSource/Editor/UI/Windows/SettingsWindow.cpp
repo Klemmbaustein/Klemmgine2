@@ -68,7 +68,7 @@ void engine::editor::SettingsWindow::Begin()
 
 void engine::editor::SettingsWindow::Update()
 {
-	float Pixels = Window::GetActiveWindow()->GetSize().X;
+	float Pixels = UISize(2).GetPixels().X;
 	Pixels -= 560;
 
 	SettingsMenu->SetLeftPadding(UISize::Pixels(Pixels / 2.0f));
