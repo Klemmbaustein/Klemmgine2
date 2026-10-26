@@ -7,7 +7,7 @@ using namespace engine;
 VersionInfo VersionInfo::Get()
 {
 	return VersionInfo{
-		.VersionName = "2.0.0-dev3",
+		.VersionName = "2.0.0-dev4",
 #if WINDOWS
 		.Platform = "Windows",
 #elif LINUX
