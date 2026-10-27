@@ -1483,9 +1483,9 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 		.type = FloatInst
 		});
 	MoveComponentType->members.push_back(ClassMember{
-	.name = "movementLayer",
-	.offset = DS_OFFSETOF(MoveComponent, MovementLayer),
-	.type = Physics.LayerType
+		.name = "movementLayer",
+		.offset = DS_OFFSETOF(MoveComponent, MovementLayer),
+		.type = Physics.LayerType
 		});
 
 	PhysicsComponentType->makePointerClass();
