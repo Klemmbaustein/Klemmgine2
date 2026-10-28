@@ -315,7 +315,10 @@ void engine::PhysicsComponent::Clear()
 {
 	if (Body)
 	{
-		GetRootObject()->GetScene()->Physics.RemoveBody(Body);
+		if (RootObject)
+		{
+			RootObject->GetScene()->Physics.RemoveBody(Body);
+		}
 		delete Body;
 	}
 	Body = nullptr;
