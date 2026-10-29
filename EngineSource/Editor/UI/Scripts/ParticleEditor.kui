@@ -1,0 +1,56 @@
+element ParticleEditorItem
+{
+	var Name
+
+	width = 250px
+
+	child UIBackground bg
+	{
+		color = Color_Background
+		width = 100%
+
+		border = 1px
+		corners = Theme_CornerSize
+		borderColor = Color_Highlight1
+
+		orientation = vertical
+
+		child UIBackground
+		{
+			color = Color_HighlightDark
+
+			width = 100%
+			border = 1px
+			bottomBorder = false
+			corners = 5px
+			bottomLeftCorner = false
+			bottomRightCorner = false
+			borderColor = Color_Highlight1
+
+			verticalAlign = centered
+
+			child UIText
+			{
+				padding = 5px
+				text = Name
+				size = 12px
+				color = Color_Text
+				wrap = 220px
+				maxWraps = 0
+				widthOverride = 220px
+			}
+
+			child UIButton close
+			{
+				size = 12px
+				image = $"X.png"
+			}
+		}
+
+		child UIBox content
+		{
+			width = 100%
+			height = 400px
+		}
+	}
+}

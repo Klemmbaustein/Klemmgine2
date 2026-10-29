@@ -3,6 +3,7 @@
 #include <Engine/File/Resource.h>
 #include <sstream>
 #include <random>
+#include <Core/Log.h>
 
 using namespace engine;
 
@@ -10,12 +11,24 @@ std::default_random_engine RandomGenerator;
 
 engine::graphics::ParticleData::ParticleData(AssetRef FromFile)
 {
+	if (!FromFile.Exists())
+	{
+		return;
+	}
+
 	std::stringstream FileStream;
 
 	FileStream << resource::GetTextFile(FromFile.FilePath);
 
-	SerializedValue Data = TextSerializer::FromStream(FileStream);
-	DeSerialize(&Data);
+	try
+	{
+		SerializedValue Data = TextSerializer::FromStream(FileStream);
+		DeSerialize(&Data);
+	}
+	catch (SerializeException& e)
+	{
+		Log::Error(e.what());
+	}
 }
 
 engine::graphics::ParticleData::ParticleData()
@@ -63,7 +76,7 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 
 	GetInactiveInstances().clear();
 
-	for (auto& i : GetInstances())
+	for (ParticleInstance i : GetInstances())
 	{
 		i.Velocity += Data.Acceleration;
 		i.Position += i.Velocity * Delta;

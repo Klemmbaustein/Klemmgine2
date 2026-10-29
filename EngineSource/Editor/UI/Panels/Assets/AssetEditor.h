@@ -1,4 +1,3 @@
-#ifdef EDITOR
 #pragma once
 #include <Engine/File/AssetRef.h>
 #include <Editor/UI/Panels/EditorPanel.h>
@@ -26,4 +25,3 @@ namespace engine::editor
 		void UpdateName();
 	};
 }
-#endif

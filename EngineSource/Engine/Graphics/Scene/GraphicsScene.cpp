@@ -68,6 +68,7 @@ void engine::graphics::GraphicsScene::OnResized(kui::Vec2ui NewSize)
 	}
 
 	SceneCamera->Aspect = float(Buffer->Width) / float(Buffer->Height);
+	this->SceneTexture = nullptr;
 }
 
 void engine::graphics::GraphicsScene::AddDrawnComponent(DrawableComponent* New)

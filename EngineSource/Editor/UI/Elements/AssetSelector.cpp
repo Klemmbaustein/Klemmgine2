@@ -108,7 +108,7 @@ void engine::editor::AssetSelector::Tick()
 			ChangedText = false;
 			return;
 		}
-		SelectedAsset = AssetPath->GetText().empty() ? AssetRef{ .Extension = SelectedAsset.Extension } : NewAsset;
+		SelectedAsset = AssetPath->GetText().empty() ? AssetRef::EmptyAsset(SelectedAsset.Extension) : NewAsset;
 		UpdateSelection();
 		ChangedText = false;
 		if (this->OnChanged)

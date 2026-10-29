@@ -34,7 +34,8 @@ static void AssetRef_emptyAsset(InterpretContext* context)
 	RuntimeStr Extension = context->popRuntimeString();
 
 	ClassRef<AssetRef*> Asset = script::CreateAssetRef();
-	Asset.getValue()->Extension = string(Extension.ptr(), Extension.length());
+
+	Asset.getValue() = new AssetRef(AssetRef::EmptyAsset(string(Extension.ptr(), Extension.length())));
 	context->pushValue(Asset);
 }
 
@@ -94,8 +95,6 @@ ds::RuntimeClass* engine::script::CreateAssetRef()
 {
 	ClassRef<AssetRef*> NewAssetRef = RuntimeClass::allocateClass(sizeof(AssetRef*), 0, &AssetRef_vTable);
 	NewAssetRef.classPtr->vtable = &AssetRef_vTable;
-
-	NewAssetRef.getValue() = new AssetRef();
 	return NewAssetRef.classPtr;
 }
 

@@ -129,6 +129,7 @@ void engine::script::ScriptSceneObject::LoadProperties()
 			if (!member)
 			{
 				member = script::CreateAssetRef();
+				*reinterpret_cast<AssetRef**>(member->getBody()) = new AssetRef();
 				i.setClassToInstance(ScriptData, member, nullptr);
 			}
 
@@ -140,7 +141,7 @@ void engine::script::ScriptSceneObject::LoadProperties()
 
 			p->OnChanged = [this, i, p] {
 				ClassRef<AssetRef*> newRef = script::CreateAssetRef();
-				*newRef.getValue() = p->Value;
+				newRef.getValue() = new AssetRef(p->Value);
 
 				i.setClassToInstance(ScriptData, newRef.classPtr, Interpreter);
 			};

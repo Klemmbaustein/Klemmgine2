@@ -39,6 +39,7 @@
 #include <Editor/Assets/MaterialAssetType.h>
 #include <Editor/Assets/ScriptAssetType.h>
 #include <Editor/Assets/ShaderAssetType.h>
+#include <Editor/Assets/ParticleAssetType.h>
 using namespace engine::editor;
 using namespace engine::subsystem;
 using namespace engine;
@@ -250,6 +251,7 @@ engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 	AddAssetType(new MaterialAssetType());
 	AddAssetType(new ScriptAssetType());
 	AddAssetType(new ShaderAssetType());
+	AddAssetType(new ParticleAssetType());
 
 	ObjectIcons.AddObjectIcon(Asset("Model.png"), MeshObject::ObjectType);
 	ObjectIcons.AddObjectIcon(Asset("Sound.png"), SoundObject::ObjectType);

@@ -4,7 +4,15 @@ void engine::ParticleObject::Begin()
 {
 	Particles = new ParticleComponent();
 	Attach(Particles);
-	Particles->Load(AssetRef::Convert("Test.prt"));
+
+	if (ParticleFile.Value.Exists())
+	{
+		Particles->Load(ParticleFile.Value);
+	}
+
+	ParticleFile.OnChanged = [this] {
+		Particles->Load(ParticleFile.Value);
+	};
 }
 
 void engine::ParticleObject::Update()

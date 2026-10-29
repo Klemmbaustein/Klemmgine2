@@ -153,7 +153,6 @@ void engine::editor::ModelEditor::OnModelLoaded()
 	{
 		auto NewEntry = Sidebar->CreateNewEntry(std::to_string(it++));
 		auto* NewSelector = new AssetSelector(AssetRef::FromName(m.Material, "kmt"), Sidebar->ElementSize, nullptr);
-		NewSelector->SelectedAsset.Extension = "kmt";
 		NewSelector->OnChanged = [this, &m, NewSelector, ModelChanged, Data]()
 		{
 			auto NewMaterial = NewSelector->SelectedAsset.DisplayName();

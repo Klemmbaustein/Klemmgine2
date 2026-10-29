@@ -21,34 +21,22 @@ engine::AssetRef engine::AssetRef::FromName(string Name, string Extension)
 
 	if (Found == resource::LoadedAssets.end())
 	{
-		return AssetRef{
-			.FilePath = Name.empty() ? "" : FullName,
-			.Extension = Extension
-		};
+		return AssetRef(Name.empty() ? "" : FullName, Extension, std::nullopt);
 	}
 
-	return AssetRef{
-		.FilePath = Found->second,
-		.Extension = Extension,
-	};
+	return AssetRef(Found->second, Extension, true);
 }
 
 AssetRef engine::AssetRef::EmptyAsset(string Extension)
 {
-	return AssetRef{
-		.FilePath = "",
-		.Extension = Extension,
-	};
+	return AssetRef(Extension, false);
 }
 
 engine::AssetRef engine::AssetRef::FromPath(string Path)
 {
 	size_t Dot = Path.find_last_of(".");
 
-	return AssetRef{
-		.FilePath = Path,
-		.Extension = Path.substr(Dot + 1),
-	};
+	return AssetRef(Path, Path.substr(Dot + 1), std::nullopt);
 }
 
 engine::AssetRef engine::AssetRef::Convert(std::string PathOrName)
@@ -74,5 +62,24 @@ engine::string engine::AssetRef::DisplayName() const
 
 bool engine::AssetRef::Exists() const
 {
-	return resource::FileExists(FilePath);
+	if (ExistsCache)
+	{
+		return *ExistsCache;
+	}
+
+	bool Result = resource::FileExists(FilePath);
+
+	ExistsCache = Result;
+
+	return Result;
+}
+
+engine::AssetRef::AssetRef(string Path, string Extension, std::optional<bool> ExistsCache)
+	: FilePath(Path), Extension(Extension), ExistsCache(ExistsCache)
+{
+}
+
+engine::AssetRef::AssetRef(string Extension, std::optional<bool> ExistsCache)
+	: Extension(Extension), ExistsCache(ExistsCache)
+{
 }

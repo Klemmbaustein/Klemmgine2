@@ -4,6 +4,11 @@
 #include <Engine/Scene.h>
 #include <Engine/Stats.h>
 
+engine::ParticleComponent::~ParticleComponent()
+{
+	Clear();
+}
+
 void engine::ParticleComponent::OnAttached()
 {
 	if (RootObject)
@@ -77,6 +82,7 @@ void engine::ParticleComponent::Load(AssetRef File)
 {
 	try
 	{
+		Clear();
 		Data = std::make_shared<graphics::ParticleData>(File);
 
 		auto Render = RootObject->GetScene()->Graphics.Render;
@@ -96,4 +102,17 @@ void engine::ParticleComponent::Load(AssetRef File)
 	{
 		Log::Error(e.what());
 	}
+}
+
+void engine::ParticleComponent::Clear()
+{
+	if (Data)
+	{
+		for (auto& i : Data->Emitters)
+		{
+			delete i.InstancesArray;
+			delete i.InstancesModel;
+		}
+	}
+	Data = nullptr;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/Types.h>
+#include <optional>
 
 namespace engine
 {
@@ -9,6 +10,17 @@ namespace engine
 	*/
 	struct AssetRef
 	{
+		AssetRef() = default;
+		AssetRef(const AssetRef&) = default;
+		~AssetRef() = default;
+
+		AssetRef& operator=(const AssetRef& Other)
+		{
+			this->~AssetRef();
+			new (this) AssetRef(Other.FilePath, Other.Extension, Other.ExistsCache);
+			return *this;
+		}
+
 		/**
 		* @brief
 		* Creates an asset reference from a file name.
@@ -39,10 +51,10 @@ namespace engine
 		bool IsValid() const;
 
 		/// The path to the referenced file.
-		string FilePath;
+		const string FilePath;
 
 		/// The extension of the file.
-		string Extension;
+		const string Extension;
 
 		/**
 		* @brief
@@ -62,6 +74,11 @@ namespace engine
 		{
 			return FilePath < other.FilePath;
 		}
+	private:
+		AssetRef(string Path, string Extension, std::optional<bool> ExistsCache);
+		AssetRef(string Extension, std::optional<bool> ExistsCache);
+
+		mutable std::optional<bool> ExistsCache = false;
 	};
 
 }

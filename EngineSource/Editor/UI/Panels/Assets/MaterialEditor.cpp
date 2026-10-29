@@ -5,7 +5,6 @@
 #include <Editor/UI/Elements/Toolbar.h>
 #include <MaterialEditor.kui.hpp>
 #include <Engine/Objects/MeshObject.h>
-#include <Engine/File/Resource.h>
 #include <Core/File/FileUtil.h>
 #include <stdexcept>
 #include <kui/Window.h>
@@ -43,14 +42,7 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 	Background->SetHorizontal(false);
 
 	PreviewScene = new Scene();
-	PreviewScene->Physics.Active = false;
-	PreviewScene->Graphics.SceneCamera->Rotation = Vector3(-37.5f, 45, 0);
-	PreviewScene->Graphics.SceneCamera->Position = Vector3(2.25f);
-	PreviewScene->Graphics.Resizable = false;
-	PreviewScene->Graphics.AlwaysRedraw = false;
-	PreviewScene->Graphics.RedrawNextFrame = true;
-	PreviewScene->Graphics.BufferSize = Vec2ui(300, 200) * Window::GetActiveWindow()->GetDPI();
-	PreviewScene->Graphics.OnResized(PreviewScene->Graphics.BufferSize);
+	PreviewImage = new ScenePreviewElement(PreviewScene, SizeVec(300_px, 200_px));
 
 	auto CurrentObj = PreviewScene->CreateObject<MeshObject>();
 	CurrentObj->LoadData(GraphicsModel::UnitCube());
@@ -74,7 +66,6 @@ engine::editor::MaterialEditor::MaterialEditor(AssetRef MaterialFile)
 		this->LoadUI();
 	});
 
-	PreviewImage = new UIBackground(true, 0, 1, SizeVec(300_px, 200_px));
 	Sidebar = new UIBackground(false, 0, EditorUI::Theme.DarkBackground);
 
 	SidebarScroll = new UIScrollBox(false, 0, true);
@@ -109,18 +100,6 @@ engine::editor::MaterialEditor::~MaterialEditor()
 void engine::editor::MaterialEditor::Update()
 {
 	AssetEditor::Update();
-
-	auto Texture = PreviewScene->Graphics.GetDrawBuffer();
-
-	if (Texture)
-	{
-		PreviewImage->SetUseImage(true, Texture->GetUITexture());
-	}
-	if (RedrawNextFrame)
-	{
-		PreviewImage->RedrawElement();
-		RedrawNextFrame = false;
-	}
 }
 
 void engine::editor::MaterialEditor::LoadUI()
@@ -306,8 +285,7 @@ void engine::editor::MaterialEditor::OnResized()
 void engine::editor::MaterialEditor::OnChanged()
 {
 	AssetEditor::OnChanged();
-	PreviewScene->Graphics.RedrawNextFrame = true;
-	RedrawNextFrame = true;
+	PreviewImage->RedrawScene();
 }
 
 void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material::Field& Field)
@@ -322,7 +300,7 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 	auto TexElement = new MaterialTextureElement();
 
 	auto Selector = new AssetSelector(
-		TextureName.Name.empty() ? AssetRef{ .Extension = "png" } : AssetRef::Convert(TextureName.Name),
+		TextureName.Name.empty() ? AssetRef::EmptyAsset("png") : AssetRef::Convert(TextureName.Name),
 		UISize(180_px).GetScreen().X, nullptr);
 
 	Selector->OnChanged = [this, Selector, TexElement, &Field]() {
@@ -345,7 +323,6 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 
 	TexElement->texturePreview->SetUseTexture(Field.TextureValue.Value, Field.TextureValue.Value
 		? Field.TextureValue.Value->RenderTexture->GetUITexture() : 0);
-	Selector->SelectedAsset.Extension = "png";
 
 	TexElement->controlsBox->AddChild(Selector);
 
