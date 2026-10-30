@@ -78,7 +78,7 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 
 	for (ParticleInstance i : GetInstances())
 	{
-		i.Velocity += Data.Acceleration;
+		i.Velocity += Data.Acceleration * Delta;
 		i.Position += i.Velocity * Delta;
 		i.Scale = std::lerp(Data.EndScale, Data.StartScale, i.Lifetime / Data.Lifetime);
 		i.Lifetime -= Delta;
@@ -114,7 +114,7 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 	if (NewParticleTimer <= 0)
 	{
 		GetInstances().push_back(ParticleInstance{
-			.Position = Data.StartPosition,
+			.Position = Data.StartPosition + RandomVec(Data.StartRandom),
 			.Velocity = Data.Velocity + RandomVec(Data.VelocityRandom),
 			.Rotation = Data.Rotation,
 			.RotationVelocity = Data.RotationVelocity,

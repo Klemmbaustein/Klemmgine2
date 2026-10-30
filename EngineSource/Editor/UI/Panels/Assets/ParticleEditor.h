@@ -3,6 +3,7 @@
 #include <Editor/UI/Elements/ScenePreviewElement.h>
 #include <Engine/Objects/ParticleObject.h>
 #include <Engine/Scene.h>
+#include <Engine/Debug/DebugDraw.h>
 
 namespace engine::editor
 {
@@ -14,6 +15,7 @@ namespace engine::editor
 		~ParticleEditor();
 
 		void OnResized() override;
+		void Update() override;
 
 		void BuildLayout();
 
@@ -22,5 +24,9 @@ namespace engine::editor
 		ScenePreviewElement* PreviewElement = nullptr;
 		ParticleObject* PreviewObject = nullptr;
 		kui::UIScrollBox* ContentBox = nullptr;
+		debug::DebugBox* BoundsShape = nullptr;
+
+		bool ShowBounds = false;
+		bool IsBoundsShapeAdded = false;
 	};
 }

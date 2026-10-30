@@ -58,13 +58,12 @@ void engine::MeshObject::Begin()
 		if (ModelName.Value.IsValid())
 			LoadMesh(ModelName.Value);
 	};
+	Materials.OnChanged = ModelName.OnChanged;
 	ModelName.OnChanged();
 
 	CastShadow.OnChanged = [this]() {
 		Mesh->CastShadow = this->CastShadow.Value;
 	};
-
-	Materials.OnChanged = ModelName.OnChanged;
 }
 
 void engine::MeshObject::OnDestroyed()
