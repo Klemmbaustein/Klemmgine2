@@ -102,7 +102,7 @@ Functions.push_back(NativeFunction{ \
 
 ENGINE_EXPORT void RegisterTypes()
 {
-	engine::cSharp::LoadRuntime();
+	//engine::cSharp::LoadRuntime();
 }
 
 ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
@@ -111,5 +111,5 @@ ENGINE_EXPORT void OnSceneLoaded(engine::Scene* New)
 
 ENGINE_EXPORT void Update(float Delta)
 {
-	engine::cSharp::Current->Update(Delta);
+	//engine::cSharp::Current->Update(Delta);
 }

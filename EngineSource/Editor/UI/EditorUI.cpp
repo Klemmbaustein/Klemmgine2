@@ -656,8 +656,6 @@ void engine::editor::EditorUI::UpdateTitleBar(kui::Window* Target, bool IsMainWi
 
 void engine::editor::EditorUI::Update()
 {
-	using namespace kui;
-
 	if (DraggedBox)
 	{
 		if (CurrentDraggedItem.Centered)

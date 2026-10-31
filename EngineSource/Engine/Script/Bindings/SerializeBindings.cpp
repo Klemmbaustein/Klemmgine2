@@ -85,6 +85,16 @@ static void SerializedFloat_new(InterpretContext* context)
 	context->pushValue(FloatValue);
 }
 
+static void SerializedBool_new(InterpretContext* context)
+{
+	ClassRef<ScriptSerializedBool> BoolValue = context->popValue<RuntimeClass*>();
+
+	BoolValue->Type = SerializedData::DataType::Float;
+	BoolValue->BoolValue = context->popValue<Bool>();
+
+	context->pushValue(BoolValue);
+}
+
 static void SerializedObject_delete(InterpretContext* context)
 {
 	auto Value = context->popPtr<ScriptSerializedObject>();
@@ -470,14 +480,22 @@ static void Serializable_serialize(InterpretContext* context)
 {
 	auto serializableValue = context->popValue<RuntimeClass*>();
 
-	auto& reflectionData = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
-		serializableValue->type);
+	auto Result = SerializeClassValue(serializableValue, context, context->runtime->reflect);
+	context->pushValue(MarshalSerializedValue(Result));
+}
 
+SerializedValue engine::script::SerializeClassValue(ds::RuntimeClass* ClassObject,
+	InterpretContext* Interpreter, ReflectInfo* Reflect)
+{
 	SerializedValue ResultValue = std::vector<SerializedData>();
+	auto& ScriptEngine = ScriptSubsystem::Instance->ScriptEngine;
+
+	auto& reflectionData = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
+		ClassObject->type);
 
 	for (auto& i : reflectionData.members)
 	{
-		if (i.attribute.type != ScriptSubsystem::Instance->ScriptEngine.SerializeAttributeType)
+		if (i.attribute.type != ScriptEngine.SerializeAttributeType)
 		{
 			continue;
 		}
@@ -487,28 +505,40 @@ static void Serializable_serialize(InterpretContext* context)
 
 		if (i.type == StringType::STRING_ID)
 		{
-			ResultValue.Append(SerializedData(Name, i.getFromInstance<RuntimeStrRef>(serializableValue).ptr()));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<RuntimeStrRef>(ClassObject).ptr()));
 		}
 		if (i.type == IntType::INT_ID)
 		{
-			ResultValue.Append(SerializedData(Name, i.getFromInstance<Int>(serializableValue)));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<Int>(ClassObject)));
 		}
 		if (i.type == FloatType::FLOAT_ID)
 		{
-			ResultValue.Append(SerializedData(Name, i.getFromInstance<Float>(serializableValue)));
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<Float>(ClassObject)));
 		}
-		if (i.type == ScriptSubsystem::Instance->ScriptEngine.Vector3Type)
+		if (i.type == BoolType::BOOL_ID)
 		{
-			ResultValue.Append(SerializedData(Name, i.getFromInstance<Vector3>(serializableValue)));
+			bool Value = i.getFromInstance<Bool>(ClassObject);
+
+			ResultValue.Append(SerializedData(Name, SerializedValue(Value)));
 		}
-		if (i.type == ScriptSubsystem::Instance->ScriptEngine.AssetRefType)
+		if (i.type == ScriptEngine.Vector3Type)
 		{
+			ResultValue.Append(SerializedData(Name, i.getFromInstance<Vector3>(ClassObject)));
+		}
+		if (i.type == ScriptEngine.AssetRefType)
+		{
+			ClassRef<AssetRef*> Ref = i.getFromInstance<RuntimeClass*>(ClassObject);
+			ResultValue.Append(SerializedData(Name, Ref.getValue()->FilePath));
+		}
+		if (Reflect->isSubclassOf(i.type, ScriptEngine.SerializableType))
+		{
+			auto Ref = i.getFromInstance<RuntimeClass*>(ClassObject);
+			Ref = Reflect->tryCast(Ref->type, ScriptEngine.SerializableType).tryConvert(Ref);
 			ResultValue.Append(SerializedData(Name,
-				i.getFromInstance<AssetRef*>(serializableValue)->FilePath));
+				UnMarshalSerializedValue(Interpreter->callVirtualMethod<RuntimeClass*>(Ref, 1))));
 		}
 	}
-
-	context->pushValue(MarshalSerializedValue(ResultValue));
+	return ResultValue;
 }
 
 static void Serializable_deSerialize(InterpretContext* context)
@@ -518,55 +548,86 @@ static void Serializable_deSerialize(InterpretContext* context)
 
 	auto Marshalled = UnMarshalSerializedValue(inValue.classPtr);
 
-	auto& reflectionData = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
-		serializableValue->type);
-
 	try
 	{
-		for (auto& i : reflectionData.members)
-		{
-			if (i.attribute.type != ScriptSubsystem::Instance->ScriptEngine.SerializeAttributeType)
-			{
-				continue;
-			}
-
-			auto NameAttribute = i.attribute.getParameterValue("name");
-			string Name = NameAttribute.has_value() ? *NameAttribute : i.name;
-
-			if (!Marshalled.Contains(Name))
-			{
-				continue;
-			}
-
-			if (i.type == StringType::STRING_ID)
-			{
-				auto NewStringValue = Marshalled.At(Name).GetString();
-
-				RuntimeStrRef NewString = RuntimeStrRef(NewStringValue.data(), NewStringValue.size());
-				i.setClassToInstance(serializableValue, NewString.classPtr, context);
-			}
-			if (i.type == IntType::INT_ID)
-			{
-				i.setToInstance<Int>(serializableValue, Marshalled.At(Name).GetInt());
-			}
-			if (i.type == FloatType::FLOAT_ID)
-			{
-				i.setToInstance<Float>(serializableValue, Marshalled.At(Name).GetFloat());
-			}
-			if (i.type == ScriptSubsystem::Instance->ScriptEngine.Vector3Type)
-			{
-				i.setToInstance<Vector3>(serializableValue, Marshalled.At(Name).GetVector3());
-			}
-			if (i.type == ScriptSubsystem::Instance->ScriptEngine.AssetRefType)
-			{
-				auto Value = NativeModule::makeClass(new AssetRef(AssetRef::Convert(Marshalled.At(Name).GetString())));
-				i.setClassToInstance(serializableValue, Value, context);
-			}
-		}
+		DeSerializeClassValue(serializableValue, Marshalled, context, context->runtime->reflect);
 	}
 	catch (SerializeException& e)
 	{
 		context->runtimePanic(e.what());
+	}
+}
+
+void engine::script::DeSerializeClassValue(ds::RuntimeClass* ClassObject, SerializedValue& Value,
+	ds::InterpretContext* Interpreter, ds::ReflectInfo* Reflect)
+{
+	auto& ScriptEngine = ScriptSubsystem::Instance->ScriptEngine;
+
+	auto& reflectionData = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
+		ClassObject->type);
+	for (auto& i : reflectionData.members)
+	{
+		if (i.attribute.type != ScriptEngine.SerializeAttributeType)
+		{
+			continue;
+		}
+
+		auto NameAttribute = i.attribute.getParameterValue("name");
+		string Name = NameAttribute.has_value() ? *NameAttribute : i.name;
+
+		if (!Value.Contains(Name))
+		{
+			continue;
+		}
+
+		if (i.type == StringType::STRING_ID)
+		{
+			auto NewStringValue = Value.At(Name).GetString();
+
+			RuntimeStrRef NewString = RuntimeStrRef(NewStringValue.data(), NewStringValue.size());
+			i.setClassToInstance(ClassObject, NewString.classPtr, Interpreter);
+		}
+		if (i.type == IntType::INT_ID)
+		{
+			i.setToInstance<Int>(ClassObject, Value.At(Name).GetInt());
+		}
+		if (i.type == FloatType::FLOAT_ID)
+		{
+			i.setToInstance<Float>(ClassObject, Value.At(Name).GetFloat());
+		}
+		if (i.type == BoolType::BOOL_ID)
+		{
+			i.setToInstance<Bool>(ClassObject, Value.At(Name).GetBool());
+		}
+		if (i.type == ScriptEngine.Vector3Type)
+		{
+			i.setToInstance<Vector3>(ClassObject, Value.At(Name).GetVector3());
+		}
+		if (i.type == ScriptEngine.AssetRefType)
+		{
+			auto V = NativeModule::makeClass(new AssetRef(AssetRef::Convert(Value.At(Name).GetString())));
+			i.setClassToInstance(ClassObject, V, Interpreter);
+		}
+		if (Reflect->isSubclassOf(i.type, ScriptEngine.SerializableType))
+		{
+			auto Ref = i.getFromInstance<RuntimeClass*>(ClassObject);
+			Ref = Reflect->tryCast(Ref->type, ScriptEngine.SerializableType).tryConvert(Ref);
+
+			if (!Ref)
+			{
+				Ref = ScriptSubsystem::Instance->ScriptInstructions->reflect.types.at(
+					ClassObject->type).create(Interpreter);
+			}
+
+			if (!Ref)
+			{
+				Log::Error(str::Format("%s: Has null value and new value cannot be instantiated.", Name.c_str()));
+				return;
+			}
+
+			Interpreter->pushValue(MarshalSerializedValue(Value.At(Name)));
+			(void)Interpreter->callVirtualMethodVoid(Ref, 2);
+		}
 	}
 }
 
@@ -649,6 +710,10 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addClassConstructor(FloatValue, NativeFunction(
 		{ FunctionArgument(FloatInst, "value") },
 		nullptr, "SerializedFloat.new", &SerializedFloat_new));
+
+	Serialize.addClassConstructor(BoolValue, NativeFunction(
+		{ FunctionArgument(BoolInst, "value") },
+		nullptr, "SerializedBool.new", &SerializedBool_new));
 
 	Serialize.addClassConstructor(StringValue, NativeFunction(
 		{ FunctionArgument(StrType, "value") },
@@ -874,6 +939,11 @@ SerializedData engine::script::UnMarshalSerializedData(ds::RuntimeClass* cls)
 
 SerializedValue engine::script::UnMarshalSerializedValue(ds::RuntimeClass* cls)
 {
+	if (!cls)
+	{
+		return SerializedValue();
+	}
+
 	ClassRef<ScriptSerializedValue> Value = cls;
 
 	switch (Value->Type)
@@ -882,6 +952,11 @@ SerializedValue engine::script::UnMarshalSerializedValue(ds::RuntimeClass* cls)
 	{
 		ClassRef<ScriptSerializedInt> IntValue = Value.classPtr;
 		return SerializedValue(IntValue->IntValue);
+	}
+	case SerializedData::DataType::Boolean:
+	{
+		ClassRef<ScriptSerializedBool> BoolValue = Value.classPtr;
+		return SerializedValue(BoolValue->BoolValue);
 	}
 	case SerializedData::DataType::Float:
 	{

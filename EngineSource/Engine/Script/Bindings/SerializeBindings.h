@@ -84,4 +84,10 @@ namespace engine::script
 
 	SerializedData UnMarshalSerializedData(ds::RuntimeClass* cls);
 	SerializedValue UnMarshalSerializedValue(ds::RuntimeClass* cls);
+
+	SerializedValue SerializeClassValue(ds::RuntimeClass* ClassObject, ds::InterpretContext* Interpreter,
+		ds::ReflectInfo* Reflect);
+
+	void DeSerializeClassValue(ds::RuntimeClass* ClassObject, SerializedValue& Value,
+		ds::InterpretContext* Interpreter, ds::ReflectInfo* Reflect);
 }

@@ -23,6 +23,7 @@ namespace engine::script
 		ds::TypeId IconAttributeType = 0;
 		ds::TypeId ConsoleCommandAttribute = 0;
 		ds::TypeId SerializeAttributeType = 0;
+		ds::TypeId SerializableType = 0;
 
 		ds::TypeId UITextType = 0;
 	};
