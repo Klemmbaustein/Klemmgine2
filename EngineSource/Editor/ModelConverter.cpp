@@ -79,7 +79,7 @@ static void ProcessScene(const aiNode* Node, ConvertContext Context, string OutD
 	}
 }
 
-static void WriteMaterial(string Path, ConvertContext Context, string Texture)
+static void WriteMaterial(string Path, ConvertContext Context, string Texture, Vector3 Color)
 {
 	if (resource::FileExists(Path) && !Context.Options.ReplaceMaterials)
 	{
@@ -100,6 +100,13 @@ static void WriteMaterial(string Path, ConvertContext Context, string Texture)
 	if (UseTextureField)
 	{
 		UseTextureField->Int = Texture.empty() ? 0 : 1;
+	}
+
+	auto ColorField = NewMaterial->FindField("u_color", Material::Field::Type::Vec3);
+
+	if (ColorField)
+	{
+		ColorField->Vec3 = Color;
 	}
 
 	std::stringstream StringStream;
@@ -152,8 +159,12 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 			TextureOutput.close();
 		}
 
+		aiColor3D DiffuseColor{1, 1, 1};
+
+		material->Get(AI_MATKEY_COLOR_DIFFUSE, DiffuseColor);
+
 		string MaterialPath = str::Format("%s%s_%i.kmt", OutDir.c_str(), Context.SceneName.c_str(), int(i));
-		WriteMaterial(MaterialPath, Context, TexturePath);
+		WriteMaterial(MaterialPath, Context, TexturePath, Vector3(DiffuseColor.r, DiffuseColor.g, DiffuseColor.b));
 	}
 }
 

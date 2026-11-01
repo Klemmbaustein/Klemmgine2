@@ -657,7 +657,7 @@ void engine::editor::ScriptEditorUI::OpenTabSwitcher()
 	{
 		auto& i = Tabs[it];
 
-		if (Count++ >= 8)
+		if (Count >= 8)
 		{
 			Column = nullptr;
 			Count = 0;
@@ -679,6 +679,7 @@ void engine::editor::ScriptEditorUI::OpenTabSwitcher()
 		}
 
 		Column->AddChild(Item);
+		Count++;
 	}
 	Window::GetActiveWindow()->UI.RedrawUI();
 }

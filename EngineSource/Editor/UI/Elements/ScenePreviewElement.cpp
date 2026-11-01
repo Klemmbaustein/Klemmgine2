@@ -1,5 +1,7 @@
 #include "ScenePreviewElement.h"
 
+using namespace kui;
+
 engine::editor::ScenePreviewElement::ScenePreviewElement(Scene* PreviewScene, kui::SizeVec Size)
 	: UIBackground(false, 0, 1, Size), PreviewScene(PreviewScene)
 {
@@ -30,9 +32,9 @@ void engine::editor::ScenePreviewElement::Tick()
 
 void engine::editor::ScenePreviewElement::Update()
 {
-	kui::Vec2ui& PixelSize = PreviewScene->Graphics.BufferSize;
+	Vec2ui& PixelSize = PreviewScene->Graphics.BufferSize;
 
-	kui::Vec2ui Resolution = GetUsedSize().GetPixels() * ParentWindow->GetDPI();
+	Vec2ui Resolution = GetUsedSize().GetPixels() * ParentWindow->GetDPI();
 
 	if (PixelSize != Resolution)
 	{
