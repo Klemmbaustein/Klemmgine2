@@ -9,6 +9,11 @@ engine::script::ScriptSceneManager::ScriptSceneManager(const ds::TypeInfo& Class
 
 engine::script::ScriptSceneManager::~ScriptSceneManager()
 {
+	if (Engine::IsPlaying && ScriptData)
+	{
+		(void)Interpreter->callVirtualMethodVoid(ScriptData, 1);
+	}
+
 	OnDestroyedEvent.Invoke();
 	UnloadScriptData();
 }
@@ -35,7 +40,7 @@ void engine::script::ScriptSceneManager::Update()
 {
 	if (Engine::IsPlaying && ScriptData)
 	{
-		(void)Interpreter->callVirtualMethodVoid(ScriptData, 1);
+		(void)Interpreter->callVirtualMethodVoid(ScriptData, 2);
 	}
 }
 

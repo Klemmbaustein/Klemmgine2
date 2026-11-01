@@ -534,8 +534,10 @@ SerializedValue engine::script::SerializeClassValue(ds::RuntimeClass* ClassObjec
 		{
 			auto Ref = i.getFromInstance<RuntimeClass*>(ClassObject);
 			Ref = Reflect->tryCast(Ref->type, ScriptEngine.SerializableType).tryConvert(Ref);
+			ClassPtr<ScriptSerializedValue> NewValue = { Interpreter->callVirtualMethod<RuntimeClass*>(Ref, 1), Interpreter };
+
 			ResultValue.Append(SerializedData(Name,
-				UnMarshalSerializedValue(Interpreter->callVirtualMethod<RuntimeClass*>(Ref, 1))));
+				UnMarshalSerializedValue(NewValue.classPtr)));
 		}
 	}
 	return ResultValue;

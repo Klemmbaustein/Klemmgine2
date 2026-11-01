@@ -1139,7 +1139,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	ComponentType->makePointerClass();
 
 	EngineModule.addClassVirtualMethod(ManagerType,
-		NativeFunction({}, nullptr, "update", &Object_empty), 1);
+		NativeFunction({}, nullptr, "update", &Object_empty), 2);
+
+	EngineModule.addClassVirtualMethod(ManagerType,
+		NativeFunction({}, nullptr, "onDestroy", &Object_empty), 1);
 
 	EngineModule.addClassVirtualMethod(ObjectType,
 		NativeFunction({}, nullptr, "onBegin", &Object_empty), 1);
