@@ -379,6 +379,15 @@ static void SceneObject_getName(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(Name.data(), Name.size()));
 }
 
+static void SceneObject_setName(InterpretContext* context)
+{
+	ClassRef<SceneObject*> Data = context->popValue<RuntimeClass*>();
+	RuntimeStr NewName = context->popRuntimeString();
+	CHECK_OBJ(Data);
+
+	Data.getValue()->Name = string(NewName.ptr(), NewName.length());
+}
+
 static void ObjectComponent_delete(InterpretContext* context)
 {
 	ClassPtr<ObjectComponent*> Component = context->popPtr<ObjectComponent*>();
@@ -1203,6 +1212,10 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(ObjectType,
 		NativeFunction({}, StrType,
 			"getName", &SceneObject_getName));
+
+	EngineModule.addClassMethod(ObjectType,
+		NativeFunction({ FunctionArgument(StrType, "newName") }, nullptr,
+			"setName", &SceneObject_setName));
 
 	EngineModule.addFunction(
 		NativeFunction({ FunctionArgument(StrType, "message") },
