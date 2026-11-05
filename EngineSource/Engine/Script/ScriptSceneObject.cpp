@@ -192,7 +192,7 @@ void engine::script::ScriptSceneObject::LoadProperties()
 		}
 		else if (i.type == FloatType::FLOAT_ID)
 		{
-			ds::Float Value = i.getFromInstance<Int>(ScriptData);
+			ds::Float Value = i.getFromInstance<Float>(ScriptData);
 
 			auto p = new ObjProperty<float>(Name, Value, this);
 			p->IsHidden = !Visible;
