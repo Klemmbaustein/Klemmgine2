@@ -22,7 +22,16 @@ option(IS_SOURCELESS_BUILD "Is build that works without source code (eg. scripti
 option(ENGINE_BUILD_ID "Build identifier" "")
 option(EDITOR_PLUGIN_SUPPORT "Enable experimental support for managing plugins in-editor" OFF)
 option(EDITOR_CONVERT_DOCUMENTATION "Convert documentation XML files into JSON for the editor to read (requires Powershell 7)" ON)
+option(ENGINE_USE_FULL_LGCG "Use Full Link Time Code Generation in Release builds" ON)
 add_compile_definitions(KUI_EXPERIMENTAL_FILE_EDIT)
+
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR NOT ENGINE_USE_FULL_LGCG)
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+	set(INTERPROCEDURAL_OPTIMIZATION OFF)
+elseif(WIN32)
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+	set(INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
 
 if(WIN32)
 	project("Klemmgine" LANGUAGES C CXX RC)
@@ -64,11 +73,6 @@ endif()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib$<0:>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin$<0:>)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin$<0:>)
-
-if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-	set(INTERPROCEDURAL_OPTIMIZATION OFF)
-endif()
 
 engine_part_library(KlemmgineCore "Core")
 engine_part_library(KlemmgineLib "Engine")

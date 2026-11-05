@@ -44,6 +44,15 @@
 			}
 		},
 		{
+			"name": "x64-release-full",
+			"displayName": "x64 Optimized Release",
+			"inherits": "x64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"USE_WINDOWS_SUBSYSTEM": "OF"
+			}
+		},
+		{
 			"name": "x64-debug-noeditor",
 			"displayName": "x64 Debug (No Editor)",
 			"inherits": "x64-debug",
