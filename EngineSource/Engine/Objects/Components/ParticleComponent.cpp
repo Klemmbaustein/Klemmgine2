@@ -3,6 +3,8 @@
 #include <Core/ThreadPool.h>
 #include <Engine/Scene.h>
 #include <Engine/Stats.h>
+#include <Engine/File/Resource.h>
+#include <iostream>
 
 engine::ParticleComponent::~ParticleComponent()
 {
@@ -25,16 +27,6 @@ void engine::ParticleComponent::OnDetached()
 	}
 }
 
-bool engine::ParticleComponent::UpdateTransform(bool IsDirty)
-{
-	bool Result = DrawableComponent::UpdateTransform(IsDirty);
-	if (Data && DrawBoundingBox.Extents == 0 || Result)
-	{
-		DrawBoundingBox = EmitterBounds.Translate(WorldTransform);
-	}
-	return Result;
-}
-
 void engine::ParticleComponent::Update()
 {
 	if (!Data)
@@ -45,20 +37,43 @@ void engine::ParticleComponent::Update()
 	auto CameraView = Transform(RootObject->GetScene()->Graphics.UsedCamera->View).Rotation().Inverse();
 
 	std::lock_guard g{ Data->EmittersMutex };
+	std::optional<BoundingBox> NewBounds;
 	for (auto& i : Data->Emitters)
 	{
-		if (!i.IsRunning)
+		if (!i.IsProcessingEffect)
 		{
-			i.IsRunning = true;
+			i.IsProcessingEffect = true;
 			i.MainThreadInstanceCount = i.Transforms.size();
-			EmitterBounds = i.Bounds;
-			DrawBoundingBox = EmitterBounds.Translate(WorldTransform);
+			i.MainThreadBounds = i.Bounds;
 			i.InstancesArray->SetTransformData(i.Transforms.data(), i.Transforms.size());
 			ThreadPool::Main()->AddJob([Data = this->Data, &i, CameraView] {
-				i.RunStep(stats::DeltaTime, CameraView);
-				i.IsRunning = false;
+				i.RunStep(stats::DeltaTime, CameraView, Data->AutomaticBoundingVolume);
+				i.IsProcessingEffect = false;
 			});
 		}
+		if (!NewBounds && i.MainThreadInstanceCount)
+		{
+			NewBounds = i.MainThreadBounds.Translate(WorldTransform);
+		}
+		else if (i.MainThreadInstanceCount)
+		{
+			auto Translated = i.MainThreadBounds.Translate(WorldTransform);
+			Vector3 NewMin = (NewBounds->Position - NewBounds->Extents).Min(
+				Translated.Position - Translated.Extents);
+			Vector3 NewMax = (NewBounds->Position + NewBounds->Extents).Max(
+				Translated.Position + Translated.Extents);
+			NewBounds = BoundingBox::FromMinMax(NewMin, NewMax);
+		}
+
+	}
+
+	if (NewBounds)
+	{
+		DrawBoundingBox = *NewBounds;
+	}
+	else
+	{
+		DrawBoundingBox = {};
 	}
 }
 
@@ -73,10 +88,13 @@ void engine::ParticleComponent::Draw(graphics::Renderer* Render, graphics::Camer
 	std::lock_guard g{ Data->EmittersMutex };
 	for (auto& i : Data->Emitters)
 	{
-		std::vector<graphics::Material*> Materials = { i.Data.Material };
+		if (i.MainThreadInstanceCount)
+		{
+			std::vector<graphics::Material*> Materials = { i.Data.Material };
 
-		i.InstancesModel->DrawInstanced(Render, In, WorldTransform, From, Materials,
-			DrawBoundingBox, DrawStencil, false, i.MainThreadInstanceCount);
+			i.InstancesModel->DrawInstanced(Render, In, WorldTransform, From, Materials,
+				DrawBoundingBox, DrawStencil, false, i.MainThreadInstanceCount);
+		}
 	}
 }
 
@@ -85,6 +103,12 @@ void engine::ParticleComponent::Load(AssetRef File)
 	try
 	{
 		Clear();
+		resource::AssetListeners[File.FilePath].Add(this, [this, File] {
+			if (DoHotReload)
+			{
+				Load(File);
+			}
+		});
 		Data = std::make_shared<graphics::ParticleData>(File);
 
 		for (auto& i : Data->Emitters)
@@ -111,6 +135,43 @@ void engine::ParticleComponent::InitializeEmitter(graphics::ParticleEmitter* Emi
 	}
 }
 
+void engine::ParticleComponent::RemoveEmitter(size_t Index)
+{
+	auto it = Data->Emitters.begin();
+
+	for (size_t i = 0; i < Index; i++)
+	{
+		it++;
+	}
+
+	auto& e = *it;
+	delete e.InstancesArray;
+	delete e.InstancesModel;
+	delete e.Data.Material;
+	Data->Emitters.erase(it);
+}
+
+void engine::ParticleComponent::Reset() const
+{
+	for (auto& i : Data->Emitters)
+	{
+		i.Reset();
+	}
+}
+
+bool engine::ParticleComponent::IsPlaying() const
+{
+	for (auto& i : Data->Emitters)
+	{
+		if (i.IsPlaying())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void engine::ParticleComponent::Clear()
 {
 	if (Data)
@@ -122,5 +183,6 @@ void engine::ParticleComponent::Clear()
 			delete i.Data.Material;
 		}
 	}
+	resource::RemoveListener(this);
 	Data = nullptr;
 }

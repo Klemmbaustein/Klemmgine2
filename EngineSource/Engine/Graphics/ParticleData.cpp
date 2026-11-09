@@ -42,7 +42,17 @@ engine::graphics::ParticleData::ParticleData()
 
 SerializedValue engine::graphics::ParticleData::Serialize()
 {
-	return SerializedValue();
+	SerializedValue Emitters = std::vector<SerializedValue>();
+
+	for (auto& i : this->Emitters)
+	{
+		Emitters.Append(i.Data.Serialize());
+	}
+
+	return SerializedValue({
+		SerializedData("emitters", Emitters),
+		SerializedData("automaticBounds", AutomaticBoundingVolume),
+		});
 }
 
 void engine::graphics::ParticleData::DeSerialize(SerializedValue* From)
@@ -53,11 +63,28 @@ void engine::graphics::ParticleData::DeSerialize(SerializedValue* From)
 	{
 		this->Emitters.emplace_back().Data.DeSerialize(&i);
 	}
+
+	AutomaticBoundingVolume = From->At("automaticBounds").GetBool();
 }
 
 SerializedValue engine::graphics::ParticleEmitterData::Serialize()
 {
-	return SerializedValue();
+	return SerializedValue({
+		SerializedData("material", MaterialFile.FilePath),
+		SerializedData("position", StartPosition),
+		SerializedData("positionRandom", StartRandom),
+		SerializedData("velocityRandom", VelocityRandom),
+		SerializedData("velocity", Velocity),
+		SerializedData("acceleration", Acceleration),
+		SerializedData("startScale", StartScale),
+		SerializedData("endScale", EndScale),
+		SerializedData("lifetime", Lifetime),
+		SerializedData("spawnDelay", SpawnDelay),
+		SerializedData("spawnCount", SpawnCount),
+		SerializedData("rotation", Rotation),
+		SerializedData("rotationVelocity", RotationVelocity),
+		SerializedData("rotationVelocityRandom", RotationVelocityRandom),
+		});
 }
 
 void engine::graphics::ParticleEmitterData::ReloadMaterial()
@@ -76,21 +103,37 @@ void engine::graphics::ParticleEmitterData::DeSerialize(SerializedValue* From)
 	MaterialFile = AssetRef::Convert(From->At("material").GetString());
 	ReloadMaterial();
 
-	VelocityRandom = From->At("velocityRandom").GetVector3();
+	StartPosition = From->At("position").GetVector3();
+	StartRandom = From->At("positionRandom").GetVector3();
 	Velocity = From->At("velocity").GetVector3();
+	VelocityRandom = From->At("velocityRandom").GetVector3();
+	Acceleration = From->At("acceleration").GetVector3();
 	StartScale = From->At("startScale").GetFloat();
 	EndScale = From->At("endScale").GetFloat();
 	Lifetime = From->At("lifetime").GetFloat();
+	SpawnDelay = From->At("spawnDelay").GetFloat();
+	SpawnCount = From->At("spawnCount").GetInt();
+	Rotation = From->At("rotation").GetFloat();
+	RotationVelocity = From->At("rotationVelocity").GetFloat();
+	RotationVelocityRandom = From->At("rotationVelocityRandom").GetFloat();
 }
 
-void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTransform)
+bool engine::graphics::ParticleEmitter::IsPlaying() const
 {
+	return CurrentInstanceCount || Data.SpawnCount <= 0 || SpawnCount < Data.SpawnCount;
+}
+
+void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTransform, bool AutomaticBoundingVolume)
+{
+	std::lock_guard g{ EmitterMutex };
 	Transforms.clear();
 
 	Vector3 Min = INFINITY;
 	Vector3 Max = -INFINITY;
 
 	GetInactiveInstances().clear();
+
+	uint32 Count = 0;
 
 	for (ParticleInstance i : GetInstances())
 	{
@@ -100,8 +143,11 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 		i.Lifetime -= Delta;
 		i.Rotation += i.RotationVelocity * Delta;
 
-		Min = Min.Min(i.Position - i.Scale);
-		Max = Max.Max(i.Position + i.Scale);
+		if (AutomaticBoundingVolume)
+		{
+			Min = Min.Min(i.Position - i.Scale);
+			Max = Max.Max(i.Position + i.Scale);
+		}
 
 		Transform t = Transform(i.Position, Rotation3(), i.Scale)
 			.Combine(ViewTransform);
@@ -115,7 +161,10 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 		}
 	}
 
-	Bounds = BoundingBox::FromMinMax(Min, Max);
+	if (AutomaticBoundingVolume)
+	{
+		Bounds = BoundingBox::FromMinMax(Min, Max);
+	}
 
 	NewParticleTimer -= Delta;
 	CurrentActiveInstances = !CurrentActiveInstances;
@@ -127,16 +176,40 @@ void engine::graphics::ParticleEmitter::RunStep(float Delta, Transform ViewTrans
 		return Vector3(X(RandomGenerator), Y(RandomGenerator), Z(RandomGenerator));
 	};
 
-	if (NewParticleTimer <= 0)
+	auto CanSpawn = [this] {
+		return;
+	};
+
+
+	while (NewParticleTimer <= 0 && (SpawnCount < Data.SpawnCount || Data.SpawnCount <= 0))
 	{
+		std::uniform_real_distribution<float> VelocityRng{ -Data.RotationVelocityRandom, Data.RotationVelocityRandom };
+
 		GetInstances().push_back(ParticleInstance{
 			.Position = Data.StartPosition + RandomVec(Data.StartRandom),
 			.Velocity = Data.Velocity + RandomVec(Data.VelocityRandom),
 			.Rotation = Data.Rotation,
-			.RotationVelocity = Data.RotationVelocity,
+			.RotationVelocity = Data.RotationVelocity + VelocityRng(RandomGenerator),
 			.Scale = Data.StartScale,
 			.Lifetime = Data.Lifetime,
 			});
-		NewParticleTimer = 0.1f;
+		NewParticleTimer = Data.SpawnDelay;
+		SpawnCount++;
+		if (Data.SpawnCount <= 0)
+		{
+			break;
+		}
 	}
+
+	CurrentInstanceCount = int32(GetInstances().size());
+}
+
+void engine::graphics::ParticleEmitter::Reset()
+{
+	std::lock_guard g{ EmitterMutex };
+	Transforms.clear();
+	Instances1.clear();
+	Instances2.clear();
+	SpawnCount = 0;
+	MainThreadInstanceCount = 0;
 }

@@ -21,12 +21,15 @@ namespace engine::graphics
 
 		Vector3 Acceleration;
 
-		float Rotation = 45.0f;
-		float RotationVelocity = 360.0f;
+		float Rotation = 0.0f;
+		float RotationVelocity = 0.0f;
+		float RotationVelocityRandom = 0.0f;
 
 		float StartScale = 0.25f;
-		float EndScale = 1.0f;
+		float EndScale = 0.0f;
 		float Lifetime = 1.0f;
+		float SpawnDelay = 0.1f;
+		int32 SpawnCount = 0;
 
 		graphics::Material* Material = nullptr;
 		AssetRef MaterialFile = AssetRef::EmptyAsset("kmt");
@@ -43,8 +46,8 @@ namespace engine::graphics
 	public:
 		Vector3 Position;
 		Vector3 Velocity;
-		float Rotation = 0;
-		float RotationVelocity;
+		float Rotation = 0.0f;
+		float RotationVelocity = 0.0f;
 		float Scale = 0;
 		float Lifetime = 1.0f;
 	};
@@ -58,14 +61,22 @@ namespace engine::graphics
 		graphics::VertexArrayData* InstancesArray = nullptr;
 
 		std::vector<Transform> Transforms;
+		std::mutex EmitterMutex;
 
-		bool IsRunning = false;
+		bool IsProcessingEffect = false;
 
 		size_t MainThreadInstanceCount = 0;
+		std::atomic<int32> SpawnCount = 0;
+		std::atomic<int32> CurrentInstanceCount;
+
+		bool IsPlaying() const;
 
 		BoundingBox Bounds;
+		BoundingBox MainThreadBounds;
 
-		void RunStep(float Delta, Transform ViewTransform);
+		void RunStep(float Delta, Transform ViewTransform, bool AutomaticBoundingVolume);
+
+		void Reset();
 
 		std::vector<ParticleInstance>& GetInstances()
 		{
@@ -90,8 +101,10 @@ namespace engine::graphics
 		ParticleData(AssetRef FromFile);
 		ParticleData();
 
-		std::vector<ParticleEmitter> Emitters;
+		std::list<ParticleEmitter> Emitters;
 		std::mutex EmittersMutex;
+
+		bool AutomaticBoundingVolume = true;
 
 		// Inherited via Serializable
 		SerializedValue Serialize() override;

@@ -14,7 +14,6 @@ namespace engine
 
 		void OnAttached() override;
 		void OnDetached() override;
-		bool UpdateTransform(bool IsDirty) override;
 
 		void Update() override;
 
@@ -25,11 +24,15 @@ namespace engine
 		std::shared_ptr<graphics::ParticleData> Data;
 
 		void InitializeEmitter(graphics::ParticleEmitter* Emitter);
+		void RemoveEmitter(size_t Index);
+
+		void Reset() const;
+		bool IsPlaying() const;
+		bool DoHotReload = true;
 
 	private:
 		void Clear();
 
 		size_t InstanceCount = 0;
-		BoundingBox EmitterBounds;
 	};
 }

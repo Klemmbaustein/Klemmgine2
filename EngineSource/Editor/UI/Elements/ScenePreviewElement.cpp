@@ -1,4 +1,5 @@
 #include "ScenePreviewElement.h"
+#include <iostream>
 
 using namespace kui;
 
