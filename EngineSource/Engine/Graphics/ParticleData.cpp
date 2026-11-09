@@ -31,6 +31,11 @@ engine::graphics::ParticleData::ParticleData(AssetRef FromFile)
 	}
 }
 
+engine::graphics::ParticleEmitterData::ParticleEmitterData()
+{
+	Material = graphics::Material::MakeDefault(ShaderAttributes{ .IsInstanced = true, });
+}
+
 engine::graphics::ParticleData::ParticleData()
 {
 }
@@ -55,10 +60,21 @@ SerializedValue engine::graphics::ParticleEmitterData::Serialize()
 	return SerializedValue();
 }
 
+void engine::graphics::ParticleEmitterData::ReloadMaterial()
+{
+	if (Material)
+	{
+		delete Material;
+		Material = nullptr;
+	}
+	Material = new graphics::Material(MaterialFile,
+		ShaderAttributes{ .IsInstanced = true });
+}
+
 void engine::graphics::ParticleEmitterData::DeSerialize(SerializedValue* From)
 {
-	Material = new graphics::Material(AssetRef::Convert(From->At("material").GetString()),
-		ShaderAttributes{ .IsInstanced = true });
+	MaterialFile = AssetRef::Convert(From->At("material").GetString());
+	ReloadMaterial();
 
 	VelocityRandom = From->At("velocityRandom").GetVector3();
 	Velocity = From->At("velocity").GetVector3();

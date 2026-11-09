@@ -24,6 +24,8 @@ namespace engine
 		void Load(AssetRef File);
 		std::shared_ptr<graphics::ParticleData> Data;
 
+		void InitializeEmitter(graphics::ParticleEmitter* Emitter);
+
 	private:
 		void Clear();
 

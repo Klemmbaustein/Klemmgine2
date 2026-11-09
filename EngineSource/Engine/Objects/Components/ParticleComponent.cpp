@@ -44,6 +44,7 @@ void engine::ParticleComponent::Update()
 
 	auto CameraView = Transform(RootObject->GetScene()->Graphics.UsedCamera->View).Rotation().Inverse();
 
+	std::lock_guard g{ Data->EmittersMutex };
 	for (auto& i : Data->Emitters)
 	{
 		if (!i.IsRunning)
@@ -69,6 +70,7 @@ void engine::ParticleComponent::Draw(graphics::Renderer* Render, graphics::Camer
 		return;
 	}
 
+	std::lock_guard g{ Data->EmittersMutex };
 	for (auto& i : Data->Emitters)
 	{
 		std::vector<graphics::Material*> Materials = { i.Data.Material };
@@ -85,22 +87,27 @@ void engine::ParticleComponent::Load(AssetRef File)
 		Clear();
 		Data = std::make_shared<graphics::ParticleData>(File);
 
-		auto Render = RootObject->GetScene()->Graphics.Render;
-
 		for (auto& i : Data->Emitters)
 		{
-			i.InstancesArray = Render->CreateTransformVertexData(nullptr, 0);
-			i.InstancesModel = new graphics::Model(GraphicsModel::Billboard()->Data);
-
-			for (auto& model : i.InstancesModel->ModelVertexBuffers)
-			{
-				model->AttachArrayData(3, i.InstancesArray, graphics::VertexArrayData::BufferType::PerInstance);
-			}
+			InitializeEmitter(&i);
 		}
 	}
 	catch (SerializeException& e)
 	{
 		Log::Error(e.what());
+	}
+}
+
+void engine::ParticleComponent::InitializeEmitter(graphics::ParticleEmitter* Emitter)
+{
+	auto Render = RootObject->GetScene()->Graphics.Render;
+
+	Emitter->InstancesArray = Render->CreateTransformVertexData(nullptr, 0);
+	Emitter->InstancesModel = new graphics::Model(GraphicsModel::Billboard()->Data);
+
+	for (auto& model : Emitter->InstancesModel->ModelVertexBuffers)
+	{
+		model->AttachArrayData(3, Emitter->InstancesArray, graphics::VertexArrayData::BufferType::PerInstance);
 	}
 }
 
@@ -112,6 +119,7 @@ void engine::ParticleComponent::Clear()
 		{
 			delete i.InstancesArray;
 			delete i.InstancesModel;
+			delete i.Data.Material;
 		}
 	}
 	Data = nullptr;

@@ -451,6 +451,7 @@ std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(st
 		FileType("New Material", "Ctrl+M", "kmt", "Material"),
 		FileType("New Script", "Ctrl+K", "ds", "Script"),
 		FileType("New UI Script", "Ctrl+E", "kui", "UIScript"),
+		FileType("New Particle Effect", "Ctrl+P", "prt", "Particle"),
 	};
 
 	std::vector<DropdownMenu::Option> Options = {

@@ -4,12 +4,15 @@
 #include <Engine/File/AssetRef.h>
 #include <Engine/Graphics/Material.h>
 #include <Engine/Graphics/Model.h>
+#include <mutex>
 
 namespace engine::graphics
 {
 	class ParticleEmitterData : Serializable
 	{
 	public:
+		ParticleEmitterData();
+
 		Vector3 StartPosition;
 		Vector3 StartRandom;
 
@@ -26,6 +29,9 @@ namespace engine::graphics
 		float Lifetime = 1.0f;
 
 		graphics::Material* Material = nullptr;
+		AssetRef MaterialFile = AssetRef::EmptyAsset("kmt");
+
+		void ReloadMaterial();
 
 		// Inherited via Serializable
 		SerializedValue Serialize() override;
@@ -85,6 +91,7 @@ namespace engine::graphics
 		ParticleData();
 
 		std::vector<ParticleEmitter> Emitters;
+		std::mutex EmittersMutex;
 
 		// Inherited via Serializable
 		SerializedValue Serialize() override;

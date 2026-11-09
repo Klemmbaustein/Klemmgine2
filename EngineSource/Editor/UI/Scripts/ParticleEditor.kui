@@ -18,11 +18,12 @@ element ParticleEditorItem
 		child UIBackground
 		{
 			color = Color_HighlightDark
+			height = 30px
 
 			width = 100%
 			border = 1px
 			bottomBorder = false
-			corners = 5px
+			corners = Theme_CornerSize
 			bottomLeftCorner = false
 			bottomRightCorner = false
 			borderColor = Color_Highlight1
@@ -51,6 +52,39 @@ element ParticleEditorItem
 		{
 			width = 100%
 			height = 400px
+		}
+	}
+}
+
+element ParticleEditorNewItemCard
+{
+	width = 250px
+	height = 420px
+
+	allAlign = centered
+
+	child UIButton btn
+	{
+		color = Color_Background
+		border = 1px
+		borderColor = Color_BackgroundHighlight
+		corners = Theme_CornerSize
+		allAlign = centered
+		size = 160px
+
+		child UIBackground
+		{
+			size = 16px
+			color = Color_Text
+			image = $"Plus.png"
+		}
+
+		child UIText
+		{
+			size = 12px
+			color = Color_Text
+			leftPadding = 5px
+			text = "New Element"
 		}
 	}
 }

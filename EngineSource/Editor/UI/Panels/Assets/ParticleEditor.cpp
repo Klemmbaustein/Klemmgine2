@@ -4,6 +4,8 @@
 #include <kui/UI/UIScrollBox.h>
 #include <Editor/UI/Elements/Toolbar.h>
 
+using namespace kui;
+
 engine::editor::ParticleEditor::ParticleEditor(AssetRef ParticleFile)
 	: AssetEditor("Particle: %s", ParticleFile)
 {
@@ -53,6 +55,7 @@ engine::editor::ParticleEditor::~ParticleEditor()
 
 void engine::editor::ParticleEditor::OnResized()
 {
+	ContentBox->SetSize(Size - SizeVec::Pixels(10, 260).GetScreen());
 	BuildLayout();
 }
 
@@ -84,18 +87,28 @@ void engine::editor::ParticleEditor::BuildLayout()
 
 	auto Row = new kui::UIBox(true, 0);
 
+	auto AddElement = [&Row, &Counter](UIBox* NewElement) {
+		Row->AddChild(NewElement);
+		Counter++;
+	};
+
 	for (auto& i : PreviewObject->Particles->Data->Emitters)
 	{
 		auto Item = new ParticleEditorItem();
 
-		Item->SetName(str::Format("Element %i", Counter++));
+		Item->SetName(str::Format("Element %i", Counter));
 
 		auto Properties = new PropertyMenu();
 		Properties->SetSize(kui::SizeVec(240_px, kui::UISize::Parent(1)));
 		Properties->SetPadding(5_px);
 		Item->content->AddChild(Properties);
 
-		Row->AddChild(Item);
+		AddElement(Item);
+		Properties->CreateNewHeading("Appearance");
+		Properties->AddAssetRefEntry("Material", i.Data.MaterialFile, [&i] {
+			i.Data.ReloadMaterial();
+		});
+
 		Properties->CreateNewHeading("Position");
 		Properties->AddVecEntry("Start Position", i.Data.StartPosition, nullptr);
 		Properties->AddVecEntry("Position Random", i.Data.StartRandom, nullptr);
@@ -110,6 +123,14 @@ void engine::editor::ParticleEditor::BuildLayout()
 		Properties->CreateNewHeading("Spawn");
 		Properties->AddFloatEntry("Lifetime", i.Data.Lifetime, nullptr);
 	}
+
+	auto NewElementButton = new ParticleEditorNewItemCard();
+	NewElementButton->btn->OnClicked = [this] {
+		std::lock_guard g{ PreviewObject->Particles->Data->EmittersMutex };
+		PreviewObject->Particles->InitializeEmitter(&PreviewObject->Particles->Data->Emitters.emplace_back());
+		BuildLayout();
+	};
+	AddElement(NewElementButton);
 
 	ContentBox->AddChild(Row);
 }
