@@ -1,5 +1,5 @@
 #pragma once
-#include "IDialogWindow.h"
+#include "DialogWindow.h"
 #include <Engine/File/AssetRef.h>
 
 namespace engine::editor

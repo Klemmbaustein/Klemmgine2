@@ -1,4 +1,4 @@
-#include "IDialogWindow.h"
+#include "DialogWindow.h"
 #include <Core/Log.h>
 #include <Common.kui.hpp>
 #include <DialogWindow.kui.hpp>

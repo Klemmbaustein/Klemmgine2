@@ -1,5 +1,5 @@
 #pragma once
-#include <Editor/UI/Windows/IDialogWindow.h>
+#include <Editor/UI/Windows/DialogWindow.h>
 #include <Editor/UI/Elements/PropertyMenu.h>
 
 namespace engine::editor::launcher

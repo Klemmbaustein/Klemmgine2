@@ -1,5 +1,5 @@
 #pragma once
-#include "IDialogWindow.h"
+#include "DialogWindow.h"
 #include <Editor/UI/Windows/ProgressBar.h>
 
 namespace engine::editor

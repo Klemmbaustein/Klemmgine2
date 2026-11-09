@@ -1,5 +1,5 @@
 #pragma once
-#include <Editor/UI/Windows/IDialogWindow.h>
+#include <Editor/UI/Windows/DialogWindow.h>
 
 namespace engine::editor
 {

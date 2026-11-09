@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "IDialogWindow.h"
+#include "DialogWindow.h"
 #include <kui/UI/UITextField.h>
 
 namespace engine::editor

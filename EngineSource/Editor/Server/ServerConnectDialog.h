@@ -1,6 +1,6 @@
 #pragma once
 #include "ServerConnection.h"
-#include <Editor/UI/Windows/IDialogWindow.h>
+#include <Editor/UI/Windows/DialogWindow.h>
 #include <Common.kui.hpp>
 
 namespace engine::editor
