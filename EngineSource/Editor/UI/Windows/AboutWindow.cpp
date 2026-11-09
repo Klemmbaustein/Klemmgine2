@@ -6,14 +6,14 @@
 using namespace kui;
 
 engine::editor::AboutWindow::AboutWindow()
-	: IDialogWindow("About Klemmgine 2", { Option{.Name = "Ok", .Close = true, .IsAccept = true, .IsClose = true, } }, Vec2ui(400, 200))
+	: DialogWindow("About Klemmgine 2", { Option{.Name = "Ok", .Close = true, .IsAccept = true, .IsClose = true, } }, Vec2ui(400, 200))
 {
 	this->Open();
 }
 
 void engine::editor::AboutWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	auto m = new PropertyMenu(this->DefaultFont);
 	m->SetMinWidth(UISize::Parent(1));

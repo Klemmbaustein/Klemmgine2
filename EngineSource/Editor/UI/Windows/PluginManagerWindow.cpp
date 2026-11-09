@@ -7,7 +7,7 @@
 #include <Editor/UI/Elements/Toolbar.h>
 
 engine::editor::PluginManagerWindow::PluginManagerWindow()
-	: IDialogWindow("Project Plugins", { Option{.Name = "Close", .IsClose = true} }, kui::Vec2ui(640, 480))
+	: DialogWindow("Project Plugins", { Option{.Name = "Close", .IsClose = true} }, kui::Vec2ui(640, 480))
 {
 	auto PluginSysData = Engine::Instance->GetSubsystem<plugin::PluginSubsystem>();
 
@@ -28,7 +28,7 @@ engine::editor::PluginManagerWindow::PluginManagerWindow()
 
 void engine::editor::PluginManagerWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 	Background->SetHorizontal(false);
 
 	auto t = new Toolbar(false, EditorUI::Theme.DarkBackground);

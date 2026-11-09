@@ -6,7 +6,7 @@ using namespace engine::editor;
 using namespace kui;
 
 engine::editor::ServerConnectDialog::ServerConnectDialog(std::function<void(ConnectResult)> SubmitResult)
-	: IDialogWindow("Connect to server", {
+	: DialogWindow("Connect to server", {
 	Option{
 	.Name = "Connect",
 	.OnClicked = [this]() {
@@ -25,7 +25,7 @@ engine::editor::ServerConnectDialog::ServerConnectDialog(std::function<void(Conn
 
 void engine::editor::ServerConnectDialog::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	Background->SetHorizontal(false);
 

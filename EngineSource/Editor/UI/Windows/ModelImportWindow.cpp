@@ -9,7 +9,7 @@
 using namespace kui;
 
 engine::editor::ModelImporterWindow::ModelImporterWindow(std::vector<string> ModelFiles, const string& ToPath)
-	: IDialogWindow("Import model file",
+	: DialogWindow("Import model file",
 		DefaultOkCancelOptions(std::bind(&ModelImporterWindow::DoImport, this)), Vec2ui(340, 400)),
 	ModelFiles(std::move(ModelFiles)),
 	ToPath(std::move(ToPath))
@@ -19,7 +19,7 @@ engine::editor::ModelImporterWindow::ModelImporterWindow(std::vector<string> Mod
 
 void engine::editor::ModelImporterWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	auto Properties = new PropertyMenu();
 	Properties->SetSize(UISize::Parent(1));

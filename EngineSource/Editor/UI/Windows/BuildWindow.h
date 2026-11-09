@@ -7,7 +7,7 @@
 
 namespace engine::editor
 {
-	class BuildWindow : public IDialogWindow
+	class BuildWindow : public DialogWindow
 	{
 	public:
 		BuildWindow();

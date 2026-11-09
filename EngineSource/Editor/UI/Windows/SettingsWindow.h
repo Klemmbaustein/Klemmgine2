@@ -4,7 +4,7 @@
 
 namespace engine::editor
 {
-	class SettingsWindow : public IDialogWindow
+	class SettingsWindow : public DialogWindow
 	{
 	public:
 		SettingsWindow();

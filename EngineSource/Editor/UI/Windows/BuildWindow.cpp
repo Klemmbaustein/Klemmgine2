@@ -12,7 +12,7 @@ using namespace engine::editor;
 using namespace kui;
 
 engine::editor::BuildWindow::BuildWindow()
-	: IDialogWindow("Build project",
+	: DialogWindow("Build project",
 		{
 			Option{.Name = "Build", .OnClicked = std::bind(&BuildWindow::StartBuild, this), .Close = false, .OnMainThread = false},
 			Option{.Name = "Cancel", .Close = true},
@@ -24,7 +24,7 @@ engine::editor::BuildWindow::BuildWindow()
 
 void engine::editor::BuildWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 	Background->SetHorizontal(false);
 
 	std::map<string, BuildPlatform> Platforms = {

@@ -61,14 +61,14 @@ What isn't:
 
 Existing features and APIs might change.)",
 VersionInfo::Get().Build, {
-	IDialogWindow::Option{
+	DialogWindow::Option{
 		.Name = "Don't show again",
 		.OnClicked = [] {
 			Settings::GetInstance()->Interface.SetSetting("showDevWarning", false);
 			Settings::GetInstance()->Save();
 		},
 	},
-	IDialogWindow::Option{
+	DialogWindow::Option{
 		.Name = "Ok",
 		.IsAccept = true,
 		.IsClose = true,

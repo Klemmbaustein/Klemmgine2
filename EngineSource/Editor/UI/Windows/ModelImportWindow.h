@@ -4,12 +4,12 @@
 
 namespace engine::editor
 {
-	class ModelImporterWindow : public IDialogWindow
+	class ModelImporterWindow : public DialogWindow
 	{
 	public:
 		ModelImporterWindow(std::vector<string> ModelFiles, const string& ToPath);
 
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Begin() override;
 		void Update() override;
 		void Destroy() override;

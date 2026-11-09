@@ -7,7 +7,7 @@
 using namespace kui;
 
 engine::editor::RenameWindow::RenameWindow(string File, std::function<void(string NewName)> OnRenamed, bool IsNewFile)
-	: IDialogWindow(IsNewFile ? "Create file" : "Rename",
+	: DialogWindow(IsNewFile ? "Create file" : "Rename",
 		{
 			Option{.Name = IsNewFile ? "Create" : "Rename", .OnClicked = [this]() { Confirm(); Close(); }, .OnMainThread = false,},
 			Option{ .Name = "Cancel", .Close = true, .IsClose = true, },
@@ -21,7 +21,7 @@ engine::editor::RenameWindow::RenameWindow(string File, std::function<void(strin
 
 void engine::editor::RenameWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	auto RenameElement = new RenameWindowElement();
 

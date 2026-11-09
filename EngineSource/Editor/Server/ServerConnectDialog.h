@@ -11,13 +11,13 @@ namespace engine::editor
 		ServerConnection* Connection = nullptr;
 	};
 
-	class ServerConnectDialog : IDialogWindow
+	class ServerConnectDialog : DialogWindow
 	{
 	public:
 
 		ServerConnectDialog(std::function<void(ConnectResult)> SubmitResult);
 
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Begin() override;
 		void Update() override;
 		void Destroy() override;

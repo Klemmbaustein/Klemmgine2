@@ -11,11 +11,11 @@ namespace engine::editor
 		bool IsExperimental = false;
 	};
 
-	class PluginManagerWindow : public IDialogWindow
+	class PluginManagerWindow : public DialogWindow
 	{
 	public:
 		PluginManagerWindow();
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Begin() override;
 		void Update() override;
 		void Destroy() override;

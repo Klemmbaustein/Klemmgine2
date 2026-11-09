@@ -8,7 +8,7 @@
 using namespace kui;
 
 engine::editor::launcher::CreateProjectWindow::CreateProjectWindow(std::function<void(std::string Path)> OnAccept)
-	: IDialogWindow("Create new project", {
+	: DialogWindow("Create new project", {
 	Option{
 			.Name = "Create",
 			.OnClicked = std::bind(&CreateProjectWindow::Accept, this),
@@ -37,7 +37,7 @@ engine::editor::launcher::CreateProjectWindow::CreateProjectWindow(std::function
 
 void engine::editor::launcher::CreateProjectWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 	Menu = new PropertyMenu(this->DefaultFont);
 	Menu->SetMinWidth(350_px);
 	Menu->SetMaxWidth(350_px);

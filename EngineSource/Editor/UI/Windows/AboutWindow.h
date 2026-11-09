@@ -3,12 +3,12 @@
 
 namespace engine::editor
 {
-	class AboutWindow : public IDialogWindow
+	class AboutWindow : public DialogWindow
 	{
 	public:
 		AboutWindow();
 
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Begin() override;
 		void Update() override;
 		void Destroy() override;

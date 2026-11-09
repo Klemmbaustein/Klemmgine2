@@ -9,7 +9,7 @@ using namespace kui;
 using namespace engine::editor;
 
 engine::editor::ProjectSettingsWindow::ProjectSettingsWindow()
-	: IDialogWindow("Project settings", { IDialogWindow::Option{
+	: DialogWindow("Project settings", { DialogWindow::Option{
 		.Name = "Ok", .IsAccept = true, .IsClose = true, } }, Vec2ui(400, 300))
 {
 	auto Engine = Engine::Instance;
@@ -30,7 +30,7 @@ engine::editor::ProjectSettingsWindow::ProjectSettingsWindow()
 
 void engine::editor::ProjectSettingsWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	auto ProjectSettings = new PropertyMenu();
 	ProjectSettings->SetSize(SizeVec(UISize::Pixels(350), UISize::Parent(1)));

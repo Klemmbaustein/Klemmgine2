@@ -6,7 +6,7 @@
 
 using namespace kui;
 
-engine::editor::IDialogWindow::IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size,
+engine::editor::DialogWindow::DialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size,
 	bool Resizable)
 	: IPopupWindow(Title, Size, Resizable, false)
 {
@@ -23,7 +23,7 @@ engine::editor::IDialogWindow::IDialogWindow(string Title, std::vector<Option> O
 	this->CanClose = HasDefaultClose;
 }
 
-void engine::editor::IDialogWindow::Begin()
+void engine::editor::DialogWindow::Begin()
 {
 	MainElement = new DialogWindowMainElement();
 
@@ -73,7 +73,7 @@ void engine::editor::IDialogWindow::Begin()
 	});
 }
 
-void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
+void engine::editor::DialogWindow::SetButtons(std::vector<Option> Options)
 {
 	this->Options = Options;
 	ButtonBackground->DeleteChildren();
@@ -90,7 +90,7 @@ void engine::editor::IDialogWindow::SetButtons(std::vector<Option> Options)
 	ButtonBackground->RedrawElement();
 }
 
-void engine::editor::IDialogWindow::PressButton(const Option& o)
+void engine::editor::DialogWindow::PressButton(const Option& o)
 {
 	if (o.OnClicked)
 	{

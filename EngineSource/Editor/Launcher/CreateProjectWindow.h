@@ -4,14 +4,14 @@
 
 namespace engine::editor::launcher
 {
-	class CreateProjectWindow : public IDialogWindow
+	class CreateProjectWindow : public DialogWindow
 	{
 	public:
 		CreateProjectWindow(std::function<void(std::string Path)> OnAccept);
 
 		void Begin() override;
 
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Update() override;
 
 		void Destroy() override;

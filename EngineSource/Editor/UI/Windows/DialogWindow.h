@@ -14,7 +14,7 @@ namespace engine::editor
 	 * Like it's parent class IPopupWindow, it runs on a separate thread, and accessing main
 	 * thread variables is dangerous.
 	 */
-	class IDialogWindow : public IPopupWindow
+	class DialogWindow : public IPopupWindow
 	{
 	public:
 
@@ -46,7 +46,7 @@ namespace engine::editor
 		 * Like with IPopupWindow, when overriding this constructor, call Open() to start the dialog window's thread
 		 * after you're done initializing it's variables from the main thread.
 		 */
-		IDialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size, bool Resizable = false);
+		DialogWindow(string Title, std::vector<Option> Options, kui::Vec2ui Size, bool Resizable = false);
 		virtual void Begin() override;
 
 		inline static std::vector<Option> DefaultOkCancelOptions(std::function<void()> OnAccept)

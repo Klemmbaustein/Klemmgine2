@@ -4,7 +4,7 @@
 
 namespace engine::editor
 {
-	class MessageWindow : public IDialogWindow
+	class MessageWindow : public DialogWindow
 	{
 	public:
 		MessageWindow(string Message, std::function<void()> OnAccepted);

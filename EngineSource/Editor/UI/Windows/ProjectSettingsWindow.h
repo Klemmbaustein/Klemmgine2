@@ -4,12 +4,12 @@
 
 namespace engine::editor
 {
-	class ProjectSettingsWindow : public IDialogWindow
+	class ProjectSettingsWindow : public DialogWindow
 	{
 	public:
 		ProjectSettingsWindow();
 
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Begin() override;
 		void Update() override;
 		void Destroy() override;

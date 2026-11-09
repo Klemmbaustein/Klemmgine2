@@ -6,7 +6,7 @@
 
 namespace engine::editor
 {
-	class ColorPicker : public IDialogWindow
+	class ColorPicker : public DialogWindow
 	{
 	public:
 
@@ -25,7 +25,7 @@ namespace engine::editor
 
 		void Update() override;
 
-		// Inherited via IDialogWindow
+		// Inherited via DialogWindow
 		void Destroy() override;
 
 		void UpdateColor(bool UpdateFields = true);

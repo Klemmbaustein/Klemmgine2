@@ -19,7 +19,7 @@ engine::editor::SettingsWindow::SettingsWindow()
 }
 
 engine::editor::SettingsWindow::SettingsWindow(string OpenPageName)
-	: IDialogWindow("Editor Settings", {
+	: DialogWindow("Editor Settings", {
 		Option{.Name = "Close", .Close = true, .IsClose = true } }, Vec2ui(640, 480), true)
 {
 	this->OpenPageName = OpenPageName;
@@ -32,7 +32,7 @@ engine::editor::SettingsWindow::~SettingsWindow()
 
 void engine::editor::SettingsWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	Pages.push_back(new EditorSettingsPage());
 	Pages.push_back(new InterfaceSettingsPage());

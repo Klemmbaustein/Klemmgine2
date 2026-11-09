@@ -56,7 +56,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 		if (Selected.size() == 1)
 		{
 			new MessageWindow(str::Format("Really delete %s?", Selected[0].Path.c_str()), "Delete file", {
-			IDialogWindow::Option{
+			DialogWindow::Option{
 				.Name = "Yes",
 				.OnClicked = [this, i = Selected[0]]() {
 					EditorUI::Instance->AssetsProvider->DeleteFile(i.Path);
@@ -64,7 +64,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 				},
 				.IsAccept = true,
 			},
-			IDialogWindow::Option{
+			DialogWindow::Option{
 				.Name = "No",
 				.IsClose = true,
 			}
@@ -73,7 +73,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 		else if (Selected.size() > 1)
 		{
 			new MessageWindow(str::Format("Really delete %i items?", Selected.size()), "Delete file", {
-			IDialogWindow::Option{
+			DialogWindow::Option{
 				.Name = "Yes",
 				.OnClicked = [this, Selected]() {
 					for (auto& i : Selected)
@@ -83,7 +83,7 @@ engine::editor::AssetBrowser::AssetBrowser()
 				},
 				.IsAccept = true,
 			},
-			IDialogWindow::Option{
+			DialogWindow::Option{
 				.Name = "No",
 				.IsClose = true,
 			}

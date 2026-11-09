@@ -24,7 +24,7 @@ engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::
 }
 
 engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::vector<Option> Options)
-	: IDialogWindow(Title, Options, kui::Vec2i(350, 200))
+	: DialogWindow(Title, Options, kui::Vec2i(350, 200))
 {
 	this->Message = Message;
 	Open();
@@ -32,7 +32,7 @@ engine::editor::MessageWindow::MessageWindow(string Message, string Title, std::
 
 void engine::editor::MessageWindow::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 	Background->AddChild((new UIText(11_px, EditorUI::Theme.Text, Message, DefaultFont))
 		->SetWrapEnabled(true, 330_px)
 		->SetPadding(10_px));

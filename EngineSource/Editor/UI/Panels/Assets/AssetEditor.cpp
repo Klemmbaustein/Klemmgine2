@@ -44,18 +44,18 @@ bool engine::editor::AssetEditor::OnClosed()
 		return true;
 
 	new MessageWindow(str::Format("Save changes to '%s'?", EditedAsset.DisplayName().c_str()), "Unsaved changes", {
-		IDialogWindow::Option{
+		DialogWindow::Option{
 			.Name = "Yes",
 			.OnClicked = [this]() {
 			Save();
 			delete this;
 		}},
-		IDialogWindow::Option{
+		DialogWindow::Option{
 			.Name = "No",
 			.OnClicked = [this]() {
 			delete this;
 		}},
-		IDialogWindow::Option{
+		DialogWindow::Option{
 			.Name = "Cancel",
 			.IsClose = true,
 		} });

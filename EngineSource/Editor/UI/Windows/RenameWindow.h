@@ -4,7 +4,7 @@
 
 namespace engine::editor
 {
-	class RenameWindow : public IDialogWindow
+	class RenameWindow : public DialogWindow
 	{
 	public:
 		RenameWindow(string File, std::function<void(string NewName)> OnRenamed, bool IsNewFile = false);

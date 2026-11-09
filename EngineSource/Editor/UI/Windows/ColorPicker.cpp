@@ -101,7 +101,7 @@ static ColorPicker::HsvColor RgbToHsv(RgbColor rgb)
 
 engine::editor::ColorPicker::ColorPicker(Vector3 RgbColorValue, std::function<void(Vector3)> OnSubmit,
 	std::function<void(Vector3)> OnChange)
-	: IDialogWindow("Color picker", { Option{
+	: DialogWindow("Color picker", { Option{
 		.Name = "Ok",
 		.OnClicked = [this] {
 			if (this->OnSubmit)
@@ -132,7 +132,7 @@ engine::editor::ColorPicker::ColorPicker(Vector3 RgbColorValue, std::function<vo
 
 void engine::editor::ColorPicker::Begin()
 {
-	IDialogWindow::Begin();
+	DialogWindow::Begin();
 
 	PickerShader = new Shader(
 		resource::GetStringFile("res:shaders/uishader.vert"),
