@@ -282,6 +282,12 @@ void engine::editor::MaterialEditor::OnResized()
 	LoadUI();
 }
 
+void engine::editor::MaterialEditor::OnThemeChanged()
+{
+	Sidebar->SetColor(EditorUI::Theme.DarkBackground);
+	LoadUI();
+}
+
 void engine::editor::MaterialEditor::OnChanged()
 {
 	AssetEditor::OnChanged();

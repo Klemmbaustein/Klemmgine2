@@ -23,6 +23,7 @@ namespace engine::editor
 		void Save() override;
 
 		void OnResized() override;
+		void OnThemeChanged() override;
 
 	private:
 

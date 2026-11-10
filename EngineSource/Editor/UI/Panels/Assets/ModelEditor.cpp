@@ -286,3 +286,8 @@ void engine::editor::ModelEditor::OnResized()
 	this->EditorScene->Graphics.RedrawNextFrame = true;
 	OnModelLoaded();
 }
+
+void engine::editor::ModelEditor::OnThemeChanged()
+{
+	OnModelLoaded();
+}
