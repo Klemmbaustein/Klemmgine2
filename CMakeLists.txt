@@ -149,6 +149,7 @@ set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF)
 set(PROFILER_IN_DEBUG_AND_RELEASE OFF)
 set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
 set(JPH_USE_VK OFF)
+set(CROSS_PLATFORM_DETERMINISTIC ON)
 add_subdirectory("Dependencies/JoltPhysics/Build" EXCLUDE_FROM_ALL)
 target_include_directories(KlemmgineLib PRIVATE "Dependencies/JoltPhysics/")
 

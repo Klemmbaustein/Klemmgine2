@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -38,11 +38,11 @@ public class AssetRef
 
 	public bool Exists()
 	{
-		return assetExistsDelegate!(Path);
+		return Path is not null && assetExistsDelegate!(Path);
 	}
 
 	public bool IsValid()
 	{
-		return Path.Length != 0;
+		return Path?.Length != 0;
 	}
 }
