@@ -4,6 +4,7 @@
 #include <Engine/MainThread.h>
 #include <Editor/UI/Panels/ScriptEditorPanel.h>
 #include <Editor/UI/Panels/Viewport.h>
+#include <Engine/UI/Popup.h>
 #include <Engine/Script/ScriptSubsystem.h>
 
 using namespace kui;
@@ -44,7 +45,7 @@ void engine::editor::ScriptEditorWindow::Begin()
 
 void engine::editor::ScriptEditorWindow::Update()
 {
-	DropdownMenu::UpdateDropdowns();
+	Popup::UpdatePopups();
 	UI->Update();
 	Queue->Update();
 	HasFocus = Popup->HasFocus();

@@ -117,7 +117,10 @@ static void SerializedObject_at(InterpretContext* context)
 
 		if (strcmp(Str.ptr(), Name.ptr()) == 0)
 		{
-			Val->Value->addRef();
+			if (Val->Value)
+			{
+				Val->Value->addRef();
+			}
 			context->pushValue(Val->Value);
 			return;
 		}
@@ -381,7 +384,8 @@ static void SerializedValue_writeJsonFile(InterpretContext* context)
 
 		try
 		{
-			JsonSerializer::ToStream(UnMarshalSerializedValue(value.classPtr), OutStream, JsonSerializer::WriteOptions(PrettyPrint));
+			JsonSerializer::ToStream(UnMarshalSerializedValue(value.classPtr), OutStream,
+				JsonSerializer::WriteOptions(PrettyPrint));
 		}
 		catch (SerializeException& e)
 		{
@@ -534,7 +538,8 @@ SerializedValue engine::script::SerializeClassValue(ds::RuntimeClass* ClassObjec
 		{
 			auto Ref = i.getFromInstance<RuntimeClass*>(ClassObject);
 			Ref = Reflect->tryCast(Ref->type, ScriptEngine.SerializableType).tryConvert(Ref);
-			ClassPtr<ScriptSerializedValue> NewValue = { Interpreter->callVirtualMethod<RuntimeClass*>(Ref, 1), Interpreter };
+			ClassPtr<ScriptSerializedValue> NewValue = {
+				Interpreter->callVirtualMethod<RuntimeClass*>(Ref, 1), Interpreter };
 
 			ResultValue.Append(SerializedData(Name,
 				UnMarshalSerializedValue(NewValue.classPtr)));
@@ -790,7 +795,8 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addClassMethod(ObjectValue, NativeFunction({ FunctionArgument(StrType, "name") },
 		out.SerializedValue->nullable, "at", &SerializedObject_at));
 
-	Serialize.addClassMethod(ObjectValue, NativeFunction({ FunctionArgument(StrType, "name"), FunctionArgument(out.SerializedValue, "value") },
+	Serialize.addClassMethod(ObjectValue, NativeFunction({
+		FunctionArgument(StrType, "name"), FunctionArgument(out.SerializedValue, "value") },
 		nullptr, "setAt", &SerializedObject_setAt));
 
 	Serialize.addFunction(NativeFunction({ FunctionArgument(StrType, "serializedString") },
@@ -808,7 +814,8 @@ SerializeBindings engine::script::AddSerializeModule(ds::NativeModule& To, ds::L
 	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset") },
 		ObjectValue->nullable, "parseTextAsset", &Serialize_parseTextAsset));
 
-	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset"), FunctionArgument(StrType, "formatIdentifier") },
+	Serialize.addFunction(NativeFunction({ FunctionArgument(AssetRefTypeInst, "asset"),
+		FunctionArgument(StrType, "formatIdentifier") },
 		out.SerializedValue->nullable, "parseBinaryAsset", &Serialize_parseBinaryAsset));
 
 	ToContext->addNativeModule(Serialize);

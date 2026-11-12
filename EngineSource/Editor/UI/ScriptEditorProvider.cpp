@@ -266,7 +266,7 @@ void engine::editor::ScriptEditorProvider::Update()
 
 	void* NewHovered = NewHoveredError.Error ? (void*)NewHoveredError.Error : (void*)NewHoveredSymbol.Symbol;
 
-	if (GetIsAutoCompleteActive() || !DropdownMenu::Current.empty() || !Win->UI.HoveredBox
+	if (GetIsAutoCompleteActive() || !Popup::Current.empty() || !Win->UI.HoveredBox
 		|| !Win->UI.HoveredBox->IsChildOf(ParentEditor))
 	{
 		NewHovered = nullptr;
@@ -293,7 +293,8 @@ void engine::editor::ScriptEditorProvider::Update()
 				if (NewHoveredSymbol.Symbol)
 				{
 					UIBox* b = new UIBox(false);
-					b->AddChild((new UIText(12_px, EditorUI::Theme.Text, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
+					b->AddChild((new UIText(12_px, EditorUI::Theme.Text,
+						NewHoveredError.Error->Description, EditorUI::MonospaceFont))
 						->SetPadding(5_px));
 
 					b->AddChild(NewHoveredSymbol.GetHoverData());
@@ -302,7 +303,8 @@ void engine::editor::ScriptEditorProvider::Update()
 				}
 				else
 				{
-					CreateHoverBox((new UIText(12_px, EditorUI::Theme.Text, NewHoveredError.Error->Description, EditorUI::MonospaceFont))
+					CreateHoverBox((new UIText(12_px, EditorUI::Theme.Text,
+						NewHoveredError.Error->Description, EditorUI::MonospaceFont))
 						->SetPadding(5_px), NewHoveredError.At);
 				}
 			}

@@ -55,7 +55,8 @@ void engine::BillboardComponent::Draw(graphics::Renderer* Render, graphics::Came
 {
 }
 
-void engine::BillboardComponent::DrawTransparent(graphics::Renderer* Render, graphics::Camera* From, graphics::GraphicsScene* In)
+void engine::BillboardComponent::DrawTransparent(graphics::Renderer* Render,
+	graphics::Camera* From, graphics::GraphicsScene* In)
 {
 	Vector3 Position, Scale;
 	Rotation3 Rotation;

@@ -135,7 +135,8 @@ void engine::editor::ModelEditor::OnModelLoaded()
 				->AddChild((new UIBackground(true, 0, 1, 24_px))
 					->SetUseTexture(true, EditorUI::Asset("Error.png"))
 					->SetPadding(10_px))
-				->AddChild(new UIText(11_px, 1, "Model failed to load.\nCheck the log for details", EditorUI::EditorFont)));
+				->AddChild(new UIText(11_px, 1,
+					"Model failed to load.\nCheck the log for details", EditorUI::EditorFont)));
 		}
 		return;
 	}

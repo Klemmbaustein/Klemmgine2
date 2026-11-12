@@ -102,21 +102,24 @@ engine::editor::AssetBrowser::AssetBrowser()
 	});
 
 	AddShortcut(kui::Key::n, CtrlMod, [this] {
-		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts"));
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Scene", "kts"), true);
 	});
 
 	AddShortcut(kui::Key::m, CtrlMod, [this] {
-		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt"));
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Material", "kmt"), true);
 	});
 
 	AddShortcut(kui::Key::t, CtrlMod, [this] {
-		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag"));
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Fragment", "frag"), true);
 	});
 	AddShortcut(kui::Key::k, CtrlMod, [this] {
-		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "UIScript", "kui"));
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "UIScript", "kui"), true);
 	});
 	AddShortcut(kui::Key::e, CtrlMod, [this] {
-		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds"));
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Script", "ds"), true);
+	});
+	AddShortcut(kui::Key::p, CtrlMod, [this] {
+		AssetBrowser::RenameFile(EditorUI::CreateAsset(GetPathDisplayName(), "Particle", "prt"), true);
 	});
 }
 
@@ -436,7 +439,8 @@ void engine::editor::AssetBrowser::RenameFile(string FilePath, bool IsNew)
 	}, IsNew);
 }
 
-std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(string WorkDir, std::function<void()> OnAddCallback)
+std::vector<DropdownMenu::Option> engine::editor::AssetBrowser::GetAddOptions(string WorkDir,
+	std::function<void()> OnAddCallback)
 {
 	struct FileType
 	{

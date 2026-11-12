@@ -45,7 +45,10 @@ engine::UICanvas::~UICanvas()
 			break;
 		}
 	}
-	delete CanvasBox;
+	if (CanvasBox)
+	{
+		delete CanvasBox;
+	}
 }
 
 void engine::UICanvas::Update()

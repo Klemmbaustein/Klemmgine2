@@ -96,6 +96,35 @@ static void Vector3_toString(InterpretContext* context)
 	context->pushRuntimeString(RuntimeStr(str.data(), str.size()));
 }
 
+static void Vector2_add(InterpretContext* context)
+{
+	context->pushValue(context->popValue<Vector2>() + context->popValue<Vector2>());
+}
+
+static void Vector2_multiply(InterpretContext* context)
+{
+	context->pushValue(context->popValue<Vector2>() * context->popValue<Vector2>());
+}
+
+static void Vector2_subtract(InterpretContext* context)
+{
+	Vector2 b = context->popValue<Vector2>();
+	Vector2 a = context->popValue<Vector2>();
+	context->pushValue(a - b);
+}
+
+static void Vector2_divide(InterpretContext* context)
+{
+	Vector2 b = context->popValue<Vector2>();
+	Vector2 a = context->popValue<Vector2>();
+	context->pushValue(a / b);
+}
+
+static void Vector2_unaryMinus(InterpretContext* context)
+{
+	context->pushValue(-context->popValue<Vector2>());
+}
+
 static void Engine_lookAtRotation(InterpretContext* context)
 {
 	Vector3 Pos = context->popValue<Vector3>();
@@ -248,6 +277,36 @@ script::MathBindings engine::script::AddMathModule(ds::NativeModule& To, Languag
 		Operator::unaryMinus,
 		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec3, "a") },
 			Math.Vec3, "Vector3.unaryMinus", &Vector3_unaryMinus))
+		});
+
+	Math.Vec2->operators.push_back({
+		Operator::add,
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec2, "a"), FunctionArgument(Math.Vec2, "b") },
+			Math.Vec2, "Vector2.add", &Vector2_add))
+		});
+
+	Math.Vec2->operators.push_back({
+		Operator::multiply,
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec2, "a"), FunctionArgument(Math.Vec2, "b") },
+			Math.Vec2, "Vector2.multiply", &Vector2_multiply))
+		});
+
+	Math.Vec2->operators.push_back({
+		Operator::subtract,
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec2, "a"), FunctionArgument(Math.Vec2, "b") },
+			Math.Vec2, "Vector2.subtract", &Vector2_subtract))
+		});
+
+	Math.Vec2->operators.push_back({
+		Operator::divide,
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec2, "a"), FunctionArgument(Math.Vec2, "b") },
+			Math.Vec2, "Vector2.divide", &Vector2_divide))
+		});
+
+	Math.Vec2->operators.push_back({
+		Operator::unaryMinus,
+		To.addFunction(NativeFunction({ FunctionArgument(Math.Vec2, "a") },
+			Math.Vec2, "Vector2.unaryMinus", &Vector2_unaryMinus))
 		});
 
 	To.addClassMethod(Math.Vec3, NativeFunction({},

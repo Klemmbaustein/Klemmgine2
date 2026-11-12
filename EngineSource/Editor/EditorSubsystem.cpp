@@ -159,7 +159,7 @@ void engine::editor::EditorSubsystem::StopProject()
 	{
 		return;
 	}
-
+	Popup::Clear();
 	script::ScriptSubsystem::Instance->ClearTasks();
 	if (LastScene.GetType() != SerializedData::DataType::Null)
 	{

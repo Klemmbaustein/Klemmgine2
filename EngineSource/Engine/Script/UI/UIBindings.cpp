@@ -9,12 +9,52 @@
 #include <kui/KlemmUI.h>
 #include <Core/Error/EngineError.h>
 #include <kui/UI/UIStackBox.h>
+#include <Engine/UI/Popup.h>
 
 using namespace engine;
 using namespace engine::script::ui;
 using namespace engine::script;
 using namespace ds;
 using namespace kui;
+
+static void UIBox_delete(InterpretContext* context)
+{
+	auto ptr = context->popPtr<UIBox*>();
+	if (*ptr)
+	{
+		(*ptr)->RemoveDeletedListener(ptr.classPtr);
+		ScriptSubsystem::Instance->UIObjectMappings.erase(*ptr);
+	}
+}
+
+static RuntimeFunction UIBox_vTable = {
+	.nativeFn = UIBox_delete,
+};
+
+ds::RuntimeClass* GetClassFromUIBox(UIBox* Object)
+{
+	if (!Object)
+	{
+		return NativeModule::makePointerClass<UIBox>(nullptr);
+	}
+
+	auto found = ScriptSubsystem::Instance->UIObjectMappings.find(Object);
+
+	if (found != ScriptSubsystem::Instance->UIObjectMappings.end())
+	{
+		found->second->addRef();
+		return found->second;
+	}
+
+	ds::ClassRef<UIBox*> NewObject = ds::RuntimeClass::allocateClass(sizeof(UIBox*), 0, &UIBox_vTable);
+	NewObject.getValue() = Object;
+	ScriptSubsystem::Instance->UIObjectMappings[Object] = NewObject.classPtr;
+	Object->AddDeletedListener(NewObject.classPtr, [Object, NewObject] {
+		ScriptSubsystem::Instance->UIObjectMappings.erase(Object);
+		NewObject.getValue() = nullptr;
+	});
+	return NewObject.classPtr;
+}
 
 static void UIScriptCanvas_new(InterpretContext* context)
 {
@@ -28,6 +68,12 @@ static void UIScriptCanvas_new(InterpretContext* context)
 static void UIScriptCanvas_empty(InterpretContext* context)
 {
 	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
+}
+
+static void UIScriptCanvas_getRoot(InterpretContext* context)
+{
+	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
+	context->pushValue(GetClassFromUIBox(cls.getValue()->MarkupBox));
 }
 
 static void UIScriptCanvas_destroy(InterpretContext* context)
@@ -53,19 +99,13 @@ static void UIScriptCanvas_getChild(InterpretContext* context)
 
 	auto found = box->NamedChildren[text.ptr()];
 
-	if (ScriptSubsystem::Instance->UIObjectMappings.contains(found))
-	{
-		context->pushValue(ScriptSubsystem::Instance->UIObjectMappings[found]);
-		return;
-	}
-
 	if (!found)
 	{
 		context->runtimePanic("UIScriptCanvas.getChild() failed.");
 		return;
 	}
 
-	context->pushValue(NativeModule::makePointerClass<UIBox>(found));
+	context->pushValue(GetClassFromUIBox(found));
 }
 
 static void UIScriptElement_new(InterpretContext* context)
@@ -100,7 +140,7 @@ static void UIScriptElement_getChild(InterpretContext* context)
 		return;
 	}
 
-	context->pushValue(NativeModule::makePointerClass<UIBox>(found));
+	context->pushValue(GetClassFromUIBox(found));
 }
 
 static void UIScriptElement_setString(InterpretContext* context)
@@ -207,6 +247,17 @@ static void UIBox_setMinSize(InterpretContext* context)
 	context->pushValue(cls);
 }
 
+static void UIBox_setPosition(InterpretContext* context)
+{
+	ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
+	Vec2f size = context->popValue<Vec2f>();
+
+	cls.getValue()->SetPosition(size);
+
+	cls.classPtr->addRef();
+	context->pushValue(cls);
+}
+
 static void UIBox_setMinWidth(InterpretContext* context)
 {
 	ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
@@ -238,6 +289,13 @@ static void UIBox_setMaxSize(InterpretContext* context)
 
 	cls.classPtr->addRef();
 	context->pushValue(cls);
+}
+
+static void UIBox_updateLayout(InterpretContext* context)
+{
+	ClassRef<UIBox*> cls = context->popValue<RuntimeClass*>();
+
+	cls.getValue()->GetAbsoluteParent()->UpdateElement();
 }
 
 static void UIBox_setPadding(InterpretContext* context)
@@ -497,6 +555,14 @@ static void UI_pixels(InterpretContext* context)
 	context->pushValue(UISize::Pixels(context->popValue<Float>()));
 }
 
+static void UI_makePopup(InterpretContext* context)
+{
+	ClassPtr<UIBox*> bx = context->popPtr<UIBox*>();
+
+	auto NewPopup = new Popup();
+	NewPopup->SetBox(*bx);
+}
+
 UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModule& BaseModule,
 	ds::LanguageContext* ToContext)
 {
@@ -592,6 +658,9 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassMethod(UIBoxType, NativeFunction({  },
 		nullptr, "destroy", &UIBox_destroy));
 
+	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(Vec2Type, "size") },
+		UIBoxType, "setPosition", &UIBox_setPosition));
+
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMinSize", &UIBox_setMinSize));
 
@@ -603,6 +672,9 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMaxSize", &UIBox_setMaxSize));
+
+	To.addClassMethod(UIBoxType, NativeFunction({ },
+		nullptr, "updateLayout", &UIBox_updateLayout));
 
 	AddUIMethod(UIBoxType, NativeFunction({
 		FunctionArgument(SizeType, "left"), FunctionArgument(SizeType, "right"),
@@ -715,6 +787,10 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassVirtualMethod(CanvasType,
 		NativeFunction({}, nullptr, "update", &UIScriptCanvas_empty), 1);
 
+	To.addClassMethod(CanvasType,
+		NativeFunction({},
+			UIBoxType, "getRoot", &UIScriptCanvas_getRoot));
+
 	auto ElementType = To.createClass<ScriptUICanvas*>("UIScriptElement", UIBoxType);
 
 	ElementType->baseConstructor = To.addFunction(NativeFunction({}, nullptr, "UIScriptElement.new", &UIScriptElement_new));
@@ -740,6 +816,8 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 			nullptr, "setSize", &UIScriptElement_setSizeVec));
 
 	To.addFunction(NativeFunction({ FunctionArgument(FloatInst, "pixelValue") }, SizeType, "pixels", UI_pixels));
+
+	To.addFunction(NativeFunction({ FunctionArgument(UIBoxType, "box") }, nullptr, "makePopup", UI_makePopup));
 
 	return UIBindings{
 		.UITextType = UITextType,

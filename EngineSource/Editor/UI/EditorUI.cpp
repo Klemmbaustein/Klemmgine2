@@ -689,8 +689,6 @@ void engine::editor::EditorUI::Update()
 	EditorPanel::UpdateAllPanels();
 	RootPanel->UpdatePanel();
 
-	DropdownMenu::UpdateDropdowns();
-
 	if (Window::GetActiveWindow()->HasFocus() && !Engine::IsPaused)
 	{
 		for (auto& i : this->ExternallyChangedAssets)

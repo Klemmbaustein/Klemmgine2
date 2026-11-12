@@ -17,5 +17,6 @@ engine::script::ui::ScriptUIElement::~ScriptUIElement()
 {
 	auto Scripts = ScriptSubsystem::Instance;
 	Scripts->UIObjectMappings.erase(this);
+	*reinterpret_cast<ScriptUIElement**>(ScriptObject->getBody()) = nullptr;
 	Scripts->Runtime->baseContext->destruct(ScriptObject);
 }

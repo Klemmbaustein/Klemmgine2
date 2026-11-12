@@ -1,12 +1,12 @@
 #pragma once
 #include <Core/Types.h>
 #include <functional>
-#include <stack>
 #include <kui/UI/UIButton.h>
+#include <Engine/UI/Popup.h>
 
 namespace engine::editor
 {
-	class DropdownMenu
+	class DropdownMenu : Popup
 	{
 	public:
 		struct Option
@@ -25,12 +25,6 @@ namespace engine::editor
 
 		}
 		~DropdownMenu();
-
-		static void UpdateDropdowns();
-		static thread_local std::vector<DropdownMenu*> Current;
-
-		kui::UIBox* Box = nullptr;
-		static void Clear(size_t ToDepth = 0);
 
 	private:
 		DropdownMenu(std::vector<Option> Options, kui::Vec2f Position, bool AlignUp, bool RemoveOld, size_t Depth);

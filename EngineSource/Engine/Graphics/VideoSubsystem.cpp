@@ -17,6 +17,7 @@
 #include <Engine/Graphics/Effects/CascadedShadows.h>
 #include <Engine/Graphics/Backend/OpenGLGraphicsBackend.h>
 #include <Engine/UI/EngineUIResource.h>
+#include <Engine/UI/Popup.h>
 
 using namespace kui;
 using namespace engine;
@@ -214,6 +215,8 @@ engine::VideoSubsystem::~VideoSubsystem()
 	delete Renderer;
 	delete Backend;
 
+	Popup::Clear();
+
 	delete MainWindow;
 }
 
@@ -225,6 +228,7 @@ void engine::VideoSubsystem::Update()
 		Engine::Instance->ShouldQuit = true;
 	}
 
+	Popup::UpdatePopups();
 	UICanvas::UpdateAll();
 
 	input::IsLMBDown = MainWindow->Input.IsLMBDown;

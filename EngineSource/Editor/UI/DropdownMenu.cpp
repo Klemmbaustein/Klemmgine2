@@ -2,30 +2,14 @@
 #include "EditorUI.h"
 #include <kui/UI/UIBlurBackground.h>
 #include <kui/UI/UIText.h>
-#include <Engine/Input.h>
 #include <kui/Window.h>
 using namespace kui;
 using namespace engine::editor;
 
-void engine::editor::DropdownMenu::Clear(size_t ToDepth)
-{
-	while (Current.size() > ToDepth)
-	{
-		delete *Current.rbegin();
-		Current.pop_back();
-	}
-}
-
-thread_local std::vector<DropdownMenu*> DropdownMenu::Current;
-
 engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec2f Position,
 	bool AlignUp, bool RemoveOld, size_t Depth)
+	: Popup(RemoveOld)
 {
-	if (RemoveOld)
-	{
-		Clear();
-	}
-
 	bool HasShortcut = false;
 
 	for (auto& i : Options)
@@ -116,35 +100,8 @@ engine::editor::DropdownMenu::DropdownMenu(std::vector<Option> Options, kui::Vec
 
 	Box->SetPosition((Box->GetPosition() - Vec2f(0, Height))
 		.Clamp(-1, Vec2f(1) - Box->GetUsedSize().GetScreen()));
-
-	Current.push_back(this);
 }
 
 engine::editor::DropdownMenu::~DropdownMenu()
 {
-	if (Window::GetActiveWindow()->Input.KeyboardFocusTargetBox == Box)
-	{
-		Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = nullptr;
-	}
-	delete Box;
-}
-
-void engine::editor::DropdownMenu::UpdateDropdowns()
-{
-	bool IsHovered = false;
-
-	for (auto& i : Current)
-	{
-		if (i->Box->IsBeingHovered())
-		{
-			IsHovered = true;
-		}
-	}
-
-	if (!Current.empty()
-		&& (((input::IsLMBClicked || input::IsRMBClicked) && !IsHovered)
-			|| input::IsKeyHeld(input::Key::ESCAPE)))
-	{
-		Clear();
-	}
 }
