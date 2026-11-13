@@ -76,6 +76,18 @@ static void UIScriptCanvas_getRoot(InterpretContext* context)
 	context->pushValue(GetClassFromUIBox(cls.getValue()->MarkupBox));
 }
 
+static void UIScriptCanvas_sizeToPosition(InterpretContext* context)
+{
+	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
+	auto SizeValue = context->popValue<SizeVec>();
+
+	auto Size = cls.getValue()->CanvasBox->GetUsedSize().GetScreen();
+
+	Vec2f Converted = SizeValue.GetScreen() / Size * 2;
+
+	context->pushValue<Vec2f>(Converted);
+}
+
 static void UIScriptCanvas_destroy(InterpretContext* context)
 {
 	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
@@ -646,16 +658,16 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		To.addClassMethod(type, fn);
 	};
 
-	To.addClassMethod(UIBoxType, NativeFunction({ },
+	To.addClassMethod(UIBoxType, NativeFunction({},
 		SizeVecType, "getUsedSize", &UIBox_getUsedSize));
 
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(UIBoxType, "child") },
 		UIBoxType, "addChild", &UIBox_addChild));
 
-	To.addClassMethod(UIBoxType, NativeFunction({  },
+	To.addClassMethod(UIBoxType, NativeFunction({},
 		nullptr, "deleteChildren", &UIBox_deleteChildren));
 
-	To.addClassMethod(UIBoxType, NativeFunction({  },
+	To.addClassMethod(UIBoxType, NativeFunction({},
 		nullptr, "destroy", &UIBox_destroy));
 
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(Vec2Type, "size") },
@@ -673,7 +685,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UIBoxType, NativeFunction({ FunctionArgument(SizeVecType, "size") },
 		UIBoxType, "setMaxSize", &UIBox_setMaxSize));
 
-	To.addClassMethod(UIBoxType, NativeFunction({ },
+	To.addClassMethod(UIBoxType, NativeFunction({},
 		nullptr, "updateLayout", &UIBox_updateLayout));
 
 	AddUIMethod(UIBoxType, NativeFunction({
@@ -745,11 +757,11 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		nullptr, "UITextField.new", &UITextField_new));
 
 	AddUIMethod(UITextFieldType, NativeFunction(
-		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
+		{ FunctionArgument(FunctionType::getInstance(nullptr,{}, ToContext->registry), "callback") },
 		UITextFieldType, "setOnSubmit", &UITextField_setOnSubmit));
 
 	AddUIMethod(UITextFieldType, NativeFunction(
-		{ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "callback") },
+		{ FunctionArgument(FunctionType::getInstance(nullptr,{}, ToContext->registry), "callback") },
 		UITextFieldType, "setOnChanged", &UITextField_setOnChanged));
 
 	AddUIMethod(UITextFieldType, NativeFunction(
@@ -757,18 +769,18 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 		UITextFieldType, "setText", &UITextField_setText));
 
 	To.addClassMethod(UITextFieldType,
-		NativeFunction({ },
+		NativeFunction({},
 			StrType, "getText", &UITextField_getText));
 
 	// UIButton
 	auto UIButtonType = To.createClass<UIBackground*>("UIButton", UIBackgroundType);
 	To.addClassConstructor(UIButtonType,
 		NativeFunction({ FunctionArgument(BoolInst, "horizontal"), FunctionArgument(Vec3Type, "color"),
-			FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onClicked") },
+			FunctionArgument(FunctionType::getInstance(nullptr,{}, ToContext->registry), "onClicked") },
 			nullptr, "UIButton.new", &UIButton_new));
 
 	AddUIMethod(UIButtonType,
-		NativeFunction({ FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry), "onClicked") },
+		NativeFunction({ FunctionArgument(FunctionType::getInstance(nullptr,{}, ToContext->registry), "onClicked") },
 			UIButtonType, "setOnClicked", &UIButton_setOnClicked));
 
 	// Script canvas
@@ -781,7 +793,7 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 			GenericArgumentType::getInstance(0, true), ".getChild", &UIScriptCanvas_getChild));
 
 	To.addClassMethod(CanvasType,
-		NativeFunction({ },
+		NativeFunction({},
 			nullptr, "destroy", &UIScriptCanvas_destroy));
 
 	To.addClassVirtualMethod(CanvasType,
@@ -790,6 +802,10 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	To.addClassMethod(CanvasType,
 		NativeFunction({},
 			UIBoxType, "getRoot", &UIScriptCanvas_getRoot));
+
+	To.addClassMethod(CanvasType,
+		NativeFunction({ FunctionArgument(SizeVecType, "vec") },
+			Vec2Type, "sizeToPosition", &UIScriptCanvas_sizeToPosition));
 
 	auto ElementType = To.createClass<ScriptUICanvas*>("UIScriptElement", UIBoxType);
 

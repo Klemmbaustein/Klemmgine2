@@ -1,6 +1,4 @@
 #include "UICanvas.h"
-#include <Engine/Scene.h>
-#include <kui/UI/UIBackground.h>
 #include <kui/Window.h>
 #ifdef EDITOR
 #include <Editor/UI/Panels/Viewport.h>
@@ -15,24 +13,7 @@ engine::UICanvas::UICanvas()
 {
 	CanvasBox = new UICanvasBox(0, 0);
 	RegisterSelf(this);
-
-#ifdef EDITOR
-	if (editor::Viewport::Current)
-	{
-		auto ViewBackground = editor::Viewport::Current->ViewportBackground;
-
-		CanvasBox->IsVisible = editor::Viewport::Current->GetShowUI();
-		CanvasBox
-			->SetPosition(ViewBackground->GetPosition())
-			->SetSize(ViewBackground->GetMinSize());
-
-		return;
-	}
-#endif
-	CanvasBox
-		->SetPosition(-1)
-		->SetMinSize(2)
-		->SetMaxSize(2);
+	CanvasBox->UpdateElement();
 }
 
 engine::UICanvas::~UICanvas()
@@ -95,4 +76,21 @@ void engine::UICanvas::ClearAll()
 void engine::UICanvas::RegisterSelf(UICanvas* This)
 {
 	ActiveCanvases.push_back(This);
+#ifdef EDITOR
+	if (editor::Viewport::Current)
+	{
+		auto ViewBackground = editor::Viewport::Current->ViewportBackground;
+		This->CanvasBox->IsVisible = editor::Viewport::Current->GetShowUI();
+		This->CanvasBox
+			->SetPosition(ViewBackground->GetPosition())
+			->SetSize(ViewBackground->GetMinSize());
+
+		return;
+	}
+#endif
+	This->CanvasBox
+		->SetPosition(-1)
+		->SetMinSize(2)
+		->SetMaxSize(2);
+
 }

@@ -32,7 +32,6 @@ engine::script::ui::ScriptUICanvas::~ScriptUICanvas()
 	if (MarkupBox)
 	{
 		MarkupBox->RemoveDeletedListener(this);
-		delete MarkupBox;
 	}
 }
 

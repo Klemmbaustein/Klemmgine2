@@ -19,17 +19,21 @@ thread_local std::vector<Popup*> Popup::Current;
 
 engine::Popup::~Popup()
 {
-	Box->RemoveDeletedListener(this);
 	if (Window::GetActiveWindow()->Input.KeyboardFocusTargetBox == Box)
 	{
 		Window::GetActiveWindow()->Input.KeyboardFocusTargetBox = nullptr;
 	}
-	delete Box;
+	if (Box)
+	{
+		Box->RemoveDeletedListener(this);
+		delete Box;
+	}
 }
 
 void engine::Popup::SetBox(kui::UIBox* NewBox)
 {
-	NewBox->AddDeletedListener(this, [] {
+	NewBox->AddDeletedListener(this, [this] {
+		this->Box = nullptr;
 		Popup::Clear();
 	});
 	Box = NewBox;
