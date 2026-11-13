@@ -79,12 +79,14 @@ public:
 
 	ThreadPool* Pool = nullptr;
 
-	std::map<Job*, JobFunction> Jobs;
-
 	JoltJobSystemImpl(ThreadPool* Pool)
 	{
 		Init(JPH::cMaxPhysicsBarriers);
 		this->Pool = Pool;
+	}
+
+	~JoltJobSystemImpl()
+	{
 	}
 
 	int GetMaxConcurrency() const override
@@ -99,17 +101,14 @@ public:
 			return JobHandle();
 		}
 
-		auto j = new Job(inName, inColor, this, inJobFunction, inNumDependencies);
-		j->AddRef();
-
-		if (inNumDependencies == 0)
-			QueueJob(j);
+		Job* j = new Job(inName, inColor, this, inJobFunction, inNumDependencies);
 
 		return JobHandle(j);
 	}
 
 	void QueueJob(Job* inJob)
 	{
+		inJob->AddRef();
 		Pool->AddJob([inJob] {
 			inJob->Execute();
 			inJob->Release();
@@ -126,7 +125,7 @@ public:
 
 	void FreeJob(Job* inJob)
 	{
-		inJob->Release();
+		delete inJob;
 	}
 };
 

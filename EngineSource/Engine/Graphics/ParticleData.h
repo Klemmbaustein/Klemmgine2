@@ -5,6 +5,7 @@
 #include <Engine/Graphics/Material.h>
 #include <Engine/Graphics/Model.h>
 #include <mutex>
+#include <list>
 
 namespace engine::graphics
 {

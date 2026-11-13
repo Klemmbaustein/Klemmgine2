@@ -380,6 +380,18 @@ static void UIBackground_setBorder(InterpretContext* context)
 	context->pushValue(cls);
 }
 
+static void UIBackground_setUseImage(InterpretContext* context)
+{
+	ClassRef<UIBackground*> cls = context->popValue<RuntimeClass*>();
+	RuntimeStr ImageFile = context->popRuntimeString();
+	Bool UseImage = context->popValue<Bool>();
+
+	cls.getValue()->SetUseImage(UseImage, ImageFile.ptr());
+
+	cls.classPtr->addRef();
+	context->pushValue(cls);
+}
+
 static void UIBlurBackground_new(InterpretContext* context)
 {
 	ClassRef<UIBlurBackground*> cls = context->popValue<RuntimeClass*>();
@@ -722,6 +734,10 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 	AddUIMethod(UIBackgroundType,
 		NativeFunction({ FunctionArgument(SizeType, "newSize"), FunctionArgument(Vec3Type, "newColor") },
 			UIBackgroundType, "setBorder", &UIBackground_setBorder));
+
+	AddUIMethod(UIBackgroundType,
+		NativeFunction({ FunctionArgument(BoolInst, "useImage"), FunctionArgument(StrType, "imageFile") },
+			UIBackgroundType, "setUseImage", &UIBackground_setUseImage));
 
 	// UIBlurBackground
 	auto UIBlurBackgroundType = To.createClass<UIBlurBackground*>("UIBlurBackground", UIBackgroundType);

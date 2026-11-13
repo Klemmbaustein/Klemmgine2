@@ -470,14 +470,6 @@ void engine::script::ScriptSubsystem::ReloadDynamicUIContext()
 				return nullptr;
 			}
 
-			auto found = UIObjectMappings.find(c);
-
-			if (found != UIObjectMappings.end())
-			{
-				ClassRef<ui::ScriptUIElement*> Element = found->second;
-				return Element.getValue();
-			}
-
 			auto Class = cls.create(Runtime->baseContext);
 
 			ClassRef<ui::ScriptUIElement*> Element = Class;
