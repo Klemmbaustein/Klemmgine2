@@ -13,6 +13,7 @@ namespace engine::graphics
 		bool AmbientOcclusion = true;
 		bool Bloom  = true;
 		bool AntiAlias = true;
+		bool DrawFog = true;
 
 		float BloomStrength = 1.0f;
 		float BloomThreshold = 0.75f;

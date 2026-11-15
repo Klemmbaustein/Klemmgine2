@@ -320,7 +320,9 @@ std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 
 	if (Current)
 	{
-		bool SoundBoundsVisible = Engine::IsPlaying ? Current->Sound->GetShowDebugBounds() : Current->Sound->ShowDebugBoundsInEditor;
+		bool SoundBoundsVisible = Engine::IsPlaying
+			? Current->Sound->GetShowDebugBounds() : Current->Sound->ShowDebugBoundsInEditor;
+		bool FogVisible = Current->Graphics.SceneEnvironment.Render.DrawFog;
 
 		Result.push_back(DropdownMenu::Option{
 			.Name = "Show Sound Volumes",
@@ -338,6 +340,19 @@ std::vector<DropdownMenu::Option> engine::editor::Viewport::GetViewDropdown()
 					{
 						Current->Sound->SetShowDebugBounds(!Current->Sound->GetShowDebugBounds());
 					}
+				}
+			},
+			});
+
+		Result.push_back(DropdownMenu::Option{
+			.Name = "Render Fog",
+			.Icon = FogVisible ? EditorUI::Asset("Check.png") : "",
+			.OnClicked = [this] {
+				auto Current = Scene::GetMain();
+				if (Current)
+				{
+					Current->Graphics.SceneEnvironment.Render.DrawFog
+						= !Current->Graphics.SceneEnvironment.Render.DrawFog;
 				}
 			},
 			});

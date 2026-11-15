@@ -31,7 +31,7 @@ static RuntimeFunction UIBox_vTable = {
 	.nativeFn = UIBox_delete,
 };
 
-ds::RuntimeClass* GetClassFromUIBox(UIBox* Object)
+ds::RuntimeClass* GetClassFromUIBox(UIBox* Object, bool refIfNotNew = false)
 {
 	if (!Object)
 	{
@@ -42,7 +42,10 @@ ds::RuntimeClass* GetClassFromUIBox(UIBox* Object)
 
 	if (found != ScriptSubsystem::Instance->UIObjectMappings.end())
 	{
-		found->second->addRef();
+		if (refIfNotNew)
+		{
+			found->second->addRef();
+		}
 		return found->second;
 	}
 
@@ -73,7 +76,7 @@ static void UIScriptCanvas_empty(InterpretContext* context)
 static void UIScriptCanvas_getRoot(InterpretContext* context)
 {
 	ClassRef<ScriptUICanvas*> cls = context->popValue<RuntimeClass*>();
-	context->pushValue(GetClassFromUIBox(cls.getValue()->MarkupBox));
+	context->pushValue(GetClassFromUIBox(cls.getValue()->MarkupBox, true));
 }
 
 static void UIScriptCanvas_sizeToPosition(InterpretContext* context)
@@ -418,10 +421,16 @@ static void UIButton_new(InterpretContext* context)
 static void UIButton_setOnClicked(InterpretContext* context)
 {
 	ClassRef<UIButton*> cls = context->popValue<RuntimeClass*>();
-	CallableWrapper<void> OnClicked = { context->popValue<RuntimeClass*>(), context };
-
-	cls.getValue()->OnClicked = OnClicked;
-
+	auto val = context->popValue<RuntimeClass*>();
+	if (val)
+	{
+		CallableWrapper<void> OnClicked = { val, context };
+		cls.getValue()->OnClicked = OnClicked;
+	}
+	else
+	{
+		cls.getValue()->OnClicked = {};
+	}
 	cls.classPtr->addRef();
 	context->pushValue(cls);
 }
@@ -796,7 +805,8 @@ UIBindings engine::script::ui::AddUIModule(ds::NativeModule& To, ds::NativeModul
 			nullptr, "UIButton.new", &UIButton_new));
 
 	AddUIMethod(UIButtonType,
-		NativeFunction({ FunctionArgument(FunctionType::getInstance(nullptr,{}, ToContext->registry), "onClicked") },
+		NativeFunction({
+			FunctionArgument(FunctionType::getInstance(nullptr, {}, ToContext->registry)->nullable, "onClicked") },
 			UIButtonType, "setOnClicked", &UIButton_setOnClicked));
 
 	// Script canvas
