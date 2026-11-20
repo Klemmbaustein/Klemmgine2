@@ -32,20 +32,20 @@ function Convert-DocsFunction($xmlData) {
 
 function Convert-DocsType($xmlData) {
 
-	$methods = @{}
-	$members = @{}
+	$methods = [ordered]@{}
+	$members = [ordered]@{}
 
 	foreach ($item in $xmlData.methods.ChildNodes) {
 		$methods[$item.name] = Convert-DocsFunction $item
 	}
 	foreach ($item in $xmlData.members.ChildNodes) {
-		$members[$item.name] = @{
+		$members[$item.name] = [ordered]@{
 			description = Format-TextString -text $item.description
 			type = $item.type
 		}
 	}
 
-	$result = @{
+	$result = [ordered]@{
 		"description" = Format-TextString -text $xmlData.description
 		"methods" = $methods
 		"members" = $members
@@ -58,13 +58,13 @@ function Convert-DocsType($xmlData) {
 function Convert-DocFile([string] $file) {
 	$xml = [xml](Get-Content $file)
 
-	$result = @{}
+	$result = [ordered]@{}
 
 	$result["type"] = $xml.docs.type
 	$result["module"] = $xml.docs.module
 
-	$functions = @{}
-	$types = @{}
+	$functions = [ordered]@{}
+	$types = [ordered]@{}
 
 	foreach ($item in $xml.docs.functions.ChildNodes) {
 		$functions[$item.name] = Convert-DocsFunction $item

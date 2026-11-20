@@ -1,7 +1,18 @@
 <!DOCTYPE docs>
 <docs type="bindings" module="engine::serialize">
 	<functions>
+		<parseJsonFile>
+			<description>
+				Parses a JSON file and puts it into a hierarchy of SerializedValue objects.
 
+				Only the base JSON format is supported. Common extensions like
+				comments and trailing commas do not work.
+			</description>
+
+			<return type="SerializedValue?">
+				Returns the parsed data if the parsing was successful, or null on failure.
+			</return>
+		</parseJsonFile>
 	</functions>
 	<types>
 		<SerializedValue>
@@ -43,6 +54,20 @@
 						If the conversion fails, this function will throw an error.
 					</description>
 				</asFloat>
+
+				<writeJsonFile>
+					<description>
+						Writes this serialized value into a JSON file.
+					</description>
+					<argument name="filePath">
+						The path to write the JSON data to. The directory must exist.
+						You can check for this using the system::fs::FilePath class.
+					</argument>
+					<argument name="prettyPrint" type="bool">
+						If false, the JSON will be written in a compact format. If true,
+						it will be indented and each value will be put on a separate line.
+					</argument>
+				</writeJsonFile>
 			</methods>
 		</SerializedValue>
 		<SerializedInt super="engine::serialize::SerializedValue">
@@ -65,5 +90,38 @@
 				</value>
 			</members>
 		</SerializedFloat>
+		<Serializable>
+			<description>
+				Interface that lets the using object easily write itself to the SerializedValue classes,
+				to be saved and loaded later.
+
+				The default method implementations of this interface will check for any members annotated
+				with the [engine::serialize::Serialize] attribute and use them for serialization and de-serialization.
+			</description>
+
+			<methods>
+				<serialize>
+					<description>
+						Serializes this value into a hierarchy of Serialized values.
+
+						In the default implementation, all the members with the [Serialize] attribute are written
+						into a SerializedObject, where each key is the member name and value is the serialized
+						value of that object. Any such members that are itself Serializable objects
+						are serialized as well. You can override this method for custom serialization behavior.
+					</description>
+				</serialize>
+
+				<deSerialize>
+					<description>
+						Load the values from the serialized data given and apply them to this object.
+
+						In the default implementation, all the members with the [Serialize] attribute are written read
+						from a SerializedObject where each key is the name of a member. If the type of value itsel
+						is a Serializable, the function will try to create a new instance of that
+						type and call deSerialize on it too.
+					</description>
+				</deSerialize>
+			</methods>
+		</Serializable>
 	</types>
 </docs>

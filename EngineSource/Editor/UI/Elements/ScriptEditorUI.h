@@ -114,10 +114,18 @@ namespace engine::editor
 		void UpdateEditorTabs();
 		void Save();
 
-		std::set<string> GetLastOpenedFiles();
-		void SaveLastOpenedFiles();
+		struct EditorState
+		{
+			string OpenedTab;
+			std::set<string> ActiveTabs;
+		};
+
+		EditorState GetSavedEditorState();
+		std::set<string> GetLegacyLastOpenedFiles();
+		void SaveEditorState();
 
 		string GetOpenedTabsFile();
+		string GetEditorStateFile();
 
 		kui::Vec2f GetBreakpointPosition(kui::UITextEditor* Editor, size_t Line);
 

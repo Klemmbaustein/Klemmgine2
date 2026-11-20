@@ -1,10 +1,17 @@
 {
+  "type": "bindings",
   "module": "engine::serialize",
+  "functions": {
+    "parseJsonFile": {
+      "description": "Parses a JSON file and puts it into a hierarchy of SerializedValue objects. Only the base JSON format is supported. Common extensions like comments and trailing commas do not work.",
+      "return": "Returns the parsed data if the parsing was successful, or null on failure.",
+      "returnType": "SerializedValue?",
+      "arguments": {}
+    }
+  },
   "types": {
     "SerializedValue": {
-      "members": {},
       "description": "A basic serialized value, base class for representing a serializable data hierarchy.",
-      "super": null,
       "methods": {
         "toJsonString": {
           "description": "Converts this value to a string containing JSON data. The JSON format does not support vectors. This function will fail if this value contains or is a vector.",
@@ -27,32 +34,54 @@
         "asFloat": {
           "description": "Will convert the value held in this SerializedValue to a float if it can be converted to one. If the conversion fails, this function will throw an error.",
           "arguments": {}
+        },
+        "writeJsonFile": {
+          "description": "Writes this serialized value into a JSON file.",
+          "arguments": {
+            "filePath": "The path to write the JSON data to. The directory must exist. You can check for this using the system::fs::FilePath class.",
+            "prettyPrint": "If false, the JSON will be written in a compact format. If true, it will be indented and each value will be put on a separate line."
+          }
         }
-      }
+      },
+      "members": {},
+      "super": null
     },
     "SerializedInt": {
+      "description": "A serialized integer value.",
+      "methods": {},
       "members": {
         "value": {
           "description": null,
           "type": "int"
         }
       },
-      "description": "A serialized integer value.",
-      "super": "engine::serialize::SerializedValue",
-      "methods": {}
+      "super": "engine::serialize::SerializedValue"
     },
     "SerializedFloat": {
+      "description": "A serialized float value.",
+      "methods": {},
       "members": {
         "value": {
           "description": null,
           "type": "float"
         }
       },
-      "description": "A serialized float value.",
-      "super": "engine::serialize::SerializedValue",
-      "methods": {}
+      "super": "engine::serialize::SerializedValue"
+    },
+    "Serializable": {
+      "description": "Interface that lets the using object easily write itself to the SerializedValue classes, to be saved and loaded later. The default method implementations of this interface will check for any members annotated with the [engine::serialize::Serialize] attribute and use them for serialization and de-serialization.",
+      "methods": {
+        "serialize": {
+          "description": "Serializes this value into a hierarchy of Serialized values. In the default implementation, all the members with the [Serialize] attribute are written into a SerializedObject, where each key is the member name and value is the serialized value of that object. Any such members that are itself Serializable objects are serialized as well. You can override this method for custom serialization behavior.",
+          "arguments": {}
+        },
+        "deSerialize": {
+          "description": "Load the values from the serialized data given and apply them to this object. In the default implementation, all the members with the [Serialize] attribute are written read from a SerializedObject where each key is the name of a member. If the type of value itsel is a Serializable, the function will try to create a new instance of that type and call deSerialize on it too.",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": null
     }
-  },
-  "type": "bindings",
-  "functions": {}
+  }
 }

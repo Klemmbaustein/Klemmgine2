@@ -826,7 +826,7 @@ void engine::editor::Viewport::Run()
 		Scene::GetMain()->Sound->MarkReverbDirty();
 	}
 
-	SetName("Viewport (playing)");
+	SetName("Viewport (Playing)");
 	Engine::GetSubsystem<EditorSubsystem>()->StartProject();
 	RedrawStats = true;
 }

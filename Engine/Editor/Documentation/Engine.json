@@ -1,7 +1,309 @@
 {
+  "type": "bindings",
   "module": "engine",
+  "functions": {
+    "info": {
+      "description": "Prints an info message to the log.",
+      "arguments": {
+        "message": "The message string to print."
+      }
+    },
+    "warn": {
+      "description": "Prints a warning message to the log",
+      "arguments": {
+        "message": "The message string to print."
+      }
+    },
+    "getMainScene": {
+      "description": "Gets the engine's currently loaded main scene. If there is no main scene loaded, or if the main scene is still being loaded asynchronously, this function returns null instead. In most contexts, you probably want to pass around references to the result of SceneObject.getScene() instead.",
+      "return": "The current main scene or null if no main scene is loaded.",
+      "returnType": "engine::Scene?",
+      "arguments": {}
+    },
+    "isPlaying": {
+      "description": "Returns true if the game is running and false if the script is running in the editor.",
+      "return": null,
+      "returnType": "bool",
+      "arguments": {}
+    },
+    "getDelta": {
+      "description": "Returns the frame delta time in seconds. This is the time it took for the last frame to be run.",
+      "return": null,
+      "returnType": "float",
+      "arguments": {}
+    },
+    "wait": {
+      "description": "Creates an asynchronous task that waits for a specified number of seconds. If the time is 0, it will wait for a frame instead.",
+      "return": "An await-able task object that is completed once the time runs out.",
+      "returnType": "task",
+      "arguments": {
+        "timeInSeconds": "The time to wait for in seconds."
+      }
+    },
+    "emptyAsset": {
+      "description": "Creates an empty asset reference with the given file type.",
+      "return": null,
+      "returnType": "engine::AssetRef",
+      "arguments": {
+        "extension": "The file extension of the file type that is referenced."
+      }
+    }
+  },
   "types": {
+    "Vector3": {
+      "description": "A struct for defining a position in 3D space.",
+      "methods": {
+        "projectToPlane": {
+          "description": "Returns a copy of this vector onto an infinite 2D plane.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {
+            "planeOrigin": "The origin point of the plane.",
+            "planeNormal": "The normal vector of the plane."
+          }
+        },
+        "length": {
+          "description": "Returns the length of this vector, calculated as sqrt(X^2 + Y^2 + Z^2).",
+          "return": null,
+          "returnType": "float",
+          "arguments": {}
+        },
+        "dot": {
+          "description": "Calculates the dot product between this vector and another vector.",
+          "return": null,
+          "returnType": "float",
+          "arguments": {}
+        },
+        "cross": {
+          "description": "Calculates the cross product between this vector and another vector.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "normalized": {
+          "description": "Returns the normalized version of this vector, which always has a length of 1, or X=0, Y=0, Z=0 if the vector already has a length of 0.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "toString": {
+          "description": "Converts this vector to a string, following the format \"{X} {Y} {Z}\"",
+          "return": null,
+          "returnType": "string",
+          "arguments": {}
+        }
+      },
+      "members": {
+        "x": {
+          "description": "Vector X coordinate, usually left/right.",
+          "type": "float"
+        },
+        "y": {
+          "description": "Vector Y coordinate, usually down/up.",
+          "type": "float"
+        },
+        "z": {
+          "description": "Vector Z coordinate, usually forward/backward.",
+          "type": "float"
+        }
+      },
+      "super": null
+    },
+    "Rotation3": {
+      "description": "A struct containing an euler rotation.",
+      "methods": {
+        "forward": {
+          "description": "Returns a vector pointing in the direction that is forward from this rotation.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "right": {
+          "description": "Returns a vector pointing in the direction that is right from this rotation.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "up": {
+          "description": "Returns a vector pointing in the direction that is up from this rotation.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        }
+      },
+      "members": {
+        "p": {
+          "description": "Pitch value.",
+          "type": "float"
+        },
+        "y": {
+          "description": "Yaw value.",
+          "type": "float"
+        },
+        "r": {
+          "description": "Roll value.",
+          "type": "float"
+        }
+      },
+      "super": null
+    },
+    "Transform": {
+      "description": "A type containing a transform in 3D space, including position, rotation and scale.",
+      "methods": {},
+      "members": {},
+      "super": null
+    },
+    "Scene": {
+      "description": "A collection of objects, rendering, collision and sound information, forming a kind of \"World\".",
+      "methods": {
+        "getName": {
+          "description": "Returns the name of this scene. If this scene was loaded from a file, this is usually the filename.",
+          "return": null,
+          "returnType": "string",
+          "arguments": {}
+        },
+        "getManager": {
+          "description": "Gets the current manager of this scene or null if none is set.\\nThe manager is an instance of the engine::SceneManager class which is accessible to every other object in the scene and should control global scene logic. To check if the scene manager has a given type, use the is and as operators.",
+          "return": null,
+          "returnType": "engine::SceneManager",
+          "arguments": {}
+        },
+        "createNewObject": {
+          "description": "Creates a new scene object with the given type.",
+          "return": null,
+          "returnType": "engine::SceneObject",
+          "arguments": {}
+        },
+        "getObjectByName": {
+          "description": "Searches for an object in this scene that has the given type and the given name. If multiple objects match the criteria, a warning will be logged and only one of them will be returned.",
+          "return": "The found object or null if no such object exists in this scene.",
+          "returnType": "engine::SceneObject?",
+          "arguments": {
+            "name": "The name of the object to search for."
+          }
+        },
+        "getPhysics": {
+          "description": "Returns the physics manager of this scene.",
+          "return": null,
+          "returnType": "engine::PhysicsManager",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": null
+    },
+    "AssetRef": {
+      "description": "A reference to a project asset. Contains a type (extension) and file path.",
+      "methods": {
+        "new": {
+          "description": "Creates a new asset reference from the given name or path.",
+          "arguments": {
+            "path": "The path or name of the asset file to reference, including the extension. If a only a name is given, the loaded assets are searched for a matching file."
+          }
+        }
+      },
+      "members": {},
+      "super": null
+    },
+    "SceneObject": {
+      "description": "An object in a scene, made up of a tree of ObjectComponents. An object can have a number of properties, marked with the [Export] attribute, that are saved in the scene file.",
+      "methods": {
+        "attach": {
+          "description": "Attaches a component to this object.",
+          "arguments": {
+            "component": "The component to attach to the object."
+          }
+        },
+        "detach": {
+          "description": "Detaches a component from the object and destroys it.",
+          "arguments": {
+            "component": "The component to detach to the object."
+          }
+        },
+        "onBegin": {
+          "description": "Virtual function, called when an object is created.",
+          "arguments": {}
+        },
+        "onBeginPlay": {
+          "description": "Virtual function, called when an object is created in game.",
+          "arguments": {}
+        },
+        "update": {
+          "description": "Virtual function, called each frame while the game is running.",
+          "arguments": {}
+        },
+        "onDestroyed": {
+          "description": "Virtual function, called when the object is destroyed (including when the entire scene being unloaded).",
+          "arguments": {}
+        },
+        "getScene": {
+          "description": "Gets the scene that this object is in.",
+          "return": null,
+          "returnType": "engine::Scene",
+          "arguments": {}
+        },
+        "getName": {
+          "description": "Gets the name of this object.",
+          "return": null,
+          "returnType": "string",
+          "arguments": {}
+        }
+      },
+      "members": {
+        "position": {
+          "description": "The position of this object and its components in the scene.",
+          "type": "Vector3"
+        },
+        "rotation": {
+          "description": "The rotation of this object and its components in the scene.",
+          "type": "Rotation3"
+        },
+        "scale": {
+          "description": "The scale of this object and its components in the scene.",
+          "type": "Vector3"
+        },
+        "objectTransform": {
+          "description": "The transform of this object in the scene. It is derived from this object's position, rotation and scale members. All components attached to this object will be transformed by this value.",
+          "type": null
+        }
+      },
+      "super": null
+    },
+    "ObjectComponent": {
+      "description": "A component of a SceneObject. It can be attached to a SceneObject either by calling SceneObject.attach() or by attaching the component to another component that has been attached to a SceneObject. The component will inherit the transform of the parent component or object.",
+      "methods": {
+        "attach": {
+          "description": "Attaches a component to this component. It will inherit this component's transform.",
+          "arguments": {
+            "component": "The component to attach to this component."
+          }
+        },
+        "getWorldPosition": {
+          "description": "Gets this component's position in world coordinates of the scene.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        }
+      },
+      "members": {
+        "position": {
+          "description": "The position of this component relative to its parent.",
+          "type": "engine::Vector3"
+        },
+        "rotation": {
+          "description": "The rotation of this component relative to its parent.",
+          "type": "engine::Rotation3"
+        },
+        "scale": {
+          "description": null,
+          "type": "engine::Vector3"
+        }
+      },
+      "super": null
+    },
     "DrawableComponent": {
+      "description": "Base class for all components that have a visual representation in the scene.",
+      "methods": {},
       "members": {
         "isVisible": {
           "description": "True if this object be rendered to the screen, false if not.",
@@ -12,14 +314,215 @@
           "type": "bool"
         }
       },
-      "description": "Base class for all components that have a visual representation in the scene.",
-      "super": "engine::ObjectComponent",
-      "methods": {}
+      "super": "engine::ObjectComponent"
+    },
+    "MeshComponent": {
+      "description": "An object component that displays a 3D model.",
+      "methods": {
+        "load": {
+          "description": "Loads and applies a 3D model (.kmdl file) to this component.",
+          "arguments": {
+            "asset": "The asset to load the 3D model from."
+          }
+        },
+        "getModel": {
+          "description": "Returns the currently loaded model data.",
+          "return": "The model data or null if no model is loaded.",
+          "returnType": "engine::graphics::ModelData",
+          "arguments": {}
+        },
+        "new": {
+          "description": "Creates a new mesh component.",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": "engine::DrawableComponent"
+    },
+    "CameraComponent": {
+      "description": "A camera through which the scene is rendered.",
+      "methods": {
+        "setFov": {
+          "description": "Sets the vertical field-of-view of this camera in degrees.",
+          "arguments": {}
+        },
+        "use": {
+          "description": "Uses this camera to be the scene's currently active camera.",
+          "arguments": {}
+        },
+        "screenToWorldDirection": {
+          "description": "Converts screen coordinates (X and Y from -1 to 1 for left/right and up/down) to a vector with a length of 1, pointing in that direction from the camera.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "worldPositionToScreen": {
+          "description": "Projects 3D coordinates to the screen. Returns a 3D vector, where X and Y are 2D screen coordinates and Z is depth.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "new": {
+          "description": "Creates a new camera component.",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": "engine::ObjectComponent"
+    },
+    "MoveComponent": {
+      "description": "A component implementing a simple movement controller using the collide and slide algorithm, moving it's parent object.",
+      "methods": {
+        "addInput": {
+          "description": "Adds an input in this direction, telling movement to move in that direction. Each frame, each input is combined together (with their length clamped) to control the movement velocity.",
+          "arguments": {}
+        },
+        "jump": {
+          "description": "Makes the movement do a jump, setting the velocity Y value to the jump height.",
+          "arguments": {}
+        },
+        "isOnGround": {
+          "description": "Returns true if the controller is currently \\\"standing\\\" on any ground.",
+          "arguments": {}
+        },
+        "getVelocity": {
+          "description": "Gets the current velocity.",
+          "return": null,
+          "returnType": "engine::Vector3",
+          "arguments": {}
+        },
+        "setVelocity": {
+          "description": "Sets the current velocity.",
+          "arguments": {}
+        }
+      },
+      "members": {
+        "acceleration": {
+          "description": "The acceleration in units per second squared that is applied by addInput().",
+          "type": "float"
+        },
+        "gravity": {
+          "description": "Force applied downwards (-Y) in units per second.",
+          "type": "float"
+        },
+        "maxSpeed": {
+          "description": "\"Max speed the movement can accelerate to in units per second.",
+          "type": "float"
+        },
+        "deceleration": {
+          "description": "The acceleration in units per second squared that is applied when no input is given.",
+          "type": "float"
+        },
+        "active": {
+          "description": "If false, the movement will not update the parent object's position in any way.",
+          "type": "bool"
+        },
+        "canMoveUpSlopes": {
+          "description": "If true, the movement can move up slopes > 45 degrees.",
+          "type": "bool"
+        },
+        "jumpHeight": {
+          "description": "The speed in units per second applied when jump() is called.",
+          "type": null
+        }
+      },
+      "super": "engine::ObjectComponent"
+    },
+    "CollisionComponent": {
+      "description": "A collider using a 3D model.",
+      "methods": {
+        "load": {
+          "description": "Loads a 3D model (.kmdl file) this component for collision.",
+          "arguments": {
+            "file": "The 3D model asset to load."
+          }
+        },
+        "setIsCollisionEnabled": {
+          "description": "Enables or disables collision of this component. If collision is disabled, no physics query will be able to interact with this collider.",
+          "arguments": {}
+        },
+        "new": {
+          "description": "Creates a new collision component.",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": "engine::ObjectComponent"
+    },
+    "Billboard": {
+      "description": "A component rendering a plane 3D model always facing the camera, imitating a 2D space, but appearing in the 3D world.",
+      "methods": {
+        "load": {
+          "description": "Loads a new billboard image from the given image file.",
+          "arguments": {}
+        },
+        "new": {
+          "description": "Creates a new billboard component.",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": "engine::DrawableComponent"
+    },
+    "LightComponent": {
+      "description": "A component emitting a light in the scene from it's origin point.",
+      "methods": {
+        "setColor": {
+          "description": "Sets the color the light should shine in, in an RGB format from 0-1.",
+          "arguments": {}
+        },
+        "setIntensity": {
+          "description": "Sets the intensity of the light, where a higher value means elements close to the light will be illuminated more.",
+          "arguments": {}
+        },
+        "setRange": {
+          "description": "Sets the range of the light in units, where a higher value means the light will shine for a larger distance. The light will stop shining entirely once the cutoff point has been reached for performance reasons, even though this might not always look right.",
+          "arguments": {}
+        },
+        "new": {
+          "description": "Creates a new light component.",
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": "engine::ObjectComponent"
+    },
+    "SoundComponent": {
+      "description": "A component emitting a sound from it's origin point. The sound can be looped or positioned in 3D space.",
+      "methods": {
+        "load": {
+          "description": "Loads a sound file (.wav) into this component.",
+          "arguments": {}
+        },
+        "play": {
+          "description": "Starts playback of the sound. Calling this function while the sound is already playing will reset the sound.",
+          "arguments": {
+            "loop": "True if the sound should loop.",
+            "is3D": "True if the sound should be panned/attenuated as if it was in 3D space. If false, the sound will always sound the same, no matter where the listener is."
+          }
+        },
+        "stop": {
+          "description": "Stops playback of the currently playing sound.",
+          "arguments": {}
+        },
+        "setVolume": {
+          "description": "Sets the volume of the sound source. A volume of 1 means the sound is as loud as it was defined in the sound file.",
+          "arguments": {}
+        },
+        "setRange": {
+          "description": "Sets the range of the sound in units. Sounds have a distance model of 1/distance, so they never become fully unhearable, but past this point they become practically inaudible.",
+          "arguments": {}
+        },
+        "new": {
+          "description": null,
+          "arguments": {}
+        }
+      },
+      "members": {},
+      "super": "engine::ObjectComponent"
     },
     "PhysicsComponent": {
-      "members": {},
       "description": "A collider using simple geometric shapes than can simulate physics. This component's transform will not be relative to the position/rotation/scale members after physics have been enabled, instead the component will follow the position of the simulated body. Any components attached to this component will follow this component.",
-      "super": "engine::ObjectComponent",
       "methods": {
         "createBox": {
           "description": "Loads a box collider for this component.",
@@ -51,522 +554,19 @@
             "isActive": "If this is true, the component becomes active."
           }
         },
+        "setIsCollisionEnabled": {
+          "description": "Enables or disables the collision of this component against other queries.",
+          "arguments": {}
+        },
         "collisionTest": {
           "description": "Does a collision test, checking for any overlapping colliders at this component's position, rotation and scale.",
           "arguments": {
             "layer": "The layer to query."
           }
-        },
-        "setIsCollisionEnabled": {
-          "description": "Enables or disables the collision of this component against other queries.",
-          "arguments": {}
-        }
-      }
-    },
-    "MoveComponent": {
-      "members": {
-        "gravity": {
-          "description": "Force applied downwards (-Y) in units per second.",
-          "type": "float"
-        },
-        "maxSpeed": {
-          "description": "\"Max speed the movement can accelerate to in units per second.",
-          "type": "float"
-        },
-        "acceleration": {
-          "description": "The acceleration in units per second squared that is applied by addInput().",
-          "type": "float"
-        },
-        "deceleration": {
-          "description": "The acceleration in units per second squared that is applied when no input is given.",
-          "type": "float"
-        },
-        "canMoveUpSlopes": {
-          "description": "If true, the movement can move up slopes > 45 degrees.",
-          "type": "bool"
-        },
-        "jumpHeight": {
-          "description": "The speed in units per second applied when jump() is called.",
-          "type": null
-        },
-        "active": {
-          "description": "If false, the movement will not update the parent object's position in any way.",
-          "type": "bool"
         }
       },
-      "description": "A component implementing a simple movement controller using the collide and slide algorithm, moving it's parent object.",
-      "super": "engine::ObjectComponent",
-      "methods": {
-        "addInput": {
-          "description": "Adds an input in this direction, telling movement to move in that direction. Each frame, each input is combined together (with their length clamped) to control the movement velocity.",
-          "arguments": {}
-        },
-        "setVelocity": {
-          "description": "Sets the current velocity.",
-          "arguments": {}
-        },
-        "isOnGround": {
-          "description": "Returns true if the controller is currently \\\"standing\\\" on any ground.",
-          "arguments": {}
-        },
-        "getVelocity": {
-          "description": "Gets the current velocity.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        },
-        "jump": {
-          "description": "Makes the movement do a jump, setting the velocity Y value to the jump height.",
-          "arguments": {}
-        }
-      }
-    },
-    "Rotation3": {
-      "members": {
-        "p": {
-          "description": "Pitch value.",
-          "type": "float"
-        },
-        "y": {
-          "description": "Yaw value.",
-          "type": "float"
-        },
-        "r": {
-          "description": "Roll value.",
-          "type": "float"
-        }
-      },
-      "description": "A struct containing an euler rotation.",
-      "super": null,
-      "methods": {
-        "forward": {
-          "description": "Returns a vector pointing in the direction that is forward from this rotation.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        },
-        "right": {
-          "description": "Returns a vector pointing in the direction that is right from this rotation.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        },
-        "up": {
-          "description": "Returns a vector pointing in the direction that is up from this rotation.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        }
-      }
-    },
-    "SoundComponent": {
       "members": {},
-      "description": "A component emitting a sound from it's origin point. The sound can be looped or positioned in 3D space.",
-      "super": "engine::ObjectComponent",
-      "methods": {
-        "new": {
-          "description": null,
-          "arguments": {}
-        },
-        "stop": {
-          "description": "Stops playback of the currently playing sound.",
-          "arguments": {}
-        },
-        "play": {
-          "description": "Starts playback of the sound. Calling this function while the sound is already playing will reset the sound.",
-          "arguments": {
-            "loop": "True if the sound should loop.",
-            "is3D": "True if the sound should be panned/attenuated as if it was in 3D space. If false, the sound will always sound the same, no matter where the listener is."
-          }
-        },
-        "setRange": {
-          "description": "Sets the range of the sound in units. Sounds have a distance model of 1/distance, so they never become fully unhearable, but past this point they become practically inaudible.",
-          "arguments": {}
-        },
-        "load": {
-          "description": "Loads a sound file (.wav) into this component.",
-          "arguments": {}
-        },
-        "setVolume": {
-          "description": "Sets the volume of the sound source. A volume of 1 means the sound is as loud as it was defined in the sound file.",
-          "arguments": {}
-        }
-      }
-    },
-    "Billboard": {
-      "members": {},
-      "description": "A component rendering a plane 3D model always facing the camera, imitating a 2D space, but appearing in the 3D world.",
-      "super": "engine::DrawableComponent",
-      "methods": {
-        "load": {
-          "description": "Loads a new billboard image from the given image file.",
-          "arguments": {}
-        },
-        "new": {
-          "description": "Creates a new billboard component.",
-          "arguments": {}
-        }
-      }
-    },
-    "LightComponent": {
-      "members": {},
-      "description": "A component emitting a light in the scene from it's origin point.",
-      "super": "engine::ObjectComponent",
-      "methods": {
-        "new": {
-          "description": "Creates a new light component.",
-          "arguments": {}
-        },
-        "setIntensity": {
-          "description": "Sets the intensity of the light, where a higher value means elements close to the light will be illuminated more.",
-          "arguments": {}
-        },
-        "setRange": {
-          "description": "Sets the range of the light in units, where a higher value means the light will shine for a larger distance. The light will stop shining entirely once the cutoff point has been reached for performance reasons, even though this might not always look right.",
-          "arguments": {}
-        },
-        "setColor": {
-          "description": "Sets the color the light should shine in, in an RGB format from 0-1.",
-          "arguments": {}
-        }
-      }
-    },
-    "AssetRef": {
-      "members": {},
-      "description": "A reference to a project asset. Contains a type (extension) and file path.",
-      "super": null,
-      "methods": {
-        "new": {
-          "description": "Creates a new asset reference from the given name or path.",
-          "arguments": {
-            "path": "The path or name of the asset file to reference, including the extension. If a only a name is given, the loaded assets are searched for a matching file."
-          }
-        }
-      }
-    },
-    "Vector3": {
-      "members": {
-        "y": {
-          "description": "Vector Y coordinate, usually down/up.",
-          "type": "float"
-        },
-        "x": {
-          "description": "Vector X coordinate, usually left/right.",
-          "type": "float"
-        },
-        "z": {
-          "description": "Vector Z coordinate, usually forward/backward.",
-          "type": "float"
-        }
-      },
-      "description": "A struct for defining a position in 3D space.",
-      "super": null,
-      "methods": {
-        "projectToPlane": {
-          "description": "Returns a copy of this vector onto an infinite 2D plane.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {
-            "planeOrigin": "The origin point of the plane.",
-            "planeNormal": "The normal vector of the plane."
-          }
-        },
-        "length": {
-          "description": "Returns the length of this vector, calculated as sqrt(X^2 + Y^2 + Z^2).",
-          "return": null,
-          "returnType": "float",
-          "arguments": {}
-        },
-        "dot": {
-          "description": "Calculates the dot product between this vector and another vector.",
-          "return": null,
-          "returnType": "float",
-          "arguments": {}
-        },
-        "normalized": {
-          "description": "Returns the normalized version of this vector, which always has a length of 1, or X=0, Y=0, Z=0 if the vector already has a length of 0.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        },
-        "toString": {
-          "description": "Converts this vector to a string, following the format \"{X} {Y} {Z}\"",
-          "return": null,
-          "returnType": "string",
-          "arguments": {}
-        },
-        "cross": {
-          "description": "Calculates the cross product between this vector and another vector.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        }
-      }
-    },
-    "CollisionComponent": {
-      "members": {},
-      "description": "A collider using a 3D model.",
-      "super": "engine::ObjectComponent",
-      "methods": {
-        "load": {
-          "description": "Loads a 3D model (.kmdl file) this component for collision.",
-          "arguments": {
-            "file": "The 3D model asset to load."
-          }
-        },
-        "new": {
-          "description": "Creates a new collision component.",
-          "arguments": {}
-        },
-        "setIsCollisionEnabled": {
-          "description": "Enables or disables collision of this component. If collision is disabled, no physics query will be able to interact with this collider.",
-          "arguments": {}
-        }
-      }
-    },
-    "Scene": {
-      "members": {},
-      "description": "A collection of objects, rendering, collision and sound information, forming a kind of \"World\".",
-      "super": null,
-      "methods": {
-        "createNewObject": {
-          "description": "Creates a new scene object with the given type.",
-          "return": null,
-          "returnType": "engine::SceneObject",
-          "arguments": {}
-        },
-        "getManager": {
-          "description": "Gets the current manager of this scene or null if none is set.\\nThe manager is an instance of the engine::SceneManager class which is accessible to every other object in the scene and should control global scene logic. To check if the scene manager has a given type, use the is and as operators.",
-          "return": null,
-          "returnType": "engine::SceneManager",
-          "arguments": {}
-        },
-        "getObjectByName": {
-          "description": "Searches for an object in this scene that has the given type and the given name. If multiple objects match the criteria, a warning will be logged and only one of them will be returned.",
-          "return": "The found object or null if no such object exists in this scene.",
-          "returnType": "engine::SceneObject?",
-          "arguments": {
-            "name": "The name of the object to search for."
-          }
-        },
-        "getName": {
-          "description": "Returns the name of this scene. If this scene was loaded from a file, this is usually the filename.",
-          "return": null,
-          "returnType": "string",
-          "arguments": {}
-        },
-        "getPhysics": {
-          "description": "Returns the physics manager of this scene.",
-          "return": null,
-          "returnType": "engine::PhysicsManager",
-          "arguments": {}
-        }
-      }
-    },
-    "ObjectComponent": {
-      "members": {
-        "scale": {
-          "description": null,
-          "type": "engine::Vector3"
-        },
-        "rotation": {
-          "description": "The rotation of this component relative to its parent.",
-          "type": "engine::Rotation3"
-        },
-        "position": {
-          "description": "The position of this component relative to its parent.",
-          "type": "engine::Vector3"
-        }
-      },
-      "description": "A component of a SceneObject. It can be attached to a SceneObject either by calling SceneObject.attach() or by attaching the component to another component that has been attached to a SceneObject. The component will inherit the transform of the parent component or object.",
-      "super": null,
-      "methods": {
-        "attach": {
-          "description": "Attaches a component to this component. It will inherit this component's transform.",
-          "arguments": {
-            "component": "The component to attach to this component."
-          }
-        },
-        "getWorldPosition": {
-          "description": "Gets this component's position in world coordinates of the scene.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        }
-      }
-    },
-    "Transform": {
-      "members": {},
-      "description": "A type containing a transform in 3D space, including position, rotation and scale.",
-      "super": null,
-      "methods": {}
-    },
-    "CameraComponent": {
-      "members": {},
-      "description": "A camera through which the scene is rendered.",
-      "super": "engine::ObjectComponent",
-      "methods": {
-        "setFov": {
-          "description": "Sets the vertical field-of-view of this camera in degrees.",
-          "arguments": {}
-        },
-        "screenToWorldDirection": {
-          "description": "Converts screen coordinates (X and Y from -1 to 1 for left/right and up/down) to a vector with a length of 1, pointing in that direction from the camera.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        },
-        "new": {
-          "description": "Creates a new camera component.",
-          "arguments": {}
-        },
-        "worldPositionToScreen": {
-          "description": "Projects 3D coordinates to the screen. Returns a 3D vector, where X and Y are 2D screen coordinates and Z is depth.",
-          "return": null,
-          "returnType": "engine::Vector3",
-          "arguments": {}
-        },
-        "use": {
-          "description": "Uses this camera to be the scene's currently active camera.",
-          "arguments": {}
-        }
-      }
-    },
-    "SceneObject": {
-      "members": {
-        "scale": {
-          "description": "The scale of this object and its components in the scene.",
-          "type": "Vector3"
-        },
-        "rotation": {
-          "description": "The rotation of this object and its components in the scene.",
-          "type": "Rotation3"
-        },
-        "objectTransform": {
-          "description": "The transform of this object in the scene. It is derived from this object's position, rotation and scale members. All components attached to this object will be transformed by this value.",
-          "type": null
-        },
-        "position": {
-          "description": "The position of this object and its components in the scene.",
-          "type": "Vector3"
-        }
-      },
-      "description": "An object in a scene, made up of a tree of ObjectComponents. An object can have a number of properties, marked with the [Export] attribute, that are saved in the scene file.",
-      "super": null,
-      "methods": {
-        "onDestroyed": {
-          "description": "Virtual function, called when the object is destroyed (including when the entire scene being unloaded).",
-          "arguments": {}
-        },
-        "onBegin": {
-          "description": "Virtual function, called when an object is created.",
-          "arguments": {}
-        },
-        "onBeginPlay": {
-          "description": "Virtual function, called when an object is created in game.",
-          "arguments": {}
-        },
-        "attach": {
-          "description": "Attaches a component to this object.",
-          "arguments": {
-            "component": "The component to attach to the object."
-          }
-        },
-        "getName": {
-          "description": "Gets the name of this object.",
-          "return": null,
-          "returnType": "string",
-          "arguments": {}
-        },
-        "update": {
-          "description": "Virtual function, called each frame while the game is running.",
-          "arguments": {}
-        },
-        "getScene": {
-          "description": "Gets the scene that this object is in.",
-          "return": null,
-          "returnType": "engine::Scene",
-          "arguments": {}
-        },
-        "detach": {
-          "description": "Detaches a component from the object and destroys it.",
-          "arguments": {
-            "component": "The component to detach to the object."
-          }
-        }
-      }
-    },
-    "MeshComponent": {
-      "members": {},
-      "description": "An object component that displays a 3D model.",
-      "super": "engine::DrawableComponent",
-      "methods": {
-        "load": {
-          "description": "Loads and applies a 3D model (.kmdl file) to this component.",
-          "arguments": {
-            "asset": "The asset to load the 3D model from."
-          }
-        },
-        "new": {
-          "description": "Creates a new mesh component.",
-          "arguments": {}
-        },
-        "getModel": {
-          "description": "Returns the currently loaded model data.",
-          "return": "The model data or null if no model is loaded.",
-          "returnType": "engine::graphics::ModelData",
-          "arguments": {}
-        }
-      }
-    }
-  },
-  "type": "bindings",
-  "functions": {
-    "getDelta": {
-      "description": "Returns the frame delta time in seconds. This is the time it took for the last frame to be run.",
-      "return": null,
-      "returnType": "float",
-      "arguments": {}
-    },
-    "emptyAsset": {
-      "description": "Creates an empty asset reference with the given file type.",
-      "return": null,
-      "returnType": "engine::AssetRef",
-      "arguments": {
-        "extension": "The file extension of the file type that is referenced."
-      }
-    },
-    "isPlaying": {
-      "description": "Returns true if the game is running and false if the script is running in the editor.",
-      "return": null,
-      "returnType": "bool",
-      "arguments": {}
-    },
-    "info": {
-      "description": "Prints an info message to the log.",
-      "arguments": {
-        "message": "The message string to print."
-      }
-    },
-    "wait": {
-      "description": "Creates an asynchronous task that waits for a specified number of seconds. If the time is 0, it will wait for a frame instead.",
-      "return": "An await-able task object that is completed once the time runs out.",
-      "returnType": "task",
-      "arguments": {
-        "timeInSeconds": "The time to wait for in seconds."
-      }
-    },
-    "getMainScene": {
-      "description": "Gets the engine's currently loaded main scene. If there is no main scene loaded, or if the main scene is still being loaded asynchronously, this function returns null instead. In most contexts, you probably want to pass around references to the result of SceneObject.getScene() instead.",
-      "return": "The current main scene or null if no main scene is loaded.",
-      "returnType": "engine::Scene?",
-      "arguments": {}
-    },
-    "warn": {
-      "description": "Prints a warning message to the log",
-      "arguments": {
-        "message": "The message string to print."
-      }
+      "super": "engine::ObjectComponent"
     }
   }
 }

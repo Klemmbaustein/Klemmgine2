@@ -5,6 +5,7 @@
 #include <DebuggerPanel.kui.hpp>
 #include <Editor/UI/Debugger/PrimitiveVisualizer.h>
 #include <Editor/UI/Debugger/ClassVisualizer.h>
+#include <Editor/UI/Debugger/ArrayVisualizer.h>
 #include <algorithm>
 #include <Editor/Assets/ScriptAssetType.h>
 
@@ -21,6 +22,7 @@ engine::editor::DebuggerPanel::DebuggerPanel()
 		new FloatVisualizer(),
 		new BoolVisualizer(),
 		new ClassVisualizer(),
+		new ArrayVisualizer(),
 	};
 
 	std::sort(Visualizers.begin(), Visualizers.end(), [](ValueVisualizer* a, ValueVisualizer* b) {

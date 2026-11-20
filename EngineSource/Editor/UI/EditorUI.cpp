@@ -65,7 +65,7 @@ static std::map<engine::string, Vec3f> FileNameColors =
 	{ "dir/", Vec3f(0.7f, 0.5f, 0) },
 	{ "ds", Vec3f(0.4f, 0.1f, 0.7f) },
 	{ "wav", Vec3f(0.1f, 0.2f, 0.4f) },
-	{ "kui", Vec3f(0.4f, 0.1f, 0.7f)},
+	{ "kui", Vec3f(0.4f, 0.1f, 0.7f) },
 };
 static std::map<string, string> FileNameIcons =
 {
@@ -365,7 +365,7 @@ engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 	AddMenuBarItem("Scene",
 		{
 			DropdownMenu::Option("Save", "Ctrl+Alt+S", Asset("Save.png")),
-			DropdownMenu::Option("Open", "", Asset("Open.png")),
+			//DropdownMenu::Option("Open", "", Asset("Open.png")),
 			DropdownMenu::Option("Run", "F5", Asset("Run.png"), []() {
 				Viewport::Current->Run();
 			}),
@@ -403,6 +403,9 @@ engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 				}),
 				DropdownMenu::Option("View Config Directory", "", Asset("Open.png"), []() {
 					platform::Open(GetEditorConfigPath());
+				}),
+				DropdownMenu::Option("View Project Editor Files", "", Asset("Open.png"), [this]() {
+					platform::Open(GetProjectDataPath());
 				}),
 			}
 			},

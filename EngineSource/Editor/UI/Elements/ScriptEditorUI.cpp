@@ -280,10 +280,14 @@ engine::editor::ScriptEditorUI::ScriptEditorUI(kui::UIBox* Background, bool IsFl
 		}
 	}, ShortcutOptions::AllowInText);
 
-	auto LastOpened = GetLastOpenedFiles();
-	for (auto& i : LastOpened)
+	auto LastState = GetSavedEditorState();
+	for (auto& i : LastState.ActiveTabs)
 	{
 		AddTab(i);
+		if (LastState.OpenedTab == i)
+		{
+			SelectedTab = Tabs.size() - 1;
+		}
 	}
 	SortTabs();
 
@@ -314,7 +318,7 @@ engine::editor::ScriptEditorUI::~ScriptEditorUI()
 	{
 		EditorUI::Instance->AssetsProvider->OnChanged.Remove(this);
 	}
-	SaveLastOpenedFiles();
+	SaveEditorState();
 	Settings::GetInstance()->Script.RemoveListener(this);
 
 	Quit = true;
@@ -954,7 +958,44 @@ void engine::editor::ScriptEditorUI::Save()
 	}
 }
 
-std::set<string> engine::editor::ScriptEditorUI::GetLastOpenedFiles()
+ScriptEditorUI::EditorState engine::editor::ScriptEditorUI::GetSavedEditorState()
+{
+	EditorState result;
+
+	string StateFile = GetEditorStateFile();
+
+	if (!std::filesystem::exists(StateFile))
+	{
+		result.ActiveTabs = GetLegacyLastOpenedFiles();
+		return result;
+	}
+
+	try
+	{
+		auto State = JsonSerializer::FromFile(StateFile);
+
+		for (auto& i : State.At("tabs").GetArray())
+		{
+			result.ActiveTabs.insert(i.GetString());
+		}
+		if (State.Contains("selectedTab"))
+		{
+			result.OpenedTab = State.At("selectedTab").GetString();
+		}
+
+		return result;
+	}
+	catch (SerializeException& e)
+	{
+		Log::Warn(str::Format("Failed to load saved script editor state from file %s: %s",
+			StateFile.c_str(), e.what()));
+		return {};
+	}
+
+	return EditorState();
+}
+
+std::set<string> engine::editor::ScriptEditorUI::GetLegacyLastOpenedFiles()
 {
 	string TabsFile = GetOpenedTabsFile();
 
@@ -982,21 +1023,34 @@ std::set<string> engine::editor::ScriptEditorUI::GetLastOpenedFiles()
 	}
 }
 
-void engine::editor::ScriptEditorUI::SaveLastOpenedFiles()
+void engine::editor::ScriptEditorUI::SaveEditorState()
 {
-	std::vector<SerializedValue> Result;
+	std::vector<SerializedData> Result;
+
+	std::vector<SerializedValue> SavedTabs;
 
 	for (auto& i : Tabs)
 	{
-		Result.push_back(SerializedValue(i.Provider->EditedFile));
+		SavedTabs.push_back(SerializedValue(i.Provider->EditedFile));
 	}
 
-	JsonSerializer::ToFile(Result, GetOpenedTabsFile());
+	Result.push_back(SerializedData("tabs", SavedTabs));
+	if (GetSelectedTab())
+	{
+		Result.push_back(SerializedData("selectedTab", GetSelectedTab()->Provider->EditedFile));
+	}
+
+	JsonSerializer::ToFile(Result, GetEditorStateFile());
 }
 
 string engine::editor::ScriptEditorUI::GetOpenedTabsFile()
 {
 	return EditorUI::Instance->GetProjectDataPath() + "/tabs.json";
+}
+
+string engine::editor::ScriptEditorUI::GetEditorStateFile()
+{
+	return EditorUI::Instance->GetProjectDataPath() + "/scriptEditor.json";
 }
 
 bool engine::editor::ScriptEditorUI::HasKeyboardFocus()

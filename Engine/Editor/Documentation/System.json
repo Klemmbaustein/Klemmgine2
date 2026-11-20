@@ -1,13 +1,13 @@
 {
+  "type": "bindings",
   "module": "system",
+  "functions": {},
   "types": {
     "Map": {
-      "members": {},
       "description": "A generic Key-Value map.",
-      "super": null,
-      "methods": {}
+      "methods": {},
+      "members": {},
+      "super": null
     }
-  },
-  "type": "bindings",
-  "functions": {}
+  }
 }

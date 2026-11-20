@@ -29,8 +29,6 @@ bool engine::editor::ClassVisualizer::SupportsType(const ds::DebugVariable& Vari
 	}
 
 	return true;
-
-	// return /*!Variable.isPrimitive*/ true;
 }
 
 string engine::editor::ClassVisualizer::GetPreviewText(const ds::DebugVariable& Variable)
@@ -53,7 +51,7 @@ string engine::editor::ClassVisualizer::GetPreviewText(const ds::DebugVariable& 
 
 	if (!ClassValue->type || found == Reflect.types.end())
 	{
-		return str::Format("%s <extern> <0x%llx>", Reflect.types[Variable.type].name.c_str(), size_t(ClassValue));
+		return str::Format("%s <0x%llx>", Reflect.types[Variable.type].name.c_str(), size_t(ClassValue));
 	}
 
 	return str::Format("%s <0x%llx>", found->second.name.c_str(), size_t(ClassValue));
@@ -109,7 +107,9 @@ std::vector<ds::DebugVariable> engine::editor::ClassVisualizer::GetMembers(const
 		else
 		{
 			Members.push_back(ds::DebugVariable{
-				.pointer = i.isPrimitive ? (ClassValue->getBody() + i.offset) : *reinterpret_cast<void**>(ClassValue->getBody() + i.offset),
+				.pointer = i.isPrimitive
+					? (ClassValue->getBody() + i.offset)
+					: *reinterpret_cast<void**>(ClassValue->getBody() + i.offset),
 				.name = i.name.c_str(),
 				.type = i.type,
 				.isPrimitive = i.isPrimitive,

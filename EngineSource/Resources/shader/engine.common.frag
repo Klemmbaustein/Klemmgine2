@@ -95,8 +95,8 @@ vec2 lightStrength(vec3 at, float range, float falloff, float intensity, vec3 vi
 	float spec_dir = pow(max(reflectDiff, 0.0), specularSize);
 	float spec_power = spec_dir * intensity;
 
-	return vec2(1.0 / (Kc + Kl * d + Kq * d * d) * multiplier,
-		spec_power * multiplier);
+	float brightness = 1.0 / (Kc + Kl * d + Kq * d * d) * multiplier;
+	return vec2(brightness, spec_power * brightness);
 }
 
 float getShadowStrength()
