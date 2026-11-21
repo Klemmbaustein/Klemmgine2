@@ -1,5 +1,57 @@
 # Engine changelog
 
+## Klemmgine 2.0.0-dev4
+
+### Core
+
+- Improve performance of AssetRef type by making it read-only and caching some information.
+- UI library code can now see engine asset files.
+- Greatly improved performance on UI library.
+
+### Physics
+
+- Improved how physics layers are handled.
+
+### Graphics
+
+- Added particle system and ParticleComponent class.
+- Added instanced rendering system and InstancedMeshComponent class.
+- Improved light falloff calculation for specular highlights on point lights.
+
+### Script
+
+- Added `engine::serialize::Serialize` interface, which by defaults implements serialization and
+  de-serialization using reflection.
+- Added `engine::InstancedMeshComponent` class and corresponding functions to load many instances of
+  a single 3D mesh.
+- Added `SceneObject.setName()` to set names of objects using scripts.
+- Added some more UI bindings functions:
+	- Added `makePopup()` function to turn a UI box into a popup that disappears when it loses focus.
+	- Added `UIBox.updateLayout()` function to immediately re-calculate the layout of UI elements.
+	- Added `Canvas.sizeToPosition()` to convert a size value into a position value
+	  relative to the canvas.
+	- Added `UIStackBox` class that stacks multiple elements on top of each other.
+- Improved safety of script UI objects being mapped to UI library objects.
+
+### Editor
+
+- Internally add a common ScenePreviewElement UI class to preview scenes in some editor views.
+- Improved how the script editor state is saved when closing and re-opening the editor.
+- Added an option to view the editor-generated cache files for a project.
+- Added an array visualizer to the script debugger, now each item in an array is displayed.
+- Script tabs are automatically ordered instead of always having the order of when they were opened.
+- Improved some windowing code to consistently show the system close button in popups when a popup can be closed.
+- Changed some dialogs to be resizable.
+- Added an options window when importing 3D model files, to configure import settings.
+
+### Fixes
+
+- Many script language bug fixes.
+- Fixed some instances where changing the editor theme would not correctly be applied to some elements.
+- Fixed some buggy layout code in the script editor tab switcher that sometimes would add more items to one
+  row than another.
+- Fixed a rare race condition in script minimap generation code that would cause the editor to crash.
+
 ## Klemmgine 2.0.0-dev3
 
 ### Core

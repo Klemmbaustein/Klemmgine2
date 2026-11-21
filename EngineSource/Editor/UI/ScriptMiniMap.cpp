@@ -115,20 +115,35 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 	BackgroundR = uByte(BackgroundColor.X * 255.0f);
 	BackgroundG = uByte(BackgroundColor.Y * 255.0f);
 
+	bool ReachedEnd = false;
+	std::vector<TextSegment> l;
+	std::set<ScriptSyntaxHighlight>::iterator HighlightIterator;
+	std::set<ScriptSyntaxHighlight> Highlights;
+
 	for (size_t y = 0; y < Height; y++)
 	{
-		std::vector<TextSegment> l;
-
-		Editor->Get(EditorPosition(0, y), SIZE_MAX, l, true, true);
-
-		std::set<ScriptSyntaxHighlight> Highlights;
-
-		if (!Editor->IsLineLoaded(y))
+		if (!ReachedEnd)
 		{
-			Highlights = Provider->GetHighlightsFor(y);
-		}
+			l.clear();
+			Editor->LinesMutex.lock();
 
-		std::set<ScriptSyntaxHighlight>::iterator HighlightIterator = Highlights.begin();
+			if (Editor->EditorProvider->GetLineCount() < y)
+			{
+				Editor->LinesMutex.unlock();
+				ReachedEnd = true;
+			}
+			else
+			{
+				Editor->Get(EditorPosition(0, y), SIZE_MAX, l, true, false);
+
+				if (!Editor->IsLineLoaded(y))
+				{
+					Highlights = Provider->GetHighlightsFor(y);
+				}
+				Editor->LinesMutex.unlock();
+				HighlightIterator = Highlights.begin();
+			}
+		}
 
 		TextSegment* CurrentSegment = l.size() ? &*l.begin() : nullptr;
 
@@ -138,47 +153,54 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 
 		for (size_t x = 0; x < Width; x++)
 		{
-			if (CurrentSegment && CurrentCharIndex >= CurrentSegment->Text.size())
+			if (!ReachedEnd)
 			{
-				CurrentSegmentIndex++;
-				CurrentCharIndex = 0;
-				CurrentSegment = (l.size() > CurrentSegmentIndex) ? &l[CurrentSegmentIndex] : nullptr;
-			}
+				if (CurrentSegment && CurrentCharIndex >= CurrentSegment->Text.size())
+				{
+					CurrentSegmentIndex++;
+					CurrentCharIndex = 0;
+					CurrentSegment = (l.size() > CurrentSegmentIndex) ? &l[CurrentSegmentIndex] : nullptr;
+				}
 
-			char c = 0;
+				char c = 0;
 
-			if (CurrentSegment)
-			{
-				c = CurrentSegment->Text[CurrentCharIndex];
-				CurrentCharIndex++;
-			}
+				if (CurrentSegment)
+				{
+					c = CurrentSegment->Text[CurrentCharIndex];
+					CurrentCharIndex++;
+				}
 
-			if (c == '\t')
-			{
-				for (size_t i = 0; i <= 4; i++)
+				if (c == '\t')
+				{
+					for (size_t i = 0; i <= 4; i++)
+					{
+						SetPixel(x, y, BackgroundR, BackgroundG, BackgroundB);
+						x++;
+					}
+					x--;
+				}
+				else if (CurrentSegment && c != ' ')
+				{
+					Vec3f Color = CurrentSegment->Color;
+
+					if (HighlightIterator != Highlights.end() && HighlightIterator->Start <= CharacterIndex)
+					{
+						if (HighlightIterator->Start + HighlightIterator->Length < CharacterIndex)
+						{
+							HighlightIterator++;
+						}
+						else
+						{
+							Color = HighlightIterator->Color;
+						}
+					}
+
+					SetPixel(x, y, Color.X * 255.0f, Color.Y * 255.0f, Color.Z * 255.0f);
+				}
+				else
 				{
 					SetPixel(x, y, BackgroundR, BackgroundG, BackgroundB);
-					x++;
 				}
-				x--;
-			}
-			else if (CurrentSegment && c != ' ')
-			{
-				Vec3f Color = CurrentSegment->Color;
-
-				if (HighlightIterator != Highlights.end() && HighlightIterator->Start <= CharacterIndex)
-				{
-					if (HighlightIterator->Start + HighlightIterator->Length < CharacterIndex)
-					{
-						HighlightIterator++;
-					}
-					else
-					{
-						Color = HighlightIterator->Color;
-					}
-				}
-
-				SetPixel(x, y, Color.X * 255.0f, Color.Y * 255.0f, Color.Z * 255.0f);
 			}
 			else
 			{

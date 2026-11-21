@@ -76,7 +76,7 @@
           "arguments": {}
         },
         "deSerialize": {
-          "description": "Load the values from the serialized data given and apply them to this object. In the default implementation, all the members with the [Serialize] attribute are written read from a SerializedObject where each key is the name of a member. If the type of value itsel is a Serializable, the function will try to create a new instance of that type and call deSerialize on it too.",
+          "description": "Load the values from the serialized data given and apply them to this object. In the default implementation, all the members with the [Serialize] attribute are written read from a SerializedObject where each key is the name of a member. If the type of value itself is a Serializable, the function will try to create a new instance of that type and call deSerialize on it too.",
           "arguments": {}
         }
       },
