@@ -2,6 +2,7 @@
 #include <kui/Image.h>
 #include <kui/UI/UIButton.h>
 #include <Core/ThreadPool.h>
+#include <Engine/Debug/TimeLogger.h>
 
 using namespace engine::editor;
 using namespace kui;
@@ -49,16 +50,13 @@ engine::editor::ScriptMiniMap::~ScriptMiniMap()
 
 void ScriptMiniMap::Update()
 {
-	if (OldLength != Provider->GetLineCount())
-	{
-		OldLength = Provider->GetLineCount();
-		ReGenerate = true;
-	}
-
-	if (ReGenerate && !IsGenerating)
+	if (ReGenerate && !IsGenerating && !Provider->Context->GetIsCompiling()
+		&& (ReloadTimer.Get() > 1.0f || ReGenerateNow))
 	{
 		ReGenerate = false;
-		OldLength = Editor->GetLoadedLines();
+		ReGenerateNow = false;
+		ReloadTimer.Reset();
+		OldLength = Provider->GetLineCount();
 
 		uint32 h = Editor->EditorScrollBox->GetUsedSize().GetPixels().Y;
 		IsGenerating = true;
@@ -78,6 +76,7 @@ void ScriptMiniMap::Update()
 				{
 					return;
 				}
+
 				if (Image)
 				{
 					image::UnloadImage(Image);
@@ -142,6 +141,7 @@ void engine::editor::ScriptMiniMap::GenerateTexture(uint32 ScrollBoxHeight)
 				}
 				Editor->LinesMutex.unlock();
 				HighlightIterator = Highlights.begin();
+				std::this_thread::yield();
 			}
 		}
 

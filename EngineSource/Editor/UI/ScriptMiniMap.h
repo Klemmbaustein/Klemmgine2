@@ -22,12 +22,13 @@ namespace engine::editor
 		kui::Vec3f BackgroundColor = 0.1f;
 
 	private:
-
 		struct MiniMapBuildData
 		{
 			std::mutex m;
 			bool IsLoaded = true;
 		};
+
+		kui::Timer ReloadTimer;
 
 		void SetPixel(size_t x, size_t y, uByte R, uByte G, uByte B);
 		thread::ThreadMessagesRef Queue;
@@ -47,6 +48,7 @@ namespace engine::editor
 
 		size_t DownPadding = 0;
 
+		bool ReGenerateNow = true;
 		bool IsGenerating = false;
 	};
 }

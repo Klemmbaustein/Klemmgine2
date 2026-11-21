@@ -960,14 +960,14 @@ void engine::editor::ScriptEditorUI::Save()
 
 ScriptEditorUI::EditorState engine::editor::ScriptEditorUI::GetSavedEditorState()
 {
-	EditorState result;
+	EditorState Result;
 
 	string StateFile = GetEditorStateFile();
 
 	if (!std::filesystem::exists(StateFile))
 	{
-		result.ActiveTabs = GetLegacyLastOpenedFiles();
-		return result;
+		Result.ActiveTabs = GetLegacyLastOpenedFiles();
+		return Result;
 	}
 
 	try
@@ -976,14 +976,14 @@ ScriptEditorUI::EditorState engine::editor::ScriptEditorUI::GetSavedEditorState(
 
 		for (auto& i : State.At("tabs").GetArray())
 		{
-			result.ActiveTabs.insert(i.GetString());
+			Result.ActiveTabs.insert(i.GetString());
 		}
 		if (State.Contains("selectedTab"))
 		{
-			result.OpenedTab = State.At("selectedTab").GetString();
+			Result.OpenedTab = State.At("selectedTab").GetString();
 		}
 
-		return result;
+		return Result;
 	}
 	catch (SerializeException& e)
 	{

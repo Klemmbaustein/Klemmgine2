@@ -33,6 +33,7 @@ engine::editor::ScriptEditorProvider::~ScriptEditorProvider()
 
 std::set<ScriptSyntaxHighlight> engine::editor::ScriptEditorProvider::GetHighlightsFor(size_t Line)
 {
+	std::lock_guard g{ Context->ScriptServiceMutex };
 	auto Found = this->Highlights.find(Line);
 
 	if (Found != this->Highlights.end())
@@ -773,6 +774,7 @@ void engine::editor::ScriptEditorProvider::UpdateFileData(const std::set<size_t>
 		}
 	}
 	ParentEditor->RefreshHighlights();
+	OnUpdated.Invoke();
 }
 
 void engine::editor::ScriptEditorProvider::ScanFile()
@@ -784,8 +786,8 @@ void engine::editor::ScriptEditorProvider::ScanFile()
 
 void engine::editor::ScriptEditorProvider::UpdateSyntaxHighlight()
 {
-	Highlights.clear();
 	std::lock_guard g{ Context->ScriptServiceMutex };
+	Highlights.clear();
 
 	auto& f = Context->ScriptService->files[EditedFile];
 	for (auto& i : f.functions)

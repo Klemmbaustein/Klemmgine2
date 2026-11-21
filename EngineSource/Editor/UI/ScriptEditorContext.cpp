@@ -304,9 +304,9 @@ void engine::editor::ScriptEditorContext::Commit(std::function<void()> Callback,
 		ReCompileNext = true;
 		return;
 	}
+	IsCompiling = true;
 
 	ScheduleContextTask([this, Callback, CallbackContext] {
-		IsCompiling = true;
 		ScriptService->commitChanges();
 
 		for (auto& file : this->ParsedUI)
