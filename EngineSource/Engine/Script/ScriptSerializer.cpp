@@ -55,7 +55,7 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 				}));
 		}
 
-		ReflectData.Append(SerializedValue({
+		auto v = SerializedValue({
 			SerializedData("id", int32(i.second.hash)),
 			SerializedData("name", i.second.name),
 			SerializedData("construct", int32(i.second.constructor)),
@@ -64,7 +64,14 @@ void script::serialize::SerializeBytecode(ds::BytecodeStream* Stream, ui::UIPars
 			SerializedData("members", Members),
 			SerializedData("super", int32(i.second.superClass)),
 			SerializedData("interfaces", Interfaces),
-			}));
+			});
+
+		if (i.second.implementsGeneric)
+		{
+			v.GetObject().push_back(SerializedData("generic", int32(i.second.implementsGeneric)));
+		}
+
+		ReflectData.Append(v);
 	}
 
 	// Do something not that pretty and serialize the unwind data as a raw byte buffer in the file.
@@ -173,6 +180,10 @@ void engine::script::serialize::DeSerializeBytecode(ds::BytecodeStream* ToStream
 		NewType.bodySize = i.At("size").GetInt();
 		NewType.vTableOffset = i.At("vTable").GetInt();
 		NewType.superClass = i.At("super").GetInt();
+		if (i.Contains("generic"))
+		{
+			NewType.implementsGeneric = i.At("generic").GetInt();
+		}
 		auto& Interfaces = i.At("interfaces").GetArray();
 
 		for (auto& interface : Interfaces)

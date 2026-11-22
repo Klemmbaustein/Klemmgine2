@@ -18,6 +18,7 @@
 #include <Engine/Objects/Components/InstancedMeshComponent.h>
 #include <Engine/Objects/Components/MoveComponent.h>
 #include <Engine/Objects/Components/PhysicsComponent.h>
+#include <Engine/Objects/Components/ParticleComponent.h>
 #include <Engine/Objects/SceneObject.h>
 #include <Engine/Scene.h>
 #include <Engine/Script/ScriptObject.h>
@@ -910,6 +911,22 @@ static void CameraComponent_worldPositionToScreen(InterpretContext* context)
 	context->pushValue(Component.getValue()->WorldToScreen(World));
 }
 
+static void ParticleComponent_new(InterpretContext* context)
+{
+	ClassRef<ParticleComponent*> Component = context->popValue<RuntimeClass*>();
+	Component.getValue() = new ParticleComponent();
+	script::RegisterComponent(Component.classPtr);
+	context->pushValue(Component);
+}
+
+static void ParticleComponent_load(InterpretContext* context)
+{
+	ClassRef<ParticleComponent*> Component = context->popValue<RuntimeClass*>();
+	ClassPtr<AssetRef*> NewAsset = context->popPtr<AssetRef*>();
+
+	Component.getValue()->Load(**NewAsset);
+}
+
 #pragma endregion
 
 #pragma region Log
@@ -1528,6 +1545,12 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 	EngineModule.addClassMethod(CameraComponentType,
 		NativeFunction({ FunctionArgument(Math.Vec3, "worldPosition") },
 			Math.Vec3, "worldPositionToScreen", &CameraComponent_worldPositionToScreen));
+
+	auto ParticleComponentType = EngineModule.createClass<MoveComponent*>("ParticleComponent", ComponentType);
+
+	EngineModule.addClassMethod(ParticleComponentType,
+		NativeFunction({},
+			nullptr, "load", &ParticleComponent_load));
 
 	EngineModule.addFunction(
 		NativeFunction({},
