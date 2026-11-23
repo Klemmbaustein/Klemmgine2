@@ -51,6 +51,7 @@
 - Fixed some buggy layout code in the script editor tab switcher that sometimes would add more items to one
   row than another.
 - Fixed a rare race condition in script minimap generation code that would cause the editor to crash.
+- Fixed a crash when visualizing the bounding box of a 3D model that failed to load.
 
 ## Klemmgine 2.0.0-dev3
 

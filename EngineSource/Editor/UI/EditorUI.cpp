@@ -30,6 +30,9 @@
 #include <Engine/Objects/MeshObject.h>
 #include <Engine/Objects/SoundObject.h>
 #include <Engine/Objects/LightObject.h>
+#include <Engine/Objects/ParticleObject.h>
+#include <Engine/Objects/LandscapeObject.h>
+#include <Engine/Objects/ReverbVolumeObject.h>
 #include <Engine/Objects/Scene/SceneManager.h>
 #include <filesystem>
 #include <ItemBrowser.kui.hpp>
@@ -66,6 +69,8 @@ static std::map<engine::string, Vec3f> FileNameColors =
 	{ "ds", Vec3f(0.4f, 0.1f, 0.7f) },
 	{ "wav", Vec3f(0.1f, 0.2f, 0.4f) },
 	{ "kui", Vec3f(0.4f, 0.1f, 0.7f) },
+	{ "prt", Vec3f(0.65f, 0.1f, 0.0f) },
+	{ "hmp", Vec3f(0.1f, 0.2f, 0.05f) },
 };
 static std::map<string, string> FileNameIcons =
 {
@@ -79,6 +84,8 @@ static std::map<string, string> FileNameIcons =
 	{ "ds", "Script.png" },
 	{ "wav", "Sound.png" },
 	{ "kui", "UIScript.png" },
+	{ "prt", "Particle.png" },
+	{ "hmp", "HeightMap.png" },
 	{ "dir/", "Folder.png" },
 };
 
@@ -257,6 +264,9 @@ engine::editor::EditorUI::EditorUI(AssetListProvider* AssetsProvider)
 	ObjectIcons.AddObjectIcon(Asset("Sound.png"), SoundObject::ObjectType);
 	ObjectIcons.AddObjectIcon(Asset("Light.png"), LightObject::ObjectType);
 	ObjectIcons.AddObjectIcon(Asset("Scene.png"), SceneManager::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("Particle.png"), ParticleObject::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("HeightMap.png"), LandscapeObject::ObjectType);
+	ObjectIcons.AddObjectIcon(Asset("ReverbVolume.png"), ReverbVolumeObject::ObjectType);
 
 	VideoSubsystem* VideoSystem = Engine::GetSubsystem<VideoSubsystem>();
 	VideoSystem->OnResizedCallbacks.Add(this, [this](Vec2ui NewSize) {

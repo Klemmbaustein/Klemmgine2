@@ -197,7 +197,7 @@ void engine::editor::ModelEditor::ShowBounds()
 {
 	HideBounds();
 
-	if (ShouldShowBounds)
+	if (ShouldShowBounds && CurrentObj->Mesh->DrawnModel)
 	{
 		GraphicsModel* Data = CurrentObj->Mesh->DrawnModel;
 
