@@ -11,6 +11,54 @@
 #include <sstream>
 #include <fstream>
 
+void engine::editor::ServerConnection::ProcessFileData(string Name, ReadOnlyBufferStream* Stream, bool IsLast)
+{
+	std::vector<uByte>* Data = new std::vector<uByte>();
+	size_t* References = new size_t();
+
+	Data->resize(Stream->GetSize() - Stream->StreamPosition);
+
+	if (Data->size())
+	{
+		Stream->Read(Data->data(), Data->size());
+	}
+
+	std::lock_guard g{ FilesMutex };
+
+	auto& Callbacks = FileCallbacks[Name];
+
+	for (auto& i : Callbacks)
+	{
+		auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), false);
+		b->OnClose.Add(References, [=] {
+			(*References)--;
+			if (*References == 0)
+			{
+				delete Data;
+				delete References;
+			}
+		});
+		i(b, IsLast);
+		(*References)++;
+	}
+
+	if (IsLast)
+	{
+		Callbacks.clear();
+
+		if (!RequestedFileQueue.empty())
+		{
+			WaitingForFileUpload = true;
+			SendMessage("getFile", RequestedFileQueue.front());
+			RequestedFileQueue.pop();
+		}
+		else
+		{
+			WaitingForFileUpload = false;
+		}
+	}
+}
+
 engine::editor::ServerConnection::ServerConnection(string Url, std::optional<string> Password)
 {
 	this->Connection = new http::WebSocketConnection("ws://" + Url + "/ws");
@@ -22,7 +70,16 @@ engine::editor::ServerConnection::ServerConnection(string Url, std::optional<str
 	};
 
 	this->Connection->OnMessage = [this](const http::WebSocketMessage& msg) {
+		if (LastWasFileUpload)
+		{
+			ProcessFileData(LastFileUploadName, msg.Data, msg.IsLast);
+			LastWasFileUpload = !msg.IsLast;
+			return;
+		}
+
 		MessageType Type = msg.Data->Get<MessageType>();
+
+		LastWasFileUpload = false;
 
 		switch (Type)
 		{
@@ -48,38 +105,9 @@ engine::editor::ServerConnection::ServerConnection(string Url, std::optional<str
 		case engine::editor::ServerConnection::MessageType::FileUpload:
 		{
 			string Path = msg.Data->ReadString();
-
-			std::vector<uByte>* Data = new std::vector<uByte>();
-			size_t* References = new size_t();
-
-			Data->resize(msg.Data->GetBuffer().size() - msg.Data->StreamPosition);
-
-			if (Data->size())
-			{
-				msg.Data->Read(Data->data(), Data->size());
-			}
-
-			std::lock_guard g{ FilesMutex };
-
-			auto& Callbacks = FileCallbacks[Path];
-
-			for (auto& i : Callbacks)
-			{
-				auto b = new ReadOnlyBufferStream(Data->data(), Data->size(), false);
-				b->OnClose.Add(References, [=] {
-					(*References)--;
-					if (*References == 0)
-					{
-						delete Data;
-						delete References;
-					}
-				});
-				i(b);
-				(*References)++;
-			}
-
-			Callbacks.clear();
-
+			LastWasFileUpload = true;
+			LastFileUploadName = Path;
+			ProcessFileData(Path, msg.Data, msg.IsLast);
 			break;
 		}
 		default:
@@ -90,6 +118,7 @@ engine::editor::ServerConnection::ServerConnection(string Url, std::optional<str
 	this->Connection->OnClosed = [&] {
 		IsClosed = true;
 	};
+	Connection->Start();
 }
 
 engine::editor::ServerConnection::~ServerConnection()
@@ -118,8 +147,8 @@ void engine::editor::ServerConnection::SendMessageData(SerializedValue Json)
 void engine::editor::ServerConnection::SendMessage(string Type, SerializedValue Json)
 {
 	SendMessageData(SerializedValue({
-		SerializedData({"type", Type}),
-		SerializedData({"data", Json}),
+		SerializedData({ "type", Type }),
+		SerializedData({ "data", Json }),
 		}));
 }
 
@@ -263,12 +292,21 @@ void engine::editor::ServerConnection::HandleInitializedParams(SerializedValue J
 	thread::ExecuteOnMainThread(std::bind(&Event<>::Invoke, &OnUsersChanged));
 }
 
-void engine::editor::ServerConnection::GetFile(string Name, std::function<void(ReadOnlyBufferStream*)> Callback)
+void engine::editor::ServerConnection::GetFile(string Name, std::function<void(ReadOnlyBufferStream*, bool)> Callback)
 {
 	std::lock_guard g{ FilesMutex };
 
 	FileCallbacks[Name].push_back(Callback);
-	SendMessage("getFile", Name);
+
+	if (!WaitingForFileUpload)
+	{
+		WaitingForFileUpload = true;
+		SendMessage("getFile", Name);
+	}
+	else
+	{
+		this->RequestedFileQueue.push(Name);
+	}
 }
 
 void engine::editor::ServerConnection::HandleFileList(std::vector<SerializedValue> Values)

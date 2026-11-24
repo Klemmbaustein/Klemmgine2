@@ -3,10 +3,11 @@
 #include <Core/File/BinaryStream.h>
 #include <optional>
 #include <functional>
+#include <thread>
 
-namespace ix
+namespace tcp
 {
-	class WebSocket;
+	class HttpWebSocket;
 }
 
 namespace engine::http
@@ -20,7 +21,8 @@ namespace engine::http
 	struct WebSocketMessage
 	{
 		WebSocketMessageType Type = WebSocketMessageType::Binary;
-		BufferStream* Data = nullptr;
+		ReadOnlyBufferStream* Data = nullptr;
+		bool IsLast = true;
 	};
 
 	class WebSocketConnection
@@ -29,6 +31,8 @@ namespace engine::http
 		WebSocketConnection(string Url);
 		~WebSocketConnection();
 
+		void Start();
+
 		void Send(const uByte* Data, size_t DataSize, bool IsBinary = true);
 
 		std::function<void()> OnOpened;
@@ -36,7 +40,9 @@ namespace engine::http
 		std::function<void()> OnClosed;
 
 	private:
-		ix::WebSocket* Socket = nullptr;
+		tcp::HttpWebSocket* Socket = nullptr;
+		std::thread ConnectionThread;
+		bool IsClosed = false;
 	};
 }
 #endif

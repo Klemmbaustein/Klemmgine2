@@ -151,12 +151,25 @@ static void ProcessMaterials(const aiScene* Scene, ConvertContext Context, strin
 
 			TexturePath = str::Format("%s_%i.png", FileName.c_str(), int(i));
 
-			std::ofstream TextureOutput = std::ofstream(OutDir + TexturePath, std::ios::binary);
+			std::string Path = OutDir + TexturePath;
+
 			if (!texture->mHeight)
 			{
-				TextureOutput.write((char*)texture->pcData, texture->mWidth);
+				auto Stream = EditorUI::Instance->AssetsProvider->GetFileSaveStream(Path);
+
+				if (Stream)
+				{
+					Stream->Write((uByte*)texture->pcData, texture->mWidth);
+					delete Stream;
+				}
+				else
+				{
+					BufferStream OutStream;
+					OutStream.Write((uByte*)texture->pcData, texture->mWidth);
+					OutStream.ResetStreamPosition();
+					EditorUI::Instance->AssetsProvider->SaveToFile(Path, &OutStream, OutStream.GetSize());
+				}
 			}
-			TextureOutput.close();
 		}
 
 		aiColor3D DiffuseColor{1, 1, 1};

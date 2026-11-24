@@ -4,6 +4,7 @@
 #include <Core/Event.h>
 #include <Core/ThreadMessages.h>
 #include <map>
+#include <queue>
 #include <mutex>
 
 namespace engine::editor
@@ -50,14 +51,14 @@ namespace engine::editor
 		void HandleConnectParams(SerializedValue Json);
 		void HandleInitializedParams(SerializedValue Json);
 
-		void GetFile(string Name, std::function<void(ReadOnlyBufferStream*)> Callback);
+		void GetFile(string Name, std::function<void(ReadOnlyBufferStream*, bool)> Callback);
 
 		void ListenToLiveFile(string FileName, std::function<void(string, SerializedValue&)> Callback,
 			thread::ThreadMessagesRef OnContext);
 
 		std::mutex FilesMutex;
 
-		std::map<string, std::vector<std::function<void(ReadOnlyBufferStream*)>>> FileCallbacks;
+		std::map<string, std::vector<std::function<void(ReadOnlyBufferStream*, bool)>>> FileCallbacks;
 
 	private:
 		struct CallbackData
@@ -65,6 +66,14 @@ namespace engine::editor
 			std::function<void(string, SerializedValue&)> Callback;
 			thread::ThreadMessagesRef OnContext;
 		};
+
+		bool LastWasFileUpload = false;
+		bool WaitingForFileUpload = false;
+		string LastFileUploadName;
+
+		void ProcessFileData(string Name, ReadOnlyBufferStream* Stream, bool IsLast);
+
+		std::queue<string> RequestedFileQueue;
 
 		std::optional<string> Password;
 		std::map<std::string, CallbackData> ListenedFiles;

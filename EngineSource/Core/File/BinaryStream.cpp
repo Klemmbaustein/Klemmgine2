@@ -177,7 +177,7 @@ bool engine::ReadOnlyBufferStream::IsWriteOnly() const
 
 bool engine::ReadOnlyBufferStream::IsEmpty() const
 {
-	return Size <= StreamPos;
+	return Size <= StreamPosition;
 }
 
 size_t engine::ReadOnlyBufferStream::GetSize() const
@@ -187,14 +187,14 @@ size_t engine::ReadOnlyBufferStream::GetSize() const
 
 bool engine::ReadOnlyBufferStream::Read(uByte* To, size_t Size)
 {
-	if (this->Size < Size + StreamPos)
+	if (this->Size < Size + StreamPosition)
 		return false;
 
 	if (To)
 	{
-		memcpy(To, &this->Data[StreamPos], Size);
+		memcpy(To, &this->Data[StreamPosition], Size);
 	}
-	StreamPos += Size;
+	StreamPosition += Size;
 	return true;
 }
 

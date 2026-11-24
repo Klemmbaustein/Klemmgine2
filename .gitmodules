@@ -16,13 +16,9 @@
 [submodule "Dependencies/DSharp"]
 	path = Dependencies/DSharp
 	url = https://github.com/Klemmbaustein/DSharp.git
-[submodule "Dependencies/IXWebSocket"]
-	path = Dependencies/IXWebSocket
-	url = https://github.com/Klemmbaustein/IXWebSocket.git
-[submodule "Dependencies/mbedtls"]
-	path = Dependencies/mbedtls
-	url = https://github.com/Mbed-TLS/mbedtls.git
-	branch = main
 [submodule "Dependencies/openal-soft"]
 	path = Dependencies/openal-soft
 	url = https://github.com/kcat/openal-soft.git
+[submodule "Dependencies/TcpUtils"]
+	path = Dependencies/TcpUtils
+	url = https://github.com/Klemmbaustein/TcpUtils.git

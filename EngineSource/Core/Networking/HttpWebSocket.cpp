@@ -1,68 +1,86 @@
 #ifdef KLEMMGINE_WEBSOCKETS
 #include "HttpWebSocket.h"
-#include <Core/Platform/CodeAnalysis.h>
-CODE_ANALYSIS_BEGIN_EXTERNAL_HEADER
-#include <ixwebsocket/IXWebSocket.h>
-#include <ixwebsocket/IXNetSystem.h>
-CODE_ANALYSIS_END_EXTERNAL_HEADER
+#include <tcpUtils/WebSocket.h>
+#include <Core/Error/EngineError.h>
 #include <Core/Log.h>
+
+using namespace tcp;
 
 engine::http::WebSocketConnection::WebSocketConnection(string Url)
 {
-	ix::initNetSystem();
-	Socket = new ix::WebSocket();
-	Socket->setUrl(Url);
+	HttpRequest Request = HttpRequest(Url, "GET");
+	Socket = new HttpWebSocket(&Request);
 
-	Socket->setOnMessageCallback([this](const ix::WebSocketMessagePtr& Message) {
-		switch (Message->type)
+	Socket->receiveMessage = [this](tcp::WebSocketMessage Message) {
+		auto EngineMessage = engine::http::WebSocketMessage{
+			.Type = Message.operation == tcp::WebSocketOp::sendBinary
+			? WebSocketMessageType::Binary : WebSocketMessageType::Text,
+			.Data = new ReadOnlyBufferStream((uByte*)Message.payload, Message.payloadLength, false),
+			.IsLast = Message.isLastChunk
+		};
+		if (OnMessage)
+			OnMessage(EngineMessage);
+		delete EngineMessage.Data;
+	};
+
+	Socket->receiveClose = [this](tcp::WebSocketCloseMessage Message) {
+		if (Message.closeReason != WebSocketCloseReason::normalClosure)
 		{
-		case ix::WebSocketMessageType::Message:
-		{
-			auto EngineMessage = WebSocketMessage{
-				.Type = Message->binary ? WebSocketMessageType::Binary : WebSocketMessageType::Text,
-				.Data = new BufferStream((uByte*)Message->str.data(), Message->str.size()),
-			};
-			if (OnMessage)
-				OnMessage(EngineMessage);
-			delete EngineMessage.Data;
-			break;
+			Log::Error(string((char*)Message.payload, Message.payloadLength));
 		}
-		case ix::WebSocketMessageType::Open:
+
+		if (OnClosed)
+			OnClosed();
+	};
+}
+
+void engine::http::WebSocketConnection::Start()
+{
+	this->ConnectionThread = std::thread([this] {
+		error::InitForThread("WebSocket listen thread");
+		try
 		{
 			if (OnOpened)
+			{
 				OnOpened();
-			break;
+			}
+
+			while (Socket->IsConnected())
+			{
+				Socket->ReadConnection();
+			}
 		}
-		case ix::WebSocketMessageType::Close:
+		catch (NetworkException& e)
 		{
-			if (OnClosed)
-				OnClosed();
-			break;
-		}
-		case ix::WebSocketMessageType::Error:
-		{
-			Log::Error(Message->errorInfo.reason);
-			break;
-		}
+			if (!IsClosed)
+			{
+				Log::Error(e.what());
+				Socket->Close(WebSocketCloseReason::protocolError);
+			}
 		}
 	});
-
-	Socket->start();
 }
 
 engine::http::WebSocketConnection::~WebSocketConnection()
 {
-	Socket->stop();
+	IsClosed = true;
+	try
+	{
+		if (Socket->IsConnected())
+		{
+			Socket->Close(WebSocketCloseReason::normalClosure);
+		}
+	}
+	catch (NetworkException& e)
+	{
+		Log::Error(e.what());
+	}
+	ConnectionThread.join();
 	delete Socket;
 }
 
 void engine::http::WebSocketConnection::Send(const uByte* Data, size_t DataSize, bool IsBinary)
 {
-	if (IsBinary)
-	{
-		Socket->sendBinary(ix::IXWebSocketSendData((char*)Data, DataSize));
-		return;
-	}
-	Socket->send(string((char*)Data, DataSize), IsBinary);
+	Socket->SendMessage(!IsBinary, (void*)Data, DataSize);
 }
 #endif

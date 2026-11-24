@@ -2,6 +2,7 @@
 #include <Engine/File/Resource.h>
 #include <mutex>
 #include <stb_image.hpp>
+#include <Core/Log.h>
 using namespace engine;
 using namespace engine::graphics;
 
@@ -54,7 +55,7 @@ const Texture* TextureLoader::LoadTextureFile(AssetRef From, TextureOptions Load
 	string str;
 	Bytes->ReadAll(str);
 
-	const Texture* Result = LoadCompressedBuffer((stbi_uc*)str.data(), Bytes->GetSize(), LoadInfo);
+	const Texture* Result = LoadCompressedBuffer((stbi_uc*)str.data(), str.size(), LoadInfo);
 	delete Bytes;
 
 	return Result;
@@ -65,6 +66,12 @@ const Texture* TextureLoader::LoadCompressedBuffer(const uByte* Buffer, size_t B
 	int w, h, ch;
 	stbi_set_flip_vertically_on_load(true);
 	stbi_uc* Loaded = stbi_load_from_memory(Buffer, int(BufferSize), &w, &h, &ch, 4);
+
+	if (!Loaded)
+	{
+		Log::Error(stbi_failure_reason());
+	}
+
 	const Texture* Out = LoadTexture(Loaded, w, h, LoadInfo);
 	stbi_image_free(Loaded);
 	return Out;
@@ -115,7 +122,7 @@ const Texture* engine::graphics::TextureLoader::PreLoadBuffer(AssetRef From, Tex
 	string str;
 	Bytes->ReadAll(str);
 
-	auto Pixels = stbi_load_from_memory((stbi_uc*)str.data(), int(Bytes->GetSize()), &w, &h, &ch, 4);
+	auto Pixels = stbi_load_from_memory((stbi_uc*)str.data(), int(str.size()), &w, &h, &ch, 4);
 	const Texture* New = &(*LoadedTextures.insert({ Name, Texture{
 		.Options = LoadInfo,
 		.Pixels = Pixels,

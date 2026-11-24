@@ -165,11 +165,11 @@ namespace engine
 		const uByte* GetData();
 
 		Event<> OnClose;
-
+		size_t StreamPosition = 0;
 	private:
 		bool FreeOnClose = false;
 		const uByte* Data = nullptr;
-		size_t Size = 0, StreamPos = 0;
+		size_t Size = 0;
 	};
 
 }
