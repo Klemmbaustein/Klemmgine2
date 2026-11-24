@@ -12,12 +12,9 @@
 #include "Plugins.h"
 
 using namespace engine;
-namespace std
-{
-	namespace fs = std::filesystem;
-}
+namespace fs = std::filesystem;
 
-static void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
+static void CopyBinaries(fs::path BinaryPath, fs::path OutPath)
 {
 	static std::vector<string> Executables = {
 		"Klemmgine"
@@ -36,32 +33,32 @@ static void CopyBinaries(std::fs::path BinaryPath, std::fs::path OutPath)
 		{
 			string PdbName = i + ".pdb";
 
-			std::fs::path DebugPath = BinaryPath / PdbName;
+			fs::path DebugPath = BinaryPath / PdbName;
 
-			if (!std::fs::exists(DebugPath))
+			if (!fs::exists(DebugPath))
 			{
 				Log::Warn(str::Format("-includePdb is set, but the pdb for the file %s.exe doesn't exist!", i.c_str()));
 			}
 			else
 			{
-				std::fs::copy(DebugPath, OutPath / PdbName);
+				fs::copy(DebugPath, OutPath / PdbName);
 			}
 		}
 		i.append(".exe");
 #endif
-		std::fs::copy(BinaryPath / i, OutPath / i);
+		fs::copy(BinaryPath / i, OutPath / i);
 	}
 #if WINDOWS
 	for (string i : SharedLibraries)
 	{
 		i.append(".dll");
-		if (std::fs::exists(BinaryPath / i))
-			std::fs::copy(BinaryPath / i, OutPath / i);
+		if (fs::exists(BinaryPath / i))
+			fs::copy(BinaryPath / i, OutPath / i);
 	}
 #endif
 }
 
-static BufferStream* CopyAndConvertFile(std::fs::path InPath, string& OutPath)
+static BufferStream* CopyAndConvertFile(fs::path InPath, string& OutPath)
 {
 	std::map<string, string> KnownExtensions = {
 		{"kmt", "kbm"},
@@ -128,23 +125,23 @@ int main(int argc, char** argv)
 
 	try
 	{
-		if (std::fs::exists(OutPath))
+		if (fs::exists(OutPath))
 		{
-			std::fs::remove_all(OutPath);
+			fs::remove_all(OutPath);
 		}
 	}
-	catch (std::fs::filesystem_error e)
+	catch (fs::filesystem_error e)
 	{
 		Log::Error(e.what());
 		return 1;
 	}
 
-	std::fs::create_directories(std::fs::path(OutPath) / "Assets");
-	Log::Info("Building into " + std::fs::canonical(OutPath).string() + " from " + std::fs::canonical(".").string());
+	fs::create_directories(fs::path(OutPath) / "Assets");
+	Log::Info("Building into " + fs::canonical(OutPath).string() + " from " + fs::canonical(".").string());
 
 	if (std::filesystem::exists("project.json"))
 	{
-		std::fs::copy("project.json", std::fs::path(OutPath) / "Assets" / "project.json");
+		fs::copy("project.json", fs::path(OutPath) / "Assets" / "project.json");
 	}
 
 	try
@@ -162,7 +159,7 @@ int main(int argc, char** argv)
 		SerializedValue MapFile = std::vector<SerializedData>();
 		for (auto& ArchiveFiles : Archives)
 		{
-			std::fs::path ResultPath = std::fs::relative(std::fs::path(OutPath) / "Assets" / (ArchiveFiles.Name + ".bin"));
+			fs::path ResultPath = fs::relative(fs::path(OutPath) / "Assets" / (ArchiveFiles.Name + ".bin"));
 			ArchiveThreads.AddJob([ArchiveFiles, ResultPath, ArchiveSize = Archives.size(), &WrittenArchives]() {
 				Log::Info("Writing archive: "
 					+ ResultPath.string()
@@ -202,7 +199,7 @@ int main(int argc, char** argv)
 
 		BinarySerializer::ToFile(MapFile.GetObject(), OutPath + "/Assets/archmap.bin", "archm");
 	}
-	catch (std::fs::filesystem_error e)
+	catch (fs::filesystem_error e)
 	{
 		Log::Error(e.what());
 		return 2;
