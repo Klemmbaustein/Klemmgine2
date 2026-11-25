@@ -5,6 +5,7 @@
 #include <Engine/Graphics/VideoSubsystem.h>
 #include <Core/ThreadPool.h>
 #include <Core/Error/EngineAssert.h>
+#include <iostream>
 
 using namespace engine::graphics;
 using namespace engine;
@@ -302,12 +303,16 @@ void engine::LandscapeMeshGenerator::MergeSegments(LandscapeSegment* From, Lands
 
 			if (BottomSegment && BottomSegment->Scale > From->Scale)
 			{
-				From->BottomScaleDifference = BottomSegment->Scale / From->Scale;
-				for (size_t x = 0; x < LANDSCAPE_CHUNK_SIZE - BottomSegment->Scale; x += From->BottomScaleDifference)
+				auto& diff = From->BottomScaleDifference = BottomSegment->Scale / From->Scale;
+				for (size_t x = 0; x < LANDSCAPE_CHUNK_SIZE - diff; x += diff)
 				{
-					LandscapePoint p = From->PlaceholderChunk->Points[x];
-					p.Interpolate(From->PlaceholderChunk->Points[x + From->BottomScaleDifference], 0.5f);
-					From->PlaceholderChunk->Points[x + 1] = p;
+					const LandscapePoint& p2 = From->PlaceholderChunk->Points[x + diff];
+					for (size_t i = 1; i < diff; i++)
+					{
+						LandscapePoint p = From->PlaceholderChunk->Points[x];
+						p.Interpolate(p2, float(i) / diff);
+						From->PlaceholderChunk->Points[x + i] = p;
+					}
 				}
 			}
 		}
@@ -317,14 +322,18 @@ void engine::LandscapeMeshGenerator::MergeSegments(LandscapeSegment* From, Lands
 
 			if (LeftSegment && LeftSegment->Scale > From->Scale)
 			{
-				From->LeftScaleDifference = LeftSegment->Scale / From->Scale;
-				for (size_t y = 0; y < LANDSCAPE_CHUNK_SIZE - LeftSegment->Scale; y += From->LeftScaleDifference)
+				auto& diff = From->LeftScaleDifference = LeftSegment->Scale / From->Scale;
+				for (size_t y = 0; y < LANDSCAPE_CHUNK_SIZE - diff; y += diff)
 				{
-					LandscapePoint p = From->PlaceholderChunk->Points[y * LANDSCAPE_CHUNK_SIZE];
-					p.Interpolate(From->PlaceholderChunk->Points[(From->LeftScaleDifference + y) * LANDSCAPE_CHUNK_SIZE], 0.5f);
-					From->PlaceholderChunk->Points[(1 + y) * LANDSCAPE_CHUNK_SIZE] = p;
+					const LandscapePoint& p2 = From->PlaceholderChunk->Points[
+						(y + diff) * LANDSCAPE_CHUNK_SIZE];
+					for (size_t i = 1; i < diff; i++)
+					{
+						LandscapePoint p = From->PlaceholderChunk->Points[y * LANDSCAPE_CHUNK_SIZE];
+						p.Interpolate(p2, float(i) / diff);
+						From->PlaceholderChunk->Points[(y + i) * LANDSCAPE_CHUNK_SIZE] = p;
+					}
 				}
-
 			}
 		}
 
