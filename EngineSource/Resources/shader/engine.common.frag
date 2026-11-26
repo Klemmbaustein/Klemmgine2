@@ -148,7 +148,7 @@ float getShadowStrength()
 		return 1.0;
 	}
 
-	float bias = (1 - (abs(dot(v_normal, u_lightDirection)))) / 75;
+	float bias = (1 - (abs(dot(v_normal, u_lightDirection)))) / 25;
 	bias *= 0.015;
 	bias += 0.4 / float(textureSize(u_shadowMaps, 0).x);
 	bias *= max(abs(u_shadowBiasModifier) - 0.5, 0.0) * 4 + 1;

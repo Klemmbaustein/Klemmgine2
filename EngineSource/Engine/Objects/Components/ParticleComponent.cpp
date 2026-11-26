@@ -34,7 +34,8 @@ void engine::ParticleComponent::Update()
 		return;
 	}
 
-	auto CameraView = Transform(RootObject->GetScene()->Graphics.UsedCamera->View).Rotation().Inverse();
+	auto CameraView = WorldTransform.Rotation().Inverse().Combine(
+		Transform(RootObject->GetScene()->Graphics.UsedCamera->View).Rotation().Inverse());
 
 	std::lock_guard g{ Data->EmittersMutex };
 	std::optional<BoundingBox> NewBounds;
@@ -70,6 +71,7 @@ void engine::ParticleComponent::Update()
 	if (NewBounds)
 	{
 		DrawBoundingBox = *NewBounds;
+		DrawBoundingBox.Extents *= BoundsMultiplier;
 	}
 	else
 	{

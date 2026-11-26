@@ -923,6 +923,7 @@ static void ParticleComponent_load(InterpretContext* context)
 {
 	ClassRef<ParticleComponent*> Component = context->popValue<RuntimeClass*>();
 	ClassPtr<AssetRef*> NewAsset = context->popPtr<AssetRef*>();
+	CHECK_COMPONENT(Component);
 
 	Component.getValue()->Load(**NewAsset);
 }
@@ -1547,9 +1548,19 @@ engine::script::EngineModuleData engine::script::RegisterEngineModules(LanguageC
 			Math.Vec3, "worldPositionToScreen", &CameraComponent_worldPositionToScreen));
 
 	auto ParticleComponentType = EngineModule.createClass<MoveComponent*>("ParticleComponent", ComponentType);
+	EngineModule.addClassConstructor(ParticleComponentType,
+		NativeFunction({},
+			nullptr, "ParticleComponent.new", &ParticleComponent_new));
+
+	ParticleComponentType->members.push_back(ClassMember{
+		.name = "boundsMultiplier",
+		.offset = DS_OFFSETOF(ParticleComponent, BoundsMultiplier),
+		.type = FloatInst,
+		.isPointerMember = true,
+		});
 
 	EngineModule.addClassMethod(ParticleComponentType,
-		NativeFunction({},
+		NativeFunction({ FunctionArgument(Assets.AssetRef, "image") },
 			nullptr, "load", &ParticleComponent_load));
 
 	EngineModule.addFunction(

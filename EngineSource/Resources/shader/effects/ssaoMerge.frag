@@ -22,7 +22,7 @@ float getAo()
 			float difference = aoValue.y - depth;
 			if (difference < 1 && difference > -1)
 			{
-				result += mix(aoValue.x, 1, min(aoValue.y / 100.0, 1.0));
+				result += mix(aoValue.x, 1, min(aoValue.y / 200.0, 1.0));
 				sampled++;
 			}
 		}

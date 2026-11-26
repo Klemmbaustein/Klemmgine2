@@ -30,9 +30,10 @@ namespace engine
 		bool IsPlaying() const;
 		bool DoHotReload = true;
 
+		float BoundsMultiplier = 1.0f;
+
 	private:
 		void Clear();
-
 		size_t InstanceCount = 0;
 	};
 }

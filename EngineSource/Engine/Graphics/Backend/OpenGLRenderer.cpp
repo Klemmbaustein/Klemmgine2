@@ -345,6 +345,10 @@ engine::graphics::OpenGLImageRendererTexture::OpenGLImageRendererTexture(const u
 
 engine::graphics::OpenGLImageRendererTexture::~OpenGLImageRendererTexture()
 {
+	if (Render->ActiveTextureObject == TextureObject)
+	{
+		Render->ActiveTextureObject = UINT32_MAX;
+	}
 	glDeleteTextures(1, &TextureObject);
 }
 

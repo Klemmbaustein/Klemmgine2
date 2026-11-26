@@ -61,6 +61,10 @@ void engine::graphics::Model::SimpleDraw(Renderer* Render, const Transform& At, 
 {
 	for (size_t i = 0; i < ModelVertexBuffers.size(); i++)
 	{
+		if (UsedMaterials.size() <= i)
+		{
+			break;
+		}
 		if (UsedMaterials[i]->IsTransparent)
 		{
 			continue;

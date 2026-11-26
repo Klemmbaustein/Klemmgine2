@@ -95,7 +95,17 @@ void engine::graphics::CascadedShadows::Update(Camera* From)
 void CascadedShadows::Draw(GraphicsScene* With)
 {
 	if (!ShouldRender())
+	{
+		if (ShadowBuffer)
+		{
+			delete ShadowBuffer;
+			ShadowBuffer = nullptr;
+			LastShadowResolution = 0;
+		}
+
 		return;
+	}
+
 
 	if (LastShadowResolution != ShadowResolution)
 	{
@@ -171,20 +181,20 @@ void engine::graphics::CascadedShadows::UnloadShadows()
 {
 	if (ShadowShader)
 	{
-		ShadowShader = nullptr;
 		delete ShadowShader;
+		ShadowShader = nullptr;
 	}
 
 	if (ShadowMatrices)
 	{
-		ShadowMatrices = nullptr;
 		delete ShadowMatrices;
+		ShadowMatrices = nullptr;
 	}
 
 	if (ShadowBuffer)
 	{
-		ShadowBuffer = nullptr;
 		delete ShadowBuffer;
+		ShadowBuffer = nullptr;
 	}
 }
 
