@@ -432,7 +432,7 @@ void engine::graphics::GraphicsScene::ApplyToPass(DrawCommand* Pass, Camera* Wit
 
 	if (!Used->Unlit)
 	{
-		Lights.ApplyToShader(Used, Bounds);
+		Lights.ApplyToShader(Used, Bounds, With->GetPosition());
 	}
 	Shadows.BindUniforms(Pass, Used);
 	With->UsedEnvironment->ApplyTo(Used);

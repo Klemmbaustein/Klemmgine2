@@ -22,6 +22,9 @@ namespace engine
 		float Length() const;
 
 		[[nodiscard]]
+		float SquareLength() const;
+
+		[[nodiscard]]
 		static Vector3 Forward(Vector3 EulerRotation);
 		[[nodiscard]]
 		static Vector3 Right(Vector3 EulerRotation);

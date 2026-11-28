@@ -45,6 +45,11 @@ float engine::Vector3::Length() const
 	return std::sqrt(X * X + Y * Y + Z * Z);
 }
 
+float engine::Vector3::SquareLength() const
+{
+	return X * X + Y * Y + Z * Z;
+}
+
 Vector3 engine::Vector3::Forward(Vector3 EulerRotation)
 {
 	Transform t;

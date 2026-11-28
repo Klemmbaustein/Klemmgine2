@@ -5,6 +5,7 @@
 #include <Engine/Graphics/Scene/BoundsHirarchy.h>
 #include <memory>
 #include <mutex>
+#include <algorithm>
 
 namespace engine::graphics
 {
@@ -45,15 +46,19 @@ namespace engine::graphics
 		 * @param Bounds
 		 * The bounding box in which to search for lights.
 		 */
-		void ApplyToShader(ShaderObject* Target, const BoundingBox& Bounds)
+		void ApplyToShader(ShaderObject* Target, const BoundingBox& Bounds, Vector3 CameraPosition)
 		{
 			auto Lights = GetLights(Bounds);
+
+			std::sort(Lights.begin(), Lights.end(), [CameraPosition](Light* a, Light* b ) {
+				return (a->Position - CameraPosition).SquareLength() < (b->Position - CameraPosition).SquareLength();
+			});
 
 			for (size_t light = 0; light < 8; light++)
 			{
 				bool Active = light < Lights.size();
-				// Actually creating a new string for each light slot for each drawable object ends up being a pretty big performance hit
-				// Do this instead to speed things up a bit
+				// Actually creating a new string for each light slot for each drawable object ends up being a
+				// pretty big performance hit. Do this instead to speed things up a bit
 				static const char* lights[8] = {
 					"u_lights[0].isActive",
 					"u_lights[1].isActive",
