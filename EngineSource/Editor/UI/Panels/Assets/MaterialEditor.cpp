@@ -315,7 +315,9 @@ void engine::editor::MaterialEditor::CreateTextureField(UIBox* Parent, Material:
 		if (!Field.TextureValue.Name)
 		{
 			Field.TextureValue.Name = new Material::MatTexture(Name);
+			OnChanged();
 			LoadUI();
+			return;
 		}
 		else
 		{

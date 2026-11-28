@@ -89,7 +89,7 @@ static void SerializedBool_new(InterpretContext* context)
 {
 	ClassRef<ScriptSerializedBool> BoolValue = context->popValue<RuntimeClass*>();
 
-	BoolValue->Type = SerializedData::DataType::Float;
+	BoolValue->Type = SerializedData::DataType::Boolean;
 	BoolValue->BoolValue = context->popValue<Bool>();
 
 	context->pushValue(BoolValue);
